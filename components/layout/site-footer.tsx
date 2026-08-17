@@ -43,7 +43,7 @@ export function SiteFooter() {
 
           {/* Columns */}
           <div className="mt-14 grid gap-12 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
-            <div className="lg:col-span-4">
+            <Reveal className="lg:col-span-4">
               <Link
                 href="/"
                 aria-label="Vijaya Enterprises — home"
@@ -59,37 +59,15 @@ export function SiteFooter() {
               <p className="mt-6 font-display text-[1.125rem] text-brass-300">
                 {site.tagline}.
               </p>
-            </div>
+            </Reveal>
 
-            <nav aria-label="What we build" className="lg:col-span-3">
-              <h3 className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-white/45">
-                What We Build
-              </h3>
-              <ul className="mt-6 space-y-3.5">
-                {buildLinks.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="link-underline text-[0.9375rem] text-navy-100/80 transition-colors hover:text-white"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-
-            <nav aria-label="Company" className="lg:col-span-2">
-              <h3 className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-white/45">
-                Company
-              </h3>
-              <ul className="mt-6 space-y-3.5">
-                {[{ href: "/", label: "Home" }, ...navLinks, { href: "/contact", label: "Contact Us" }]
-                  .filter(
-                    (link, index, all) =>
-                      all.findIndex((other) => other.href === link.href) === index,
-                  )
-                  .map((link) => (
+            <Reveal delay={80} className="lg:col-span-3">
+              <nav aria-label="What we build">
+                <h3 className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-white/45">
+                  What We Build
+                </h3>
+                <ul className="mt-6 space-y-3.5">
+                  {buildLinks.map((link) => (
                     <li key={link.href}>
                       <Link
                         href={link.href}
@@ -99,10 +77,36 @@ export function SiteFooter() {
                       </Link>
                     </li>
                   ))}
-              </ul>
-            </nav>
+                </ul>
+              </nav>
+            </Reveal>
 
-            <div className="lg:col-span-3">
+            <Reveal delay={160} className="lg:col-span-2">
+              <nav aria-label="Company">
+                <h3 className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-white/45">
+                  Company
+                </h3>
+                <ul className="mt-6 space-y-3.5">
+                  {[{ href: "/", label: "Home" }, ...navLinks, { href: "/contact", label: "Contact Us" }]
+                    .filter(
+                      (link, index, all) =>
+                        all.findIndex((other) => other.href === link.href) === index,
+                    )
+                    .map((link) => (
+                      <li key={link.href}>
+                        <Link
+                          href={link.href}
+                          className="link-underline text-[0.9375rem] text-navy-100/80 transition-colors hover:text-white"
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                </ul>
+              </nav>
+            </Reveal>
+
+            <Reveal delay={240} className="lg:col-span-3">
               <h3 className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-white/45">
                 Talk To Us
               </h3>
@@ -134,18 +138,18 @@ export function SiteFooter() {
                   </span>
                 </address>
               ))}
-            </div>
+            </Reveal>
           </div>
 
           {/* Bottom bar */}
-          <div className="mt-16 flex flex-col gap-4 border-t border-white/10 pt-8 text-[0.8125rem] text-navy-100/50 sm:flex-row sm:items-center sm:justify-between">
+          <Reveal className="mt-16 flex flex-col gap-4 border-t border-white/10 pt-8 text-[0.8125rem] text-navy-100/50 sm:flex-row sm:items-center sm:justify-between">
             <p>
               © {year} {site.legalName}. {site.tagline}.
             </p>
             <p className="text-navy-100/40">
               Quality without compromise. Built on relationships.
             </p>
-          </div>
+          </Reveal>
         </div>
       </div>
     </footer>

@@ -277,9 +277,9 @@ export default function HomePage() {
         </Container>
 
         {/* Sector ticker */}
-        <div className="mt-20 border-y border-line py-8 sm:mt-24">
+        <Reveal className="mt-20 border-y border-line py-8 sm:mt-24">
           <Marquee items={sectors} />
-        </div>
+        </Reveal>
 
         <Container className="mt-16">
           <Reveal>

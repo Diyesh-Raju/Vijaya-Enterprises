@@ -30,6 +30,7 @@ import legacyPoster from "@/assets/images/legacy-poster.jpg";
 import meetingHands from "@/assets/images/meeting-hands.jpg";
 import officeInterior from "@/assets/images/office-interior.jpg";
 import rebarWorkers from "@/assets/images/rebar-workers.jpg";
+import residentialInterior from "@/assets/images/residential-interior.jpg";
 import siteTeam from "@/assets/images/site-team.jpg";
 import steelRebar from "@/assets/images/steel-rebar.jpg";
 import towersGlass from "@/assets/images/towers-glass.jpg";
@@ -55,6 +56,7 @@ export const img = {
   meetingHands,
   officeInterior,
   rebarWorkers,
+  residentialInterior,
   siteTeam,
   steelRebar,
   towersGlass,
@@ -82,6 +84,8 @@ export const alt = {
   meetingHands: "A project discussion in progress across a meeting table",
   officeInterior: "Completed commercial office interior with glazed partitions",
   rebarWorkers: "Site team tying reinforcement steel on a column cage",
+  residentialInterior:
+    "Warmly lit living and dining room in a completed Vijaya home, with a sofa, armchair and planting",
   siteTeam: "Site engineers and workers walking a large concrete deck",
   steelRebar: "Reinforcement steel being placed on an active construction site",
   towersGlass: "Glass office towers seen from street level",

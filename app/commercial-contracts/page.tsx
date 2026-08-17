@@ -293,9 +293,9 @@ export default function CommercialContractsPage() {
           </div>
         </Container>
 
-        <div className="mt-16 border-y border-white/10 py-8 sm:mt-20">
+        <Reveal className="mt-16 border-y border-white/10 py-8 sm:mt-20">
           <Marquee items={associatedOrganisations} onNavy />
-        </div>
+        </Reveal>
       </Section>
 
       <CtaBand

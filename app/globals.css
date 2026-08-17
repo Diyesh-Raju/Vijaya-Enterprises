@@ -33,6 +33,13 @@
   --color-brass-500: #c9a96e;
   --color-brass-600: #ab8c52;
 
+  /* Rose gold — reserved for highlighted frames ----------------- */
+  --color-rosegold-200: #f7dfd6;
+  --color-rosegold-300: #edc0b0;
+  --color-rosegold-400: #d79f92;
+  --color-rosegold-500: #c98878;
+  --color-rosegold-600: #b76e79;
+
   /* Neutrals ---------------------------------------------------- */
   --color-mist: #f6f8fc;
   --color-line: #e5ebf5;
@@ -273,6 +280,30 @@
     -webkit-backdrop-filter: blur(18px) saturate(160%);
     backdrop-filter: blur(18px) saturate(160%);
   }
+}
+
+/* Metallic rose-gold frame.
+   Two stacked backgrounds: a flat fill clipped to the padding box, and the
+   metal gradient clipped to the border box — so the gradient shows only in
+   the border ring. Set `--rosegold-fill` when the inside is not white.
+   This is the only way to get a gradient border that follows a radius; a
+   plain `border-color` cannot carry a gradient. */
+@utility border-rosegold {
+  border: 3px solid transparent;
+  background-image:
+    linear-gradient(var(--rosegold-fill, #ffffff), var(--rosegold-fill, #ffffff)),
+    linear-gradient(
+      135deg,
+      #f7dfd6 0%,
+      #c98878 20%,
+      #b76e79 38%,
+      #f0cabb 56%,
+      #b9737c 76%,
+      #f7dfd6 100%
+    );
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: 0 18px 44px -28px rgb(183 110 121 / 0.55);
 }
 
 /* Masks the marquee edges so the loop has no hard cut */

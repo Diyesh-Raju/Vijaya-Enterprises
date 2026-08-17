@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { PageHero } from "@/components/sections/page-hero";
+import { ApartmentProjects } from "@/components/sections/apartment-projects";
 import { CtaBand } from "@/components/sections/cta-band";
 import { ProofList } from "@/components/sections/proof-list";
 import { Container, Section, SectionHeading, Eyebrow } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { Frame } from "@/components/ui/media";
 import { Button } from "@/components/ui/button";
+import { Counter } from "@/components/ui/counter";
+import { AwardsComponent } from "@/components/ui/award";
 import { img, alt } from "@/lib/images";
 
 export const metadata: Metadata = {
@@ -14,6 +17,19 @@ export const metadata: Metadata = {
     "Homes built on trust. Thoughtfully planned apartments, villas and residential developments backed by more than 50 years of construction experience in Karnataka.",
   alternates: { canonical: "/residential" },
 };
+
+/**
+ * Figures shown under the hero. Each one counts up from zero on scroll.
+ *
+ * ⚠️ The project and family counts are not in the brand brief — they came
+ * from the client directly. Confirm both before launch: the brief's own rule
+ * is to support every claim with proof.
+ */
+const milestones = [
+  { value: 50, suffix: "", label: "Years of excellence" },
+  { value: 100, suffix: "+", label: "Projects completed" },
+  { value: 500, suffix: "+", label: "Happy families" },
+];
 
 const whyForYourHome = [
   {
@@ -73,63 +89,108 @@ export default function ResidentialPage() {
         cta={{ href: "#our-homes", label: "Explore Our Residential Work" }}
       />
 
-      {/* ---------------------------------------------------------- Opening */}
+      {/* ------------------------------------------------- Built for families */}
       <Section tone="white" size="lg">
         <Container>
-          <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
-            <div className="lg:col-span-6">
-              <Reveal>
-                <Eyebrow>More Than An Investment</Eyebrow>
-              </Reveal>
-              <Reveal delay={80}>
-                <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
-                  A home is where your family grows.
-                </h2>
-              </Reveal>
-              <Reveal delay={160}>
-                <div className="mt-7 space-y-5 text-[1.0625rem] leading-[1.8] text-slate-body">
-                  <p>
-                    Buying a home is one of the biggest decisions a family makes.
-                    It is where your family grows, celebrates and creates memories.
-                  </p>
-                  <p>
-                    At Vijaya Enterprises, we combine decades of construction
-                    experience with thoughtful planning to create residential
-                    developments that offer quality, comfort and value.
-                  </p>
-                  <p>
-                    Our residential developments focus on what matters beyond the
-                    walls — quality, location, functionality, value and peace of
-                    mind.
-                  </p>
-                </div>
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+            {/* Box 1 — the room itself. From lg up it drops its 4:5 ratio and
+                stretches to the full row height, so its bottom edge lands level
+                with the award box opposite. The height has to be handed down
+                the whole chain: a percentage height against an auto-height
+                parent resolves to nothing, and the ratio would win again. */}
+            <div className="h-full lg:col-span-5">
+              <Reveal className="h-full">
+                <Frame
+                  src={img.residentialInterior}
+                  alt={alt.residentialInterior}
+                  ratio="tall"
+                  sizes="(max-width: 1024px) 100vw, 40vw"
+                  rounded="rounded-[2rem] sm:rounded-[2.5rem]"
+                  className="border-rosegold lg:aspect-auto lg:h-full"
+                />
               </Reveal>
             </div>
 
-            <div className="lg:col-span-6">
+            <div className="flex flex-col lg:col-span-7">
+              {/* The three counts, each running up from zero when scrolled to */}
+              <dl className="grid grid-cols-3 gap-5 sm:gap-8">
+                {milestones.map((milestone, index) => (
+                  <Reveal key={milestone.label} delay={index * 90}>
+                    <dt className="sr-only">{milestone.label}</dt>
+                    <dd>
+                      <span className="block font-display text-[clamp(2.25rem,5vw,3.5rem)] leading-none text-navy-900">
+                        {/* Slower than the site default (1800ms) so the
+                            figures read as they climb. */}
+                        <Counter
+                          to={milestone.value}
+                          suffix={milestone.suffix}
+                          durationMs={3200}
+                        />
+                      </span>
+                      <span className="mt-3 block text-[0.6875rem] uppercase tracking-[0.18em] text-slate-muted sm:text-[0.75rem] sm:tracking-[0.2em]">
+                        {milestone.label}
+                      </span>
+                    </dd>
+                  </Reveal>
+                ))}
+              </dl>
+
               <Reveal delay={120}>
-                <Frame
-                  src={img.interiorLiving}
-                  alt={alt.interiorLiving}
-                  ratio="wide"
-                  sizes="(max-width: 1024px) 100vw, 45vw"
-                  rounded="rounded-[2rem] sm:rounded-[3rem]"
-                />
+                <div className="mt-10 h-px w-full bg-line" />
               </Reveal>
-              <Reveal delay={200}>
-                <blockquote className="mt-6 rounded-3xl border border-line bg-mist p-8 sm:p-9">
-                  <p className="font-display text-[1.25rem] leading-snug text-navy-900 sm:text-[1.4375rem]">
-                    “A home built with care for your family.”
-                  </p>
-                </blockquote>
+
+              <div className="mt-10">
+                <Reveal>
+                  <Eyebrow>Built For Generations</Eyebrow>
+                </Reveal>
+                <Reveal delay={80}>
+                  <h2 className="text-balance-head mt-6 text-[clamp(1.75rem,3.4vw,2.5rem)] leading-[1.1]">
+                    We don&rsquo;t construct buildings. We build homes.
+                  </h2>
+                </Reveal>
+                <Reveal delay={160}>
+                  <div className="mt-6 space-y-5 text-[1.0625rem] leading-[1.8] text-slate-body">
+                    <p>
+                      A house is finished in months. A home is lived in for
+                      generations. That difference is what we have spent five
+                      decades learning — how a family actually uses a room, which
+                      materials still look right after twenty years, and where the
+                      shortcuts show up later.
+                    </p>
+                    <p>
+                      So we build for the long stay: sound structure, honest
+                      materials and layouts planned around real life. What we hand
+                      over is not a unit. It is where your family grows up.
+                    </p>
+                  </div>
+                </Reveal>
+              </div>
+
+              {/* Box 2 — the trust seal. Runs the full width of this column so
+                  its left edge lines up with the paragraph above it. */}
+              <Reveal delay={200} className="mt-10 lg:mt-auto lg:pt-12">
+                <AwardsComponent
+                  variant="award"
+                  level="gold"
+                  accent="rosegold"
+                  badgeLabel="Trusted"
+                  title="50+ Years"
+                  description="Of building homes families grow up in"
+                  recipient="Vijaya Enterprises"
+                  date="Since 1973"
+                  className="w-full text-[13px] sm:text-[14px]"
+                />
               </Reveal>
             </div>
           </div>
         </Container>
       </Section>
 
+
+      <ApartmentProjects />
+
       {/* ------------------------------------------------------- What we build */}
-      <Section tone="mist" size="lg" id="our-homes">
+      <Section tone="white" size="lg" id="our-homes">
         <Container>
           <SectionHeading
             eyebrow="What We Build"
@@ -202,7 +263,7 @@ export default function ResidentialPage() {
       </Section>
 
       {/* ------------------------------------------------------------- Why us */}
-      <Section tone="white" size="lg">
+      <Section tone="mist" size="lg">
         <Container>
           <SectionHeading
             eyebrow="Why Vijaya"
