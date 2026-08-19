@@ -7,6 +7,8 @@ type CounterProps = {
   suffix?: string;
   prefix?: string;
   durationMs?: number;
+  /** Decimal places to hold, for figures like 3.5 acres. */
+  decimals?: number;
   className?: string;
   /** Set false to count once and stay put. */
   replay?: boolean;
@@ -33,6 +35,7 @@ export function Counter({
   suffix = "",
   prefix = "",
   durationMs = 1800,
+  decimals = 0,
   className = "",
   replay = true,
 }: CounterProps) {
@@ -47,7 +50,7 @@ export function Counter({
 
     let frame = 0;
     const write = (value: number) => {
-      el.textContent = `${prefix}${value}${suffix}`;
+      el.textContent = `${prefix}${value.toFixed(decimals)}${suffix}`;
     };
 
     const run = () => {
@@ -55,7 +58,7 @@ export function Counter({
       const start = performance.now();
       const tick = (now: number) => {
         const progress = Math.min((now - start) / durationMs, 1);
-        write(Math.round(easeOut(progress) * to));
+        write(easeOut(progress) * to);
         if (progress < 1) frame = requestAnimationFrame(tick);
       };
       frame = requestAnimationFrame(tick);
@@ -86,11 +89,11 @@ export function Counter({
       // Leave the finished value behind if we unmount mid-count.
       write(to);
     };
-  }, [to, durationMs, prefix, suffix, replay]);
+  }, [to, durationMs, decimals, prefix, suffix, replay]);
 
   return (
     <span ref={ref} className={className}>
-      {`${prefix}${to}${suffix}`}
+      {`${prefix}${to.toFixed(decimals)}${suffix}`}
     </span>
   );
 }
