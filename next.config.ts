@@ -9,6 +9,10 @@ const isDev = process.env.NODE_ENV === "development";
  * content are here and are strict: nothing may frame the site, no plugins, no
  * injected <base>, and the enquiry form can only post back to this origin.
  *
+ * `frame-src` names Google Maps rather than 'none' because the project
+ * location pages embed a map. No script or connection origin is opened up:
+ * the embed runs entirely inside the frame, under Google's own policy.
+ *
  * `script-src` keeps 'unsafe-inline' because Next inlines its bootstrap and
  * RSC payload. Tightening that to a nonce means generating one per request in
  * `proxy.ts`, which opts every page out of static rendering — a real cost for
@@ -30,7 +34,9 @@ const csp = [
   `connect-src 'self'${isDev ? " ws: wss: http://localhost:* http://127.0.0.1:*" : ""}`,
   "manifest-src 'self'",
   "worker-src 'self' blob:",
-  "frame-src 'none'",
+  // Google Maps embeds are framed on the project location pages. This is the
+  // only third-party frame the site allows; everything else stays blocked.
+  "frame-src https://www.google.com",
   ...(isDev ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
