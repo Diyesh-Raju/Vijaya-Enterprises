@@ -19,6 +19,10 @@ import cityNight from "@/assets/images/city-night.jpg";
 import citySunset from "@/assets/images/city-sunset.jpg";
 import cranesSkyline from "@/assets/images/cranes-skyline.jpg";
 import heroPoster from "@/assets/images/hero-poster.jpg";
+import haraVijayaConcept from "@/assets/images/hara-vijaya-concept.jpg";
+import haraVijayaHeights from "@/assets/images/hara-vijaya-heights.jpg";
+import haraVijayaHeightsHero from "@/assets/images/hara-vijaya-heights-hero.jpg";
+import haraVijayaVision from "@/assets/images/hara-vijaya-vision.jpg";
 import homeDusk from "@/assets/images/home-dusk.jpg";
 import homeLawn from "@/assets/images/home-lawn.jpg";
 import industrialEngineer from "@/assets/images/industrial-engineer.jpg";
@@ -45,6 +49,10 @@ export const img = {
   citySunset,
   cranesSkyline,
   heroPoster,
+  haraVijayaConcept,
+  haraVijayaHeights,
+  haraVijayaHeightsHero,
+  haraVijayaVision,
   homeDusk,
   homeLawn,
   industrialEngineer,
@@ -73,6 +81,14 @@ export const alt = {
   citySunset: "City skyline and arterial roads at sunset",
   cranesSkyline: "Tower cranes rising over buildings under construction",
   heroPoster: "Tower cranes working above a city skyline under construction",
+  haraVijayaConcept:
+    "Hara Vijaya Heights lit at twilight, its towers rising over the open lawn",
+  haraVijayaVision:
+    "An architect at a drawing board, reviewing elevations of the development on screen",
+  haraVijayaHeights:
+    "Hara Vijaya Heights seen from the landscaped frontage, its towers stepping back behind mature trees",
+  haraVijayaHeightsHero:
+    "Architectural view of Hara Vijaya Heights, with the tree-lined approach to the entrance lobby",
   homeDusk: "Entrance of a newly completed home lit at dusk",
   homeLawn: "Contemporary family home with a landscaped lawn",
   industrialEngineer: "Engineer working at an automated production line",

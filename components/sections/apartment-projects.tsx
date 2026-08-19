@@ -4,6 +4,9 @@ import { useMemo, useState } from "react";
 import { Container, Eyebrow } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { cn } from "@/lib/cn";
+import { ProjectCard } from "@/components/sections/project-card";
+import { SelectMenu } from "@/components/ui/select-menu";
+import { projects } from "@/lib/projects";
 
 /**
  * Apartment projects: a preference filter, a grid of project cards, and
@@ -13,33 +16,13 @@ import { cn } from "@/lib/cn";
  * page 2 shows those six plus three more. "See more" is the same action as
  * pressing the next number, so the two controls stay in step.
  *
- * ⚠️ The nine entries below are placeholders. Replace `projects` with the real
- * developments (and give each a cover image) when the project list exists —
- * the filters read straight off these fields, so they will keep working.
+ * The list itself lives in `lib/projects.ts` so the project pages can read the
+ * same records. Filter options are derived from it, so adding a project cannot
+ * desync the controls.
  */
 
 const FIRST_PAGE = 6;
 const PER_ADDITIONAL_PAGE = 3;
-
-type Project = {
-  name: string;
-  bhk: string;
-  locality: string;
-  status: string;
-  possession: string;
-};
-
-const projects: Project[] = [
-  { name: "Project 1", bhk: "2 BHK", locality: "North Bengaluru", status: "Ongoing", possession: "Within a year" },
-  { name: "Project 2", bhk: "3 BHK", locality: "North Bengaluru", status: "Completed", possession: "Ready to move" },
-  { name: "Project 3", bhk: "2 BHK", locality: "East Bengaluru", status: "Ongoing", possession: "One to three years" },
-  { name: "Project 4", bhk: "4 BHK", locality: "South Bengaluru", status: "Upcoming", possession: "One to three years" },
-  { name: "Project 5", bhk: "3 BHK", locality: "East Bengaluru", status: "Completed", possession: "Ready to move" },
-  { name: "Project 6", bhk: "2 BHK", locality: "West Bengaluru", status: "Ongoing", possession: "Within a year" },
-  { name: "Project 7", bhk: "3 BHK", locality: "South Bengaluru", status: "Ongoing", possession: "Within a year" },
-  { name: "Project 8", bhk: "4 BHK", locality: "North Bengaluru", status: "Upcoming", possession: "One to three years" },
-  { name: "Project 9", bhk: "3 BHK", locality: "West Bengaluru", status: "Completed", possession: "Ready to move" },
-];
 
 /** The four preference filters, in the order they appear. */
 const filters = [
@@ -53,7 +36,16 @@ type FilterKey = (typeof filters)[number]["key"];
 
 /** Options come from the data, so adding a project cannot desync the filters. */
 const optionsFor = (key: FilterKey) =>
-  [...new Set(projects.map((project) => project[key]))].sort();
+  [...new Set(projects.flatMap((project) => project[key]))].sort();
+
+/**
+ * Filters worth showing.
+ *
+ * A control offering one value cannot narrow anything — while every project
+ * reads simply "Bengaluru", the locality filter would just be noise. It comes
+ * back on its own as soon as the data holds a second value.
+ */
+const usefulFilters = filters.filter(({ key }) => optionsFor(key).length > 1);
 
 const ANY = "";
 
@@ -69,9 +61,14 @@ export function ApartmentProjects() {
   const filtered = useMemo(
     () =>
       projects.filter((project) =>
-        filters.every(
-          ({ key }) => selected[key] === ANY || project[key] === selected[key],
-        ),
+        filters.every(({ key }) => {
+          if (selected[key] === ANY) return true;
+          const value = project[key];
+          // `bhk` holds every layout the project offers; the rest are single.
+          return Array.isArray(value)
+            ? value.includes(selected[key])
+            : value === selected[key];
+        }),
       ),
     [selected],
   );
@@ -103,7 +100,10 @@ export function ApartmentProjects() {
   };
 
   return (
-    <section className="relative isolate bg-mist py-20 sm:py-28 lg:py-36">
+    <section
+      id="apartment-projects"
+      className="relative isolate bg-mist py-20 sm:py-28 lg:py-36"
+    >
       <Container>
         {/* Heading */}
         <Reveal>
@@ -129,43 +129,19 @@ export function ApartmentProjects() {
           </h2>
         </Reveal>
 
-        {/* Preference filters */}
-        <Reveal delay={140}>
+        {/* Preference filters. The wrapper is lifted because each `Reveal`
+            animates a transform and so opens its own stacking context — an
+            open menu could not otherwise paint over the cards below it. */}
+        <Reveal delay={140} className="relative z-20">
           <div className="mt-10 flex flex-wrap items-center gap-3 sm:mt-12">
-            {filters.map(({ key, label }) => (
-              <label
+            {usefulFilters.map(({ key, label }) => (
+              <SelectMenu
                 key={key}
-                className={cn(
-                  "group inline-flex items-center gap-2.5 rounded-full border bg-white py-2.5 pl-5 pr-3 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-soft",
-                  selected[key] === ANY
-                    ? "border-line-strong"
-                    : "border-rosegold-400",
-                )}
-              >
-                <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-slate-muted">
-                  {label}
-                </span>
-                <select
-                  value={selected[key]}
-                  onChange={(event) => choose(key, event.target.value)}
-                  aria-label={`Filter by ${label}`}
-                  className="cursor-pointer appearance-none bg-transparent pr-6 text-[0.875rem] font-semibold text-navy-900 focus:outline-none focus-visible:outline-none"
-                  style={{
-                    backgroundImage:
-                      "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%230a1f44' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E\")",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "right center",
-                    backgroundSize: "1rem",
-                  }}
-                >
-                  <option value={ANY}>Any</option>
-                  {optionsFor(key).map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                label={label}
+                value={selected[key]}
+                options={optionsFor(key)}
+                onChange={(value) => choose(key, value)}
+              />
             ))}
 
             {isFiltered && (
@@ -197,14 +173,7 @@ export function ApartmentProjects() {
                 delay={(index % 3) * 80}
                 className="group"
               >
-                <article className="border-rosegold flex aspect-[4/5] flex-col items-center justify-center rounded-[1.5rem] bg-white p-8 text-center transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-1 sm:rounded-[1.75rem]">
-                  <h3 className="font-display text-[1.5rem] leading-tight text-navy-900 sm:text-[1.75rem]">
-                    {project.name}
-                  </h3>
-                  <p className="mt-3 text-[0.8125rem] uppercase tracking-[0.16em] text-slate-muted">
-                    {project.bhk} · {project.status}
-                  </p>
-                </article>
+                <ProjectCard project={project} />
               </Reveal>
             ))}
           </ul>
