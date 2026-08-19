@@ -2,13 +2,21 @@ import type { Metadata } from "next";
 import { PageHero } from "@/components/sections/page-hero";
 import { ApartmentProjects } from "@/components/sections/apartment-projects";
 import { CtaBand } from "@/components/sections/cta-band";
-import { ProofList } from "@/components/sections/proof-list";
+import { IconCards } from "@/components/sections/icon-cards";
+import { Reviews } from "@/components/sections/reviews";
 import { Container, Section, SectionHeading, Eyebrow } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { Frame } from "@/components/ui/media";
-import { Button } from "@/components/ui/button";
 import { Counter } from "@/components/ui/counter";
 import { AwardsComponent } from "@/components/ui/award";
+import {
+  BrickWallIcon,
+  FloorPlanIcon,
+  HeartIcon,
+  HourglassIcon,
+  ScaleIcon,
+  ShieldCheckIcon,
+} from "@/components/ui/line-icons";
 import { img, alt } from "@/lib/images";
 
 export const metadata: Metadata = {
@@ -33,47 +41,34 @@ const milestones = [
 
 const whyForYourHome = [
   {
+    icon: <HourglassIcon />,
     title: "50+ Years of Experience",
     body: "Building homes for families since 1973, through every change in how India builds.",
   },
   {
+    icon: <BrickWallIcon />,
     title: "Quality Construction",
     body: "Materials and workmanship we would accept in a home built for our own family.",
   },
   {
+    icon: <ScaleIcon />,
     title: "Fair & Transparent Pricing",
     body: "Premium quality at a fair price, with no surprises after you commit.",
   },
   {
+    icon: <FloorPlanIcon />,
     title: "Thoughtful Planning",
     body: "Layouts planned around how families actually live, not only around saleable area.",
   },
   {
+    icon: <ShieldCheckIcon />,
     title: "Trusted Legacy",
     body: "A name that families and institutions in Karnataka have relied on for five decades.",
   },
   {
+    icon: <HeartIcon />,
     title: "Customer-Focused Approach",
     body: "One point of responsibility, from first enquiry through to handover.",
-  },
-];
-
-const homeTypes = [
-  {
-    title: "Apartments",
-    body: "Thoughtfully planned apartments in locations chosen for everyday convenience.",
-  },
-  {
-    title: "Villas",
-    body: "Independent homes built with the space, privacy and finish a family expects.",
-  },
-  {
-    title: "Residential Developments",
-    body: "Larger developments planned as complete places to live, not just buildings.",
-  },
-  {
-    title: "Other Housing Projects",
-    body: "Housing built for specific requirements, scales and communities.",
   },
 ];
 
@@ -86,7 +81,7 @@ export default function ResidentialPage() {
         lead="Thoughtfully planned homes backed by more than 50 years of construction experience."
         image={img.villaPool}
         imageAlt={alt.villaPool}
-        cta={{ href: "#our-homes", label: "Explore Our Residential Work" }}
+        cta={{ href: "#apartment-projects", label: "Explore Our Residential Work" }}
       />
 
       {/* ------------------------------------------------- Built for families */}
@@ -189,81 +184,11 @@ export default function ResidentialPage() {
 
       <ApartmentProjects />
 
-      {/* ------------------------------------------------------- What we build */}
-      <Section tone="white" size="lg" id="our-homes">
-        <Container>
-          <SectionHeading
-            eyebrow="What We Build"
-            title="Homes that feel like home."
-            lead="From thoughtfully planned apartments to larger residential developments, we aim to create homes where families can live comfortably and confidently."
-          />
-
-          <div className="mt-14 grid gap-4 sm:grid-cols-2 sm:gap-5 lg:mt-16">
-            {homeTypes.map((type, index) => (
-              <Reveal
-                key={type.title}
-                delay={(index % 2) * 80}
-                className="group rounded-[1.5rem] border border-line bg-white p-8 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-navy-200 hover:shadow-lift sm:rounded-[1.75rem] sm:p-9"
-              >
-                <h3 className="font-display text-[1.375rem] leading-snug text-navy-900 sm:text-[1.5rem]">
-                  {type.title}
-                </h3>
-                <p className="mt-3 text-[0.9375rem] leading-relaxed text-slate-body">
-                  {type.body}
-                </p>
-              </Reveal>
-            ))}
-          </div>
-
-          <div className="mt-12 grid gap-4 sm:mt-14 sm:grid-cols-3 sm:gap-5">
-            <Reveal>
-              <Frame
-                src={img.homeDusk}
-                alt={alt.homeDusk}
-                ratio="tall"
-                sizes="(max-width: 640px) 100vw, 30vw"
-                rounded="rounded-[1.5rem] sm:rounded-[2rem]"
-              />
-            </Reveal>
-            <Reveal delay={90}>
-              <Frame
-                src={img.interiorFamily}
-                alt={alt.interiorFamily}
-                ratio="tall"
-                sizes="(max-width: 640px) 100vw, 30vw"
-                rounded="rounded-[1.5rem] sm:rounded-[2rem]"
-              />
-            </Reveal>
-            <Reveal delay={180}>
-              <Frame
-                src={img.homeLawn}
-                alt={alt.homeLawn}
-                ratio="tall"
-                sizes="(max-width: 640px) 100vw, 30vw"
-                rounded="rounded-[1.5rem] sm:rounded-[2rem]"
-              />
-            </Reveal>
-          </div>
-
-          {/* Honest about what is not on the site yet */}
-          <Reveal delay={120}>
-            <div className="mt-12 flex flex-col gap-6 rounded-[1.75rem] border border-line bg-white p-8 sm:mt-14 sm:flex-row sm:items-center sm:justify-between sm:rounded-[2rem] sm:p-10">
-              <p className="max-w-xl text-[1rem] leading-relaxed text-slate-body">
-                Details of current and completed residential developments —
-                locations, plans, availability and pricing — are shared directly
-                with families who are looking. Tell us what you need and we will
-                send what is relevant.
-              </p>
-              <Button href="/contact" withArrow className="shrink-0">
-                Enquire About A Home
-              </Button>
-            </div>
-          </Reveal>
-        </Container>
-      </Section>
-
       {/* ------------------------------------------------------------- Why us */}
-      <Section tone="mist" size="lg">
+      {/* White, so it breaks from the mist Apartment Projects above it. The
+          CtaBand below brings its own navy card, so it needs no contrast from
+          this section — the same pairing the joint ventures page uses. */}
+      <Section tone="white" size="lg">
         <Container>
           <SectionHeading
             eyebrow="Why Vijaya"
@@ -271,10 +196,12 @@ export default function ResidentialPage() {
             lead="Because a home should be built by people who take the responsibility personally."
           />
           <div className="mt-14 lg:mt-16">
-            <ProofList items={whyForYourHome} columns={3} />
+            <IconCards items={whyForYourHome} columns={3} />
           </div>
         </Container>
       </Section>
+
+      <Reviews />
 
       <CtaBand
         eyebrow="Find Your Home"
