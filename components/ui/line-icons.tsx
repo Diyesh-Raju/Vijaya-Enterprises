@@ -183,3 +183,13 @@ export function ChevronDownIcon({ className }: { className?: string }) {
     </LineIcon>
   );
 }
+
+/** Leaves for somewhere else. */
+export function ArrowUpRightIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M7 17L17 7" />
+      <path d="M8 7h9v9" />
+    </LineIcon>
+  );
+}
