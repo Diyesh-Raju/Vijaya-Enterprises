@@ -49,7 +49,7 @@ export function SiteFooter() {
                 aria-label="Vijaya Enterprises — home"
                 className="inline-flex rounded-2xl text-white"
               >
-                <Logo />
+                <Logo reversed className="h-20 sm:h-28" />
               </Link>
               <p className="mt-6 max-w-xs text-[0.9375rem] leading-relaxed text-navy-100/65">
                 A diversified construction and development company working across

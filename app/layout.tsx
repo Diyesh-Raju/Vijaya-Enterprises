@@ -77,6 +77,8 @@ function OrganizationJsonLd() {
     name: site.name,
     description: site.description,
     url: site.url,
+    // The mark on its own, which is what a knowledge panel shows.
+    logo: new URL("/icon.png", site.url).toString(),
     foundingDate: String(site.founded),
     slogan: site.tagline,
     telephone: contact.phoneDisplay,

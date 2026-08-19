@@ -89,12 +89,13 @@ export function SiteHeader() {
           <Link
             href="/"
             aria-label={`Vijaya Enterprises — home`}
-            className={cn(
-              "shrink-0 rounded-2xl transition-colors duration-500",
-              light ? "text-white" : "text-navy-900",
-            )}
+            className="inline-flex shrink-0 rounded-2xl"
           >
-            <Logo compact />
+            {/* Keyed to `scrolled` rather than `light`: the mobile panel opens
+                below the bar, so the strip behind the logo is still the dark
+                hero while the panel is open, and the dark-purple wordmark
+                would disappear into it. */}
+            <Logo reversed={!scrolled} priority className="h-16 sm:h-20" />
           </Link>
 
           {/* Centre — sections */}

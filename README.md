@@ -68,9 +68,11 @@ To swap one, drop the new file in `assets/images/` under the same name. If you
 add or rename files, update `lib/images.ts` — it is the single place every
 photograph and its alt text is declared.
 
-The logo is a typeset placeholder mark (`components/layout/logo.tsx`). Replace
-the `<svg>` inside `LogoMark` with the real artwork; the surrounding layout
-does not need to change.
+The real logo is in place (`components/layout/logo.tsx`), drawn from
+`assets/brand/`. It ships as two lockups — full-colour for light surfaces, and
+a reversed one whose wordmark is white for the navy header and footer. To
+update the artwork, replace `assets/brand/vijaya-logo-master.png` and re-run
+`python3 assets/brand/make-variants.py`; see `assets/brand/README.md`.
 
 ---
 
@@ -95,6 +97,7 @@ lib/
   site.ts                 brand, navigation, contact details
   images.ts               every photograph + alt text, imported statically
 assets/images/            source photography (optimised at build time)
+assets/brand/             logo master + the lockups derived from it
 public/video/             background video (served directly)
 ```
 
