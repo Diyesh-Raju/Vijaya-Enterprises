@@ -6,8 +6,9 @@ import type { ReactNode } from "react";
  * the hairline rules and arrows used elsewhere on the site.
  *
  * Every icon inherits `currentColor`, so the caller sets the colour.
+ * `LineIcon` is exported so other icon sets share one stroke definition.
  */
-function LineIcon({
+export function LineIcon({
   children,
   className = "h-7 w-7",
 }: {
