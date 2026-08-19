@@ -38,11 +38,10 @@ function Gym({ className }: { className?: string }) {
 function KidsPlay({ className }: { className?: string }) {
   return (
     <LineIcon className={className}>
-      <path d="M4 19v-3.5a3 3 0 0 1 3-3h3" />
-      <path d="M20 19V8.5" />
-      <path d="M10 12.5L20 8.5" />
-      <circle cx="8" cy="6.5" r="2" />
-      <path d="M2.5 19h19" />
+      <path d="M4.6 19V8.4M7.8 19V8.4" />
+      <path d="M4.6 11.2h3.2M4.6 14h3.2M4.6 16.6h3.2" />
+      <path d="M7.8 8.4h2.7c0 4.6 2.5 8.6 6.1 10.6" />
+      <path d="M2.5 19.5h19" />
     </LineIcon>
   );
 }
@@ -65,10 +64,9 @@ function VolleyBall({ className }: { className?: string }) {
   return (
     <LineIcon className={className}>
       <circle cx="12" cy="12" r="8.5" />
-      {/* Three seams meeting off-centre, the way a volleyball's panels run. */}
-      <path d="M12 3.5c2.6 2.9 3.8 6.6 3.4 10.4" />
-      <path d="M3.7 10.2c3.8.6 7 2.8 9 6.1" />
-      <path d="M8.3 20.1c1.2-3.7 4-6.4 7.9-7.4" />
+      <path d="M12 3.5c3.4 2.7 5.3 6.9 4.9 11.2" />
+      <path d="M3.6 10.4c4.4-.3 8.5 1.6 11 5.1" />
+      <path d="M6.6 19.5c.7-4.3 3.7-7.8 7.9-8.9" />
     </LineIcon>
   );
 }
@@ -88,9 +86,9 @@ function JoggersTrack({ className }: { className?: string }) {
 function TableTennis({ className }: { className?: string }) {
   return (
     <LineIcon className={className}>
-      <path d="M14.4 4.2a5.4 5.4 0 0 0-7.6 7.6l1.9 1.9 7.6-7.6z" />
-      <path d="M8.7 13.7l5.2 5.2a2.1 2.1 0 0 0 3-3l-5.2-5.2" />
-      <circle cx="18" cy="7.5" r="1.4" />
+      <ellipse cx="10.2" cy="8.6" rx="5.6" ry="6.1" />
+      <path d="M8.9 14.4v4.4a1.3 1.3 0 0 0 2.6 0v-4.4" />
+      <circle cx="18.6" cy="14.2" r="1.7" />
     </LineIcon>
   );
 }
@@ -98,10 +96,10 @@ function TableTennis({ className }: { className?: string }) {
 function Billiards({ className }: { className?: string }) {
   return (
     <LineIcon className={className}>
-      <circle cx="8" cy="15.5" r="3" />
-      <circle cx="14.5" cy="15.5" r="3" />
-      <circle cx="11.2" cy="9.8" r="3" />
-      <path d="M17 4.5l4 4" />
+      <path d="M12 4.6L19.4 18H4.6z" />
+      <circle cx="12" cy="10" r="1.8" />
+      <circle cx="9.5" cy="14.6" r="1.8" />
+      <circle cx="14.5" cy="14.6" r="1.8" />
     </LineIcon>
   );
 }
@@ -120,11 +118,13 @@ function Cafe({ className }: { className?: string }) {
 function IndoorGames({ className }: { className?: string }) {
   return (
     <LineIcon className={className}>
-      <circle cx="12" cy="5" r="2" />
-      <path d="M9.5 8.2h5l-1 2.3h-3z" />
-      <path d="M8.6 10.5h6.8l-1.2 5.2H9.8z" />
-      <path d="M8 18.8h8" />
-      <path d="M9.8 15.7h4.4l.6 3.1H9.2z" />
+      <path d="M16.4 2.6v3.1M14.9 4.1h3" />
+      <circle cx="16.4" cy="7.8" r="1.7" />
+      <path d="M14.8 10c.2 2.2-.5 4-1.4 5.4h6c-.9-1.4-1.6-3.2-1.4-5.4" />
+      <path d="M12.9 15.4h7l.5 3.2h-8z" />
+      <circle cx="7.4" cy="9.6" r="1.6" />
+      <path d="M6 11.7c.2 1.9-.4 3.3-1.2 4.4h5.2c-.8-1.1-1.4-2.5-1.2-4.4" />
+      <path d="M4.2 16.1h6.4l.5 2.5H3.7z" />
     </LineIcon>
   );
 }
