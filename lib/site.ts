@@ -33,9 +33,8 @@ export const contact = {
 export const offices = [
   {
     label: "Head Office",
-    lines: ["Vijaya Enterprises", "Bengaluru", "Karnataka, India"],
-    /** Replace with the real Google Maps link for the office. */
-    mapHref: "https://maps.google.com/?q=Bengaluru+Karnataka",
+    lines: ["Vijaya Enterprises", "Basavanagudi, Bengaluru", "Karnataka, India"],
+    mapHref: "https://maps.app.goo.gl/16Vp8ebWMc7ECVRN7",
   },
 ] as const;
 
