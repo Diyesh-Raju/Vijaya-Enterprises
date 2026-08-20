@@ -102,14 +102,16 @@ export function Reviews() {
         sizes="100vw"
         className="-z-10 object-cover"
       />
-      {/* The cards are white and the type is navy, so the photograph is held
-          well back behind a wash rather than left at full strength. */}
+      {/* A navy scrim rather than a white one: it keeps the room clearly
+          visible while giving the light type above enough to sit on, and the
+          white cards read as lit against it. */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-b from-white/95 via-white/90 to-white/95"
+        className="absolute inset-0 -z-10 bg-gradient-to-b from-navy-950/70 via-navy-950/55 to-navy-950/70"
       />
       <Container>
         <SectionHeading
+          onNavy
           eyebrow="Reviewed on Google"
           title="In their words."
           lead="Reviews families and clients have left on our Google listing."
