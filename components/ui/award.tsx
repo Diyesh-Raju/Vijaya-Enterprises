@@ -39,7 +39,7 @@ export interface AwardsComponentProps {
    * gradient border. A prop rather than a class so it replaces the default
    * border outright, instead of relying on which utility Tailwind emits last.
    */
-  accent?: "none" | "rosegold";
+  accent?: "none" | "rosegold" | "bare";
 }
 
 const levelStyles: Record<
@@ -212,7 +212,11 @@ export function AwardsComponent({
       className={cn(
         // `text-[…]` here is the master scale for everything below.
         "relative isolate flex items-center justify-center overflow-hidden rounded-[1.5rem] px-[1.5em] py-[1.75em] text-[13px] sm:rounded-[1.75rem] sm:text-[14px]",
-        accent === "rosegold" ? "border-rosegold" : frames[variant],
+        accent === "bare"
+          ? "bg-transparent px-0 py-0"
+          : accent === "rosegold"
+            ? "border-rosegold"
+            : frames[variant],
         className,
       )}
     >
@@ -248,13 +252,13 @@ export function AwardsComponent({
           )}
 
           {subtitle && (
-            <span className="mt-[0.6em] max-w-[13em] text-[0.95em] font-medium leading-snug text-navy-900">
+            <span className="mt-[0.6em] max-w-[15em] text-[0.95em] font-medium leading-snug text-navy-900">
               {subtitle}
             </span>
           )}
 
           {description && (
-            <span className="mt-[0.35em] max-w-[13em] text-[0.86em] leading-snug text-slate-body">
+            <span className="mt-[0.35em] max-w-[16em] text-[0.86em] leading-snug text-slate-body">
               {description}
             </span>
           )}

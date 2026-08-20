@@ -1,4 +1,6 @@
-import { Container, Section, SectionHeading } from "@/components/ui/section";
+import Image from "next/image";
+import { Container, SectionHeading } from "@/components/ui/section";
+import { img } from "@/lib/images";
 import { reviews, type Review } from "@/lib/reviews";
 import { cn } from "@/lib/cn";
 
@@ -90,7 +92,22 @@ function Track({
  */
 export function Reviews() {
   return (
-    <Section tone="mist" size="lg">
+    // A shallower top than a full section: the heading was sitting a long way
+    // below the strip above it.
+    <section className="relative isolate overflow-hidden pb-24 pt-14 sm:pb-32 sm:pt-16 lg:pb-40 lg:pt-20">
+      <Image
+        src={img.backdropInterior}
+        alt=""
+        fill
+        sizes="100vw"
+        className="-z-10 object-cover"
+      />
+      {/* The cards are white and the type is navy, so the photograph is held
+          well back behind a wash rather than left at full strength. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-gradient-to-b from-white/95 via-white/90 to-white/95"
+      />
       <Container>
         <SectionHeading
           eyebrow="Reviewed on Google"
@@ -108,6 +125,6 @@ export function Reviews() {
           <Track ariaHidden className="motion-reduce:hidden" />
         </div>
       </div>
-    </Section>
+    </section>
   );
 }

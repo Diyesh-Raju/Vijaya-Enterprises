@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { PageHero } from "@/components/sections/page-hero";
 import { ApartmentProjects } from "@/components/sections/apartment-projects";
 import { CtaBand } from "@/components/sections/cta-band";
@@ -37,6 +38,29 @@ const milestones = [
   { value: 50, suffix: "", label: "Years of excellence" },
   { value: 100, suffix: "+", label: "Projects completed" },
   { value: 500, suffix: "+", label: "Happy families" },
+];
+
+/**
+ * Awards the company has won. Every line here is taken from the award
+ * material itself — nothing is embellished.
+ */
+const awards = [
+  {
+    year: "2024",
+    level: "gold" as const,
+    title: "Times Business Award",
+    subtitle: "The Most Trusted & Preferred Developers",
+    description:
+      "Presented in Bengaluru by Anupam Kher, Padma Shri (2004) and Padma Bhushan (2016).",
+  },
+  {
+    year: "2022",
+    level: "platinum" as const,
+    title: "Icons of Indian Business",
+    subtitle: "IIB Best Builders & Land Developers — Engineering Excellence",
+    description:
+      "Awarded on Engineers' Day, in memory of Bharat Ratna Sir M Vishweshwarayya.",
+  },
 ];
 
 const whyForYourHome = [
@@ -131,10 +155,10 @@ export default function ResidentialPage() {
               </dl>
 
               <Reveal delay={120}>
-                <div className="mt-10 h-px w-full bg-line" />
+                <div className="mt-6 h-px w-full bg-line" />
               </Reveal>
 
-              <div className="mt-10">
+              <div className="mt-7">
                 <Reveal>
                   <Eyebrow>Built For Generations</Eyebrow>
                 </Reveal>
@@ -161,20 +185,23 @@ export default function ResidentialPage() {
                 </Reveal>
               </div>
 
-              {/* Box 2 — the trust seal. Runs the full width of this column so
-                  its left edge lines up with the paragraph above it. */}
-              <Reveal delay={200} className="mt-10 lg:mt-auto lg:pt-12">
-                <AwardsComponent
-                  variant="award"
-                  level="gold"
-                  accent="rosegold"
-                  badgeLabel="Trusted"
-                  title="50+ Years"
-                  description="Of building homes families grow up in"
-                  recipient="Vijaya Enterprises"
-                  date="Since 1973"
-                  className="w-full text-[13px] sm:text-[14px]"
-                />
+              {/* The two awards the company has actually won, side by side and
+                  unframed — a box around a seal reads as a seal inside a box. */}
+              <Reveal delay={200} className="mt-10 lg:mt-auto lg:pt-10">
+                <div className="grid gap-8 border-t border-line pt-10 sm:grid-cols-2 sm:gap-6">
+                  {awards.map((award) => (
+                    <AwardsComponent
+                      key={award.title}
+                      accent="bare"
+                      level={award.level}
+                      badgeLabel={award.year}
+                      title={award.title}
+                      subtitle={award.subtitle}
+                      description={award.description}
+                      className="text-[11px] sm:text-[11.5px]"
+                    />
+                  ))}
+                </div>
               </Reveal>
             </div>
           </div>
@@ -185,10 +212,18 @@ export default function ResidentialPage() {
       <ApartmentProjects />
 
       {/* ------------------------------------------------------------- Why us */}
-      {/* White, so it breaks from the mist Apartment Projects above it. The
-          CtaBand below brings its own navy card, so it needs no contrast from
-          this section — the same pairing the joint ventures page uses. */}
-      <Section tone="white" size="lg">
+      <section className="relative isolate overflow-hidden py-24 sm:py-32 lg:py-44">
+        {/* The flowers sit at two corners of the frame, so they frame the cards
+            rather than compete with them. Held well back, because six cards of
+            text have to stay readable over the top. */}
+        <Image
+          src={img.backdropHibiscus}
+          alt=""
+          fill
+          sizes="100vw"
+          className="-z-10 object-cover opacity-[0.85]"
+        />
+        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-white/25" />
         <Container>
           <SectionHeading
             eyebrow="Why Vijaya"
@@ -199,7 +234,7 @@ export default function ResidentialPage() {
             <IconCards items={whyForYourHome} columns={3} />
           </div>
         </Container>
-      </Section>
+      </section>
 
       <Reviews />
 

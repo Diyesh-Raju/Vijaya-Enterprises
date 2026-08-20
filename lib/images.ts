@@ -14,6 +14,8 @@
 
 import aerialLand from "@/assets/images/aerial-land.jpg";
 import bankReception from "@/assets/images/bank-reception.jpg";
+import backdropHibiscus from "@/assets/images/backdrop-hibiscus.jpg";
+import backdropInterior from "@/assets/images/backdrop-interior.jpg";
 import blueprintCraft from "@/assets/images/blueprint-craft.jpg";
 import cityNight from "@/assets/images/city-night.jpg";
 import citySunset from "@/assets/images/city-sunset.jpg";
@@ -43,6 +45,8 @@ import warehouseAisle from "@/assets/images/warehouse-aisle.jpg";
 
 export const img = {
   aerialLand,
+  backdropHibiscus,
+  backdropInterior,
   bankReception,
   blueprintCraft,
   cityNight,
@@ -75,6 +79,10 @@ export const img = {
 /** Descriptive alt text, kept next to the images so it never drifts. */
 export const alt = {
   aerialLand: "Aerial view of a residential development laid out across open land",
+  backdropHibiscus:
+    "Red hibiscus blooms against a soft cream ground",
+  backdropInterior:
+    "A living and dining room at dusk, lit warmly, looking out over the city",
   bankReception: "Banking hall interior with a curved reception counter",
   blueprintCraft: "Hands marking up a construction drawing at a desk",
   cityNight: "Long-exposure traffic trails running through a city at night",
