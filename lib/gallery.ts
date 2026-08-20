@@ -19,8 +19,8 @@ import planLocationMap from "@/assets/gallery/plan-location-map.jpg";
 /**
  * The gallery, grouped as the page presents it.
  *
- * `span` picks a shape from the section's layout. The three layouts are
- * described where they are used, in components/sections/gallery-grid.tsx.
+ * Order matters: each section's layout places pictures in the order listed.
+ * The layouts live in components/sections/gallery-grid.tsx.
  *
  * ⚠️ Three of these carry text burned into the picture by whoever exported
  * them: "Kids Play Area" in purple, "Cafeteria" in red, and a photographer's
@@ -30,8 +30,6 @@ import planLocationMap from "@/assets/gallery/plan-location-map.jpg";
 export type GalleryImage = {
   image: StaticImageData;
   alt: string;
-  /** Which cell of the section's layout this takes. */
-  span: "wide" | "medium" | "tall" | "square" | "full";
 };
 
 export type GallerySection = {
@@ -48,29 +46,22 @@ const haraVijayaHeights: readonly GallerySection[] = [
       {
         image: exteriorFrontage,
         alt: "The full frontage of Hara Vijaya Heights seen across the lawn on a clear day",
-        span: "wide",
       },
       {
         image: exteriorApproach,
         alt: "The towers from the approach road, with the glazed entrance lobby at the base",
-        span: "medium",
       },
       {
         image: exteriorDusk,
         alt: "The development lit at dusk under a violet sky, with residents crossing the lawn",
-        span: "tall",
       },
       {
         image: exteriorGoldenHour,
         alt: "The towers in late afternoon light, with the curved roof terraces catching the sun",
-        span: "wide",
       },
       {
         image: exteriorCollage,
         alt: "Six views of the development: elevations by day and night, the entrance, and the pool courtyard",
-        // Square: it is a six-up collage, and a landscape crop would cut a
-        // whole row of it away.
-        span: "square",
       },
     ],
   },
@@ -81,27 +72,22 @@ const haraVijayaHeights: readonly GallerySection[] = [
       {
         image: amenityGym,
         alt: "The gymnasium, glazed on two sides, with free weights, benches and cardio machines",
-        span: "wide",
       },
       {
         image: amenityPoolDay,
         alt: "The swimming pool in daylight, enclosed by the towers on three sides",
-        span: "medium",
       },
       {
         image: amenityPoolNight,
         alt: "The pool lit at night, with the gymnasium glowing above the pool deck",
-        span: "medium",
       },
       {
         image: amenityKidsPlay,
         alt: "The children's play area: climbing frame with a slide, swings, seesaws and a lawn",
-        span: "medium",
       },
       {
         image: amenityCafeteria,
         alt: "The cafeteria and multi-purpose hall laid out for an event, with tables by the windows",
-        span: "medium",
       },
     ],
   },
@@ -112,12 +98,10 @@ const haraVijayaHeights: readonly GallerySection[] = [
       {
         image: renderInteriorsOne,
         alt: "Interiors: living room with panelled feature wall, a bedroom, a children's room with bunk beds, and the kitchen",
-        span: "full",
       },
       {
         image: renderInteriorsTwo,
         alt: "Further interiors: an open living and dining room, two bedrooms, a bunk room and a fitted kitchen",
-        span: "full",
       },
     ],
   },
@@ -128,17 +112,14 @@ const haraVijayaHeights: readonly GallerySection[] = [
       {
         image: planSite,
         alt: "Site plan: three towers around the clubhouse, pool and gymnasium, with driveways and parking",
-        span: "medium",
       },
       {
         image: planTypicalFloor,
         alt: "Typical floor plan showing the 2 BHK at 1,450 sq ft and the 3 BHK units at 1,885 and 2,015 sq ft",
-        span: "medium",
       },
       {
         image: planLocationMap,
         alt: "Location map placing the development on Kanakapura Main Road, with nearby landmarks and travel times",
-        span: "medium",
       },
     ],
   },

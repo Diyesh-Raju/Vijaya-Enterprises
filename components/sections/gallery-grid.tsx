@@ -14,47 +14,56 @@ import { cn } from "@/lib/cn";
  * only mean anything once there is room for them.
  */
 const LAYOUTS: Record<GallerySection["layout"], readonly string[]> = {
-  // Two wide frames stacked on the left, a portrait running the full height
-  // beside them.
+  // Three across, then two centred beneath — every frame the same size, so the
+  // row reads as a set rather than as a collage.
   exterior: [
-    "lg:col-span-5 lg:row-start-1",
-    "lg:col-span-4 lg:col-start-6 lg:row-start-1",
-    "lg:col-span-3 lg:col-start-10 lg:row-span-2 lg:row-start-1",
-    "lg:col-span-5 lg:row-start-2",
-    "lg:col-span-4 lg:col-start-6 lg:row-start-2",
+    "lg:col-span-4",
+    "lg:col-span-4",
+    "lg:col-span-4",
+    "lg:col-span-4 lg:col-start-3",
+    "lg:col-span-4 lg:col-start-7",
   ],
-  // A broad frame and two squarer ones, then two more stepped in beneath, so
-  // the block reads as staggered rather than as a plain grid.
+  // Same equal frames, but the second row is stepped in rather than centred,
+  // which is the arrangement the section was drawn with.
   amenities: [
-    "lg:col-span-5 lg:row-start-1",
-    "lg:col-span-4 lg:col-start-6 lg:row-start-1",
-    "lg:col-span-3 lg:col-start-10 lg:row-start-1",
-    "lg:col-span-5 lg:col-start-3 lg:row-start-2",
-    "lg:col-span-4 lg:col-start-8 lg:row-start-2",
+    "lg:col-span-4",
+    "lg:col-span-4",
+    "lg:col-span-4",
+    "lg:col-span-4 lg:col-start-3",
+    "lg:col-span-4 lg:col-start-7",
   ],
-  // Full width, one under the other: these are wide collages and shrinking
-  // them would lose the rooms inside.
-  renders: ["lg:col-span-12", "lg:col-span-12"],
-  plans: ["lg:col-span-4", "lg:col-span-4", "lg:col-span-4"],
+  // Held well inside the container: these collages are 1,536px wide, and
+  // stretching them across a full-width column would render them soft on a
+  // high-density screen.
+  renders: ["lg:col-span-8 lg:col-start-3", "lg:col-span-8 lg:col-start-3"],
+  // Full width, one under the other: a drawing is only useful if it is big
+  // enough to read.
+  plans: ["lg:col-span-12", "lg:col-span-12", "lg:col-span-12"],
 };
 
-/** The frame's proportions, so a row lines up even with mixed source ratios. */
-const RATIOS: Record<GalleryImage["span"], string> = {
-  wide: "aspect-[16/9]",
-  medium: "aspect-[4/3]",
-  tall: "aspect-[3/4] lg:aspect-auto lg:h-full",
-  square: "aspect-square",
-  full: "aspect-[16/10] sm:aspect-[16/9]",
+/**
+ * The frame's proportions.
+ *
+ * Set per section rather than per picture, so every frame in a section is
+ * identical however its source is shaped; `object-cover` takes up the slack.
+ */
+const RATIOS: Record<GallerySection["layout"], string> = {
+  exterior: "aspect-[16/9]",
+  amenities: "aspect-[16/9]",
+  renders: "aspect-[16/10]",
+  plans: "aspect-[4/3] sm:aspect-[16/9]",
 };
 
 function Tile({
   item,
   className,
+  ratio,
   contain,
   onOpen,
 }: {
   item: GalleryImage;
   className?: string;
+  ratio: string;
   /** Drawings are fitted whole; a photographic crop would cut them. */
   contain?: boolean;
   onOpen: () => void;
@@ -67,9 +76,9 @@ function Tile({
       className={cn(
         "group/tile relative block w-full cursor-zoom-in overflow-hidden rounded-[1.25rem] bg-white shadow-soft",
         contain && "p-3 sm:p-4",
+        ratio,
         "ring-1 ring-line transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
         "hover:-translate-y-1 hover:shadow-lift hover:ring-rosegold-400 sm:rounded-[1.5rem]",
-        RATIOS[item.span],
         className,
       )}
     >
@@ -109,6 +118,7 @@ export function GalleryGrid({ section }: { section: GallerySection }) {
             key={item.alt}
             item={item}
             className={spans[index]}
+            ratio={RATIOS[section.layout]}
             contain={contain}
             onOpen={() => setOpen(index)}
           />
