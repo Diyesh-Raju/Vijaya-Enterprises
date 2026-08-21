@@ -79,83 +79,161 @@ const frames: Record<NonNullable<AwardsComponentProps["variant"]>, string> = {
 
 /* ------------------------------------------------------------------ wreath */
 
-// A laurel branch traced along a quadratic Bézier, with leaves set on the
-// curve's normal and tapering toward the tip. Computed once at module load.
-// Tuned so the branch fills its viewBox: a wide outward sweep, leaves large
-// relative to the stem, and only a gentle taper so the frond reads as full.
-const P0 = { x: 56, y: 126 };
-const P1 = { x: 0, y: 88 };
-const P2 = { x: 30, y: 5 };
+// Half a laurel wreath: broad leaves paired along an elliptical arc.
+//
+// Four things make this read as laurel rather than as a fern, and each was
+// wrong in an earlier pass:
+//
+//  • The stem is an arc that bends most of the way round, not a shallow curve.
+//    A wreath is a ring around the words; the branch has to enclose them.
+//  • The arc is an ellipse, taller than it is wide (RX 52, RY 100). A circular
+//    branch comes out chunky — about 0.6 wide for its height — and can only
+//    bracket the title before it runs out of width. Stretching it vertically
+//    puts the branch at 0.42, so it wraps the whole seal at the same width.
+//  • The leaves are broad. A quadratic Bézier only reaches half its control
+//    offset, so an offset that looks generous in the numbers draws a sliver;
+//    `LEAF_FAT` is the width the shape actually reaches and the control point
+//    is set to twice it.
+//  • Every leaf is outlined in the page colour. Laurel art overlaps its leaves
+//    and separates them with a hairline; without that the fill merges into one
+//    solid crescent. Override `--wreath-gap` if a seal sits on something other
+//    than white.
+//
+// Geometry is in a space where the wreath's centre is (CX, CY) — the point the
+// two branches curve around, which lands in the middle of the text between
+// them. Computed once at module load.
+const RX = 52;
+const RY = 100;
+const CX = 120;
+const CY = 85;
+const PHI_START = 95; // degrees, 0 = right, 90 = down. Lower tip of the branch.
+const PHI_END = 265; //                                 Upper tip of the branch.
+const LEAF_COUNT = 12;
+/** Leaf length scales off the mean radius, so it is not skewed by the stretch. */
+const LEAF_LENGTH = 0.58 * ((RX + RY) / 2);
+const LEAF_FAT = 0.55; // width as a fraction of length
+const LEAF_ANGLE = 48; // degrees off the stem
+const LEAF_TAPER_MIN = 0.55;
+/** Leaves facing the text run shorter, which keeps the inner edge even. */
+const INNER_SCALE = 0.82;
 
-const pointAt = (t: number) => {
-  const m = 1 - t;
-  return {
-    x: m * m * P0.x + 2 * m * t * P1.x + t * t * P2.x,
-    y: m * m * P0.y + 2 * m * t * P1.y + t * t * P2.y,
-  };
+const rad = (deg: number) => (deg * Math.PI) / 180;
+
+const pointAt = (phi: number) => ({
+  x: CX + RX * Math.cos(rad(phi)),
+  y: CY + RY * Math.sin(rad(phi)),
+});
+
+/** Unit tangent, in the direction the branch grows. */
+const tangentAt = (phi: number) => {
+  const x = -RX * Math.sin(rad(phi));
+  const y = RY * Math.cos(rad(phi));
+  const m = Math.hypot(x, y) || 1;
+  return { x: x / m, y: y / m };
 };
 
-const tangentAt = (t: number) => {
-  const m = 1 - t;
-  return {
-    x: 2 * m * (P1.x - P0.x) + 2 * t * (P2.x - P1.x),
-    y: 2 * m * (P1.y - P0.y) + 2 * t * (P2.y - P1.y),
-  };
+/**
+ * Unit normal pointing away from the centre.
+ *
+ * For an ellipse this is not the radius direction — it comes off the gradient
+ * of x²/RX² + y²/RY², which lands at (RY·cos φ, RX·sin φ) once scaled. Using
+ * the radius instead tilts every leaf on the stretched axis.
+ */
+const normalAt = (phi: number) => {
+  const x = RY * Math.cos(rad(phi));
+  const y = RX * Math.sin(rad(phi));
+  const m = Math.hypot(x, y) || 1;
+  return { x: x / m, y: y / m };
 };
+
+/**
+ * One leaf: two quadratic arcs from the stem out to a point and back, so the
+ * shape tapers at both ends the way a bay leaf does.
+ */
+function leafPath(
+  x: number,
+  y: number,
+  dx: number,
+  dy: number,
+  length: number,
+  halfWidth: number,
+) {
+  const sx = -dy;
+  const sy = dx;
+  const tipX = x + dx * length;
+  const tipY = y + dy * length;
+  // The widest point sits a little short of halfway, which gives the leaf a
+  // shoulder instead of making it a diamond.
+  const belly = 0.44;
+  const mx = x + dx * length * belly;
+  const my = y + dy * length * belly;
+  // Doubled: a quadratic reaches half the offset of its control point.
+  const w = halfWidth * 2;
+
+  return (
+    `M${x.toFixed(2)} ${y.toFixed(2)}` +
+    `Q${(mx + sx * w).toFixed(2)} ${(my + sy * w).toFixed(2)} ${tipX.toFixed(2)} ${tipY.toFixed(2)}` +
+    `Q${(mx - sx * w).toFixed(2)} ${(my - sy * w).toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)}Z`
+  );
+}
 
 const leaves = (() => {
-  const out: { x: number; y: number; angle: number; rx: number; ry: number }[] = [];
-  const count = 11;
+  const out: string[] = [];
 
-  for (let i = 0; i < count; i++) {
-    const t = 0.08 + (i / (count - 1)) * 0.86;
-    const point = pointAt(t);
-    const tangent = tangentAt(t);
-    const length = Math.hypot(tangent.x, tangent.y) || 1;
-    const normal = { x: -tangent.y / length, y: tangent.x / length };
-    const baseAngle = (Math.atan2(tangent.y, tangent.x) * 180) / Math.PI;
+  for (let i = 0; i < LEAF_COUNT; i++) {
+    const t = i / (LEAF_COUNT - 1);
+    const phi = PHI_START + (PHI_END - PHI_START) * t;
+    const point = pointAt(phi);
+    const tangent = tangentAt(phi);
+    const normal = normalAt(phi);
 
-    // Bell-shaped taper: smallest at the base and the tip, fullest through
-    // the middle. A linear taper piles overlapping leaves into a solid blob
-    // where the curve is steepest near the stem.
-    const taper = 0.58 + 0.42 * Math.sin(Math.PI * t);
-    const rx = 13 * taper;
-    const ry = 5.1 * taper;
-    const offset = 7.5 * taper;
+    // Fullest through the middle of the branch, smaller at both tips.
+    const taper =
+      LEAF_TAPER_MIN +
+      (1 - LEAF_TAPER_MIN) * Math.sin(Math.PI * (0.12 + 0.76 * t));
 
-    for (const side of [-1, 1]) {
-      out.push({
-        x: point.x + normal.x * offset * side,
-        y: point.y + normal.y * offset * side,
-        angle: baseAngle + side * 30,
-        rx,
-        ry,
-      });
+    // side  1 = away from the wreath's centre, -1 = toward the text.
+    for (const side of [1, -1]) {
+      const a = rad(LEAF_ANGLE);
+      let dx = tangent.x * Math.cos(a) + normal.x * Math.sin(a) * side;
+      let dy = tangent.y * Math.cos(a) + normal.y * Math.sin(a) * side;
+      const m = Math.hypot(dx, dy) || 1;
+      dx /= m;
+      dy /= m;
+
+      const length = LEAF_LENGTH * taper * (side > 0 ? 1 : INNER_SCALE);
+      out.push(leafPath(point.x, point.y, dx, dy, length, (length * LEAF_FAT) / 2));
     }
   }
 
   return out;
 })();
 
+const STEM = (() => {
+  const from = pointAt(PHI_START);
+  const to = pointAt(PHI_END);
+  const large = PHI_END - PHI_START > 180 ? 1 : 0;
+  return `M${from.x.toFixed(2)} ${from.y.toFixed(2)}A${RX} ${RY} 0 ${large} 1 ${to.x.toFixed(2)} ${to.y.toFixed(2)}`;
+})();
+
 function LaurelBranch() {
   return (
     <g>
       <path
-        d={`M${P0.x} ${P0.y} Q${P1.x} ${P1.y} ${P2.x} ${P2.y}`}
+        d={STEM}
         fill="none"
         stroke="currentColor"
-        strokeWidth="3"
+        strokeWidth="2.4"
         strokeLinecap="round"
       />
-      {leaves.map((leaf, index) => (
-        <ellipse
-          key={index}
-          cx={leaf.x}
-          cy={leaf.y}
-          rx={leaf.rx}
-          ry={leaf.ry}
+      {leaves.map((d) => (
+        <path
+          key={d}
+          d={d}
           fill="currentColor"
-          transform={`rotate(${leaf.angle} ${leaf.x} ${leaf.y})`}
+          stroke="var(--wreath-gap, #ffffff)"
+          strokeWidth="1.4"
+          strokeLinejoin="round"
         />
       ))}
     </g>
@@ -164,8 +242,10 @@ function LaurelBranch() {
 
 function Wreath({ className }: { className?: string }) {
   return (
+    // Measured off the drawing above rather than guessed, so the branch sits
+    // flush in its box and the two halves meet the text at the same distance.
     <svg
-      viewBox="-8 -4 84 138"
+      viewBox="31.3 -46.3 106.9 253.3"
       aria-hidden="true"
       focusable="false"
       className={className}
@@ -209,9 +289,14 @@ export function AwardsComponent({
 
   return (
     <div
+      // `--seal-size` is the master scale: every measurement below is in `em`,
+      // so one number sets the whole lockup. It is a custom property rather
+      // than a `text-[…]` class because `cn` here is a plain join, not
+      // tailwind-merge — a caller passing `text-[12px]` did not replace a
+      // built-in `text-[14px]`, it just raced it in the stylesheet and lost.
+      style={{ fontSize: "var(--seal-size, 14px)" }}
       className={cn(
-        // `text-[…]` here is the master scale for everything below.
-        "relative isolate flex items-center justify-center overflow-hidden rounded-[1.5rem] px-[1.5em] py-[1.75em] text-[13px] sm:rounded-[1.75rem] sm:text-[14px]",
+        "relative isolate flex items-center justify-center overflow-hidden rounded-[1.5rem] px-[1.5em] py-[1.75em] sm:rounded-[1.75rem]",
         accent === "bare"
           ? "bg-transparent px-0 py-0"
           : accent === "rosegold"
@@ -221,11 +306,22 @@ export function AwardsComponent({
       )}
     >
       {/* `items-center`, and the wreaths sized by height: stretching them
-          would letterbox the drawing inside a tall box and shrink it. */}
+          would letterbox the drawing inside a tall box and shrink it.
+          The height is in `em`, like every measurement in this component, so
+          the branch tracks the text it wraps — both grow and wrap off the same
+          font size, and the lockup keeps its proportions. Sizing the wreath
+          off the seal's WIDTH instead breaks that: in a wide box the text
+          stops wrapping and goes short while the branch keeps growing.
+          The row shrink-wraps, so the whole lockup centres in whatever cell it
+          lands in; the caller's job is to give it about 26em to sit in. */}
       <div className="flex items-center justify-center gap-[0.35em]">
-        <Wreath className={cn("h-[7.6em] w-auto shrink-0", style.wreath)} />
+        <Wreath className={cn("h-[15em] w-auto shrink-0", style.wreath)} />
 
-        <div className="flex flex-col items-center justify-center text-center">
+        {/* Capped, so the headline wraps to the same three lines whether the
+            seal sits in a 320px column or a 600px one. Uncapped, a wide cell
+            let the title run to one line, the block went short, and the wreath
+            stopped matching the thing it wraps. */}
+        <div className="flex max-w-[12em] flex-col items-center justify-center text-center">
           <span
             className={cn(
               "rounded-full px-[1.1em] py-[0.35em] text-[0.72em] font-bold uppercase tracking-[0.14em]",
@@ -278,7 +374,7 @@ export function AwardsComponent({
 
         {/* Mirrored so the two branches meet symmetrically. */}
         <Wreath
-          className={cn("h-[7.6em] w-auto shrink-0 -scale-x-100", style.wreath)}
+          className={cn("h-[15em] w-auto shrink-0 -scale-x-100", style.wreath)}
         />
       </div>
     </div>

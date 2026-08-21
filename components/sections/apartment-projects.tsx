@@ -13,8 +13,8 @@ import { projects } from "@/lib/projects";
  * progressive paging.
  *
  * Paging is cumulative rather than page-by-page — page 1 shows the first six,
- * page 2 shows those six plus three more. "See more" is the same action as
- * pressing the next number, so the two controls stay in step.
+ * page 2 shows those six plus three more. "Next" is the same action as
+ * pressing the following number, so the two controls stay in step.
  *
  * The list itself lives in `lib/projects.ts` so the project pages can read the
  * same records. Filter options are derived from it, so adding a project cannot
@@ -192,29 +192,9 @@ export function ApartmentProjects() {
           </div>
         )}
 
-        {/* See more + numbered pages — two controls, one action */}
+        {/* Numbered pages. "Next" advances one page, exactly as the numbers do. */}
         {totalPages > 1 && (
-          <div className="mt-12 flex flex-col items-center gap-7 sm:mt-14">
-            {hasMore && (
-              <button
-                type="button"
-                onClick={() => setPage(currentPage + 1)}
-                className="group inline-flex items-center gap-2.5 rounded-full border border-line-strong bg-white px-8 py-3.5 text-[0.875rem] font-semibold text-navy-900 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-navy-300 hover:shadow-soft"
-              >
-                See More
-                <svg viewBox="0 0 16 16" aria-hidden="true" className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-y-0.5">
-                  <path
-                    d="M8 3v9.5M4.5 9 8 12.5 11.5 9"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-            )}
-
+          <div className="mt-12 flex justify-center sm:mt-14">
             <nav aria-label="Projects pagination">
               <ul className="flex items-center gap-2">
                 {Array.from({ length: totalPages }, (_, index) => index + 1).map(

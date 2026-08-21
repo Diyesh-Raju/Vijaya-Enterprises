@@ -1,184 +1,258 @@
+import type { ReactNode } from "react";
 import { LineIcon } from "@/components/ui/line-icons";
 
 /**
- * One icon per amenity, drawn in the same thin line style as the rest of the
- * site. Keyed by slug so `lib/amenities.ts` can name an icon as data.
+ * One icon per amenity.
+ *
+ * Drawn as literal objects — a pool with its ladder, a bar over its bench, a
+ * table with its pockets — rather than as the abstract glyphs the rest of the
+ * site uses. At the size these run on the Amenities page an
+ * abstract mark just reads as texture; a drawing of the thing itself is what
+ * makes a wall of sixteen tiles scannable.
+ *
+ * All of them sit on a 48-unit grid at stroke 1.6, which is the 24-grid's 0.8
+ * — deliberately finer than the site's other line icons, because these carry
+ * more lines in the same box and a 1.5 weight at this density fills in.
+ *
+ * Keyed by slug at the bottom so `lib/amenities.ts` can name an icon as data.
  */
 
+function Amenity({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <LineIcon className={className} viewBox="0 0 48 48" strokeWidth={1.6}>
+      {children}
+    </LineIcon>
+  );
+}
+
+/** Multi-purpose hall: pitched roof, two windows, an arched door. */
 function Clubhouse({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <path d="M3 10.5L12 4l9 6.5" />
-      <path d="M5 10v10h14V10" />
-      <path d="M9.5 20v-5.5h5V20" />
-      <path d="M8 13h.01M16 13h.01" />
-    </LineIcon>
+    <Amenity className={className}>
+      <path d="M5 22 24 8l19 14" />
+      <path d="M10 22v18M38 22v18" />
+      <path d="M4 40h40" />
+      <path d="M21 40v-8a3 3 0 0 1 6 0v8" />
+      <rect x="13" y="26" width="6" height="6" rx="0.8" />
+      <rect x="29" y="26" width="6" height="6" rx="0.8" />
+    </Amenity>
   );
 }
 
+/** Pool basin in section, with the ladder over the near rim. */
 function SwimmingPool({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <circle cx="16" cy="6.5" r="1.6" />
-      <path d="M6 13l4-3.5 3.5 3 3 1.5" />
-      <path d="M2.5 18c1.6 0 1.6 1.4 3.2 1.4S7.3 18 8.9 18s1.6 1.4 3.2 1.4S13.7 18 15.3 18s1.6 1.4 3.2 1.4S20.1 18 21.5 18" />
-    </LineIcon>
+    <Amenity className={className}>
+      <path d="M5 16h38" />
+      <path d="M9 16v16a5 5 0 0 0 5 5h20a5 5 0 0 0 5-5V16" />
+      <path d="M13 16v12M21 16v12" />
+      <path d="M13 16v-4.5a4 4 0 0 1 8 0V16" />
+      <path d="M13 20.5h8M13 25h8" />
+      <path d="M12 32.5c2.7 0 2.7 2 5.4 2s2.7-2 5.4-2 2.7 2 5.4 2 2.7-2 5.4-2" />
+    </Amenity>
   );
 }
 
+/** Weight bench under a loaded bar. */
 function Gym({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <path d="M4 9v6M7 7.5v9M17 7.5v9M20 9v6" />
-      <path d="M7 12h10" />
-    </LineIcon>
+    <Amenity className={className}>
+      <path d="M6 12h36" />
+      <path d="M9 8v8M12.5 5.5v13M35.5 5.5v13M39 8v8" />
+      <path d="M10 23h28v3.5H10z" />
+      <path d="M14 26.5V37M34 26.5V37" />
+      <path d="M8 37h12M28 37h12" />
+    </Amenity>
   );
 }
 
+/** Slide: ladder, platform, chute with a kick at the bottom. */
 function KidsPlay({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <path d="M4.6 19V8.4M7.8 19V8.4" />
-      <path d="M4.6 11.2h3.2M4.6 14h3.2M4.6 16.6h3.2" />
-      <path d="M7.8 8.4h2.7c0 4.6 2.5 8.6 6.1 10.6" />
-      <path d="M2.5 19.5h19" />
-    </LineIcon>
+    <Amenity className={className}>
+      <path d="M11 40V17M17 40V17" />
+      <path d="M11 22h6M11 28h6M11 34h6" />
+      <path d="M8 17h13" />
+      <path d="M17 20c5.5 5.5 9.5 11 12.5 16 1.6 2.7 4.2 3.1 6.3 1.6" />
+      <path d="M21 18c5.5 5.5 9.5 11.5 12.5 16.5" />
+      <path d="M5 41h38" />
+    </Amenity>
   );
 }
 
+/** Aroma garden: a leafed sprig, with scent marks around it. */
 function Garden({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <circle cx="12" cy="8" r="2.2" />
-      <path d="M12 5.8c0-1.6 1.2-2.8 2.6-2.3 1.3.5 1.5 2.2.4 3.1" />
-      <path d="M12 5.8c0-1.6-1.2-2.8-2.6-2.3-1.3.5-1.5 2.2-.4 3.1" />
-      <path d="M14.2 8c1.5-.5 3 .3 3 1.8s-1.7 2.3-3 1.6" />
-      <path d="M9.8 8c-1.5-.5-3 .3-3 1.8s1.7 2.3 3 1.6" />
-      <path d="M12 10.5V21" />
-      <path d="M12 16c1.8 0 3.2-1.2 3.6-3" />
-    </LineIcon>
+    <Amenity className={className}>
+      <path d="M24 41V19" />
+      <path d="M24 27c-5.5 0-9-3.4-9-8 4.6 0 9 2.6 9 8Z" />
+      <path d="M24 27c5.5 0 9-3.4 9-8-4.6 0-9 2.6-9 8Z" />
+      <path d="M24 36c-4.4 0-7.6-2.8-7.6-6.6 3.8 0 7.6 2 7.6 6.6Z" />
+      <path d="M24 36c4.4 0 7.6-2.8 7.6-6.6-3.8 0-7.6 2-7.6 6.6Z" />
+      <path d="M15 41h18" />
+      <path d="M9 13v4M7 15h4" />
+      <path d="M39 10v4M37 12h4" />
+      <path d="M41 23v3M39.5 24.5h3" />
+    </Amenity>
   );
 }
 
+/** Volleyball, with its three-panel seams. */
 function VolleyBall({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M12 3.5c3.4 2.7 5.3 6.9 4.9 11.2" />
-      <path d="M3.6 10.4c4.4-.3 8.5 1.6 11 5.1" />
-      <path d="M6.6 19.5c.7-4.3 3.7-7.8 7.9-8.9" />
-    </LineIcon>
+    <Amenity className={className}>
+      <circle cx="24" cy="24" r="17" />
+      <path d="M24 7c-5 6-7 12-6 18s3 10 8 13" />
+      <path d="M8 17c7 0 13 3 17 8s5 10 4 15" />
+      <path d="M10 34c5-5 9-8 15-9s12-1 15-3" />
+    </Amenity>
   );
 }
 
+/** Running track from above: three lanes, and the line they start on. */
 function JoggersTrack({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <circle cx="15" cy="4.8" r="1.7" />
-      <path d="M9 21l2.4-4.6 2.1-1.9-.8-3.9" />
-      <path d="M12.7 10.6L9.4 12l-1.2 2.6" />
-      <path d="M12.7 10.6l3.4 1.2 1.5 3.1 2.4.9" />
-      <path d="M13.5 14.5l2.2 2.3.8 4.2" />
-    </LineIcon>
+    <Amenity className={className}>
+      <path d="M16 10h16a14 14 0 0 1 0 28H16a14 14 0 0 1 0-28Z" />
+      <path d="M16 16h16a8 8 0 0 1 0 16H16a8 8 0 0 1 0-16Z" />
+      <path d="M16 22h16a2 2 0 0 1 0 4H16a2 2 0 0 1 0-4Z" />
+      <path d="M24 10v6M24 32v6" />
+    </Amenity>
   );
 }
 
+/** Table tennis: a pair of bats leaning apart, and the ball. */
 function TableTennis({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <ellipse cx="10.2" cy="8.6" rx="5.6" ry="6.1" />
-      <path d="M8.9 14.4v4.4a1.3 1.3 0 0 0 2.6 0v-4.4" />
-      <circle cx="18.6" cy="14.2" r="1.7" />
-    </LineIcon>
+    <Amenity className={className}>
+      <g transform="rotate(20 15 18)">
+        <ellipse cx="15" cy="13" rx="6.6" ry="7.3" />
+        <rect x="13.3" y="20.2" width="3.4" height="11" rx="1.7" />
+      </g>
+      <g transform="rotate(-20 33 18)">
+        <ellipse cx="33" cy="13" rx="6.6" ry="7.3" />
+        <rect x="31.3" y="20.2" width="3.4" height="11" rx="1.7" />
+      </g>
+      <circle cx="24" cy="31" r="3.4" />
+    </Amenity>
   );
 }
 
+/** Pool table from above: cushions, six pockets, three balls. */
 function Billiards({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <path d="M12 4.6L19.4 18H4.6z" />
-      <circle cx="12" cy="10" r="1.8" />
-      <circle cx="9.5" cy="14.6" r="1.8" />
-      <circle cx="14.5" cy="14.6" r="1.8" />
-    </LineIcon>
+    <Amenity className={className}>
+      <rect x="7" y="9" width="34" height="30" rx="3.5" />
+      <rect x="11.5" y="13.5" width="25" height="21" rx="1.5" />
+      <circle cx="11.5" cy="13.5" r="2" />
+      <circle cx="36.5" cy="13.5" r="2" />
+      <circle cx="11.5" cy="34.5" r="2" />
+      <circle cx="36.5" cy="34.5" r="2" />
+      <circle cx="24" cy="12.4" r="2" />
+      <circle cx="24" cy="35.6" r="2" />
+      <circle cx="19.5" cy="25" r="2.4" />
+      <circle cx="27" cy="20.8" r="2.4" />
+      <circle cx="30" cy="28" r="2.4" />
+    </Amenity>
   );
 }
 
+/** Cup and saucer, steaming. */
 function Cafe({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <path d="M4 9.5h12v5a4.5 4.5 0 0 1-4.5 4.5H8.5A4.5 4.5 0 0 1 4 14.5z" />
-      <path d="M16 11h1.8a2.4 2.4 0 0 1 0 4.8H16" />
-      <path d="M8 6.5V4.2M12 6.5V4.2" />
-      <path d="M3 21.5h14" />
-    </LineIcon>
+    <Amenity className={className}>
+      <path d="M9 17h24v12a10 10 0 0 1-10 10h-4a10 10 0 0 1-10-10z" />
+      <path d="M33 21h3.5a5 5 0 0 1 0 10H33" />
+      <path d="M5 43h32" />
+      <path d="M18 13c-2.2-2.2 2.2-3.6 0-5.8" />
+      <path d="M26 13c-2.2-2.2 2.2-3.6 0-5.8" />
+    </Amenity>
   );
 }
 
+/** A board and two pieces — chess, carrom, whatever is out that evening. */
 function IndoorGames({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <path d="M16.4 2.6v3.1M14.9 4.1h3" />
-      <circle cx="16.4" cy="7.8" r="1.7" />
-      <path d="M14.8 10c.2 2.2-.5 4-1.4 5.4h6c-.9-1.4-1.6-3.2-1.4-5.4" />
-      <path d="M12.9 15.4h7l.5 3.2h-8z" />
-      <circle cx="7.4" cy="9.6" r="1.6" />
-      <path d="M6 11.7c.2 1.9-.4 3.3-1.2 4.4h5.2c-.8-1.1-1.4-2.5-1.2-4.4" />
-      <path d="M4.2 16.1h6.4l.5 2.5H3.7z" />
-    </LineIcon>
+    <Amenity className={className}>
+      <rect x="8" y="8" width="32" height="32" rx="2.5" />
+      <path d="M16 8v32M24 8v32M32 8v32" />
+      <path d="M8 16h32M8 24h32M8 32h32" />
+      <circle cx="20" cy="20" r="2.6" />
+      <circle cx="28" cy="28" r="2.6" />
+    </Amenity>
   );
 }
 
+/** Door panel: screen, call buttons, speaker grille. */
 function Intercom({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <path d="M6.5 3.5h11a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19V5a1.5 1.5 0 0 1 1.5-1.5z" />
-      <path d="M9 7h6" />
-      <path d="M9 10.5h2M13 10.5h2M9 14h2M13 14h2M9 17.5h2M13 17.5h2" />
-    </LineIcon>
+    <Amenity className={className}>
+      <rect x="12" y="5" width="24" height="38" rx="3.5" />
+      <rect x="16" y="10" width="16" height="9" rx="1.5" />
+      <circle cx="19" cy="25" r="1.6" />
+      <circle cx="24" cy="25" r="1.6" />
+      <circle cx="29" cy="25" r="1.6" />
+      <circle cx="19" cy="31" r="1.6" />
+      <circle cx="24" cy="31" r="1.6" />
+      <circle cx="29" cy="31" r="1.6" />
+      <path d="M18 37h12" />
+    </Amenity>
   );
 }
 
+/** A bench in the grounds — the quiet corner, not the person in it. */
 function SeniorCitizen({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <circle cx="11" cy="4.8" r="1.8" />
-      <path d="M11 8v6l-1.6 7" />
-      <path d="M11 14l2.4 2.2.6 4.8" />
-      <path d="M11 9.5l3 1.6" />
-      <path d="M17 11v10" />
-    </LineIcon>
+    <Amenity className={className}>
+      <path d="M11 14v15M37 14v15" />
+      <path d="M11 18h26M11 24h26" />
+      <path d="M5 29h38v3.5H5z" />
+      <path d="M9 32.5V40M39 32.5V40" />
+      <path d="M4 40h40" />
+    </Amenity>
   );
 }
 
+/** Lift car, doors parted, one arrow up and one down. */
 function GoodsLift({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <rect x="4" y="3.5" width="16" height="17" rx="1.5" />
-      <path d="M12 3.5v17" />
-      <path d="M8 11.5L8 8m0 0l-1.4 1.6M8 8l1.4 1.6" />
-      <path d="M16 12.5V16m0 0l1.4-1.6M16 16l-1.4-1.6" />
-    </LineIcon>
+    <Amenity className={className}>
+      <rect x="9" y="5" width="30" height="38" rx="3.5" />
+      <rect x="13" y="10" width="22" height="28" rx="1.2" />
+      <path d="M24 10v28" />
+      <path d="M18.5 27v-9m0 0-3 3.4m3-3.4 3 3.4" />
+      <path d="M29.5 21v9m0 0 3-3.4m-3 3.4-3-3.4" />
+    </Amenity>
   );
 }
 
+/** Standby generator: filler cap, vents, and the current it carries. */
 function PowerBackup({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <rect x="4" y="7" width="16" height="12" rx="1.5" />
-      <path d="M9 7V4.5h6V7" />
-      <path d="M12.8 10.2l-2.4 3.4h3l-2.2 3.2" />
-    </LineIcon>
+    <Amenity className={className}>
+      <rect x="6" y="14" width="36" height="22" rx="3" />
+      <path d="M14 14v-4h8v4" />
+      <path d="M12 36v5M36 36v5" />
+      <path d="M24 18.5l-6 9h6l-5 8.5" />
+      <path d="M32 21h6M32 25h6M32 29h6" />
+    </Amenity>
   );
 }
 
+/** Shield, checked — the gate is covered. */
 function Security({ className }: { className?: string }) {
   return (
-    <LineIcon className={className}>
-      <path d="M12 3l7.5 3v5.6c0 4.4-3.1 8-7.5 9.4-4.4-1.4-7.5-5-7.5-9.4V6z" />
-      <circle cx="12" cy="10.5" r="2" />
-      <path d="M8.4 16.6a4 4 0 0 1 7.2 0" />
-    </LineIcon>
+    <Amenity className={className}>
+      <path d="M24 4 41 10.5v12.2C41 32.9 33.9 41.6 24 44 14.1 41.6 7 32.9 7 22.7V10.5z" />
+      <path d="M24 9.5 36 14v8.7c0 7.4-5 14.2-12 16.4-7-2.2-12-9-12-16.4V14z" />
+      <path d="M18.5 24.5 22.5 28.5 30 20.5" />
+    </Amenity>
   );
 }
 

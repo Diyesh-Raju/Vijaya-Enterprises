@@ -185,10 +185,24 @@ export default function ResidentialPage() {
                 </Reveal>
               </div>
 
-              {/* The two awards the company has actually won, side by side and
-                  unframed — a box around a seal reads as a seal inside a box. */}
+              {/* The two awards the company has actually won, unframed — a box
+                  around a seal reads as a seal inside a box.
+
+                  Two per row only where a seal has room for its wreath. From
+                  `lg` this column is seven of twelve tracks, so a pair would
+                  get ~240px each and the branches would be clipped; through
+                  that band they stack and take the full width instead. Below
+                  `lg` the column is already full-bleed, so a pair fits from
+                  `md` up — at `sm` a seal gets only ~276px, which is under the
+                  lockup's width. By `xl` there is room for a pair again.
+
+                  Written as `sm:max-lg:` / `xl:` rather than `sm:` + a `lg:`
+                  override: two column-count utilities at different breakpoints
+                  carry the same specificity, so the override lost on source
+                  order and the pair never unstacked. Non-overlapping ranges
+                  cannot collide. */}
               <Reveal delay={200} className="mt-10 lg:mt-auto lg:pt-10">
-                <div className="grid gap-8 border-t border-line pt-10 sm:grid-cols-2 sm:gap-6">
+                <div className="grid gap-8 border-t border-line pt-10 md:max-lg:grid-cols-2 md:max-lg:gap-6 xl:grid-cols-2 xl:gap-6">
                   {awards.map((award) => (
                     <AwardsComponent
                       key={award.title}
@@ -198,7 +212,7 @@ export default function ResidentialPage() {
                       title={award.title}
                       subtitle={award.subtitle}
                       description={award.description}
-                      className="text-[11px] sm:text-[11.5px]"
+                      className="[--seal-size:11px] sm:[--seal-size:12px]"
                     />
                   ))}
                 </div>
@@ -212,7 +226,7 @@ export default function ResidentialPage() {
       <ApartmentProjects />
 
       {/* ------------------------------------------------------------- Why us */}
-      <section className="relative isolate overflow-hidden py-24 sm:py-32 lg:py-44">
+      <section className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-28">
         {/* The flowers sit at two corners of the frame, so they frame the cards
             rather than compete with them. Held well back, because six cards of
             text have to stay readable over the top. */}
@@ -230,7 +244,7 @@ export default function ResidentialPage() {
             title="Why choose Vijaya for your home?"
             lead="Because a home should be built by people who take the responsibility personally."
           />
-          <div className="mt-14 lg:mt-16">
+          <div className="mt-10 lg:mt-12">
             <IconCards items={whyForYourHome} columns={3} />
           </div>
         </Container>

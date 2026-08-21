@@ -59,15 +59,20 @@ export function GalleryBackdrop() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
     >
-      {/* A wash that keeps the page from reading as flat white. */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white via-mist to-white" />
+      {/* A grey wash rather than white: at the old near-white values the
+          rosettes were only legible on a calibrated screen, and the page read
+          as blank. The tiles below are white, so the pattern needs a ground
+          darker than they are to show through at all. */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#eceff5] via-[#e4e8f0] to-[#eceff5]" />
 
       {/* Placed off the edges so each reads as a fragment of something larger,
-          the way the reference crops them. */}
-      <Rosette className="absolute -right-40 -top-32 h-[34rem] w-[34rem] text-navy-900/[0.05] sm:h-[44rem] sm:w-[44rem]" />
-      <Rosette className="absolute -left-52 top-[38%] h-[38rem] w-[38rem] rotate-[15deg] text-rosegold-600/[0.06]" />
-      <Rosette className="absolute -bottom-40 -left-32 h-[32rem] w-[32rem] text-navy-900/[0.05] sm:h-[40rem] sm:w-[40rem]" />
-      <Rosette className="absolute -right-48 bottom-[22%] hidden h-[36rem] w-[36rem] rotate-[22deg] text-navy-900/[0.04] lg:block" />
+          the way the reference crops them. Opacities are roughly three times
+          what they were — enough to see the shape, still well under the
+          contrast of any text sitting over it. */}
+      <Rosette className="absolute -right-40 -top-32 h-[34rem] w-[34rem] text-navy-900/[0.15] sm:h-[44rem] sm:w-[44rem]" />
+      <Rosette className="absolute -left-52 top-[38%] h-[38rem] w-[38rem] rotate-[15deg] text-navy-800/[0.13]" />
+      <Rosette className="absolute -bottom-40 -left-32 h-[32rem] w-[32rem] text-navy-900/[0.15] sm:h-[40rem] sm:w-[40rem]" />
+      <Rosette className="absolute -right-48 bottom-[22%] hidden h-[36rem] w-[36rem] rotate-[22deg] text-navy-900/[0.12] lg:block" />
     </div>
   );
 }

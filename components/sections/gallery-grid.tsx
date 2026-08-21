@@ -32,13 +32,16 @@ const LAYOUTS: Record<GallerySection["layout"], readonly string[]> = {
     "lg:col-span-4 lg:col-start-3",
     "lg:col-span-4 lg:col-start-7",
   ],
-  // Held well inside the container: these collages are 1,536px wide, and
-  // stretching them across a full-width column would render them soft on a
-  // high-density screen.
-  renders: ["lg:col-span-8 lg:col-start-3", "lg:col-span-8 lg:col-start-3"],
-  // Full width, one under the other: a drawing is only useful if it is big
-  // enough to read.
-  plans: ["lg:col-span-12", "lg:col-span-12", "lg:col-span-12"],
+  // Two across, sharing the row. These collages are 1,536px wide, so half a
+  // container still resolves sharply on a high-density screen.
+  renders: ["lg:col-span-6", "lg:col-span-6"],
+  // One under the other, but held in from the edges — a drawing has to stay
+  // big enough to read, and at full width these were dominating the page.
+  plans: [
+    "lg:col-span-10 lg:col-start-2",
+    "lg:col-span-10 lg:col-start-2",
+    "lg:col-span-10 lg:col-start-2",
+  ],
 };
 
 /**
@@ -86,7 +89,7 @@ function Tile({
         src={item.image}
         alt={item.alt}
         fill
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw"
         className={cn(
           "transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
           contain

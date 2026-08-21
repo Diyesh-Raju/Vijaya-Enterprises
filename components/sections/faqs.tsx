@@ -12,7 +12,7 @@ import type { Faq } from "@/lib/faqs";
 export function Faqs({ faqs }: { faqs: readonly Faq[] }) {
   return (
     <div>
-      <PanelHeading>Frequently Asked</PanelHeading>
+      <PanelHeading align="center">Frequently Asked</PanelHeading>
 
       <div className="mt-10 space-y-3 lg:mt-12">
         {faqs.map((faq, index) => (

@@ -93,8 +93,9 @@ function Track({
 export function Reviews() {
   return (
     // A shallower top than a full section: the heading was sitting a long way
-    // below the strip above it.
-    <section className="relative isolate overflow-hidden pb-24 pt-14 sm:pb-32 sm:pt-16 lg:pb-40 lg:pt-20">
+    // below the strip above it. The bottom is pulled in too — the band is one
+    // heading and one row of cards, and it does not need a full screen.
+    <section className="relative isolate overflow-hidden pb-16 pt-12 sm:pb-20 sm:pt-14 lg:pb-24 lg:pt-16">
       <Image
         src={img.backdropInterior}
         alt=""
@@ -119,7 +120,7 @@ export function Reviews() {
       </Container>
 
       {/* Outside the container so the cards run to both edges of the screen. */}
-      <div className="fade-edges relative mt-14 overflow-hidden lg:mt-16 motion-reduce:overflow-x-auto">
+      <div className="fade-edges relative mt-10 overflow-hidden lg:mt-12 motion-reduce:overflow-x-auto">
         <div className="flex w-max animate-marquee has-[li:hover]:[animation-play-state:paused] motion-reduce:animate-none">
           {/* Both tracks must stay identical: the -50% translate only lands
               seamlessly if the copy is exactly as wide as the original. */}

@@ -7,22 +7,32 @@ import type { ReactNode } from "react";
  *
  * Every icon inherits `currentColor`, so the caller sets the colour.
  * `LineIcon` is exported so other icon sets share one stroke definition.
+ *
+ * `viewBox` and `strokeWidth` are overridable together: the amenity set is
+ * drawn on a 48-unit grid because those icons carry far more detail than the
+ * six shapes here, and detail on a 24-unit grid means fractional coordinates
+ * everywhere. A 48-grid icon needs double the stroke width to keep the same
+ * apparent weight as a 24-grid one, so the two always move together.
  */
 export function LineIcon({
   children,
   className = "h-7 w-7",
+  viewBox = "0 0 24 24",
+  strokeWidth = 1.5,
 }: {
   children: ReactNode;
   className?: string;
+  viewBox?: string;
+  strokeWidth?: number;
 }) {
   return (
     <svg
-      viewBox="0 0 24 24"
+      viewBox={viewBox}
       aria-hidden="true"
       focusable="false"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.5"
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
@@ -149,6 +159,100 @@ export function UnitsIcon({ className }: { className?: string }) {
       <rect x="13" y="4" width="7" height="7" rx="1" />
       <rect x="4" y="13" width="7" height="7" rx="1" />
       <rect x="13" y="13" width="7" height="7" rx="1" />
+    </LineIcon>
+  );
+}
+
+/* ------------------------------------------- unit plan specification rows */
+
+/** Toilets in the unit. */
+export function BathIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M3 12.5h18v2.5a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" />
+      <path d="M6 12.5V5.8A1.8 1.8 0 0 1 7.8 4c1 0 1.8.8 1.8 1.8" />
+      <path d="M8.4 6.6h2.6" />
+      <path d="M7 19v1.8M17 19v1.8" />
+    </LineIcon>
+  );
+}
+
+/** Living and dining — the shared rooms. */
+export function SofaIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3" />
+      <path d="M4 11a2 2 0 0 0-2 2v4h20v-4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v1H6v-1a2 2 0 0 0-2-2z" />
+      <path d="M4 17v2M20 17v2" />
+    </LineIcon>
+  );
+}
+
+/** Kitchen and utility. */
+export function KitchenIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M5 3.5v7a2.5 2.5 0 0 0 5 0v-7" />
+      <path d="M7.5 3.5V13m0 0v7.5" />
+      <path d="M17.5 20.5V14" />
+      <path d="M17.5 14c2 0 3-1.4 3-4.5S19.2 3.5 17.5 3.5 14.5 6.4 14.5 9.5s1 4.5 3 4.5z" />
+    </LineIcon>
+  );
+}
+
+/** Balconies and sitouts — the outdoor edge of the plan. */
+export function BalconyIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M3 11.5h18" />
+      <path d="M4.5 11.5V21M19.5 11.5V21" />
+      <path d="M4.5 16.5h15" />
+      <path d="M9 11.5V21M15 11.5V21" />
+      <path d="M6.5 11.5V7a5.5 5.5 0 0 1 11 0v4.5" />
+    </LineIcon>
+  );
+}
+
+/** A home that runs over two floors. */
+export function LevelsIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M3 20h5v-4h5v-4h5V8h3" />
+      <path d="M3 20v-4" />
+      <path d="M8 20v-8M13 20v-4" />
+      <path d="M18 20V8" />
+    </LineIcon>
+  );
+}
+
+/** Private terrace. */
+export function TerraceIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M2.5 10.5 12 4l9.5 6.5" />
+      <path d="M4.5 12.5V20h15v-7.5" />
+      <path d="M4.5 20h15" />
+      <path d="M8.5 20v-4h7v4" />
+    </LineIcon>
+  );
+}
+
+/** Which way the unit faces. */
+export function CompassIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M15.5 8.5 13.6 13.6 8.5 15.5l1.9-5.1z" />
+    </LineIcon>
+  );
+}
+
+/** Onward, in a list. */
+export function ArrowRightIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M4 12h15" />
+      <path d="M13.5 6l6 6-6 6" />
     </LineIcon>
   );
 }

@@ -7,19 +7,32 @@ import { cn } from "@/lib/cn";
  * than opening a page, so they carry no eyebrow and no lead. An optional
  * `subtitle` sits under the heading, indented past the upright so it lines up
  * with the word above it.
+ *
+ * `align="center"` centres the whole lockup. The upright travels with the
+ * words rather than staying pinned left, and the subtitle drops its indent —
+ * a 20px left pad would throw a centred line off its axis.
  */
 export function PanelHeading({
   children,
   subtitle,
+  align = "left",
   className,
 }: {
   children: string;
   subtitle?: string;
+  align?: "left" | "center";
   className?: string;
 }) {
+  const centred = align === "center";
+
   return (
     <div className={className}>
-      <h2 className="flex items-center gap-4 font-display text-[1.75rem] leading-tight text-navy-900 sm:text-[2.125rem]">
+      <h2
+        className={cn(
+          "flex items-center gap-4 font-display text-[1.75rem] leading-tight text-navy-900 sm:text-[2.125rem]",
+          centred && "justify-center text-center",
+        )}
+      >
         {/* Sized in `em` so the upright tracks the heading at every breakpoint. */}
         <span
           aria-hidden="true"
@@ -30,9 +43,10 @@ export function PanelHeading({
       {subtitle && (
         <p
           className={cn(
-            // 20px clears the 4px upright plus its 16px gap.
-            "mt-2 pl-5 text-[0.875rem] font-semibold uppercase tracking-[0.2em]",
+            "mt-2 text-[0.875rem] font-semibold uppercase tracking-[0.2em]",
             "text-slate-muted",
+            // 20px clears the 4px upright plus its 16px gap.
+            centred ? "text-center" : "pl-5",
           )}
         >
           {subtitle}
