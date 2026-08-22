@@ -91,7 +91,12 @@ export function VideoBackdrop({
     const video = videoRef.current;
     if (!el || !video || !src) return;
 
-    let onScreen = true;
+    // Starts closed on purpose. `sync()` runs once immediately below, and
+    // `play()` forces a download whatever `preload` says — so assuming the
+    // element is on screen before the observer has confirmed it would fetch
+    // every backdrop on the page at load, which is the cost `preload="none"`
+    // is there to avoid. Without an observer there is nothing to wait for.
+    let onScreen = typeof IntersectionObserver === "undefined";
 
     const sync = () => {
       const shouldPlay = onScreen && !document.hidden;
@@ -151,7 +156,12 @@ export function VideoBackdrop({
           muted
           loop
           playsInline
-          preload="auto"
+          // The observer below controls play/pause, not download: with
+          // `preload="auto"` a backdrop three screens down still pulls its
+          // whole file on load. Only the hero — the one already on screen —
+          // earns that. The rest fetch when `play()` first reaches them, and
+          // the poster covers the gap.
+          preload={priority ? "auto" : "none"}
           // Decorative: the poster carries the alternative text.
           aria-hidden="true"
           tabIndex={-1}

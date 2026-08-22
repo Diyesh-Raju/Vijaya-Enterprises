@@ -6,8 +6,9 @@ it only has to be re-run when the master artwork changes).
 
 Two lockup variants are produced because the site puts the logo on both white
 and navy: the original full-colour lockup for light surfaces, and a reversed
-lockup (white wordmark, untouched Ganesha mark) for navy surfaces, where the
-brand's dark-purple wordmark would otherwise be unreadable.
+lockup for navy surfaces, where the brand's dark-purple wordmark would
+otherwise be unreadable and the Ganesha mark's darker half would sink into the
+ground. The reversed lockup fixes both — see `reverse` and `for_dark`.
 """
 from pathlib import Path
 
@@ -27,6 +28,16 @@ SECONDARY_Y = 1250
 WHITE = (255, 255, 255)
 NAVY_200 = (198, 215, 241)  # --color-navy-200, the site's muted-on-navy tone
 NAVY_900 = (10, 31, 68)     # --color-navy-900, the brand ground
+
+# The mark for navy grounds: its blues are relit into this lightness band, and
+# no blue is allowed past MARK_HUE_CAP. Measured off the master, roughly half
+# the mark's blues sit at L 0.23-0.37 — darker than they look on white, and
+# close enough to navy-900 (L 0.15) that on navy the head, the ear insides and
+# the shaded side of the trunk all read as ground rather than as artwork. The
+# cap keeps the deepest indigos from turning periwinkle once they are lifted.
+MARK_DARK_L = (0.46, 0.84)
+MARK_DARK_GAMMA = 0.9
+MARK_HUE_CAP = 215
 
 # 1000px wide covers the largest placement (an 80px-tall footer lockup is
 # 176px wide, so ~530px at 3x) with headroom, without carrying a print-sized
@@ -71,14 +82,84 @@ def save(arr, path):
     return img
 
 
-def reverse(arr):
-    """Recolour the wordmark for navy backgrounds, leaving the mark alone.
+def to_hsl(rgb):
+    high = rgb.max(-1)
+    low = rgb.min(-1)
+    span = high - low
+    lightness = (high + low) / 2
+    denom = np.where(lightness < 0.5, high + low, 2 - high - low)
+    sat = np.where(span == 0, 0.0, span / np.maximum(denom, 1e-9))
+    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    safe = np.maximum(span, 1e-9)
+    hue = np.where(
+        high == low,
+        0.0,
+        np.where(
+            high == r,
+            (g - b) / safe % 6,
+            np.where(high == g, (b - r) / safe + 2, (r - g) / safe + 4),
+        )
+        * 60,
+    )
+    return hue, sat, lightness
 
-    Recolouring is done by row band rather than by sampling colour: the bands
-    are separated by fully transparent gutters, so it stays exact on
-    anti-aliased edges, where the RGB has already blended toward white.
+
+def to_rgb(hue, sat, lightness):
+    chroma = (1 - np.abs(2 * lightness - 1)) * sat
+    second = chroma * (1 - np.abs((hue / 60) % 2 - 1))
+    base = lightness - chroma / 2
+    zero = np.zeros_like(hue)
+    sextant = (hue / 60).astype(int) % 6
+    picks = [sextant == i for i in range(6)]
+    r = np.select(picks, [chroma, second, zero, zero, second, chroma])
+    g = np.select(picks, [second, chroma, chroma, second, zero, zero])
+    b = np.select(picks, [zero, zero, second, chroma, chroma, second])
+    return np.clip(np.stack([r + base, g + base, b + base], -1), 0, 1)
+
+
+def for_dark(arr):
+    """Relight the Ganesha mark's blues so it holds its colour on navy.
+
+    The mark is a blue gradient drawn for white paper: its light-blue passages
+    and its near-navy ones both read on white, but on the site's navy the dark
+    half has nowhere to go and the silhouette collapses. Every blue pixel is
+    re-lit into MARK_DARK_L, keeping its place in the gradient (so the artwork
+    still reads as one shaded form rather than a flat fill) and keeping its
+    hue below MARK_HUE_CAP.
+
+    Only blues are touched: the saffron and red flowers, and the white
+    line-work's anti-aliased edges, are left as drawn.
     """
     out = arr.copy()
+    rgb = arr[..., :3]
+    hue, sat, lightness = to_hsl(rgb)
+    blue = (arr[..., 3] > 0.02) & (hue >= 180) & (hue <= 265) & (sat > 0.12)
+    if not blue.any():
+        return out
+
+    # The band is measured over opaque blues only — anti-aliased edges carry
+    # blended lightness that would stretch the range and flatten the lift.
+    solid = blue & (arr[..., 3] > 0.9)
+    low, high = lightness[solid].min(), lightness[solid].max()
+    place = np.clip((lightness - low) / (high - low), 0, 1) ** MARK_DARK_GAMMA
+    floor, ceiling = MARK_DARK_L
+    relit = to_rgb(
+        np.minimum(hue, MARK_HUE_CAP), sat, floor + (ceiling - floor) * place
+    )
+    out[..., :3] = np.where(blue[..., None], relit, rgb)
+    return out
+
+
+def reverse(arr):
+    """Recolour the lockup for navy backgrounds: wordmark and mark alike.
+
+    The wordmark is recoloured by row band rather than by sampling colour: the
+    bands are separated by fully transparent gutters, so it stays exact on
+    anti-aliased edges, where the RGB has already blended toward white. The
+    mark keeps its artwork and is relit by `for_dark`.
+    """
+    out = arr.copy()
+    out[:, :TEXT_X] = for_dark(arr[:, :TEXT_X])
     text = np.zeros(arr.shape[:2], bool)
     text[:, TEXT_X:] = True
     primary = text.copy()
@@ -98,8 +179,9 @@ def plate(mark, size, radius, ink_ratio):
     """The mark centred on a navy plate — used for the favicon and app icon.
 
     Favicons render on light and dark browser chrome alike, so the mark sits on
-    the brand navy rather than on transparency, where its darkest blues would
-    disappear.
+    the brand navy rather than on transparency. It is the `for_dark` mark, for
+    the same reason the reversed lockup uses one: the plate is navy, and the
+    artwork as drawn would lose half of itself into it at 16px.
     """
     out = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     if radius:
@@ -128,11 +210,12 @@ save(
 )
 
 print("icons:")
+mark_on_dark = trim(for_dark(master[:, :TEXT_X]))
 # Radius matches the 25% corner the previous placeholder icon used.
-icon = plate(mark, 512, 128, 0.62)
+icon = plate(mark_on_dark, 512, 128, 0.62)
 icon.save(ROOT / "app" / "icon.png", optimize=True)
 print(f"  app/icon.png: {icon.width}x{icon.height}")
 # iOS applies its own mask and dislikes transparency, so this one is full-bleed.
-apple = plate(mark, 180, 0, 0.6)
+apple = plate(mark_on_dark, 180, 0, 0.6)
 apple.convert("RGB").save(ROOT / "app" / "apple-icon.png", optimize=True)
 print(f"  app/apple-icon.png: {apple.width}x{apple.height}")

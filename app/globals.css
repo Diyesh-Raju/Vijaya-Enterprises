@@ -77,6 +77,7 @@
   --animate-rise: rise 1s var(--ease-out-soft) both;
   --animate-sheen: sheen 2.6s var(--ease-in-out-soft) infinite;
   --animate-scroll-hint: scroll-hint 2.2s var(--ease-in-out-soft) infinite;
+  --animate-ping-slow: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
 @keyframes marquee {
@@ -102,6 +103,11 @@
 @keyframes sheen {
   0%, 100% { opacity: 0.35; }
   50% { opacity: 0.85; }
+}
+
+@keyframes ping-slow {
+  0% { transform: scale(1); opacity: 0.9; }
+  70%, 100% { transform: scale(1.35); opacity: 0; }
 }
 
 @keyframes scroll-hint {
@@ -178,6 +184,13 @@
 /* ------------------------------------------------------------------
    Utilities
 ------------------------------------------------------------------- */
+
+/* A row that scrolls sideways on small screens without a visible bar under it
+   — used where the overflow is obvious from the content being cut off. */
+@utility hide-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
 
 @utility container-page {
   width: 100%;

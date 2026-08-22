@@ -297,3 +297,19 @@ export function ArrowUpRightIcon({ className }: { className?: string }) {
     </LineIcon>
   );
 }
+
+/** Solid play mark, for a video control. Filled rather than stroked — a
+ *  hairline triangle disappears inside a 96px ring. */
+export function PlayIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M7.5 4.9a1.4 1.4 0 0 1 2.1-1.2l9 6.9a1.4 1.4 0 0 1 0 2.4l-9 7a1.4 1.4 0 0 1-2.1-1.2Z" />
+    </svg>
+  );
+}

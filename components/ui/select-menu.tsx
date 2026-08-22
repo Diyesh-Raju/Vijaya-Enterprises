@@ -14,20 +14,28 @@ import { cn } from "@/lib/cn";
  * Built as a menu of real buttons rather than an ARIA listbox with
  * `aria-activedescendant`: focus lands on actual elements, so arrow keys,
  * Escape and focus return behave the way the browser already implements them.
+ *
+ * Two layouts, one behaviour. `inline` is the compact pill the project filters
+ * use, with the label sitting inside the control. `stacked` puts the label
+ * above a full-width field, for forms where the controls line up in a grid and
+ * a ragged row of pills would read as a mistake.
  */
 export function SelectMenu({
   label,
   value,
   options,
   anyLabel = "Any",
+  layout = "inline",
   onChange,
 }: {
   label: string;
   value: string;
   options: readonly string[];
   anyLabel?: string;
+  layout?: "inline" | "stacked";
   onChange: (value: string) => void;
 }) {
+  const stacked = layout === "stacked";
   const [open, setOpen] = useState(false);
   const wrapper = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -73,6 +81,11 @@ export function SelectMenu({
 
   return (
     <div ref={wrapper} className="relative">
+      {stacked && (
+        <span className="mb-2 block text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-rosegold-600">
+          {label}
+        </span>
+      )}
       <button
         ref={trigger}
         type="button"
@@ -87,19 +100,35 @@ export function SelectMenu({
           }
         }}
         className={cn(
-          "inline-flex items-center gap-2.5 rounded-full border bg-white py-2.5 pl-5 pr-4 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-soft",
-          value === "" ? "border-line-strong" : "border-rosegold-400",
+          "rounded-full border transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          stacked
+            ? "flex w-full items-center justify-between gap-2 bg-white/60 px-5 py-3 shadow-sm backdrop-blur-md hover:shadow-md"
+            : "inline-flex items-center gap-2.5 bg-white py-2.5 pl-5 pr-4 hover:-translate-y-0.5 hover:shadow-soft",
+          // The rose border is a "you narrowed this" cue, which only reads on
+          // the inline pills — a stacked field always carries a value.
+          stacked
+            ? "border-line"
+            : value === ""
+              ? "border-line-strong"
+              : "border-rosegold-400",
         )}
       >
-        <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-slate-muted">
-          {label}
-        </span>
-        <span className="text-[0.875rem] font-semibold text-navy-900">
+        {!stacked && (
+          <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-slate-muted">
+            {label}
+          </span>
+        )}
+        <span
+          className={cn(
+            "text-[0.875rem] text-navy-900",
+            stacked ? "truncate" : "font-semibold",
+          )}
+        >
           {current.text}
         </span>
         <ChevronDownIcon
           className={cn(
-            "h-4 w-4 text-navy-900 transition-transform duration-300",
+            "h-4 w-4 shrink-0 text-navy-900 transition-transform duration-300",
             open && "rotate-180",
           )}
         />
@@ -125,7 +154,10 @@ export function SelectMenu({
             }
             if (event.key === "Tab") close(false);
           }}
-          className="absolute left-0 top-[calc(100%+0.5rem)] z-40 min-w-[12rem] overflow-hidden rounded-[1.25rem] border border-line bg-white py-2 shadow-lift"
+          className={cn(
+            "absolute left-0 top-[calc(100%+0.5rem)] z-40 overflow-hidden rounded-[1.25rem] border border-line bg-white py-2 shadow-lift",
+            stacked ? "w-full" : "min-w-[12rem]",
+          )}
         >
           {choices.map((choice) => {
             const checked = choice.value === value;

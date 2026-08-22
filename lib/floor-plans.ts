@@ -2,6 +2,7 @@ import type { StaticImageData } from "next/image";
 
 import twoBhkType1 from "@/assets/floor-plans/2bhk-type-1.jpg";
 import twoBhkType2 from "@/assets/floor-plans/2bhk-type-2.jpg";
+import twoBhkType3 from "@/assets/floor-plans/2bhk-type-3.jpg";
 import threeBhkType1 from "@/assets/floor-plans/3bhk-type-1.jpg";
 import threeBhkType2 from "@/assets/floor-plans/3bhk-type-2.jpg";
 import threeBhkType3 from "@/assets/floor-plans/3bhk-type-3.jpg";
@@ -93,6 +94,22 @@ const haraVijayaHeights: readonly FloorPlanGroup[] = [
         ],
         image: twoBhkType2,
         alt: "2 BHK typical south and east facing unit plan of 1,100 square feet: master bedroom, bedroom, living and dining, kitchen, two toilets, balcony, sitout and utility",
+      },
+      {
+        label: "Type 3",
+        facing: "East facing",
+        area: "1,180 sq ft",
+        features: [
+          { icon: "bed", label: "2 Bedroom" },
+          { icon: "bath", label: "2 Toilets" },
+          { icon: "living", label: "Living & Dining" },
+          { icon: "kitchen", label: "Kitchen & Utility" },
+          // This drawing labels two sitouts and no balcony, unlike Types 1
+          // and 2 — the row follows the plan rather than the group.
+          { icon: "balcony", label: "Two Sitouts" },
+        ],
+        image: twoBhkType3,
+        alt: "2 BHK east facing unit plan of 1,180 square feet: two bedrooms, living and dining, kitchen, two toilets, utility and two sitouts",
       },
     ],
   },

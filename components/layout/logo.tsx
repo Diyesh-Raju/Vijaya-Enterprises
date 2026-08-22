@@ -5,11 +5,13 @@ import logoReversed from "@/assets/brand/vijaya-logo-reversed.png";
 /**
  * The Vijaya Enterprises lockup: Ganesha mark, wordmark, and the 1973 date.
  *
- * Two artworks ship rather than one because the wordmark is dark purple and
- * half the placements on this site are navy — `reversed` swaps in the version
- * whose wordmark is white. Both are rendered and cross-faded, so the header
- * can move between its transparent and frosted states in step with the rest
- * of the bar rather than hard-cutting the artwork mid-transition.
+ * Two artworks ship rather than one because the artwork is drawn for white
+ * paper and half the placements on this site are navy — `reversed` swaps in
+ * the version whose wordmark is white and whose Ganesha mark has been relit to
+ * hold its light blue against navy (see `assets/brand/README.md`). Both are
+ * rendered and cross-faded, so the header can move between its transparent and
+ * frosted states in step with the rest of the bar rather than hard-cutting the
+ * artwork mid-transition.
  *
  * Height comes from the caller (`className="h-16 sm:h-20"`); the width follows
  * the artwork's aspect ratio. The lockup is decorative here: every placement

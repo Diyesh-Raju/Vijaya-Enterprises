@@ -2,16 +2,22 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { HomeHero } from "@/components/sections/home-hero";
 import { CtaBand } from "@/components/sections/cta-band";
-import { ProofList } from "@/components/sections/proof-list";
-import { VerticalCard, type Vertical } from "@/components/sections/vertical-card";
-import { Container, Section, SectionHeading, Eyebrow } from "@/components/ui/section";
+import { FindResidences } from "@/components/sections/find-residences";
+import { Testimonial } from "@/components/sections/testimonial";
+import { ServiceGrid, type Service } from "@/components/ui/service-grid";
+import {
+  ApartmentBuildingIcon,
+  CommercialBuildingIcon,
+  JointVentureIcon,
+  VillaIcon,
+  WarehouseIcon,
+} from "@/components/ui/build-icons";
+import { Container, Section, Eyebrow } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { Frame } from "@/components/ui/media";
 import { Button } from "@/components/ui/button";
-import { Marquee } from "@/components/ui/marquee";
 import { VideoBackdrop } from "@/components/ui/video-backdrop";
 import { img, alt, video } from "@/lib/images";
-import { associatedOrganisations, sectors } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Vijaya Enterprises — Building Trust Since 1973",
@@ -20,79 +26,34 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const verticals: Vertical[] = [
+/** The five things we build, in the order the grid reads them. */
+const buildTypes: readonly Service[] = [
   {
+    name: "Apartment Buildings",
+    icon: ApartmentBuildingIcon,
     href: "/residential",
-    title: "Residential Development",
-    body: "Homes built for families, with quality and value at the heart of every project. Apartments, villas, residential developments and other housing projects.",
-    image: img.homeDusk,
-    imageAlt: alt.homeDusk,
   },
+  { name: "Villas", icon: VillaIcon, href: "/residential" },
   {
+    name: "Commercial Buildings",
+    icon: CommercialBuildingIcon,
     href: "/commercial-contracts",
-    title: "Commercial Construction",
-    body: "Spaces designed and built to support businesses for years to come. Commercial buildings, offices, complexes and other business infrastructure.",
-    image: img.officeInterior,
-    imageAlt: alt.officeInterior,
   },
   {
+    name: "Warehouses",
+    icon: WarehouseIcon,
     href: "/commercial-contracts#industrial",
-    title: "Industrial Construction",
-    body: "Strong foundations for industries that demand precision, reliability and performance. Industrial buildings, facilities, warehouses and specialised structures.",
-    image: img.warehouseAisle,
-    imageAlt: alt.warehouseAisle,
   },
-  {
-    href: "/commercial-contracts",
-    title: "Private Contract Construction",
-    body: "Your vision. Our experience. One trusted construction partner. We undertake private construction contracts for residential, commercial and industrial requirements.",
-    image: img.rebarWorkers,
-    imageAlt: alt.rebarWorkers,
-  },
-  {
-    href: "/joint-ventures",
-    title: "Joint Ventures",
-    body: "Bringing land, construction expertise and development capability together. We work with landowners and partners to create viable residential and development projects.",
-    image: img.aerialLand,
-    imageAlt: alt.aerialLand,
-  },
-];
-
-const whyVijaya = [
-  {
-    title: "50+ Years of Experience",
-    body: "Since 1973, through every change in materials, methods and customer expectations.",
-  },
-  {
-    title: "Construction Expertise",
-    body: "We understand construction from the ground up — not only from a drawing.",
-  },
-  {
-    title: "Quality at a Fair Price",
-    body: "Premium quality at a fair, reasonable price, with no compromise on workmanship or materials.",
-  },
-  {
-    title: "In-House Capability",
-    body: "Disciplined in-house execution keeps quality under our control at every stage.",
-  },
-  {
-    title: "Projects of Every Scale",
-    body: "From a single family home to large industrial and institutional facilities.",
-  },
-  {
-    title: "One Trusted Partner",
-    body: "Residential, commercial, industrial and institutional work, handled by one team.",
-  },
-  {
-    title: "Built on Relationships",
-    body: "Much of our work comes from families and organisations we have already built for.",
-  },
+  { name: "Joint Ventures", icon: JointVentureIcon, href: "/joint-ventures" },
 ];
 
 export default function HomePage() {
   return (
     <>
       <HomeHero />
+
+      {/* ------------------------------------------------- Find a residence */}
+      <FindResidences />
 
       {/* ---------------------------------------------------------- 50+ years */}
       <Section tone="white" size="lg">
@@ -146,170 +107,17 @@ export default function HomePage() {
         </Container>
       </Section>
 
-      {/* ------------------------------------------------------- The verticals */}
-      <Section tone="mist" size="lg" id="what-we-build">
-        <Container>
-          <SectionHeading
-            eyebrow="What We Build"
-            title="One Construction Partner. Many Possibilities."
-            lead="Vijaya Enterprises is a diversified construction and development company — not only a residential developer. Whatever the sector, the standard is the same."
-          />
-
-          <div className="mt-16 grid gap-10 sm:grid-cols-2 sm:gap-x-8 lg:mt-20 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-16">
-            {verticals.map((vertical, index) => (
-              <VerticalCard
-                key={vertical.title}
-                vertical={vertical}
-                index={index}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              />
-            ))}
-
-            {/* Closing tile keeps the 3-column grid visually complete */}
-            <Reveal delay={180} className="flex">
-              <div className="flex w-full flex-col justify-between rounded-[1.75rem] border border-line bg-white p-9 sm:rounded-[2rem] sm:p-10">
-                <div>
-                  <Eyebrow>Not sure where you fit?</Eyebrow>
-                  <p className="mt-6 font-display text-[1.5rem] leading-snug text-navy-900 sm:text-[1.75rem]">
-                    Tell us what you want to build. We&rsquo;ll help you understand
-                    what it takes to build it.
-                  </p>
-                </div>
-                <div className="mt-10">
-                  <Button href="/contact" withArrow>
-                    Discuss Your Project
-                  </Button>
-                </div>
-              </div>
-            </Reveal>
-          </div>
-        </Container>
-      </Section>
-
-      {/* ------------------------------------------------------- Why Vijaya */}
-      <Section tone="navy" size="lg">
-        <Container>
-          <SectionHeading
-            eyebrow="Why Vijaya"
-            title="Why do people choose Vijaya?"
-            lead="Because five decades of experience gives us something no new brand can build overnight: perspective."
-            onNavy
-          />
-          <div className="mt-14 lg:mt-16">
-            <ProofList items={whyVijaya} onNavy columns={3} />
-          </div>
-        </Container>
-      </Section>
-
-      {/* ------------------------------------------- Sectors & organisations */}
-      <Section tone="white" size="lg">
-        <Container>
-          <div className="grid gap-14 lg:grid-cols-12 lg:gap-20">
-            <div className="lg:col-span-5">
-              <Reveal>
-                <Eyebrow>Proof, Not Claims</Eyebrow>
-              </Reveal>
-              <Reveal delay={80}>
-                <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
-                  Built across industries. Trusted across generations.
-                </h2>
-              </Reveal>
-              <Reveal delay={160}>
-                <p className="mt-7 text-[1.0625rem] leading-[1.8] text-slate-body">
-                  Our experience extends far beyond residential construction. Over
-                  the years, Vijaya Enterprises has worked on projects associated
-                  with organisations and institutions across defence and aerospace,
-                  banking and finance, education, healthcare, industrial and
-                  manufacturing, government and public sector, commercial,
-                  residential and hospitality.
-                </p>
-              </Reveal>
-              <Reveal delay={240}>
-                <div className="mt-9">
-                  <Button href="/our-legacy" variant="outline" withArrow>
-                    See Our Legacy
-                  </Button>
-                </div>
-              </Reveal>
-            </div>
-
-            <div className="lg:col-span-7">
-              <Reveal delay={120}>
-                {/* Two independent columns, the right one dropped, so the
-                    stagger reads as intentional and leaves no dead space. */}
-                <div className="grid grid-cols-2 gap-4 sm:gap-5">
-                  <div className="flex flex-col gap-4 sm:gap-5">
-                    <Frame
-                      src={img.industrialEngineer}
-                      alt={alt.industrialEngineer}
-                      ratio="tall"
-                      sizes="(max-width: 1024px) 45vw, 28vw"
-                      rounded="rounded-[1.5rem] sm:rounded-[2rem]"
-                    />
-                    <Frame
-                      src={img.bankReception}
-                      alt={alt.bankReception}
-                      ratio="landscape"
-                      sizes="(max-width: 1024px) 45vw, 28vw"
-                      rounded="rounded-[1.5rem] sm:rounded-[2rem]"
-                    />
-                  </div>
-                  <div className="mt-10 flex flex-col gap-4 sm:mt-16 sm:gap-5">
-                    <Frame
-                      src={img.institutionHospital}
-                      alt={alt.institutionHospital}
-                      ratio="landscape"
-                      sizes="(max-width: 1024px) 45vw, 28vw"
-                      rounded="rounded-[1.5rem] sm:rounded-[2rem]"
-                    />
-                    <Frame
-                      src={img.institutionCampus}
-                      alt={alt.institutionCampus}
-                      ratio="tall"
-                      sizes="(max-width: 1024px) 45vw, 28vw"
-                      rounded="rounded-[1.5rem] sm:rounded-[2rem]"
-                    />
-                  </div>
-                </div>
-              </Reveal>
-            </div>
-          </div>
-        </Container>
-
-        {/* Sector ticker */}
-        <Reveal className="mt-20 border-y border-line py-8 sm:mt-24">
-          <Marquee items={sectors} />
-        </Reveal>
-
-        <Container className="mt-16">
-          <Reveal>
-            <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-slate-muted">
-              Selected organisations associated with our construction experience
-            </p>
-          </Reveal>
-          <Reveal delay={80}>
-            <ul className="mt-8 flex flex-wrap gap-x-3 gap-y-3">
-              {associatedOrganisations.map((organisation) => (
-                <li
-                  key={organisation}
-                  className="rounded-full border border-line bg-mist px-5 py-2.5 text-[0.875rem] text-navy-800"
-                >
-                  {organisation}
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-          <Reveal delay={160}>
-            <p className="mt-8 max-w-2xl text-[0.875rem] leading-relaxed text-slate-muted">
-              Projects associated with these organisations reflect the range of our
-              construction experience across sectors.
-            </p>
-          </Reveal>
-        </Container>
-      </Section>
+      {/* ------------------------------------------------------- What we build */}
+      <ServiceGrid
+        id="what-we-build"
+        eyebrow="What We Build"
+        title="One Construction Partner. Many Possibilities."
+        subtitle="Vijaya Enterprises is a diversified construction and development company — not only a residential developer. Whatever the sector, the standard is the same."
+        services={buildTypes}
+      />
 
       {/* ------------------------------------------------------- Residential */}
-      <Section tone="mist" size="lg">
+      <Section tone="white" size="lg">
         <Container>
           <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
             <div className="order-2 lg:order-1 lg:col-span-6">
@@ -359,6 +167,9 @@ export default function HomePage() {
           </div>
         </Container>
       </Section>
+
+      {/* ------------------------------------------------------- Testimonial */}
+      <Testimonial />
 
       {/* --------------------------------------------------- Contract + JV */}
       <CtaBand
