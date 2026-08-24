@@ -106,8 +106,14 @@ export const associatedOrganisations = [
  * `mark` stays as the typeset fallback: an entry with no `logo` still renders,
  * and the roster below is not final.
  *
+ * Union Bank's file is their own post-merger lockup cropped back to the
+ * primary mark, above the gutter that separates it from the Andhra and
+ * Corporation badges — their plain lockup is only published at 375px, too
+ * small to draw at this size. Bosch is the vector their global site inlines.
+ *
  * ⚠️ These are other organisations' trademarks, taken from their own websites
- * (and, for MML, from the 2018 archive of the since-retired mml.kar.nic.in).
+ * (and, for MML, from the 2018 archive of the since-retired mml.kar.nic.in —
+ * at 73px tall it is the one file in the set with no headroom left).
  * They are reproduced here to say who Vijaya has built for, which is what a
  * client list is; that is the only use they are dressed for. Do not carry any
  * of them onto anything that reads as endorsement or joint branding without
@@ -132,16 +138,16 @@ export type TrustedOrg = {
 };
 
 export const trustedBy: readonly TrustedOrg[] = [
-  { mark: "BEL", name: "Bharat Electronics Limited", logo: "/logos/bel.png", w: 421, h: 140, height: 36 },
-  { mark: "HAL", name: "Hindustan Aeronautics Limited", logo: "/logos/hal.png", w: 257, h: 140, height: 48 },
-  { mark: "Union Bank", name: "Union Bank of India", logo: "/logos/union.png", w: 760, h: 113, height: 28 },
-  { mark: "ISRO", name: "Indian Space Research Organisation", logo: "/logos/isro.svg", w: 300, h: 290, height: 52 },
-  { mark: "NAL", name: "National Aeronautical Laboratories", logo: "/logos/nal.png", w: 144, h: 140, height: 52 },
-  { mark: "IOCL", name: "Indian Oil Corporation", logo: "/logos/iocl.svg", w: 200, h: 239, height: 56 },
-  { mark: "Canara", name: "Canara Bank", logo: "/logos/canara.png", w: 176, h: 140, height: 50 },
-  { mark: "KNSIT", name: "K.N.S. Institute of Technology", logo: "/logos/knsit.png", w: 132, h: 140, height: 54 },
-  { mark: "MML", name: "Mysore Minerals Limited", logo: "/logos/mml.png", w: 760, h: 97, height: 28 },
-  { mark: "MICO", name: "Motor Industries Co. Ltd.", logo: "/logos/mico.png", w: 617, h: 140, height: 32 },
+  { mark: "BEL", name: "Bharat Electronics Limited", logo: "/logos/bel.png", w: 337, h: 112, height: 50 },
+  { mark: "HAL", name: "Hindustan Aeronautics Limited", logo: "/logos/hal.png", w: 441, h: 240, height: 67 },
+  { mark: "Union Bank", name: "Union Bank of India", logo: "/logos/union.png", w: 615, h: 95, height: 39 },
+  { mark: "ISRO", name: "Indian Space Research Organisation", logo: "/logos/isro.svg", w: 300, h: 290, height: 73 },
+  { mark: "NAL", name: "National Aeronautical Laboratories", logo: "/logos/nal.png", w: 247, h: 240, height: 73 },
+  { mark: "IOCL", name: "Indian Oil Corporation", logo: "/logos/iocl.svg", w: 200, h: 239, height: 78 },
+  { mark: "Canara", name: "Canara Bank", logo: "/logos/canara.png", w: 302, h: 240, height: 70 },
+  { mark: "KNSIT", name: "K.N.S. Institute of Technology", logo: "/logos/knsit.png", w: 226, h: 240, height: 76 },
+  { mark: "MML", name: "Mysore Minerals Limited", logo: "/logos/mml.png", w: 573, h: 73, height: 39 },
+  { mark: "MICO", name: "Motor Industries Co. Ltd.", logo: "/logos/mico.svg", w: 433, h: 97, height: 45 },
 ];
 
 export const sectors = [

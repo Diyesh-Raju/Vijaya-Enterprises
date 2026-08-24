@@ -310,17 +310,17 @@
 ------------------------------------------------------------------- */
 
 .trusted-row {
-  --logo-scale: 0.78;
+  --logo-scale: 0.7;
 }
 
 /* Tall enough for the largest logo in the roster, so the row has one
    optical baseline and the captions under it stay on a single line. */
 .trusted-well {
-  height: calc(60px * var(--logo-scale, 1));
+  height: calc(84px * var(--logo-scale, 1));
 }
 
 @media (min-width: 640px) {
-  .trusted-row { --logo-scale: 0.9; }
+  .trusted-row { --logo-scale: 0.85; }
 }
 
 @media (min-width: 1024px) {
