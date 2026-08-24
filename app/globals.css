@@ -316,7 +316,7 @@
 /* Tall enough for the largest logo in the roster, so the row has one
    optical baseline and the captions under it stay on a single line. */
 .trusted-well {
-  height: calc(84px * var(--logo-scale, 1));
+  height: calc(113px * var(--logo-scale, 1));
 }
 
 @media (min-width: 640px) {

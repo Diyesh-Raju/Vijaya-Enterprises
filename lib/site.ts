@@ -138,16 +138,16 @@ export type TrustedOrg = {
 };
 
 export const trustedBy: readonly TrustedOrg[] = [
-  { mark: "BEL", name: "Bharat Electronics Limited", logo: "/logos/bel.png", w: 337, h: 112, height: 50 },
-  { mark: "HAL", name: "Hindustan Aeronautics Limited", logo: "/logos/hal.png", w: 441, h: 240, height: 67 },
-  { mark: "Union Bank", name: "Union Bank of India", logo: "/logos/union.png", w: 615, h: 95, height: 39 },
-  { mark: "ISRO", name: "Indian Space Research Organisation", logo: "/logos/isro.svg", w: 300, h: 290, height: 73 },
-  { mark: "NAL", name: "National Aeronautical Laboratories", logo: "/logos/nal.png", w: 247, h: 240, height: 73 },
-  { mark: "IOCL", name: "Indian Oil Corporation", logo: "/logos/iocl.svg", w: 200, h: 239, height: 78 },
-  { mark: "Canara", name: "Canara Bank", logo: "/logos/canara.png", w: 302, h: 240, height: 70 },
-  { mark: "KNSIT", name: "K.N.S. Institute of Technology", logo: "/logos/knsit.png", w: 226, h: 240, height: 76 },
-  { mark: "MML", name: "Mysore Minerals Limited", logo: "/logos/mml.png", w: 573, h: 73, height: 39 },
-  { mark: "MICO", name: "Motor Industries Co. Ltd.", logo: "/logos/mico.svg", w: 433, h: 97, height: 45 },
+  { mark: "BEL", name: "Bharat Electronics Limited", logo: "/logos/bel.png", w: 1125, h: 300, height: 58 },
+  { mark: "HAL", name: "Hindustan Aeronautics Limited", logo: "/logos/hal.png", w: 454, h: 247, height: 90 },
+  { mark: "Union Bank", name: "Union Bank of India", logo: "/logos/union.svg", w: 400, h: 84, height: 56 },
+  { mark: "ISRO", name: "Indian Space Research Organisation", logo: "/logos/isro.svg", w: 300, h: 290, height: 99 },
+  { mark: "NAL", name: "National Aeronautical Laboratories", logo: "/logos/nal.png", w: 309, h: 300, height: 99 },
+  { mark: "IOCL", name: "Indian Oil Corporation", logo: "/logos/iocl.svg", w: 200, h: 239, height: 105 },
+  { mark: "Canara", name: "Canara Bank", logo: "/logos/canara.png", w: 378, h: 300, height: 95 },
+  { mark: "KNSIT", name: "K.N.S. Institute of Technology", logo: "/logos/knsit.png", w: 282, h: 300, height: 103 },
+  { mark: "MML", name: "Mysore Minerals Limited", logo: "/logos/mml.png", w: 1020, h: 130, height: 46 },
+  { mark: "MICO", name: "Motor Industries Co. Ltd.", logo: "/logos/mico.svg", w: 433, h: 97, height: 61 },
 ];
 
 export const sectors = [
