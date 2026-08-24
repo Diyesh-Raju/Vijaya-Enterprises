@@ -93,6 +93,31 @@ export const associatedOrganisations = [
   "KHT Motors",
 ] as const;
 
+/**
+ * The Trusted By band on the home page.
+ *
+ * `mark` is the short form set large as the wordmark, `name` the full title
+ * printed under it. Both are our own typography: Vijaya holds no logo usage
+ * rights for any of these organisations, so none of their marks are
+ * reproduced. Keep it that way unless written permission arrives.
+ *
+ * `associatedOrganisations` above is the shorter, plainer list the
+ * Commercial Contracts page tickers — the two overlap and should be
+ * reconciled once the client roster is confirmed.
+ */
+export const trustedBy = [
+  { mark: "BEL", name: "Bharat Electronics Limited" },
+  { mark: "HAL", name: "Hindustan Aeronautics Limited" },
+  { mark: "Union Bank", name: "Union Bank of India" },
+  { mark: "ISRO", name: "Indian Space Research Organisation" },
+  { mark: "NAL", name: "National Aeronautical Laboratories" },
+  { mark: "IOCL", name: "Indian Oil Corporation" },
+  { mark: "Canara", name: "Canara Bank" },
+  { mark: "KNSIT", name: "K.N.S. Institute of Technology" },
+  { mark: "MML", name: "Mysore Minerals Limited" },
+  { mark: "MICO", name: "Motor Industries Co. Ltd." },
+] as const;
+
 export const sectors = [
   "Defence & Aerospace",
   "Banking & Finance",

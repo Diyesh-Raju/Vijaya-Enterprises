@@ -28,7 +28,11 @@ const csp = [
   "form-action 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  // The home-page coverflow deck runs on the stock images its template
+  // ships with, served from these two hosts. Both come out again once
+  // Vijaya's own photography replaces them — see
+  // `components/sections/residence-carousel.tsx`.
+  "img-src 'self' data: blob: https://pub-940ccf6255b54fa799a9b01050e6c227.r2.dev https://images.unsplash.com",
   "media-src 'self'",
   "font-src 'self' data:",
   `connect-src 'self'${isDev ? " ws: wss: http://localhost:* http://127.0.0.1:*" : ""}`,

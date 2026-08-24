@@ -9,7 +9,8 @@ import { cn } from "@/lib/cn";
  *
  * A native `<select>` hands its list to the operating system, which paints it
  * in system chrome no CSS can reach. This renders the list itself so the
- * options carry the site's type and the chosen one reads in rose gold.
+ * options carry the site's type and the chosen one is marked in the accent
+ * that layout uses.
  *
  * Built as a menu of real buttons rather than an ARIA listbox with
  * `aria-activedescendant`: focus lands on actual elements, so arrow keys,
@@ -82,7 +83,7 @@ export function SelectMenu({
   return (
     <div ref={wrapper} className="relative">
       {stacked && (
-        <span className="mb-2 block text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-rosegold-600">
+        <span className="mb-2 block text-[0.625rem] font-bold uppercase tracking-[0.18em] text-navy-800">
           {label}
         </span>
       )}
@@ -120,8 +121,8 @@ export function SelectMenu({
         )}
         <span
           className={cn(
-            "text-[0.875rem] text-navy-900",
-            stacked ? "truncate" : "font-semibold",
+            "text-[0.875rem] font-semibold text-navy-900",
+            stacked && "truncate",
           )}
         >
           {current.text}
@@ -174,8 +175,12 @@ export function SelectMenu({
                 }}
                 className={cn(
                   "block w-full px-5 py-3 text-left text-[0.9375rem] transition-colors duration-200",
+                  // The two layouts carry different accents: the enquiry
+                  // panel is navy throughout, the project filters rose gold.
                   checked
-                    ? "font-semibold text-rosegold-600"
+                    ? stacked
+                      ? "font-semibold text-navy-900"
+                      : "font-semibold text-rosegold-600"
                     : "text-navy-900 hover:bg-navy-50",
                 )}
               >

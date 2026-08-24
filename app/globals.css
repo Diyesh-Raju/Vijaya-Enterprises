@@ -71,7 +71,7 @@
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
 
-  --animate-marquee: marquee 42s linear infinite;
+  --animate-marquee: marquee var(--marquee-duration, 42s) linear infinite;
   --animate-ken-burns: ken-burns 26s var(--ease-in-out-soft) infinite alternate;
   --animate-fade-in: fade-in 0.9s var(--ease-out-soft) both;
   --animate-rise: rise 1s var(--ease-out-soft) both;
@@ -301,6 +301,457 @@
    the border ring. Set `--rosegold-fill` when the inside is not white.
    This is the only way to get a gradient border that follows a radius; a
    plain `border-color` cannot carry a gradient. */
+/* ------------------------------------------------------------------
+   Gooey slideshow — the Codrops "Gooey Hover" demo.
+
+   The template's own SCSS, translated. Its `html` is set to 62.5% so a
+   rem there is 10px; every length below has been divided by ten to mean
+   the same thing against this site's 16px root.
+
+   Changed on request: the ground is white, so the demo's five shifting
+   dark backgrounds and its pale per-tile text colours are gone — pale
+   mint on white is not a colour, it is an absence. The type is navy
+   throughout instead. The rest is as drawn.
+------------------------------------------------------------------- */
+
+.gooey__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-size: calc(4vw + 5rem);
+  line-height: 0.975;
+  color: var(--color-navy-950);
+  opacity: 0.1;
+}
+
+.gooey__title-offset {
+  display: block;
+  margin-left: 15%;
+}
+
+.gooey__viewport {
+  overflow: hidden;
+  width: 100%;
+}
+
+.gooey__track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  transition: transform 1.1s var(--ease-out-soft);
+  will-change: transform;
+}
+
+.gooey__slide {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 15.625rem;
+  max-width: 40vmin;
+  margin-left: 15vw;
+}
+
+.gooey__slide:last-child {
+  padding-right: 10vw;
+  box-sizing: content-box;
+}
+
+/* Every other tile rides a little high, which is the demo's rhythm. Held
+   to a ceiling because here it sits in a section rather than a screen. */
+@media (min-width: 768px) {
+  .gooey__slide[data-lift="up"] { transform: translateY(min(8vh, 4.5rem)); }
+  .gooey__slide[data-lift="down"] { transform: translateY(min(-8vh, -4.5rem)); }
+  .gooey__slide { margin-left: 20vw; }
+}
+
+.gooey__tile {
+  position: relative;
+}
+
+.gooey__fig {
+  position: relative;
+  width: 100%;
+}
+
+.gooey__fig::before {
+  content: "";
+  display: block;
+  padding-top: 136.36%;
+}
+
+.gooey__img {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: opacity 0.3s;
+}
+
+/* Once a WebGL plane is covering it, the picture itself steps back — but
+   only then, so a browser without WebGL keeps the photograph. */
+.gooey__img.is-loaded {
+  opacity: 0;
+}
+
+.gooey__content {
+  position: absolute;
+  bottom: 2.25rem;
+  left: 0;
+  width: 100%;
+  font-size: 0.875rem;
+  color: var(--color-navy-950);
+}
+
+.gooey__tile-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-size: calc(1.25rem + 2.5vw);
+  line-height: 0.975;
+  margin-left: -10%;
+}
+
+.gooey__title-offset--medium {
+  margin-left: 15%;
+}
+
+.gooey__cta {
+  display: block;
+  margin-top: 1.25rem;
+  margin-left: 6.4%;
+  line-height: 1.5;
+}
+
+.gooey__btn-inline {
+  display: inline-block;
+  line-height: 1.5;
+  border-bottom: 1px solid;
+}
+
+@media (min-width: 768px) {
+  .gooey__tile-title { margin-left: -45%; }
+  .gooey__title-offset--medium { margin-left: 23%; }
+  .gooey__cta { margin-left: -11%; }
+}
+
+.gooey__progress-ctn {
+  overflow: hidden;
+  position: relative;
+  width: 8.125rem;
+  height: 0.25rem;
+  background-color: var(--color-line-strong);
+  border-radius: 0.25rem;
+}
+
+.gooey__progress {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-navy-900);
+  border-radius: 0.25rem;
+  transition: transform 1.1s var(--ease-out-soft);
+}
+
+/* Reduced motion: the strip still walks, it just stops sliding there. */
+@media (prefers-reduced-motion: reduce) {
+  .gooey__track,
+  .gooey__progress {
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Residential hero — the Animmaster "Hero Animation" loader, scrubbed.
+
+   The word sets, a sliver of photograph opens between its two halves,
+   widens, then swallows the viewport; the page's own heading rises out
+   of the bottom once it has. None of it plays on its own — the whole
+   timeline is driven by how far the visitor has scrolled through the
+   track, so they hold the handle and can wind it back.
+
+   Rebuilt on keyframes rather than the GSAP the template ships with.
+   Every animation is declared normally and then held with
+   `animation-play-state: paused`; each delay is `calc(<its start> -
+   var(--reshero-t))`, so writing one time into `--reshero-t` scrubs the
+   lot to that moment. `ScrollScrub` writes it, once a frame. The two
+   curves stand in for the template's `expo.inOut` and `expo.out`, and
+   the starts below are its GSAP timeline resolved to milliseconds, less
+   the 1250ms the letters used to spend rising: the word is set before
+   anyone scrolls, so there is nothing to wait through.
+
+   `--reshero-t` defaults to 0ms so the first paint — before hydration —
+   is the opening frame rather than a flash of the ending. Without any
+   JavaScript at all the `noscript` block in the component parks it at
+   the end instead, because a hero that never runs must not also be the
+   reason the heading is invisible.
+------------------------------------------------------------------- */
+
+.reshero {
+  --reshero-t: 0ms;
+  --reshero-expo-in-out: cubic-bezier(0.87, 0, 0.13, 1);
+  --reshero-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* The track. Its height beyond one viewport is the scrub distance, so
+     two screens of scrolling wind the timeline from end to end. */
+  min-height: 300svh;
+}
+
+.reshero__loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--color-navy-950);
+  /* Its own stacking context. Without this the box's `z-index: 2` below
+     escapes to the stage and paints the photograph over the heading. */
+  isolation: isolate;
+}
+
+.reshero__word {
+  display: flex;
+  justify-content: center;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: clamp(2.25rem, 10.5vw, 10rem);
+  line-height: 0.75;
+  letter-spacing: -0.03em;
+}
+
+/* The halves clip their letters so those can rise into place, and they
+   part by a hair as the picture opens between them. */
+.reshero__half {
+  display: flex;
+  overflow: hidden;
+  animation: reshero-part 1250ms var(--reshero-expo-in-out) both;
+  animation-delay: calc(0ms - var(--reshero-t));
+}
+
+.reshero__half.is--start {
+  justify-content: flex-end;
+  --reshero-part: -0.05em;
+}
+
+.reshero__half.is--end {
+  justify-content: flex-start;
+  --reshero-part: 0.05em;
+}
+
+.reshero__half > span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Above the letters throughout: once the picture is full-bleed it has to
+   cover the word, not slide under the half that happens to follow it. */
+.reshero__box {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+  width: 0;
+  /* The flood fills `forwards`, not `both`. Both animations write `width`,
+     and a backwards fill would have the flood applying its own start value
+     from time zero — pinning the box open at 1em before the word has even
+     set, and hiding the open animation underneath it. */
+  animation:
+    reshero-box-open 1250ms var(--reshero-expo-in-out) both,
+    reshero-box-flood 2000ms var(--reshero-expo-in-out) forwards;
+  animation-delay:
+    calc(0ms - var(--reshero-t)),
+    calc(2450ms - var(--reshero-t));
+}
+
+.reshero__box-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1em;
+  height: 95%;
+}
+
+.reshero__grow {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 0;
+  height: 100%;
+  overflow: hidden;
+  /* Forwards only, for the same reason as the box above. */
+  animation:
+    reshero-grow-open 1250ms var(--reshero-expo-in-out) both,
+    reshero-grow-flood 2000ms var(--reshero-expo-in-out) forwards;
+  animation-delay:
+    calc(0ms - var(--reshero-t)),
+    calc(2450ms - var(--reshero-t));
+}
+
+.reshero__grow-wrap {
+  position: absolute;
+  width: 100%;
+  min-width: 1em;
+  height: 100%;
+}
+
+.reshero__cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Three frames flicked away in turn, so the reveal lands on a photograph
+   the visitor has not already been looking at all the way down. */
+.reshero__cover.is--1 { z-index: 3; animation: reshero-flick 50ms linear both; animation-delay: calc(1200ms - var(--reshero-t)); }
+.reshero__cover.is--2 { z-index: 2; animation: reshero-flick 50ms linear both; animation-delay: calc(1700ms - var(--reshero-t)); }
+.reshero__cover.is--3 { z-index: 1; animation: reshero-flick 50ms linear both; animation-delay: calc(2200ms - var(--reshero-t)); }
+
+/* The page's own copy, rising once the picture is behind it. Each caller
+   sets its own start through `--reshero-at`. */
+.reshero__rise {
+  display: block;
+  animation: reshero-rise 1250ms var(--reshero-expo-out) both;
+  animation-delay: calc(var(--reshero-at, 0ms) - var(--reshero-t));
+}
+
+.reshero__rise-clip {
+  display: block;
+  overflow: hidden;
+}
+
+.reshero__fade {
+  animation: fade-in 1600ms var(--ease-out-soft) both;
+  animation-delay: calc(var(--reshero-at, 0ms) - var(--reshero-t));
+}
+
+@keyframes reshero-part {
+  from { transform: translateX(0); }
+  to { transform: translateX(var(--reshero-part)); }
+}
+
+@keyframes reshero-box-open {
+  from { width: 0em; }
+  to { width: 1em; }
+}
+
+@keyframes reshero-box-flood {
+  from { width: 1em; }
+  to { width: 130vw; }
+}
+
+@keyframes reshero-grow-open {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+@keyframes reshero-grow-flood {
+  from { width: 100%; height: 100%; }
+  to { width: 130vw; height: 130vh; }
+}
+
+@keyframes reshero-flick {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes reshero-rise {
+  from { transform: translateY(110%); }
+  to { transform: translateY(0); }
+}
+
+/* Held at whatever frame `--reshero-t` names, rather than playing.
+
+   ⚠️ This has to stay below every rule above that sets `animation`. The
+   shorthand resets `animation-play-state` to `running`, so declaring the
+   pause first — which is where it reads better — silently un-pauses the
+   whole hero and it plays itself on load. */
+.reshero__half,
+.reshero__box,
+.reshero__grow,
+.reshero__cover,
+.reshero__rise,
+.reshero__fade {
+  animation-play-state: paused;
+}
+
+/* Reduced motion: no track to wind, no pinning. Parking the clock past
+   the last frame leaves the finished hero — the photograph and the
+   heading — with nothing having moved to get there. `ScrollScrub` sees
+   the same preference and never writes over this. */
+@media (prefers-reduced-motion: reduce) {
+  .reshero {
+    --reshero-t: 99999ms;
+    min-height: 100svh;
+  }
+
+  .reshero__stage {
+    position: static;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Flip cards — the "Why Vijaya" set on the Residential page.
+
+   The two faces share one grid cell, so a card is exactly as tall as its
+   taller face and nobody has to guess a height.
+
+   All of the 3D is inside the hover query on purpose. On a touch screen
+   there is nothing to hover with, so the faces come out of the shared
+   cell, stack down the card and both stay readable — the detail is never
+   hidden behind a gesture the device cannot make. `focus-within` gives
+   the same reveal to a keyboard, which is why each card is focusable.
+------------------------------------------------------------------- */
+
+.flip-card {
+  perspective: 1600px;
+}
+
+.flip-card-inner {
+  display: grid;
+  gap: 1.25rem;
+  height: 100%;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .flip-card-inner {
+    gap: 0;
+    transform-style: preserve-3d;
+    transition: transform 0.8s var(--ease-out-soft);
+  }
+
+  .flip-card-inner > * {
+    grid-area: 1 / 1;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .flip-card-back {
+    transform: rotateY(180deg);
+  }
+
+  .flip-card:hover .flip-card-inner,
+  .flip-card:focus-visible .flip-card-inner,
+  .flip-card:focus-within .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+}
+
 @utility border-rosegold {
   border: 3px solid transparent;
   background-image:
@@ -397,6 +848,45 @@
 @utility fade-edges {
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+/* ------------------------------------------------------------------
+   Extruded wordmarks — the Trusted By band.
+
+   We hold no logo usage rights for any of these organisations, so their
+   names are set in our own type rather than reproduced as their marks.
+   Depth comes from two stacked copies of the same word, because the face
+   and the extrusion cannot share one element: a gradient face needs
+   `color: transparent` with `background-clip: text`, and a `text-shadow`
+   on that same element would show *through* the hollow glyph instead of
+   sitting behind it.
+------------------------------------------------------------------- */
+
+/* The lit face. Lighter along the top edge, as if the light were above. */
+@utility wordmark-face {
+  background-image: linear-gradient(
+    180deg,
+    var(--color-navy-600) 0%,
+    var(--color-navy-800) 48%,
+    var(--color-navy-900) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* The body of the letter, sunk down and to the right and darkening with
+   distance, with a brass rim at the base and the cast shadow beyond it. */
+@utility wordmark-extrude {
+  color: transparent;
+  text-shadow:
+    0 1px 0 var(--color-navy-800),
+    0 2px 0 var(--color-navy-900),
+    1px 3px 0 var(--color-navy-950),
+    1px 4px 0 var(--color-navy-1000),
+    1px 5px 0 var(--color-brass-600),
+    2px 9px 12px rgb(10 31 68 / 0.24),
+    3px 18px 30px rgb(10 31 68 / 0.14);
 }
 
 /* ------------------------------------------------------------------

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { PageHero } from "@/components/sections/page-hero";
+import { ResidentialHero } from "@/components/sections/residential-hero";
 import { ApartmentProjects } from "@/components/sections/apartment-projects";
 import { CtaBand } from "@/components/sections/cta-band";
 import { IconCards } from "@/components/sections/icon-cards";
@@ -11,13 +11,13 @@ import { Frame } from "@/components/ui/media";
 import { Counter } from "@/components/ui/counter";
 import { AwardsComponent } from "@/components/ui/award";
 import {
-  BrickWallIcon,
-  FloorPlanIcon,
-  HeartIcon,
-  HourglassIcon,
-  ScaleIcon,
-  ShieldCheckIcon,
-} from "@/components/ui/line-icons";
+  BalanceEmblem,
+  CompassRoseEmblem,
+  CrestEmblem,
+  HourglassEmblem,
+  MasonryEmblem,
+  PlanEmblem,
+} from "@/components/ui/emblem-icons";
 import { img, alt } from "@/lib/images";
 
 export const metadata: Metadata = {
@@ -63,50 +63,61 @@ const awards = [
   },
 ];
 
+/**
+ * `body` is the line on the front of the card, `detail` the fuller answer on
+ * the back. Everything in both is stated elsewhere on the site — except the
+ * Vastu card, which is new copy and wants confirming against how the layouts
+ * are actually planned before it goes public.
+ */
 const whyForYourHome = [
   {
-    icon: <HourglassIcon />,
+    icon: <HourglassEmblem />,
     title: "50+ Years of Experience",
     body: "Building homes for families since 1973, through every change in how India builds.",
+    detail:
+      "Materials, methods and what a family expects of a home have all changed since 1973. The commitment to building with integrity has not.",
   },
   {
-    icon: <BrickWallIcon />,
+    icon: <MasonryEmblem />,
     title: "Quality Construction",
     body: "Materials and workmanship we would accept in a home built for our own family.",
+    detail:
+      "Specification, supervision and finish held to one standard, whatever the sector. Our greatest strength is simple: we understand construction from the ground up.",
   },
   {
-    icon: <ScaleIcon />,
+    icon: <BalanceEmblem />,
     title: "Fair & Transparent Pricing",
     body: "Premium quality at a fair price, with no surprises after you commit.",
+    detail:
+      "What a home costs is explained before you commit, not after. What is included is written down, and what is not is said out loud.",
   },
   {
-    icon: <FloorPlanIcon />,
+    icon: <PlanEmblem />,
     title: "Thoughtful Planning",
     body: "Layouts planned around how families actually live, not only around saleable area.",
+    detail:
+      "Light, ventilation, storage and circulation are settled first. Saleable area follows the layout rather than dictating it.",
   },
   {
-    icon: <ShieldCheckIcon />,
+    icon: <CrestEmblem />,
     title: "Trusted Legacy",
     body: "A name that families and institutions in Karnataka have relied on for five decades.",
+    detail:
+      "Bharat Electronics, HAL, ISRO, Indian Oil, Union Bank and Canara Bank are among the organisations that have put their construction in our hands.",
   },
   {
-    icon: <HeartIcon />,
-    title: "Customer-Focused Approach",
-    body: "One point of responsibility, from first enquiry through to handover.",
+    icon: <CompassRoseEmblem />,
+    title: "Vastu Compliant",
+    body: "Homes planned to vastu principles, from the entrance through to the pooja room.",
+    detail:
+      "Orientation, entrances, kitchens, pooja rooms and master bedrooms placed to vastu — without giving up the light, ventilation or usable area that make a plan work.",
   },
 ];
 
 export default function ResidentialPage() {
   return (
     <>
-      <PageHero
-        eyebrow="Residential Development"
-        title="Homes built on trust."
-        lead="Thoughtfully planned homes backed by more than 50 years of construction experience."
-        image={img.villaPool}
-        imageAlt={alt.villaPool}
-        cta={{ href: "#apartment-projects", label: "Explore Our Residential Work" }}
-      />
+      <ResidentialHero />
 
       {/* ------------------------------------------------- Built for families */}
       <Section tone="white" size="lg">

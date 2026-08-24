@@ -94,13 +94,13 @@ export function StepRange({
   return (
     <div className="rounded-full border border-line bg-white/60 px-5 py-3 shadow-sm backdrop-blur-md">
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-[0.75rem] font-medium text-navy-900">
+        <span className="text-[0.75rem] font-semibold text-navy-900">
           {format(stops[low])}
         </span>
         <span aria-hidden="true" className="text-[0.625rem] text-slate-muted">
           —
         </span>
-        <span className="text-[0.75rem] font-medium text-navy-900">
+        <span className="text-[0.75rem] font-semibold text-navy-900">
           {format(stops[high])}
         </span>
       </div>
@@ -133,24 +133,29 @@ export function StepRange({
         }}
         className="relative h-1.5 cursor-pointer touch-none select-none rounded-full bg-line-strong"
       >
-        {/* The benchmarks themselves, so the snapping reads as deliberate. */}
+        <span
+          aria-hidden="true"
+          style={{ left: `${percent(low)}%`, width: `${percent(high) - percent(low)}%` }}
+          className="absolute h-full rounded-full bg-rosegold-600/60"
+        />
+
+        {/* The benchmarks themselves, so the snapping reads as deliberate
+            rather than as a slider that refuses to land where it is put.
+            Drawn after the fill so they sit on top of it, and wider than the
+            rail so they stand proud of it — a dot flush with a 6px rail is
+            not a dot anyone can see. Navy on the bare rail, white once the
+            fill is under them; either way there is contrast to read. */}
         {stops.map((stop, index) => (
           <span
             key={stop}
             aria-hidden="true"
             style={{ left: `${percent(index)}%` }}
             className={cn(
-              "absolute top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full",
-              index >= low && index <= high ? "bg-white/70" : "bg-white",
+              "absolute top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-colors duration-200",
+              index >= low && index <= high ? "bg-white" : "bg-navy-400",
             )}
           />
         ))}
-
-        <span
-          aria-hidden="true"
-          style={{ left: `${percent(low)}%`, width: `${percent(high) - percent(low)}%` }}
-          className="absolute h-full rounded-full bg-rosegold-600/60"
-        />
 
         <button {...handleProps(0)} />
         <button {...handleProps(1)} />

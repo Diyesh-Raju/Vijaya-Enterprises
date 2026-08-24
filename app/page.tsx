@@ -3,7 +3,11 @@ import type { Metadata } from "next";
 import { HomeHero } from "@/components/sections/home-hero";
 import { CtaBand } from "@/components/sections/cta-band";
 import { FindResidences } from "@/components/sections/find-residences";
+import { FiftyYears } from "@/components/sections/fifty-years";
+import { DestinationSlideshow } from "@/components/sections/destination-slideshow";
 import { Testimonial } from "@/components/sections/testimonial";
+import { ResidenceCarousel } from "@/components/sections/residence-carousel";
+import { TrustedBy } from "@/components/sections/trusted-by";
 import { ServiceGrid, type Service } from "@/components/ui/service-grid";
 import {
   ApartmentBuildingIcon,
@@ -52,60 +56,14 @@ export default function HomePage() {
     <>
       <HomeHero />
 
+      {/* ------------------------------------------------------ 50 years of */}
+      <FiftyYears />
+
       {/* ------------------------------------------------- Find a residence */}
       <FindResidences />
 
-      {/* ---------------------------------------------------------- 50+ years */}
-      <Section tone="white" size="lg">
-        <Container>
-          <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
-            <div className="lg:col-span-6">
-              <Reveal>
-                <Eyebrow>50+ Years of Trust</Eyebrow>
-              </Reveal>
-              <Reveal delay={80}>
-                <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.5rem)] leading-[1.08]">
-                  We have been building more than structures.
-                </h2>
-              </Reveal>
-              <Reveal delay={160}>
-                <div className="mt-7 space-y-5 text-[1.0625rem] leading-[1.8] text-slate-body">
-                  <p>
-                    Since 1973, Vijaya Enterprises has been building relationships,
-                    confidence and a reputation that has lasted for generations.
-                    From homes for families to buildings for businesses, industries,
-                    institutions and public-sector organisations, our experience
-                    spans a wide range of construction requirements.
-                  </p>
-                  <p>
-                    And we bring that experience to every project — large or small.
-                  </p>
-                </div>
-              </Reveal>
-              <Reveal delay={240}>
-                <blockquote className="mt-10 rounded-3xl border border-line bg-mist p-8 sm:p-10">
-                  <p className="font-display text-[1.375rem] leading-snug text-navy-900 sm:text-[1.625rem]">
-                    “Our greatest strength is simple: we understand construction
-                    from the ground up.”
-                  </p>
-                </blockquote>
-              </Reveal>
-            </div>
-
-            <div className="lg:col-span-6">
-              <Reveal delay={120}>
-                <Frame
-                  src={img.blueprintCraft}
-                  alt={alt.blueprintCraft}
-                  ratio="tall"
-                  sizes="(max-width: 1024px) 100vw, 45vw"
-                  rounded="rounded-[2rem] sm:rounded-[3rem]"
-                />
-              </Reveal>
-            </div>
-          </div>
-        </Container>
-      </Section>
+      {/* --------------------------------------------------- Gooey slideshow */}
+      <DestinationSlideshow />
 
       {/* ------------------------------------------------------- What we build */}
       <ServiceGrid
@@ -167,6 +125,12 @@ export default function HomePage() {
           </div>
         </Container>
       </Section>
+
+      {/* -------------------------------------------------- Residence deck */}
+      <ResidenceCarousel />
+
+      {/* ---------------------------------------------------------- Trusted by */}
+      <TrustedBy />
 
       {/* ------------------------------------------------------- Testimonial */}
       <Testimonial />

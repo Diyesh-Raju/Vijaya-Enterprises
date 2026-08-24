@@ -35,13 +35,29 @@ const LAYOUTS: Record<GallerySection["layout"], readonly string[]> = {
   // Two across, sharing the row. These collages are 1,536px wide, so half a
   // container still resolves sharply on a high-density screen.
   renders: ["lg:col-span-6", "lg:col-span-6"],
-  // One under the other, but held in from the edges — a drawing has to stay
-  // big enough to read, and at full width these were dominating the page.
+  // One under the other, held well in from the edges. A drawing has to stay
+  // big enough to read, but at anything wider than this these were dominating
+  // the page — the clean exports carry more contrast than the old scans did,
+  // so they hold up at eight columns.
   plans: [
-    "lg:col-span-10 lg:col-start-2",
-    "lg:col-span-10 lg:col-start-2",
-    "lg:col-span-10 lg:col-start-2",
+    "lg:col-span-8 lg:col-start-3",
+    "lg:col-span-8 lg:col-start-3",
+    "lg:col-span-8 lg:col-start-3",
   ],
+};
+
+/**
+ * What the browser should assume a tile measures, per section.
+ *
+ * Worth setting per layout: a plan tile is two thirds of the container, and
+ * telling `next/image` it were half that would have it pick a source too small
+ * to read the dimension labels on the drawing.
+ */
+const SIZES: Record<GallerySection["layout"], string> = {
+  exterior: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw",
+  amenities: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw",
+  renders: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw",
+  plans: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 65vw",
 };
 
 /**
@@ -61,12 +77,14 @@ function Tile({
   item,
   className,
   ratio,
+  sizes,
   contain,
   onOpen,
 }: {
   item: GalleryImage;
   className?: string;
   ratio: string;
+  sizes: string;
   /** Drawings are fitted whole; a photographic crop would cut them. */
   contain?: boolean;
   onOpen: () => void;
@@ -89,7 +107,7 @@ function Tile({
         src={item.image}
         alt={item.alt}
         fill
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw"
+        sizes={sizes}
         className={cn(
           "transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
           contain
@@ -122,6 +140,7 @@ export function GalleryGrid({ section }: { section: GallerySection }) {
             item={item}
             className={spans[index]}
             ratio={RATIOS[section.layout]}
+            sizes={SIZES[section.layout]}
             contain={contain}
             onOpen={() => setOpen(index)}
           />

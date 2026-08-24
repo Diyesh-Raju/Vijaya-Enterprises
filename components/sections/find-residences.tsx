@@ -21,14 +21,23 @@ import { cn } from "@/lib/cn";
 
 /**
  * Each tab re-scopes the project types and points the button at the page that
- * discipline lives on. Everything else on the panel reads the same across all
+ * intent lives on. Everything else on the panel reads the same across all
  * three, the way the tabs on the reference layout do.
+ *
+ * ⚠️ Nothing on this site lists rentals, so Rent hands the visitor to the
+ * enquiry form rather than to a page that would come up empty. Point it
+ * somewhere better the moment there is a lettings page to point it at.
  */
 const tabs = [
   {
-    label: "Residential",
+    label: "Buy",
     href: "/residential",
     projectTypes: ["Apartment", "Villa", "Plotted Development"],
+  },
+  {
+    label: "Rent",
+    href: "/contact",
+    projectTypes: ["Apartment", "Villa", "Office Space", "Commercial Building"],
   },
   {
     label: "Commercial",
@@ -39,15 +48,6 @@ const tabs = [
       "Industrial Facility",
       "Warehouse",
       "Institutional Building",
-    ],
-  },
-  {
-    label: "Joint Ventures",
-    href: "/joint-ventures",
-    projectTypes: [
-      "Residential Development",
-      "Commercial Development",
-      "Mixed Use Development",
     ],
   },
 ] as const;
@@ -97,28 +97,25 @@ export function FindResidences() {
   const active = tabs[tab];
 
   return (
-    <Section tone="mist" size="md">
+    <Section tone="mist" size="sm">
       <Container>
-        <div className="flex flex-col items-start gap-10 sm:gap-14 lg:flex-row lg:gap-24">
+        <div className="flex flex-col items-start gap-8 sm:gap-10 lg:flex-row lg:gap-16">
           {/* The claim, held beside the controls while they are worked through. */}
-          <div className="w-full lg:sticky lg:top-32 lg:w-[55%]">
+          <div className="w-full lg:sticky lg:top-32 lg:w-[46%]">
             <Reveal>
-              <h2 className="font-sans text-[clamp(1.5rem,3.4vw,2.5rem)] font-semibold uppercase leading-[1.2] tracking-[0.06em] text-navy-900">
-                <span className="block sm:whitespace-nowrap">
-                  Find <span className="text-rosegold-600">Residences</span>
-                </span>
-                <span className="block sm:whitespace-nowrap">Built For</span>
-                <span className="block sm:whitespace-nowrap">
-                  Luxury And <span className="text-rosegold-600">Legacy.</span>
-                </span>
+              {/* Sentence case, not the caps this panel opened with: a
+                  sentence with a full stop set in tracked capitals reads as
+                  shouting rather than as an invitation. */}
+              <h2 className="text-balance-head font-sans text-[clamp(1.875rem,4vw,3rem)] font-semibold leading-[1.12] tracking-[-0.015em] text-navy-950">
+                Let&rsquo;s find the right home for your family.
               </h2>
             </Reveal>
           </div>
 
-          <div className="w-full lg:w-[60%]">
+          <div className="w-full lg:w-[54%]">
             <Reveal delay={80}>
               {/* Discipline tabs */}
-              <div className="hide-scrollbar mb-8 flex items-center gap-5 overflow-x-auto border-b border-line pb-4 sm:mb-12 sm:gap-8">
+              <div className="hide-scrollbar mb-7 flex items-center gap-5 overflow-x-auto border-b border-line pb-4 sm:mb-9 sm:gap-8">
                 {tabs.map((entry, index) => {
                   const selected = index === tab;
 
@@ -134,9 +131,9 @@ export function FindResidences() {
                         setProjectType(firstOf(entry.projectTypes));
                       }}
                       className={cn(
-                        "relative flex-shrink-0 whitespace-nowrap pb-1 text-[0.75rem] font-semibold uppercase tracking-[0.2em] transition-colors duration-300",
+                        "relative flex-shrink-0 whitespace-nowrap pb-1 text-[0.75rem] font-bold uppercase tracking-[0.2em] transition-colors duration-300",
                         selected
-                          ? "text-rosegold-600"
+                          ? "text-navy-900"
                           : "text-slate-muted hover:text-navy-800",
                       )}
                     >
@@ -144,7 +141,7 @@ export function FindResidences() {
                       {selected && (
                         <span
                           aria-hidden="true"
-                          className="absolute -bottom-[17px] left-0 h-[2px] w-full rounded-full bg-rosegold-600"
+                          className="absolute -bottom-[17px] left-0 h-[2px] w-full rounded-full bg-navy-900"
                         />
                       )}
                     </button>
@@ -154,7 +151,7 @@ export function FindResidences() {
             </Reveal>
 
             <Reveal delay={160}>
-              <div className="grid grid-cols-1 gap-7 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <SelectMenu
                   layout="stacked"
                   label="Project Type"
@@ -178,7 +175,7 @@ export function FindResidences() {
                 />
 
                 <div>
-                  <span className="mb-2 block text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-rosegold-600">
+                  <span className="mb-2 block text-[0.625rem] font-bold uppercase tracking-[0.18em] text-navy-800">
                     Area (Sq.Ft)
                   </span>
                   <StepRange
@@ -192,8 +189,8 @@ export function FindResidences() {
 
                 {/* Budget sits on its own row, centred under the pair above. */}
                 <div className="flex justify-center sm:col-span-2">
-                  <div className="w-full sm:w-[calc(50%-0.875rem)]">
-                    <span className="mb-2 block text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-rosegold-600">
+                  <div className="w-full sm:w-[calc(50%-0.625rem)]">
+                    <span className="mb-2 block text-[0.625rem] font-bold uppercase tracking-[0.18em] text-navy-800">
                       Budget
                     </span>
                     <StepRange
@@ -212,7 +209,7 @@ export function FindResidences() {
               <Link
                 href={active.href}
                 className={cn(
-                  "mt-10 block w-full rounded-full border border-white/50 py-4 text-center",
+                  "mt-8 block w-full rounded-full border border-white/50 py-3.5 text-center",
                   "text-[0.75rem] font-bold uppercase tracking-[0.2em] text-white",
                   "bg-[linear-gradient(135deg,rgba(164,119,116,0.9)_0%,#b76e79_100%)]",
                   "shadow-[0_8px_24px_0_rgba(183,110,121,0.2),inset_0_1px_0_0_rgba(255,255,255,0.4)]",

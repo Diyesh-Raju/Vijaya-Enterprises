@@ -16,6 +16,7 @@ import aerialLand from "@/assets/images/aerial-land.jpg";
 import bankReception from "@/assets/images/bank-reception.jpg";
 import backdropHibiscus from "@/assets/images/backdrop-hibiscus.jpg";
 import backdropInterior from "@/assets/images/backdrop-interior.jpg";
+import balconyFamily from "@/assets/images/balcony-family.jpg";
 import blueprintCraft from "@/assets/images/blueprint-craft.jpg";
 import cityNight from "@/assets/images/city-night.jpg";
 import citySunset from "@/assets/images/city-sunset.jpg";
@@ -47,6 +48,7 @@ export const img = {
   aerialLand,
   backdropHibiscus,
   backdropInterior,
+  balconyFamily,
   bankReception,
   blueprintCraft,
   cityNight,
@@ -98,6 +100,8 @@ export const alt = {
   haraVijayaHeightsHero:
     "Architectural view of Hara Vijaya Heights, with the tree-lined approach to the entrance lobby",
   homeDusk: "Entrance of a newly completed home lit at dusk",
+  balconyFamily:
+    "A family on their apartment balcony at dusk, looking out over tree cover and the city beyond",
   homeLawn: "Contemporary family home with a landscaped lawn",
   industrialEngineer: "Engineer working at an automated production line",
   institutionCampus: "Institutional campus building with landscaped grounds",
