@@ -96,27 +96,53 @@ export const associatedOrganisations = [
 /**
  * The Trusted By band on the home page.
  *
- * `mark` is the short form set large as the wordmark, `name` the full title
- * printed under it. Both are our own typography: Vijaya holds no logo usage
- * rights for any of these organisations, so none of their marks are
- * reproduced. Keep it that way unless written permission arrives.
+ * `logo` is the file under `public/logos/`, `w`/`h` its intrinsic pixel size
+ * (the SVGs' viewBox), and `height` the height it is drawn at in the band.
+ * That last one is set per logo by eye rather than shared, because a square
+ * crest and a long wordmark cannot carry the same height and still read as
+ * the same weight — KNSIT's seal at 50px and MML's full lockup at 28px look
+ * like siblings; at a common height one of them always shouts.
+ *
+ * `mark` stays as the typeset fallback: an entry with no `logo` still renders,
+ * and the roster below is not final.
+ *
+ * ⚠️ These are other organisations' trademarks, taken from their own websites
+ * (and, for MML, from the 2018 archive of the since-retired mml.kar.nic.in).
+ * They are reproduced here to say who Vijaya has built for, which is what a
+ * client list is; that is the only use they are dressed for. Do not carry any
+ * of them onto anything that reads as endorsement or joint branding without
+ * asking the organisation first.
  *
  * `associatedOrganisations` above is the shorter, plainer list the
  * Commercial Contracts page tickers — the two overlap and should be
  * reconciled once the client roster is confirmed.
  */
-export const trustedBy = [
-  { mark: "BEL", name: "Bharat Electronics Limited" },
-  { mark: "HAL", name: "Hindustan Aeronautics Limited" },
-  { mark: "Union Bank", name: "Union Bank of India" },
-  { mark: "ISRO", name: "Indian Space Research Organisation" },
-  { mark: "NAL", name: "National Aeronautical Laboratories" },
-  { mark: "IOCL", name: "Indian Oil Corporation" },
-  { mark: "Canara", name: "Canara Bank" },
-  { mark: "KNSIT", name: "K.N.S. Institute of Technology" },
-  { mark: "MML", name: "Mysore Minerals Limited" },
-  { mark: "MICO", name: "Motor Industries Co. Ltd." },
-] as const;
+export type TrustedOrg = {
+  /** Short form, typeset large when there is no logo file. */
+  mark: string;
+  /** Full title, printed small beneath either treatment. */
+  name: string;
+  /** File under `public/logos/`. */
+  logo?: string;
+  /** Intrinsic size of that file — the SVGs' viewBox. */
+  w?: number;
+  h?: number;
+  /** Height it is drawn at in the band, before `--logo-scale`. */
+  height?: number;
+};
+
+export const trustedBy: readonly TrustedOrg[] = [
+  { mark: "BEL", name: "Bharat Electronics Limited", logo: "/logos/bel.png", w: 421, h: 140, height: 36 },
+  { mark: "HAL", name: "Hindustan Aeronautics Limited", logo: "/logos/hal.png", w: 257, h: 140, height: 48 },
+  { mark: "Union Bank", name: "Union Bank of India", logo: "/logos/union.png", w: 760, h: 113, height: 28 },
+  { mark: "ISRO", name: "Indian Space Research Organisation", logo: "/logos/isro.svg", w: 300, h: 290, height: 52 },
+  { mark: "NAL", name: "National Aeronautical Laboratories", logo: "/logos/nal.png", w: 144, h: 140, height: 52 },
+  { mark: "IOCL", name: "Indian Oil Corporation", logo: "/logos/iocl.svg", w: 200, h: 239, height: 56 },
+  { mark: "Canara", name: "Canara Bank", logo: "/logos/canara.png", w: 176, h: 140, height: 50 },
+  { mark: "KNSIT", name: "K.N.S. Institute of Technology", logo: "/logos/knsit.png", w: 132, h: 140, height: 54 },
+  { mark: "MML", name: "Mysore Minerals Limited", logo: "/logos/mml.png", w: 760, h: 97, height: 28 },
+  { mark: "MICO", name: "Motor Industries Co. Ltd.", logo: "/logos/mico.png", w: 617, h: 140, height: 32 },
+];
 
 export const sectors = [
   "Defence & Aerospace",

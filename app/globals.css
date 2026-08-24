@@ -302,17 +302,62 @@
    This is the only way to get a gradient border that follows a radius; a
    plain `border-color` cannot carry a gradient. */
 /* ------------------------------------------------------------------
+   Trusted By — the client logo band.
+
+   Each logo is drawn at its own height (set per entry in `lib/site.ts`),
+   so the row scales as one through this multiplier rather than through ten
+   separate breakpoint rules.
+------------------------------------------------------------------- */
+
+.trusted-row {
+  --logo-scale: 0.78;
+}
+
+/* Tall enough for the largest logo in the roster, so the row has one
+   optical baseline and the captions under it stay on a single line. */
+.trusted-well {
+  height: calc(60px * var(--logo-scale, 1));
+}
+
+@media (min-width: 640px) {
+  .trusted-row { --logo-scale: 0.9; }
+}
+
+@media (min-width: 1024px) {
+  .trusted-row { --logo-scale: 1; }
+}
+
+/* ------------------------------------------------------------------
    Gooey slideshow — the Codrops "Gooey Hover" demo.
 
    The template's own SCSS, translated. Its `html` is set to 62.5% so a
    rem there is 10px; every length below has been divided by ten to mean
    the same thing against this site's 16px root.
 
-   Changed on request: the ground is white, so the demo's five shifting
-   dark backgrounds and its pale per-tile text colours are gone — pale
-   mint on white is not a colour, it is an absence. The type is navy
-   throughout instead. The rest is as drawn.
+   The demo's colour, as drawn: five dark grounds and five pale inks,
+   one pair to a tile, swapped on hover and eased across half a second.
+   The demo hangs the pair on `body`; here it hangs on the section, so
+   the band goes dark by itself and the page either side of it stands.
 ------------------------------------------------------------------- */
+
+.gooey {
+  --gooey-text1: #deedcf;
+  --gooey-text2: #ffcbcc;
+  --gooey-text3: #b9e6e3;
+  --gooey-text4: #e1d0a1;
+  --gooey-text5: #ccd3f6;
+  --gooey-bg1: #3f4849;
+  --gooey-bg2: #493f46;
+  --gooey-bg3: #2b3242;
+  --gooey-bg4: #3b3232;
+  --gooey-bg5: #2d3a40;
+  --gooey-text: var(--gooey-text1);
+  --gooey-bg: var(--gooey-bg1);
+
+  color: var(--gooey-text);
+  background-color: var(--gooey-bg);
+  transition: background-color 0.5s;
+}
 
 .gooey__title {
   font-family: var(--font-display);
@@ -321,7 +366,7 @@
   white-space: nowrap;
   font-size: calc(4vw + 5rem);
   line-height: 0.975;
-  color: var(--color-navy-950);
+  color: inherit;
   opacity: 0.1;
 }
 
@@ -403,12 +448,32 @@
   left: 0;
   width: 100%;
   font-size: 0.875rem;
-  color: var(--color-navy-950);
+  color: var(--gooey-text);
+  transition: color 0.3s;
+}
+
+/* One ink per tile, keyed off its place in the original five — the demo
+   counts with `:nth-child`, which cannot work here because the strip
+   carries the slides twice over to loop. */
+.gooey__slide[data-tint="1"] .gooey__content { color: var(--gooey-text1); }
+.gooey__slide[data-tint="2"] .gooey__content { color: var(--gooey-text2); }
+.gooey__slide[data-tint="3"] .gooey__content { color: var(--gooey-text3); }
+.gooey__slide[data-tint="4"] .gooey__content { color: var(--gooey-text4); }
+.gooey__slide[data-tint="5"] .gooey__content { color: var(--gooey-text5); }
+
+@media (hover: hover) and (pointer: fine) {
+  .gooey__tile:hover .gooey__content {
+    color: #fff;
+  }
 }
 
 .gooey__tile-title {
   font-family: var(--font-display);
   font-weight: 400;
+  /* The demo's tile title carries no colour of its own — it takes the ink
+     from the caption around it. This site's base layer paints every heading
+     navy, so it has to be told to inherit again. */
+  color: inherit;
   text-transform: uppercase;
   white-space: nowrap;
   font-size: calc(1.25rem + 2.5vw);
@@ -444,7 +509,7 @@
   position: relative;
   width: 8.125rem;
   height: 0.25rem;
-  background-color: var(--color-line-strong);
+  background-color: rgb(255 255 255 / 0.2);
   border-radius: 0.25rem;
 }
 
@@ -455,7 +520,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: var(--color-navy-900);
+  background-color: #fff;
   border-radius: 0.25rem;
   transition: transform 1.1s var(--ease-out-soft);
 }

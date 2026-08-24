@@ -13,10 +13,10 @@ import { cn } from "@/lib/cn";
  * over a WebGL plane laid on top of the picture. That part is the template
  * untouched; `lib/gooey-scene.ts` holds it and notes what had to move.
  *
- * Changed on request: the ground is white rather than the demo's shifting
- * dark palette, and the strip is walked with the two round arrows instead of
- * the horizontal wheel-scroll the demo binds through `smooth-scrollbar` —
- * which is why that dependency is not here.
+ * The demo's colour is here too: five dark grounds and five pale inks, one
+ * pair to a tile, swapped on hover. Changed from the demo: the strip is walked
+ * with the two round arrows instead of the horizontal wheel-scroll the demo
+ * binds through `smooth-scrollbar` — which is why that dependency is not here.
  *
  * ⚠️ The tiles are the demo's own travel photography, kept as-is on request:
  * five destinations under "What's your next destination?". On a construction
@@ -46,6 +46,7 @@ const COUNT = slides.length;
 const SLIDE_MS = 1100;
 
 export function DestinationSlideshow() {
+  const sectionRef = useRef<HTMLElement | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const trackRef = useRef<HTMLUListElement | null>(null);
@@ -169,10 +170,25 @@ export function DestinationSlideshow() {
     [moveTo],
   );
 
+  /**
+   * The ground and the running ink swap to the pair belonging to the tile
+   * under the pointer. They stay there once it leaves — the demo never puts
+   * them back either, so the band holds the colour of whatever was looked at
+   * last. Set on the section rather than on `document.documentElement`, which
+   * is where the demo puts it, because here it is one band on a longer page.
+   */
+  const tint = useCallback((index: number) => {
+    const section = sectionRef.current;
+    if (!section) return;
+    const n = index + 1;
+    section.style.setProperty("--gooey-bg", `var(--gooey-bg${n})`);
+    section.style.setProperty("--gooey-text", `var(--gooey-text${n})`);
+  }, []);
+
   const arrow =
-    "flex h-14 w-14 items-center justify-center rounded-full border border-line-strong bg-white text-navy-900 " +
+    "flex h-14 w-14 items-center justify-center rounded-full border border-white/30 text-white " +
     "transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] " +
-    "hover:-translate-y-0.5 hover:border-navy-900 hover:shadow-soft " +
+    "hover:-translate-y-0.5 hover:border-white hover:bg-white/10 " +
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass-500";
 
   // The strip carries every slide twice so it can loop. The second set is the
@@ -180,7 +196,10 @@ export function DestinationSlideshow() {
   const rendered = [...slides, ...slides];
 
   return (
-    <section className="gooey relative isolate overflow-hidden bg-white py-20 sm:py-24 lg:py-28">
+    <section
+      ref={sectionRef}
+      className="gooey relative isolate overflow-hidden py-20 sm:py-24 lg:py-28"
+    >
       <Container>
         <h2 className="gooey__title">
           What&rsquo;s your next{" "}
@@ -211,6 +230,7 @@ export function DestinationSlideshow() {
                 // original, and the seam the loop hides would show up as a
                 // jolt every time the strip rebased.
                 data-lift={(i % COUNT) % 2 === 0 ? "up" : "down"}
+                data-tint={(i % COUNT) + 1}
                 className="gooey__slide"
                 aria-hidden={i >= COUNT || undefined}
               >
@@ -219,6 +239,7 @@ export function DestinationSlideshow() {
                     href="#what-we-build"
                     className="block"
                     tabIndex={i >= COUNT ? -1 : undefined}
+                    onMouseEnter={() => tint(i % COUNT)}
                   >
                     <figure className="gooey__fig">
                       {/* A plain <img>, deliberately. It is the layout box the
