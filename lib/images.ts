@@ -14,9 +14,31 @@
 
 import aerialLand from "@/assets/images/aerial-land.jpg";
 import bankReception from "@/assets/images/bank-reception.jpg";
+import backdropFabric from "@/assets/images/backdrop-fabric.jpg";
+/**
+ * The footer's backdrop. Two are kept on disk and one is imported: swapping
+ * the footer means changing which file this line names, and nothing else.
+ *
+ * - `backdrop-footer-living.jpg`    — a living and dining room open to a
+ *                                     planted balcony (in use)
+ * - `backdrop-interior.jpg`         — a lit apartment looking out over the
+ *                                     city at dusk (the Reviews section is
+ *                                     set on it)
+ * - `city-sunset.jpg`               — the skyline at sunset
+ * - `backdrop-footer-penthouse.jpg` — a penthouse at dusk, city below
+ * - `backdrop-footer-terrace.jpg`   — a roof terrace at dusk
+ * - `backdrop-footer-interior.jpg`  — a warmly lit apartment at night
+ *
+ * The footer lays its copy straight over whichever is chosen, with no scrim
+ * of any kind, so a brighter picture is a less readable footer. See the
+ * warning in `site-footer.tsx`.
+ */
+import backdropFooter from "@/assets/images/backdrop-footer-living.jpg";
 import backdropHibiscus from "@/assets/images/backdrop-hibiscus.jpg";
 import backdropInterior from "@/assets/images/backdrop-interior.jpg";
 import balconyFamily from "@/assets/images/balcony-family.jpg";
+import balconyFamilyEvening from "@/assets/images/balcony-family-evening.jpg";
+import balconyFamilyTower from "@/assets/images/balcony-family-tower.jpg";
 import blueprintCraft from "@/assets/images/blueprint-craft.jpg";
 import cityNight from "@/assets/images/city-night.jpg";
 import citySunset from "@/assets/images/city-sunset.jpg";
@@ -35,6 +57,7 @@ import interiorFamily from "@/assets/images/interior-family.jpg";
 import interiorLiving from "@/assets/images/interior-living.jpg";
 import legacyPoster from "@/assets/images/legacy-poster.jpg";
 import meetingHands from "@/assets/images/meeting-hands.jpg";
+import menuInterior from "@/assets/images/menu-interior.jpg";
 import officeInterior from "@/assets/images/office-interior.jpg";
 import rebarWorkers from "@/assets/images/rebar-workers.jpg";
 import residentialInterior from "@/assets/images/residential-interior.jpg";
@@ -46,9 +69,13 @@ import warehouseAisle from "@/assets/images/warehouse-aisle.jpg";
 
 export const img = {
   aerialLand,
+  backdropFabric,
+  backdropFooter,
   backdropHibiscus,
   backdropInterior,
   balconyFamily,
+  balconyFamilyEvening,
+  balconyFamilyTower,
   bankReception,
   blueprintCraft,
   cityNight,
@@ -68,6 +95,7 @@ export const img = {
   interiorLiving,
   legacyPoster,
   meetingHands,
+  menuInterior,
   officeInterior,
   rebarWorkers,
   residentialInterior,
@@ -81,6 +109,10 @@ export const img = {
 /** Descriptive alt text, kept next to the images so it never drifts. */
 export const alt = {
   aerialLand: "Aerial view of a residential development laid out across open land",
+  backdropFabric:
+    "Soft folds of cream fabric, lit from one side",
+  backdropFooter:
+    "A living and dining room opening onto a planted balcony through sliding glass",
   backdropHibiscus:
     "Red hibiscus blooms against a soft cream ground",
   backdropInterior:
@@ -102,6 +134,10 @@ export const alt = {
   homeDusk: "Entrance of a newly completed home lit at dusk",
   balconyFamily:
     "A family on their apartment balcony at dusk, looking out over tree cover and the city beyond",
+  balconyFamilyEvening:
+    "A family sitting out together on their balcony at sunset, the city skyline beyond the tree line",
+  balconyFamilyTower:
+    "A family at the rail of their high balcony, a daughter pointing out across the treetops to the skyline",
   homeLawn: "Contemporary family home with a landscaped lawn",
   industrialEngineer: "Engineer working at an automated production line",
   institutionCampus: "Institutional campus building with landscaped grounds",
@@ -110,6 +146,8 @@ export const alt = {
   interiorLiving: "Open-plan living and dining space in a completed apartment",
   legacyPoster: "A building frame and tower crane silhouetted against the sunset",
   meetingHands: "A project discussion in progress across a meeting table",
+  menuInterior:
+    "An apartment living room at dusk, warmly lit, with a tall bird-of-paradise plant, olive foliage on the table and the dining room beyond",
   officeInterior: "Completed commercial office interior with glazed partitions",
   rebarWorkers: "Site team tying reinforcement steel on a column cage",
   residentialInterior:

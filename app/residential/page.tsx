@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { ResidentialHero } from "@/components/sections/residential-hero";
 import { ApartmentProjects } from "@/components/sections/apartment-projects";
-import { CtaBand } from "@/components/sections/cta-band";
+import { PlannedForLiving } from "@/components/sections/planned-for-living";
+import { ApertureCta } from "@/components/sections/aperture-cta";
 import { IconCards } from "@/components/sections/icon-cards";
 import { Reviews } from "@/components/sections/reviews";
 import { Container, Section, SectionHeading, Eyebrow } from "@/components/ui/section";
@@ -116,168 +117,208 @@ const whyForYourHome = [
 
 export default function ResidentialPage() {
   return (
-    <>
+    /*
+      Both halves of the pinned hero sit inside one plain wrapper, and the
+      router is the reason it is here rather than a fragment.
+
+      On a client-side navigation Next takes the incoming page to the top by
+      calling `scrollIntoView` over the segment's host elements, last to
+      first — so whichever element comes first is the one that decides where
+      the page settles. Off a fragment those elements were the hero and the
+      sheet, and the hero is `position: sticky`: its rect reads as pinned at
+      the top of the window at every scroll offset, including zero. Asked to
+      bring that into view under the site's 6.5rem `scroll-padding-top`, the
+      browser can only scroll *down* to clear the header — so arriving at
+      /residential from anywhere at all landed a hundred-odd pixels into the
+      page, hero already half covered, heading gone.
+
+      A single static element spanning both halves gives the router
+      something honest to measure. Its top is the top of the document, and
+      scrolling that clear of the header asks for a negative offset, which
+      clamps at zero — where the page should open. Nothing on the page
+      changes: an unstyled `div` sets no stacking context, and the hero
+      still has the height of both halves to travel through.
+    */
+    <div>
       <ResidentialHero />
 
-      {/* ------------------------------------------------- Built for families */}
-      <Section tone="white" size="lg">
-        <Container>
-          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
-            {/* Box 1 — the room itself. From lg up it drops its 4:5 ratio and
-                stretches to the full row height, so its bottom edge lands level
-                with the award box opposite. The height has to be handed down
-                the whole chain: a percentage height against an auto-height
-                parent resolves to nothing, and the ratio would win again. */}
-            <div className="h-full lg:col-span-5">
-              <Reveal className="h-full">
-                <Frame
-                  src={img.residentialInterior}
-                  alt={alt.residentialInterior}
-                  ratio="tall"
-                  sizes="(max-width: 1024px) 100vw, 40vw"
-                  rounded="rounded-[2rem] sm:rounded-[2.5rem]"
-                  className="border-rosegold lg:aspect-auto lg:h-full"
-                />
-              </Reveal>
-            </div>
-
-            <div className="flex flex-col lg:col-span-7">
-              {/* The three counts, each running up from zero when scrolled to */}
-              <dl className="grid grid-cols-3 gap-5 sm:gap-8">
-                {milestones.map((milestone, index) => (
-                  <Reveal key={milestone.label} delay={index * 90}>
-                    <dt className="sr-only">{milestone.label}</dt>
-                    <dd>
-                      <span className="block font-display text-[clamp(2.25rem,5vw,3.5rem)] leading-none text-navy-900">
-                        {/* Slower than the site default (1800ms) so the
-                            figures read as they climb. */}
-                        <Counter
-                          to={milestone.value}
-                          suffix={milestone.suffix}
-                          durationMs={3200}
-                        />
-                      </span>
-                      <span className="mt-3 block text-[0.6875rem] uppercase tracking-[0.18em] text-slate-muted sm:text-[0.75rem] sm:tracking-[0.2em]">
-                        {milestone.label}
-                      </span>
-                    </dd>
-                  </Reveal>
-                ))}
-              </dl>
-
-              <Reveal delay={120}>
-                <div className="mt-6 h-px w-full bg-line" />
-              </Reveal>
-
-              <div className="mt-7">
-                <Reveal>
-                  <Eyebrow>Built For Generations</Eyebrow>
-                </Reveal>
-                <Reveal delay={80}>
-                  <h2 className="text-balance-head mt-6 text-[clamp(1.75rem,3.4vw,2.5rem)] leading-[1.1]">
-                    We don&rsquo;t construct buildings. We build homes.
-                  </h2>
-                </Reveal>
-                <Reveal delay={160}>
-                  <div className="mt-6 space-y-5 text-[1.0625rem] leading-[1.8] text-slate-body">
-                    <p>
-                      A house is finished in months. A home is lived in for
-                      generations. That difference is what we have spent five
-                      decades learning — how a family actually uses a room, which
-                      materials still look right after twenty years, and where the
-                      shortcuts show up later.
-                    </p>
-                    <p>
-                      So we build for the long stay: sound structure, honest
-                      materials and layouts planned around real life. What we hand
-                      over is not a unit. It is where your family grows up.
-                    </p>
-                  </div>
+      {/*
+        Everything below the hero travels as one sheet, over the top of it.
+        The hero is pinned (see `residential-hero.tsx`); this is the half of
+        that arrangement that does the moving. `z-10` puts it above the
+        pinned hero, and `bg-white` stops the photograph reading through the
+        gaps between sections — without it the effect shows its working.
+      */}
+      <div className="relative z-10 bg-white">
+        {/* ------------------------------------------------- Built for families */}
+        <Section tone="white" size="lg">
+          <Container>
+            <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+              {/* Box 1 — the room itself. From lg up it drops its 4:5 ratio and
+                  stretches to the full row height, so its bottom edge lands level
+                  with the award box opposite. The height has to be handed down
+                  the whole chain: a percentage height against an auto-height
+                  parent resolves to nothing, and the ratio would win again. */}
+              <div className="h-full lg:col-span-5">
+                <Reveal className="h-full">
+                  <Frame
+                    src={img.residentialInterior}
+                    alt={alt.residentialInterior}
+                    ratio="tall"
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    rounded="rounded-[2rem] sm:rounded-[2.5rem]"
+                    className="border-rosegold lg:aspect-auto lg:h-full"
+                  />
                 </Reveal>
               </div>
 
-              {/* The two awards the company has actually won, unframed — a box
-                  around a seal reads as a seal inside a box.
-
-                  Two per row only where a seal has room for its wreath. From
-                  `lg` this column is seven of twelve tracks, so a pair would
-                  get ~240px each and the branches would be clipped; through
-                  that band they stack and take the full width instead. Below
-                  `lg` the column is already full-bleed, so a pair fits from
-                  `md` up — at `sm` a seal gets only ~276px, which is under the
-                  lockup's width. By `xl` there is room for a pair again.
-
-                  Written as `sm:max-lg:` / `xl:` rather than `sm:` + a `lg:`
-                  override: two column-count utilities at different breakpoints
-                  carry the same specificity, so the override lost on source
-                  order and the pair never unstacked. Non-overlapping ranges
-                  cannot collide. */}
-              <Reveal delay={200} className="mt-10 lg:mt-auto lg:pt-10">
-                <div className="grid gap-8 border-t border-line pt-10 md:max-lg:grid-cols-2 md:max-lg:gap-6 xl:grid-cols-2 xl:gap-6">
-                  {awards.map((award) => (
-                    <AwardsComponent
-                      key={award.title}
-                      accent="bare"
-                      level={award.level}
-                      badgeLabel={award.year}
-                      title={award.title}
-                      subtitle={award.subtitle}
-                      description={award.description}
-                      className="[--seal-size:11px] sm:[--seal-size:12px]"
-                    />
+              <div className="flex flex-col lg:col-span-7">
+                {/* The three counts, each running up from zero when scrolled to */}
+                <dl className="grid grid-cols-3 gap-5 sm:gap-8">
+                  {milestones.map((milestone, index) => (
+                    <Reveal key={milestone.label} delay={index * 90}>
+                      <dt className="sr-only">{milestone.label}</dt>
+                      <dd>
+                        <span className="block font-display text-[clamp(2.25rem,5vw,3.5rem)] leading-none text-navy-900">
+                          {/* Slower than the site default (1800ms) so the
+                              figures read as they climb. */}
+                          <Counter
+                            to={milestone.value}
+                            suffix={milestone.suffix}
+                            durationMs={3200}
+                          />
+                        </span>
+                        <span className="mt-3 block text-[0.6875rem] uppercase tracking-[0.18em] text-slate-muted sm:text-[0.75rem] sm:tracking-[0.2em]">
+                          {milestone.label}
+                        </span>
+                      </dd>
+                    </Reveal>
                   ))}
+                </dl>
+
+                <Reveal delay={120}>
+                  <div className="mt-6 h-px w-full bg-line" />
+                </Reveal>
+
+                <div className="mt-7">
+                  <Reveal>
+                    <Eyebrow>Built For Generations</Eyebrow>
+                  </Reveal>
+                  <Reveal delay={80}>
+                    <h2 className="text-balance-head mt-6 text-[clamp(1.75rem,3.4vw,2.5rem)] leading-[1.1]">
+                      We don&rsquo;t construct buildings. We build homes.
+                    </h2>
+                  </Reveal>
+                  <Reveal delay={160}>
+                    <div className="mt-6 space-y-5 text-[1.0625rem] leading-[1.8] text-slate-body">
+                      <p>
+                        A house is finished in months. A home is lived in for
+                        generations. That difference is what we have spent five
+                        decades learning — how a family actually uses a room, which
+                        materials still look right after twenty years, and where the
+                        shortcuts show up later.
+                      </p>
+                      <p>
+                        So we build for the long stay: sound structure, honest
+                        materials and layouts planned around real life. What we hand
+                        over is not a unit. It is where your family grows up.
+                      </p>
+                    </div>
+                  </Reveal>
                 </div>
-              </Reveal>
+
+                {/* The two awards the company has actually won, unframed — a box
+                    around a seal reads as a seal inside a box.
+
+                    Two per row only where a seal has room for its wreath. From
+                    `lg` this column is seven of twelve tracks, so a pair would
+                    get ~240px each and the branches would be clipped; through
+                    that band they stack and take the full width instead. Below
+                    `lg` the column is already full-bleed, so a pair fits from
+                    `md` up — at `sm` a seal gets only ~276px, which is under the
+                    lockup's width. By `xl` there is room for a pair again.
+
+                    Written as `sm:max-lg:` / `xl:` rather than `sm:` + a `lg:`
+                    override: two column-count utilities at different breakpoints
+                    carry the same specificity, so the override lost on source
+                    order and the pair never unstacked. Non-overlapping ranges
+                    cannot collide. */}
+                <Reveal delay={200} className="mt-10 lg:mt-auto lg:pt-10">
+                  <div className="grid gap-8 border-t border-line pt-10 md:max-lg:grid-cols-2 md:max-lg:gap-6 xl:grid-cols-2 xl:gap-6">
+                    {awards.map((award) => (
+                      <AwardsComponent
+                        key={award.title}
+                        accent="bare"
+                        level={award.level}
+                        badgeLabel={award.year}
+                        title={award.title}
+                        subtitle={award.subtitle}
+                        description={award.description}
+                        className="[--seal-size:11px] sm:[--seal-size:12px]"
+                      />
+                    ))}
+                  </div>
+                </Reveal>
+              </div>
             </div>
-          </div>
-        </Container>
-      </Section>
+          </Container>
+        </Section>
 
 
-      <ApartmentProjects />
+        <PlannedForLiving />
 
-      {/* ------------------------------------------------------------- Why us */}
-      <section className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-28">
-        {/* The flowers sit at two corners of the frame, so they frame the cards
-            rather than compete with them. Held well back, because six cards of
-            text have to stay readable over the top. */}
-        <Image
-          src={img.backdropHibiscus}
-          alt=""
-          fill
-          sizes="100vw"
-          className="-z-10 object-cover opacity-[0.85]"
-        />
-        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-white/25" />
-        <Container>
-          <SectionHeading
-            eyebrow="Why Vijaya"
-            title="Why choose Vijaya for your home?"
-            lead="Because a home should be built by people who take the responsibility personally."
+        <ApartmentProjects />
+
+        {/* ------------------------------------------------------------- Why us */}
+        {/*
+          The second pinned pass on this page. The hero holds still while the
+          sheet below rides up over it; this does the same thing a screen
+          later, with the six cards as the thing held and Reviews as the thing
+          that comes up from underneath.
+
+          The pin itself is in `globals.css` under `.pin-pane`, and it is
+          there rather than on this line because it has a condition on it: a
+          pane pinned to the top of the window locks the moment its top edge
+          gets there, so anything below the fold at that instant is locked out
+          of frame and can never be scrolled to. A pinned pane has to fit the
+          window, and this one only does on a wide, reasonably tall screen.
+          Below that it stays an ordinary section and scrolls past.
+        */}
+        <section className="pin-pane relative isolate flex flex-col justify-center overflow-hidden py-16 sm:py-20 lg:py-28">
+          {/* The flowers sit at two corners of the frame, so they frame the cards
+              rather than compete with them. Held well back, because six cards of
+              text have to stay readable over the top. */}
+          <Image
+            src={img.backdropHibiscus}
+            alt=""
+            fill
+            sizes="100vw"
+            className="-z-10 object-cover opacity-[0.85]"
           />
-          <div className="mt-10 lg:mt-12">
-            <IconCards items={whyForYourHome} columns={3} />
-          </div>
-        </Container>
-      </section>
+          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-white/25" />
+          <Container>
+            <SectionHeading
+              eyebrow="Why Vijaya"
+              title="Why choose Vijaya for your home?"
+              lead="Because a home should be built by people who take the responsibility personally."
+            />
+            <div className="pin-pane-cards mt-10 lg:mt-12">
+              <IconCards items={whyForYourHome} columns={3} />
+            </div>
+          </Container>
+        </section>
 
-      <Reviews />
+        {/*
+          The moving half. Same arrangement as the sheet under the hero and
+          for the same two reasons: `z-10` to ride over what is pinned, and an
+          opaque ground so the flowers behind cannot read through the joins.
+        */}
+        <div className="relative z-10 bg-white">
+          <Reviews />
 
-      <CtaBand
-        eyebrow="Find Your Home"
-        title={<>Let&rsquo;s find the right home for your family.</>}
-        body={
-          <p>
-            Tell us where you want to live, what you need and what you are working
-            with. We will tell you honestly what is possible — and what it takes to
-            build it well.
-          </p>
-        }
-        image={img.homeLawn}
-        imageAlt={alt.homeLawn}
-        primary={{ href: "/contact", label: "Talk To Us" }}
-        secondary={{ href: "/our-legacy", label: "Our Legacy" }}
-      />
-    </>
+          <ApertureCta />
+        </div>
+      </div>
+    </div>
   );
 }

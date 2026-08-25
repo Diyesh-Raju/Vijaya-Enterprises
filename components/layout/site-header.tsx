@@ -2,12 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Logo } from "./logo";
-import { navLinks, contact } from "@/lib/site";
+import { SiteMenu } from "./site-menu";
 import { cn } from "@/lib/cn";
 
 const SCROLL_THRESHOLD = 24;
+
+/**
+ * Pages that do not open on a dark hero.
+ *
+ * The bar is transparent with white type until the hero has scrolled away,
+ * which is right for every page that opens on a photograph and wrong for one
+ * that opens on a pale section — there the lockup and the word "Menu" would
+ * be white on near-white. These get the frosted bar from the first pixel.
+ */
+const LIGHT_FROM_TOP = ["/faq"];
 
 function subscribeToScroll(onChange: () => void) {
   window.addEventListener("scroll", onChange, { passive: true });
@@ -17,7 +27,12 @@ function subscribeToScroll(onChange: () => void) {
 const isScrolled = () => window.scrollY > SCROLL_THRESHOLD;
 
 /**
- * Header: logo left → home, sections centred, Contact as a pill on the right.
+ * Header: the lockup on the left, and everything else behind one word.
+ *
+ * The bar carries no navigation of its own any more — the five sections and
+ * Contact all live in `SiteMenu`, a full-screen panel. What is left is the
+ * logo, which goes home, and the trigger, which is the word "Menu" beside a
+ * ringed set of three lines.
  *
  * Every page opens on a dark hero, so the bar starts transparent with white
  * type and swaps to a frosted white bar once you scroll past the fold.
@@ -25,7 +40,6 @@ const isScrolled = () => window.scrollY > SCROLL_THRESHOLD;
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const panelRef = useRef<HTMLDivElement | null>(null);
   const toggleRef = useRef<HTMLButtonElement | null>(null);
 
   // Solid bar as soon as the hero starts moving away. Subscribing to scroll
@@ -37,18 +51,48 @@ export function SiteHeader() {
     () => false,
   );
 
-  // Close the mobile panel whenever the route changes. Adjusting state during
-  // render (rather than in an effect) is React's documented pattern for
-  // resetting state when a value changes: it happens before paint, so the
-  // panel never flashes on the new page. Covers link clicks and back/forward
-  // alike.
+  // Close the panel whenever the route changes. Adjusting state during render
+  // (rather than in an effect) is React's documented pattern for resetting
+  // state when a value changes: it happens before paint, so the panel never
+  // flashes on the new page. Covers link clicks and back/forward alike.
   const [lastPath, setLastPath] = useState(pathname);
   if (lastPath !== pathname) {
     setLastPath(pathname);
     setOpen(false);
   }
 
-  // While the panel is open: lock the page, trap Escape, restore focus.
+  /**
+   * Hand focus back to the trigger on close — without ringing it.
+   *
+   * Closing with the mouse never draws a ring: the browser knows the last
+   * interaction was a pointer. Escape is a keypress, so the same
+   * `focus()` afterwards counts as keyboard focus and the site's brass
+   * `:focus-visible` outline lands on the button, even though nobody tabbed
+   * there. The attribute suppresses it for exactly that moment (see
+   * `globals.css`) and comes off the instant focus leaves, so tabbing to the
+   * button later rings it normally.
+   */
+  const restoreFocus = useCallback(() => {
+    const trigger = toggleRef.current;
+    if (!trigger) return;
+
+    trigger.dataset.returningFocus = "";
+    trigger.focus();
+    trigger.addEventListener(
+      "blur",
+      () => {
+        delete trigger.dataset.returningFocus;
+      },
+      { once: true },
+    );
+  }, []);
+
+  const close = useCallback(() => {
+    setOpen(false);
+    restoreFocus();
+  }, [restoreFocus]);
+
+  // While the panel is open: lock the page and trap Escape.
   useEffect(() => {
     if (!open) return;
 
@@ -58,8 +102,7 @@ export function SiteHeader() {
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setOpen(false);
-        toggleRef.current?.focus();
+        close();
       }
     };
 
@@ -68,178 +111,77 @@ export function SiteHeader() {
       body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [open]);
+  }, [open, close]);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-  // Once the panel is open the bar sits on navy, so it uses the light styling.
-  const light = !scrolled && !open;
+  // Over a hero, before the panel is up: white type on nothing.
+  const solid = scrolled || LIGHT_FROM_TOP.includes(pathname);
+  const light = !solid && !open;
 
   return (
-    <header
-      className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        scrolled && !open ? "glass shadow-soft" : "bg-transparent",
-      )}
-    >
-      <div className="container-page">
-        <div className="flex h-20 items-center justify-between gap-4 sm:h-24">
-          {/* Left — logo returns home */}
-          <Link
-            href="/"
-            aria-label={`Vijaya Enterprises — home`}
-            className="inline-flex shrink-0 rounded-2xl"
-          >
-            {/* Keyed to `scrolled` rather than `light`: the mobile panel opens
-                below the bar, so the strip behind the logo is still the dark
-                hero while the panel is open, and the dark-purple wordmark
-                would disappear into it. */}
-            <Logo reversed={!scrolled} priority className="h-16 sm:h-20" />
-          </Link>
-
-          {/* Centre — sections */}
-          <nav
-            aria-label="Primary"
-            className="hidden items-center gap-9 lg:flex xl:gap-11"
-          >
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                aria-current={isActive(link.href) ? "page" : undefined}
-                className={cn(
-                  "link-underline text-[0.875rem] font-medium transition-colors duration-300",
-                  light
-                    ? "text-white/85 hover:text-white"
-                    : "text-navy-800 hover:text-navy-900",
-                  isActive(link.href) && (light ? "text-white" : "text-navy-900"),
-                )}
-              >
-                {link.label}
-                {isActive(link.href) && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute -bottom-[0.3em] left-0 h-px w-full bg-brass-500"
-                  />
-                )}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Right — contact bubble + mobile toggle */}
-          <div className="flex shrink-0 items-center gap-3">
+    <>
+      <header
+        className={cn(
+          "fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          solid && !open ? "glass shadow-soft" : "bg-transparent",
+        )}
+      >
+        <div className="container-page">
+          <div className="flex h-20 items-center justify-between gap-4 sm:h-24">
+            {/* Left — the lockup, unchanged, and it still goes home */}
             <Link
-              href="/contact"
-              className={cn(
-                "hidden rounded-full px-7 py-3.5 text-[0.8125rem] font-semibold tracking-wide transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 sm:inline-flex",
-                light
-                  ? "bg-white/95 text-navy-900 hover:bg-white hover:shadow-lift"
-                  : "bg-navy-900 text-white hover:bg-navy-800 hover:shadow-lift",
-              )}
+              href="/"
+              aria-label="Vijaya Enterprises — home"
+              className="inline-flex shrink-0 rounded-2xl"
             >
-              Contact Us
+              {/* Keyed to `scrolled` rather than `light`: while the panel is
+                  sliding in the strip behind the logo is still the dark hero,
+                  and the dark-purple wordmark would disappear into it. */}
+              <Logo reversed={!solid} priority className="h-16 sm:h-20" />
             </Link>
 
+            {/* Right — the only control on the bar */}
             <button
               ref={toggleRef}
               type="button"
-              onClick={() => setOpen((value) => !value)}
+              onClick={() => setOpen(true)}
               aria-expanded={open}
-              aria-controls="mobile-menu"
-              aria-label={open ? "Close menu" : "Open menu"}
+              aria-controls="site-menu"
               className={cn(
-                "inline-flex h-12 w-12 items-center justify-center rounded-full border transition-colors duration-300 lg:hidden",
-                open
-                  ? "border-white/30 text-white"
-                  : light
-                    ? "border-white/35 text-white hover:bg-white/10"
-                    : "border-line-strong text-navy-900 hover:bg-navy-50",
+                "group inline-flex shrink-0 items-center gap-3 rounded-full transition-colors duration-300 sm:gap-4",
+                light ? "text-white" : "text-navy-900",
               )}
             >
-              <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
-              <span aria-hidden="true" className="relative block h-3 w-5">
-                <span
-                  className={cn(
-                    "absolute left-0 block h-[1.5px] w-5 rounded-full bg-current transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                    open ? "top-1.5 rotate-45" : "top-0",
-                  )}
-                />
-                <span
-                  className={cn(
-                    "absolute left-0 block h-[1.5px] w-5 rounded-full bg-current transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                    open ? "top-1.5 -rotate-45" : "top-3",
-                  )}
-                />
+              <span className="text-[0.75rem] font-semibold uppercase tracking-[0.22em]">
+                Menu
+              </span>
+
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "relative flex h-12 w-12 items-center justify-center rounded-full border transition-colors duration-300 sm:h-[3.25rem] sm:w-[3.25rem]",
+                  light
+                    ? "border-white/40 group-hover:bg-white/10"
+                    : "border-line-strong group-hover:bg-navy-50",
+                )}
+              >
+                {/* Three rules, the middle one short. On hover they even up —
+                    a small tell that the control does something, without the
+                    bars pretending to be an X they never become. */}
+                <span className="flex w-[1.125rem] flex-col items-start gap-[0.3125rem]">
+                  <span className="h-px w-full bg-current" />
+                  <span className="h-px w-2/3 bg-current transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:w-full" />
+                  <span className="h-px w-full bg-current" />
+                </span>
               </span>
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Mobile / tablet panel */}
-      <div
-        id="mobile-menu"
-        ref={panelRef}
-        hidden={!open}
-        className="lg:hidden"
-      >
-        <div className="glass-navy h-[calc(100dvh-5rem)] overflow-y-auto rounded-b-[2.5rem] border-t border-white/10 sm:h-[calc(100dvh-6rem)]">
-          <div className="container-page flex min-h-full flex-col justify-between py-10">
-            <nav aria-label="Primary (mobile)">
-              <ul className="space-y-1">
-                {[{ href: "/", label: "Home", hint: "Building Trust Since 1973" }, ...navLinks].map(
-                  (link, index) => (
-                    <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        aria-current={isActive(link.href) ? "page" : undefined}
-                        className="group flex items-baseline justify-between gap-4 rounded-3xl px-4 py-4 transition-colors duration-300 hover:bg-white/[0.06]"
-                        style={{ animationDelay: `${index * 60}ms` }}
-                      >
-                        <span>
-                          <span className="block font-display text-[1.75rem] leading-tight text-white">
-                            {link.label}
-                          </span>
-                          <span className="mt-1 block text-[0.8125rem] text-navy-100/60">
-                            {link.hint}
-                          </span>
-                        </span>
-                        <span
-                          aria-hidden="true"
-                          className={cn(
-                            "mt-2 h-1.5 w-1.5 shrink-0 rounded-full transition-opacity duration-300",
-                            isActive(link.href)
-                              ? "bg-brass-500 opacity-100"
-                              : "bg-white opacity-0 group-hover:opacity-60",
-                          )}
-                        />
-                      </Link>
-                    </li>
-                  ),
-                )}
-              </ul>
-            </nav>
-
-            <div className="mt-10 space-y-4">
-              <Link
-                href="/contact"
-                className="flex w-full items-center justify-center rounded-full bg-white px-8 py-4 text-[0.9375rem] font-semibold text-navy-900"
-              >
-                Contact Us
-              </Link>
-              <div className="flex flex-col gap-1 px-4 pb-2 text-[0.875rem] text-navy-100/70">
-                <a href={contact.phoneHref} className="link-underline w-fit">
-                  {contact.phoneDisplay}
-                </a>
-                <a href={contact.emailHref} className="link-underline w-fit">
-                  {contact.emailDisplay}
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
+      <SiteMenu open={open} onClose={close} isActive={isActive} />
+    </>
   );
 }

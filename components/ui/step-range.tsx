@@ -86,13 +86,15 @@ export function StepRange({
     style: { left: `${percent(value[handle])}%` },
     className:
       "absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full " +
-      "border-2 border-white bg-rosegold-600 shadow-md transition-shadow hover:shadow-lg " +
+      "border-2 border-white bg-navy-900 shadow-md transition-shadow hover:shadow-lg " +
       "active:cursor-grabbing focus-visible:outline focus-visible:outline-2 " +
-      "focus-visible:outline-offset-2 focus-visible:outline-rosegold-600",
+      "focus-visible:outline-offset-2 focus-visible:outline-navy-900",
   });
 
+  // Transparent, like every other control on the panel: the hairline is the
+  // field, and what shows through it is whatever the panel is set on.
   return (
-    <div className="rounded-full border border-line bg-white/60 px-5 py-3 shadow-sm backdrop-blur-md">
+    <div className="rounded-full border border-navy-900/20 px-5 py-3">
       <div className="mb-3 flex items-center justify-between">
         <span className="text-[0.75rem] font-semibold text-navy-900">
           {format(stops[low])}
@@ -131,12 +133,12 @@ export function StepRange({
         onPointerCancel={() => {
           dragging.current = null;
         }}
-        className="relative h-1.5 cursor-pointer touch-none select-none rounded-full bg-line-strong"
+        className="relative h-1.5 cursor-pointer touch-none select-none rounded-full bg-navy-900/15"
       >
         <span
           aria-hidden="true"
           style={{ left: `${percent(low)}%`, width: `${percent(high) - percent(low)}%` }}
-          className="absolute h-full rounded-full bg-rosegold-600/60"
+          className="absolute h-full rounded-full bg-navy-900/70"
         />
 
         {/* The benchmarks themselves, so the snapping reads as deliberate
@@ -152,7 +154,7 @@ export function StepRange({
             style={{ left: `${percent(index)}%` }}
             className={cn(
               "absolute top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-colors duration-200",
-              index >= low && index <= high ? "bg-white" : "bg-navy-400",
+              index >= low && index <= high ? "bg-white" : "bg-navy-900/45",
             )}
           />
         ))}

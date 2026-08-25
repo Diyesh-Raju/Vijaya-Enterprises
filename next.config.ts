@@ -73,6 +73,12 @@ const nextConfig: NextConfig = {
     // needed — which also means no remote host can be proxied through the
     // optimiser.
     formats: ["image/avif", "image/webp"],
+    // Next only serves qualities named here — anything else is a 400, and
+    // `<Image quality>` quietly falls back to the default rather than
+    // breaking, so an undeclared value is dead code you never see fail.
+    // 85 is for the photographs that were upscaled to reach print size: they
+    // are smooth, and smooth is exactly what the default 75 bands.
+    qualities: [75, 85],
     minimumCacheTTL: 60 * 60 * 24 * 365,
   },
 

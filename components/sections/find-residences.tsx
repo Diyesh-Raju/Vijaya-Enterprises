@@ -1,12 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Container, Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { SelectMenu } from "@/components/ui/select-menu";
 import { StepRange } from "@/components/ui/step-range";
 import { projects } from "@/lib/projects";
+import { img } from "@/lib/images";
 import { cn } from "@/lib/cn";
 
 /**
@@ -86,10 +88,23 @@ const FULL_RANGE: [number, number] = [0, 3];
  */
 const firstOf = (options: readonly string[]) => options[0];
 
+/**
+ * Which status the panel opens on, named rather than taken off the top of the
+ * list. The list is in file order, so the opening preference used to be
+ * whichever project happened to sit first in `lib/projects.ts` — and the day
+ * that project sold out, the panel opened on "Sold Out", the one status
+ * nobody is shopping for. Falls back to the first if the data stops carrying
+ * this one.
+ */
+const OPENING_STATUS = "Ongoing";
+const openingStatus = statuses.includes(OPENING_STATUS)
+  ? OPENING_STATUS
+  : firstOf(statuses);
+
 export function FindResidences() {
   const [tab, setTab] = useState(0);
   const [projectType, setProjectType] = useState(firstOf(tabs[0].projectTypes));
-  const [status, setStatus] = useState(firstOf(statuses));
+  const [status, setStatus] = useState(openingStatus);
   const [location, setLocation] = useState(firstOf(locations));
   const [area, setArea] = useState<[number, number]>(FULL_RANGE);
   const [budget, setBudget] = useState<[number, number]>(FULL_RANGE);
@@ -97,7 +112,31 @@ export function FindResidences() {
   const active = tabs[tab];
 
   return (
-    <Section tone="mist" size="sm">
+    <Section tone="mist" size="sm" className="overflow-hidden">
+      {/* Cloth, not colour. The controls on this panel are all transparent
+          now, so what they are cut out of has to be worth looking at — and a
+          soft, evenly lit drape gives them something to sit on without
+          competing with the type. `-z-10` inside the section's own stacking
+          context, so nothing here can climb over the page.
+
+          Decorative, so it carries no alt text: the panel says what it is in
+          the heading beside it. */}
+      <Image
+        src={img.backdropFabric}
+        alt=""
+        fill
+        sizes="100vw"
+        quality={85}
+        placeholder="blur"
+        className="-z-10 object-cover"
+      />
+      {/* A veil to lift the fabric back off the type. Warm rather than white,
+          so the cloth keeps its colour instead of reading as a grey wash. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(255,252,248,0.62)_0%,rgba(255,252,248,0.5)_50%,rgba(255,252,248,0.66)_100%)]"
+      />
+
       <Container>
         <div className="flex flex-col items-start gap-8 sm:gap-10 lg:flex-row lg:gap-16">
           {/* The claim, held beside the controls while they are worked through. */}
@@ -114,39 +153,61 @@ export function FindResidences() {
 
           <div className="w-full lg:w-[54%]">
             <Reveal delay={80}>
-              {/* Discipline tabs */}
-              <div className="hide-scrollbar mb-7 flex items-center gap-5 overflow-x-auto border-b border-line pb-4 sm:mb-9 sm:gap-8">
-                {tabs.map((entry, index) => {
-                  const selected = index === tab;
+              {/* Discipline tabs, drawn as one segmented pill: a rounded
+                  track, hairline dividers between the choices, and the
+                  selected one filled. The underline they used to carry said
+                  "tab"; a track with one lit segment says "this many options,
+                  and you are on this one" without having to be read.
 
-                  return (
-                    <button
-                      key={entry.label}
-                      type="button"
-                      aria-pressed={selected}
-                      onClick={() => {
-                        setTab(index);
-                        // The types on offer change with the tab, so a choice
-                        // made under the old one would no longer be selectable.
-                        setProjectType(firstOf(entry.projectTypes));
-                      }}
-                      className={cn(
-                        "relative flex-shrink-0 whitespace-nowrap pb-1 text-[0.75rem] font-bold uppercase tracking-[0.2em] transition-colors duration-300",
-                        selected
-                          ? "text-navy-900"
-                          : "text-slate-muted hover:text-navy-800",
-                      )}
-                    >
-                      {entry.label}
-                      {selected && (
-                        <span
-                          aria-hidden="true"
-                          className="absolute -bottom-[17px] left-0 h-[2px] w-full rounded-full bg-navy-900"
-                        />
-                      )}
-                    </button>
-                  );
-                })}
+                  The pill is cut out of the panel rather than laid on it:
+                  there is a photograph behind it now, and the track is the
+                  hairline plus whatever the cloth is doing underneath. Only
+                  the selected segment takes a fill. */}
+              <div className="hide-scrollbar mb-7 -mx-1 overflow-x-auto px-1 pb-1 sm:mb-9">
+                <div className="inline-flex items-center rounded-full border border-navy-900/25 bg-transparent p-1.5">
+                  {tabs.map((entry, index) => {
+                    const selected = index === tab;
+                    // A divider beside the filled segment would sit against
+                    // its edge and read as a seam, so the two either side of
+                    // the selection stand down.
+                    const touchesSelected = index === tab || index - 1 === tab;
+
+                    return (
+                      <Fragment key={entry.label}>
+                        {index > 0 && (
+                          <span
+                            aria-hidden="true"
+                            className={cn(
+                              "h-4 w-px shrink-0 transition-colors duration-300",
+                              touchesSelected ? "bg-transparent" : "bg-navy-900/20",
+                            )}
+                          />
+                        )}
+
+                        <button
+                          type="button"
+                          aria-pressed={selected}
+                          onClick={() => {
+                            setTab(index);
+                            // The types on offer change with the tab, so a
+                            // choice made under the old one would no longer be
+                            // selectable.
+                            setProjectType(firstOf(entry.projectTypes));
+                          }}
+                          className={cn(
+                            "flex-shrink-0 whitespace-nowrap rounded-full px-5 py-2.5 text-[0.875rem] font-medium",
+                            "transition-[background-color,color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                            selected
+                              ? "bg-navy-950 text-white"
+                              : "text-slate-muted hover:bg-navy-50 hover:text-navy-900",
+                          )}
+                        >
+                          {entry.label}
+                        </button>
+                      </Fragment>
+                    );
+                  })}
+                </div>
               </div>
             </Reveal>
 
@@ -209,10 +270,10 @@ export function FindResidences() {
               <Link
                 href={active.href}
                 className={cn(
-                  "mt-8 block w-full rounded-full border border-white/50 py-3.5 text-center",
+                  "mt-8 block w-full rounded-full border border-white/25 py-3.5 text-center",
                   "text-[0.75rem] font-bold uppercase tracking-[0.2em] text-white",
-                  "bg-[linear-gradient(135deg,rgba(164,119,116,0.9)_0%,#b76e79_100%)]",
-                  "shadow-[0_8px_24px_0_rgba(183,110,121,0.2),inset_0_1px_0_0_rgba(255,255,255,0.4)]",
+                  "bg-[linear-gradient(135deg,rgba(22,48,95,0.94)_0%,#0a1f44_100%)]",
+                  "shadow-[0_8px_24px_0_rgba(10,31,68,0.24),inset_0_1px_0_0_rgba(255,255,255,0.28)]",
                   "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 active:scale-[0.99]",
                 )}
               >

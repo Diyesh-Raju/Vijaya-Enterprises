@@ -31,7 +31,7 @@ export function ProjectNav({ slug }: { slug: string }) {
             rather than being pushed along by the back link beside them. */}
         <div className="flex items-center gap-3 py-4 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:gap-4">
           <Link
-            href="/residential#apartment-projects"
+            href="/residential#residential-projects"
             className="group inline-flex shrink-0 items-center gap-2 text-[0.8125rem] font-semibold text-navy-800 transition-colors duration-300 hover:text-navy-900 sm:justify-self-start"
           >
             <ArrowLeftIcon className="h-4 w-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-1" />

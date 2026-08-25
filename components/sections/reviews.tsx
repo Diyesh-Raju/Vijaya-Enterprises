@@ -6,20 +6,38 @@ import { cn } from "@/lib/cn";
 
 function ReviewCard({ review }: { review: Review }) {
   return (
-    <li className="flex w-[18.5rem] shrink-0 flex-col rounded-[1.5rem] border border-rosegold-200 bg-white p-7 sm:w-[22rem] sm:rounded-[1.75rem] sm:p-8">
+    <li
+      className={cn(
+        // Same box as before — width, padding and radius are untouched. Only
+        // what it is made of has changed: a pane of glass over the room
+        // rather than a card laid on top of it.
+        "flex w-[18.5rem] shrink-0 flex-col rounded-[1.5rem] p-7 sm:w-[22rem] sm:rounded-[1.75rem] sm:p-8",
+        // Two layers, and both are load-bearing. The white frost is the
+        // reference's look; the navy under it is what makes the type legible,
+        // because this photograph has bright windows in it and a purely light
+        // frost over those left the quote at 3.9:1 — under the 4.5:1 body text
+        // needs. Together they measure 5.1:1 at the worst card on the strip
+        // while the room still reads clearly through the glass.
+        "border border-white/25 backdrop-blur-md",
+        "bg-navy-950/22 bg-[linear-gradient(rgba(255,255,255,0.08),rgba(255,255,255,0.08))]",
+        // The lit top edge is what sells glass. Without it a translucent
+        // rectangle reads as a hole in the image rather than a surface over it.
+        "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.22)]",
+      )}
+    >
       <div className="flex items-center gap-3.5">
         {/* Initial rather than a photo: Google's avatars are not ours to host. */}
         <span
           aria-hidden="true"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rosegold-200 font-display text-[1.125rem] text-navy-900"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/15 font-display text-[1.125rem] text-white"
         >
           {review.name.trim().charAt(0).toUpperCase()}
         </span>
         <span className="flex min-w-0 flex-col leading-tight">
-          <span className="truncate text-[0.9375rem] font-semibold text-navy-900">
+          <span className="truncate text-[0.9375rem] font-semibold text-white">
             {review.name}
           </span>
-          <span className="mt-1 text-[0.75rem] text-navy-800/55">
+          <span className="mt-1 text-[0.75rem] text-white/65">
             {review.when}
           </span>
         </span>
@@ -27,7 +45,7 @@ function ReviewCard({ review }: { review: Review }) {
 
       {review.rating && (
         <span
-          className="mt-4 flex gap-1 text-brass-500"
+          className="mt-4 flex gap-1 text-brass-400"
           aria-label={`${review.rating} out of 5`}
         >
           {Array.from({ length: review.rating }, (_, star) => (
@@ -44,7 +62,7 @@ function ReviewCard({ review }: { review: Review }) {
         </span>
       )}
 
-      <p className="mt-5 text-[0.9375rem] leading-relaxed text-navy-900">
+      <p className="mt-5 text-[0.9375rem] leading-relaxed text-white/85">
         {review.quote}
       </p>
     </li>
@@ -104,8 +122,9 @@ export function Reviews() {
         className="-z-10 object-cover"
       />
       {/* A navy scrim rather than a white one: it keeps the room clearly
-          visible while giving the light type above enough to sit on, and the
-          white cards read as lit against it. */}
+          visible while giving the light type enough to sit on — which now
+          includes the type inside the cards, since they are glass and the
+          room reads straight through them. */}
       <div
         aria-hidden="true"
         className="absolute inset-0 -z-10 bg-gradient-to-b from-navy-950/70 via-navy-950/55 to-navy-950/70"

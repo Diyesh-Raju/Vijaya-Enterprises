@@ -30,6 +30,28 @@ export const contact = {
   hours: "Monday – Saturday, 9:30 am – 6:30 pm",
 } as const;
 
+/**
+ * The networks the footer links out to.
+ *
+ * ⚠️ PLACEHOLDER HANDLES — these are the addresses the accounts *would* have
+ * under the company's own name; none of them has been confirmed against a real
+ * profile. Check every one before launch and correct or delete it: an icon
+ * that leads to somebody else's account, or to nothing, is worse than no icon.
+ * Deleting an entry removes it from the footer with no other edit.
+ *
+ * `label` is also the key the mark is looked up by — see `socialIcons` in
+ * `components/ui/social-icons.tsx`.
+ */
+export const social = [
+  { label: "Instagram", href: "https://www.instagram.com/vijayaenterprises" },
+  { label: "Facebook", href: "https://www.facebook.com/vijayaenterprises" },
+  { label: "X", href: "https://x.com/vijayaenterprise" },
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/company/vijaya-enterprises",
+  },
+] as const;
+
 export const offices = [
   {
     label: "Head Office",
@@ -74,6 +96,7 @@ export const allRoutes = [
   "/",
   ...navLinks.map((l) => l.href),
   "/contact",
+  "/faq",
 ] as const;
 
 /**

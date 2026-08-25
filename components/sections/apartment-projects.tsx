@@ -9,20 +9,21 @@ import { SelectMenu } from "@/components/ui/select-menu";
 import { projects } from "@/lib/projects";
 
 /**
- * Apartment projects: a preference filter, a grid of project cards, and
+ * Residential projects: a preference filter, a grid of project cards, and
  * progressive paging.
  *
- * Paging is cumulative rather than page-by-page — page 1 shows the first six,
- * page 2 shows those six plus three more. "Next" is the same action as
- * pressing the following number, so the two controls stay in step.
+ * Paging is cumulative rather than page-by-page — page 1 shows the first four,
+ * page 2 shows those four plus two more, page 3 those six plus the last two.
+ * "Next" is the same action as pressing the following number, so the two
+ * controls stay in step.
  *
  * The list itself lives in `lib/projects.ts` so the project pages can read the
  * same records. Filter options are derived from it, so adding a project cannot
  * desync the controls.
  */
 
-const FIRST_PAGE = 6;
-const PER_ADDITIONAL_PAGE = 3;
+const FIRST_PAGE = 4;
+const PER_ADDITIONAL_PAGE = 2;
 
 /** The four preference filters, in the order they appear. */
 const filters = [
@@ -101,7 +102,7 @@ export function ApartmentProjects() {
 
   return (
     <section
-      id="apartment-projects"
+      id="residential-projects"
       className="relative isolate bg-mist py-20 sm:py-28 lg:py-36"
     >
       <Container>
@@ -111,7 +112,7 @@ export function ApartmentProjects() {
         </Reveal>
         <Reveal delay={80}>
           <h2 className="text-balance-head mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
-            Apartment Projects
+            Residential Projects
             <svg
               viewBox="0 0 44 16"
               aria-hidden="true"
@@ -165,12 +166,12 @@ export function ApartmentProjects() {
 
         {/* Project grid */}
         {filtered.length > 0 ? (
-          <ul className="mt-8 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:mt-10 lg:grid-cols-3">
+          <ul className="mt-8 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:mt-10 lg:gap-7">
             {visible.map((project, index) => (
               <Reveal
                 key={project.name}
                 as="li"
-                delay={(index % 3) * 80}
+                delay={(index % 2) * 80}
                 className="group"
               >
                 <ProjectCard project={project} />

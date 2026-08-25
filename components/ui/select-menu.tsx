@@ -103,12 +103,16 @@ export function SelectMenu({
         className={cn(
           "rounded-full border transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
           stacked
-            ? "flex w-full items-center justify-between gap-2 bg-white/60 px-5 py-3 shadow-sm backdrop-blur-md hover:shadow-md"
+            // Transparent: the stacked field is only used on the enquiry
+            // panel, which is set on a photograph, and a white fill there
+            // reads as a card laid over the cloth rather than a field cut
+            // out of it. The hover tint is the only surface it ever takes.
+            ? "flex w-full items-center justify-between gap-2 bg-transparent px-5 py-3 hover:bg-white/20"
             : "inline-flex items-center gap-2.5 bg-white py-2.5 pl-5 pr-4 hover:-translate-y-0.5 hover:shadow-soft",
           // The rose border is a "you narrowed this" cue, which only reads on
           // the inline pills — a stacked field always carries a value.
           stacked
-            ? "border-line"
+            ? "border-navy-900/20"
             : value === ""
               ? "border-line-strong"
               : "border-rosegold-400",
@@ -156,8 +160,15 @@ export function SelectMenu({
             if (event.key === "Tab") close(false);
           }}
           className={cn(
-            "absolute left-0 top-[calc(100%+0.5rem)] z-40 overflow-hidden rounded-[1.25rem] border border-line bg-white py-2 shadow-lift",
-            stacked ? "w-full" : "min-w-[12rem]",
+            "absolute left-0 top-[calc(100%+0.5rem)] z-40 overflow-hidden rounded-[1.25rem] border py-2 shadow-lift",
+            stacked
+              // Open, the field stays as transparent as it was shut. What
+              // little surface it has is a blur rather than a fill: it keeps
+              // the ground it is set on visible while smoothing whatever the
+              // panel happens to be covering, so the choices stay legible
+              // over a photograph.
+              ? "w-full border-navy-900/20 bg-white/10 backdrop-blur-2xl backdrop-saturate-150"
+              : "min-w-[12rem] border-line bg-white",
           )}
         >
           {choices.map((choice) => {
@@ -181,7 +192,9 @@ export function SelectMenu({
                     ? stacked
                       ? "font-semibold text-navy-900"
                       : "font-semibold text-rosegold-600"
-                    : "text-navy-900 hover:bg-navy-50",
+                    : stacked
+                      ? "text-navy-900 hover:bg-white/25"
+                      : "text-navy-900 hover:bg-navy-50",
                 )}
               >
                 {choice.text}

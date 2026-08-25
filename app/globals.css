@@ -164,6 +164,17 @@
     border-radius: var(--radius-xs);
   }
 
+  /* Focus handed back to a control by script, rather than reached by the
+     person — closing a dialog with Escape, say. The keypress makes the
+     browser treat the restored focus as keyboard focus and ring it, which is
+     right when someone tabbed there and wrong when they only dismissed
+     something. Whoever sets this attribute is responsible for removing it on
+     `blur`, so the very next time the control is genuinely focused it rings
+     like anything else. */
+  [data-returning-focus]:focus-visible {
+    outline: none;
+  }
+
   /* Inputs at >=16px so iOS Safari never zooms on focus */
   input, textarea, select {
     font-size: max(1rem, 16px);
@@ -221,7 +232,17 @@
     transform 0.9s var(--ease-out-soft),
     filter 0.9s var(--ease-out-soft);
   filter: blur(6px);
-  will-change: opacity, transform;
+
+  /* The hint is for the arrival, and only for the arrival. Left on
+     permanently it keeps every revealed block on its own composited layer
+     for the life of the page — and, the reason it actually had to come
+     off, an element promising `opacity` or `transform` is a *backdrop
+     root*, so nothing inside it can blur what sits behind it. Every field
+     on the enquiry panel is inside one of these, which is why their
+     dropdowns came out as flat glass over a sharp background. */
+  &:not([data-reveal="on"]) {
+    will-change: opacity, transform;
+  }
 
   &[data-reveal="on"] {
     opacity: 1;
@@ -375,16 +396,65 @@
   margin-left: 15%;
 }
 
+/* The stage the strip is walked in. Left alone it is an ordinary band on
+   the page; pinned (the component sets the attribute once it has decided
+   the window is wide enough and motion is welcome) it becomes one window
+   tall and holds still while the section's runway scrolls past it. */
+.gooey__stage {
+  padding-block: 5rem;
+}
+
+@media (min-width: 640px) {
+  .gooey__stage { padding-block: 6rem; }
+}
+
+.gooey[data-pinned="on"] .gooey__stage {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100svh;
+  /* The pad at the top is the header's own height: the stage is held against
+     the top of the window, so anything centred in it is centred behind the
+     bar as well, and the title lost its first line under the frosted strip. */
+  padding-top: 6rem;
+  padding-bottom: 1rem;
+}
+
+/* The stage is one window and the strip is most of it, so everything around
+   the tiles gives way rather than the tiles themselves: the gaps close up,
+   and the display line takes a ceiling in vh so two lines of it cannot eat
+   the room the strip needs on a short screen. */
+.gooey[data-pinned="on"] .gooey__stage > * + * {
+  margin-top: clamp(0.75rem, 3vh, 2.5rem);
+}
+
+.gooey[data-pinned="on"] .gooey__title {
+  font-size: min(calc(4vw + 5rem), 12vh);
+}
+
 .gooey__viewport {
-  overflow: hidden;
   width: 100%;
+  /* A real scroller by default, so the strip can be swiped on a phone — and
+     so it is still reachable if the pinning never switches on. */
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Pinned, the page is the scroller and this one has to stop being one:
+   `clip` crops the strip without becoming a scroll container, which is what
+   keeps the sticky stage above sticking to the window. */
+.gooey[data-pinned="on"] .gooey__viewport {
+  overflow-x: clip;
 }
 
 .gooey__track {
   display: flex;
   align-items: center;
   width: max-content;
-  transition: transform 1.1s var(--ease-out-soft);
+  /* No transition. The transform is written from the scroll position now, so
+     easing it would only make the strip lag behind the wheel. */
   will-change: transform;
 }
 
@@ -534,239 +604,121 @@
 }
 
 /* ------------------------------------------------------------------
-   Residential hero — the Animmaster "Hero Animation" loader, scrubbed.
+   Residential hero — a black line cutting one photograph to the next.
 
-   The word sets, a sliver of photograph opens between its two halves,
-   widens, then swallows the viewport; the page's own heading rises out
-   of the bottom once it has. None of it plays on its own — the whole
-   timeline is driven by how far the visitor has scrolled through the
-   track, so they hold the handle and can wind it back.
+   The line rises out of the bottom-right corner, sweeps up the picture
+   and leaves at the top-left with the next frame behind it. There is no
+   line element: the incoming photograph is clipped to the half-plane
+   the sweep has already passed, and its parent carries a hard, unblurred
+   `drop-shadow` offset up and to the left. The shadow is the same
+   silhouette a few pixels ahead of the picture's own edge, so the only
+   part of it that ever shows is a band along the leading edge. That band
+   is the line — it cannot fall out of step with the wipe, because it is
+   the wipe.
 
-   Rebuilt on keyframes rather than the GSAP the template ships with.
-   Every animation is declared normally and then held with
-   `animation-play-state: paused`; each delay is `calc(<its start> -
-   var(--reshero-t))`, so writing one time into `--reshero-t` scrubs the
-   lot to that moment. `ScrollScrub` writes it, once a frame. The two
-   curves stand in for the template's `expo.inOut` and `expo.out`, and
-   the starts below are its GSAP timeline resolved to milliseconds, less
-   the 1250ms the letters used to spend rising: the word is set before
-   anyone scrolls, so there is nothing to wait through.
+   The filter has to sit on the parent. Filters are applied before
+   clipping, so a `drop-shadow` on the same element the `clip-path` is on
+   would be cut away with everything else outside the polygon.
 
-   `--reshero-t` defaults to 0ms so the first paint — before hydration —
-   is the opening frame rather than a flash of the ending. Without any
-   JavaScript at all the `noscript` block in the component parks it at
-   the end instead, because a hero that never runs must not also be the
-   reason the heading is invisible.
+   THE POLYGON. The swept region is {x + y ≥ k} over the unit square,
+   with k running 2 → 0: a triangle growing out of the bottom-right
+   corner until it reaches the diagonal, then a pentagon closing on the
+   top-left. Written as five points it covers both, with two pairs
+   collapsing onto each other in the half where the shape is a triangle.
+   Every coordinate is piecewise-linear in k with its only bend at k = 1,
+   which is why there is a keyframe at exactly 50% — with it the
+   interpolated polygon is the *exact* half-plane at every frame, under
+   any easing curve. Without it the edge would bow away from the corners
+   through the middle of the sweep.
+
+   Because the polygon is written in percentages, the line meets both
+   corners dead-on whatever shape the hero happens to be, and its angle
+   follows the hero's own diagonal.
 ------------------------------------------------------------------- */
 
 .reshero {
-  --reshero-t: 0ms;
-  --reshero-expo-in-out: cubic-bezier(0.87, 0, 0.13, 1);
-  --reshero-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
-  /* The track. Its height beyond one viewport is the scrub distance, so
-     two screens of scrolling wind the timeline from end to end. */
-  min-height: 300svh;
+  /* Neutral, and a shade off pure black — #000 against a bright sky reads
+     as a hole punched in the picture rather than as an edge drawn on it.
+     No blue in it: the hero grades in neutral shade, and a navy-black line
+     would be the one thing on the stage still carrying a colour cast. */
+  --reshero-line: #060607;
+  --reshero-line-shift: 4px;
+  --reshero-wipe: 950ms;
+  /* Leaves the corner promptly, then settles into the far one — a stroke
+     being drawn, not a panel sliding. A harder ease-in (quart and up)
+     loiters at both corners and then bolts across the middle, which at
+     this tempo reads as a stutter rather than as weight. */
+  --reshero-sweep: cubic-bezier(0.5, 0, 0.2, 1);
 }
 
-.reshero__loader {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  color: var(--color-navy-950);
-  /* Its own stacking context. Without this the box's `z-index: 2` below
-     escapes to the stage and paints the photograph over the heading. */
-  isolation: isolate;
-}
-
-.reshero__word {
-  display: flex;
-  justify-content: center;
-  white-space: nowrap;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: clamp(2.25rem, 10.5vw, 10rem);
-  line-height: 0.75;
-  letter-spacing: -0.03em;
-}
-
-/* The halves clip their letters so those can rise into place, and they
-   part by a hair as the picture opens between them. */
-.reshero__half {
-  display: flex;
-  overflow: hidden;
-  animation: reshero-part 1250ms var(--reshero-expo-in-out) both;
-  animation-delay: calc(0ms - var(--reshero-t));
-}
-
-.reshero__half.is--start {
-  justify-content: flex-end;
-  --reshero-part: -0.05em;
-}
-
-.reshero__half.is--end {
-  justify-content: flex-start;
-  --reshero-part: 0.05em;
-}
-
-.reshero__half > span {
-  position: relative;
-  z-index: 1;
-}
-
-/* Above the letters throughout: once the picture is full-bleed it has to
-   cover the word, not slide under the half that happens to follow it. */
-.reshero__box {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-flow: column;
-  align-items: center;
-  justify-content: center;
-  width: 0;
-  /* The flood fills `forwards`, not `both`. Both animations write `width`,
-     and a backwards fill would have the flood applying its own start value
-     from time zero — pinning the box open at 1em before the word has even
-     set, and hiding the open animation underneath it. */
-  animation:
-    reshero-box-open 1250ms var(--reshero-expo-in-out) both,
-    reshero-box-flood 2000ms var(--reshero-expo-in-out) forwards;
-  animation-delay:
-    calc(0ms - var(--reshero-t)),
-    calc(2450ms - var(--reshero-t));
-}
-
-.reshero__box-inner {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1em;
-  height: 95%;
-}
-
-.reshero__grow {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 0;
-  height: 100%;
-  overflow: hidden;
-  /* Forwards only, for the same reason as the box above. */
-  animation:
-    reshero-grow-open 1250ms var(--reshero-expo-in-out) both,
-    reshero-grow-flood 2000ms var(--reshero-expo-in-out) forwards;
-  animation-delay:
-    calc(0ms - var(--reshero-t)),
-    calc(2450ms - var(--reshero-t));
-}
-
-.reshero__grow-wrap {
-  position: absolute;
-  width: 100%;
-  min-width: 1em;
-  height: 100%;
-}
-
-.reshero__cover {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  pointer-events: none;
-  user-select: none;
-}
-
-/* Three frames flicked away in turn, so the reveal lands on a photograph
-   the visitor has not already been looking at all the way down. */
-.reshero__cover.is--1 { z-index: 3; animation: reshero-flick 50ms linear both; animation-delay: calc(1200ms - var(--reshero-t)); }
-.reshero__cover.is--2 { z-index: 2; animation: reshero-flick 50ms linear both; animation-delay: calc(1700ms - var(--reshero-t)); }
-.reshero__cover.is--3 { z-index: 1; animation: reshero-flick 50ms linear both; animation-delay: calc(2200ms - var(--reshero-t)); }
-
-/* The page's own copy, rising once the picture is behind it. Each caller
-   sets its own start through `--reshero-at`. */
-.reshero__rise {
-  display: block;
-  animation: reshero-rise 1250ms var(--reshero-expo-out) both;
-  animation-delay: calc(var(--reshero-at, 0ms) - var(--reshero-t));
-}
-
-.reshero__rise-clip {
-  display: block;
-  overflow: hidden;
-}
-
-.reshero__fade {
-  animation: fade-in 1600ms var(--ease-out-soft) both;
-  animation-delay: calc(var(--reshero-at, 0ms) - var(--reshero-t));
-}
-
-@keyframes reshero-part {
-  from { transform: translateX(0); }
-  to { transform: translateX(var(--reshero-part)); }
-}
-
-@keyframes reshero-box-open {
-  from { width: 0em; }
-  to { width: 1em; }
-}
-
-@keyframes reshero-box-flood {
-  from { width: 1em; }
-  to { width: 130vw; }
-}
-
-@keyframes reshero-grow-open {
-  from { width: 0%; }
-  to { width: 100%; }
-}
-
-@keyframes reshero-grow-flood {
-  from { width: 100%; height: 100%; }
-  to { width: 130vw; height: 130vh; }
-}
-
-@keyframes reshero-flick {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-@keyframes reshero-rise {
-  from { transform: translateY(110%); }
-  to { transform: translateY(0); }
-}
-
-/* Held at whatever frame `--reshero-t` names, rather than playing.
-
-   ⚠️ This has to stay below every rule above that sets `animation`. The
-   shorthand resets `animation-play-state` to `running`, so declaring the
-   pause first — which is where it reads better — silently un-pauses the
-   whole hero and it plays itself on load. */
-.reshero__half,
-.reshero__box,
-.reshero__grow,
-.reshero__cover,
-.reshero__rise,
-.reshero__fade {
-  animation-play-state: paused;
-}
-
-/* Reduced motion: no track to wind, no pinning. Parking the clock past
-   the last frame leaves the finished hero — the photograph and the
-   heading — with nothing having moved to get there. `ScrollScrub` sees
-   the same preference and never writes over this. */
-@media (prefers-reduced-motion: reduce) {
+@media (min-width: 80rem) {
   .reshero {
-    --reshero-t: 99999ms;
-    min-height: 100svh;
+    --reshero-line-shift: 5px;
+  }
+}
+
+/* Every frame is mounted and stacked; only two are ever on screen — the
+   one that has settled, and the one the line is drawing in over it. */
+.reshero__frame {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+}
+
+.reshero__frame.is--settled {
+  z-index: 1;
+  opacity: 1;
+}
+
+.reshero__frame.is--rising {
+  z-index: 2;
+  opacity: 1;
+  filter: drop-shadow(
+    calc(0px - var(--reshero-line-shift))
+    calc(0px - var(--reshero-line-shift))
+    0
+    var(--reshero-line)
+  );
+}
+
+.reshero__clip {
+  position: absolute;
+  inset: 0;
+}
+
+.reshero__frame.is--rising .reshero__clip {
+  animation: reshero-wipe var(--reshero-wipe) var(--reshero-sweep) both;
+  will-change: clip-path;
+}
+
+@keyframes reshero-wipe {
+  /* Collapsed onto the bottom-right corner: nothing of the new picture,
+     and no silhouette for the shadow to draw an edge along. */
+  from {
+    clip-path: polygon(100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%);
   }
 
-  .reshero__stage {
-    position: static;
+  /* k = 1. The line lies on the hero's own diagonal, at full length. */
+  50% {
+    clip-path: polygon(100% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 100%);
+  }
+
+  to {
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%);
+  }
+}
+
+/* Reduced motion: the component never starts the cycle, so the hero is
+   simply its first photograph. This is the belt to that braces — nothing
+   sweeps even if a frame is somehow marked as rising. */
+@media (prefers-reduced-motion: reduce) {
+  .reshero__frame.is--rising {
+    filter: none;
+  }
+
+  .reshero__frame.is--rising .reshero__clip {
+    animation: none;
   }
 }
 
@@ -909,6 +861,12 @@
   }
 }
 
+/* Dark type set straight over a photograph, with no scrim under it.
+   A white halo behind the glyphs is what makes it hold: it brightens only
+   the few pixels around each letter, so the picture is untouched everywhere
+   else — which a wash over the whole image would not be. Two stops, one
+   tight enough to define the edge and one wide enough to clear a busy patch
+   behind it. */
 /* Masks the marquee edges so the loop has no hard cut */
 @utility fade-edges {
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
@@ -955,6 +913,593 @@
 }
 
 /* ------------------------------------------------------------------
+   The curtain — Residential, above the projects grid.
+
+   A tall track with a pinned stage inside it. The photograph is
+   full-bleed and clipped to the half of the stage the sweep has reached;
+   as the track scrolls, the clip opens leftwards until the picture has
+   the whole window and the panel of copy is covered over.
+
+   The picture is clipped rather than grown. A half-width frame that
+   widens re-crops its photograph on every frame — the house slides and
+   scales while the panel leaves, which is two things moving where the
+   design only asks for one. Clipped, the picture holds still and only
+   more of it arrives.
+
+   Nothing here runs on its own clock. Every animation is `paused`, and
+   `ScrollScrub` writes progress through the track into `--curtain` as a
+   time; each animation's delay is the negative of that, which is how an
+   animation's current time is set. One number scrubs the whole sequence
+   — the same thing `animation-timeline: scroll()` would do, except this
+   works in every engine rather than only the ones that have shipped it.
+
+   The sweep is over at 75% of the track's travel and the last quarter
+   holds the finished picture, so it reads as a photograph you scroll
+   past rather than a transition you scroll through.
+------------------------------------------------------------------- */
+
+.curtain {
+  /* Where the panel ends and the picture begins. One number: the panel is
+     this wide, the picture is clipped to what is left of the stage, and
+     the sweep starts from exactly that line.
+
+     Wider on a laptop than on a desk. The panel is a fixed window tall,
+     so a narrow one does not simply set the copy in fewer characters —
+     it sets it in more lines, and past a point they run out of the
+     bottom of the stage. */
+  --curtain-split: 46%;
+}
+
+@media (min-width: 80rem) {
+  .curtain {
+    --curtain-split: 40%;
+  }
+}
+
+@media (min-width: 64rem) {
+  /* One window tall and static: the panel simply sits over the left of
+     the picture. This is also the whole design for anyone who has asked
+     for less motion — the runway below is what makes it move. */
+  .curtain {
+    height: 100svh;
+  }
+
+  .curtain__panel {
+    width: var(--curtain-split);
+    /* The copy starts on the page's own left gutter — the same line the
+       heading of every other section starts on. The panel's containing
+       block is the stage, which is exactly as wide as the page, so `100%`
+       here is the same width `container-page` centres itself in and the
+       two land on the pixel, scrollbar or no scrollbar.
+
+       Capped, because past about 1920 the centred container's gutter grows
+       faster than the panel does, and left uncapped it would eventually
+       squeeze the copy against the picture. */
+    padding-left: clamp(3rem, calc((100% - 88rem) / 2 + 3rem), 20rem);
+    padding-right: clamp(1.5rem, 3vw, 3.5rem);
+  }
+
+  .curtain__photo {
+    clip-path: inset(0 0 0 var(--curtain-split));
+  }
+}
+
+@media (min-width: 64rem) and (prefers-reduced-motion: no-preference) {
+  /* One window of stage plus 80vh of travel to scrub through it. */
+  .curtain {
+    height: 180svh;
+  }
+
+  .curtain__photo,
+  .curtain__photo-inner {
+    animation-duration: 750ms; /* of the 1000ms the scrub writes */
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-play-state: paused;
+    animation-delay: calc(0ms - var(--curtain, 0ms));
+  }
+
+  .curtain__photo {
+    animation-name: curtain-open;
+    will-change: clip-path;
+  }
+
+  .curtain__photo-inner {
+    animation-name: curtain-drift;
+    will-change: transform;
+  }
+}
+
+@keyframes curtain-open {
+  from {
+    clip-path: inset(0 0 0 var(--curtain-split));
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Against the sweep, and settling as it lands: the picture is drawn a
+   touch over-size and pushed left while the opening is narrow, so what
+   stands in the opening drifts as the edge travels. */
+@keyframes curtain-drift {
+  /* The translate can only spend what the scale buys: at 1.09 there is
+     4.5% of picture beyond each edge, and 3% of drift leaves the frame
+     covered at both ends of the sweep. Push either number and the
+     photograph pulls away from the right edge of the window. */
+  from {
+    transform: translateX(-3%) scale(1.09);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   The aperture — the closing screen on /residential.
+
+   A tall track with a pinned stage inside it, and three layers stacked
+   in the stage: two columns of copy at the back, two photographs over
+   them, and one full-bleed photograph over everything. Only the top
+   layer moves under its own power — it closes to a vertical slit, turns
+   off the vertical, and shrinks to nothing, which is what lets the two
+   behind it arrive.
+
+   Nothing here runs on its own clock. Every animation is `paused`, and
+   `ScrollScrub` writes progress through the track into `--aperture` as
+   a time; each animation's delay is its own start minus that, which is
+   how an animation's current time is set. One number scrubs the whole
+   sequence — in both directions, at exactly the rate the page moves.
+
+   The five phases, of the 1000ms the scrub writes:
+
+     0 → 250    the picture closes to a slit and goes dark as it narrows
+     250 → 450  the slit turns
+     450 → 650  it shrinks away — brass for the last of it — and the two
+                columns behind it close in after it
+     650 → 850  two photographs wipe in, one down the left, one up the right
+     860 → 1000 the closing line rises a line at a time, then the buttons
+
+   The block below the enhancement is the whole design for anyone who
+   has asked for less motion: no track, no pin, no travel — the three
+   layers become three ordinary panels, in reading order.
+------------------------------------------------------------------- */
+
+.aperture__stage {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The photograph is written last in the markup so it stacks over the other
+   two. Read as panels rather than as layers, it comes first. */
+.aperture__front {
+  order: -1;
+}
+
+.aperture__front,
+.aperture__back,
+.aperture__outro {
+  position: relative;
+}
+
+.aperture__front,
+.aperture__outro {
+  min-height: 82svh;
+}
+
+.aperture__front-scale,
+.aperture__front-clip {
+  position: absolute;
+  inset: 0;
+}
+
+/* Both start invisible and are only ever brought up by the scrub: the
+   picture is meant to be a picture until something happens to it. */
+.aperture__veil,
+.aperture__flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.aperture__veil {
+  background-color: var(--color-navy-950);
+}
+
+.aperture__flash {
+  background-color: var(--color-brass-500);
+}
+
+/* The heading starts on the page's own left gutter, so it lines up with
+   the sections above it rather than with the edge of the window. */
+.aperture__front-copy {
+  will-change: opacity;
+  position: absolute;
+  inset: auto 0 0 0;
+  max-width: 56rem;
+  padding-inline: 1.25rem;
+  padding-bottom: clamp(2.5rem, 8vh, 5.5rem);
+}
+
+@media (min-width: 640px) {
+  .aperture__front-copy {
+    padding-inline: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .aperture__front-copy {
+    /* Capped, because past about 1920 the centred container's gutter grows
+       faster than a full-bleed panel's does. */
+    padding-left: clamp(3rem, calc((100% - 88rem) / 2 + 3rem), 20rem);
+    padding-right: 3rem;
+    max-width: 64rem;
+  }
+}
+
+/* ---- The two columns behind the picture ------------------------- */
+
+.aperture__back {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(2rem, 6vh, 3.5rem);
+  padding-block: clamp(3rem, 9vh, 5rem);
+  background-color: var(--color-mist);
+}
+
+.aperture__col {
+  padding-inline: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .aperture__col {
+    padding-inline: 2rem;
+  }
+}
+
+/* Side by side only where two columns of prose still set in readable
+   measure. Below that they stay stacked and simply leave in opposite
+   directions, which the slide does just as well vertically arranged. */
+@media (min-width: 1024px) {
+  .aperture__back {
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    padding-block: 0;
+  }
+
+  .aperture__col {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: clamp(3rem, 5vw, 6rem);
+  }
+
+  .aperture__col:nth-child(2) {
+    justify-content: flex-end;
+  }
+}
+
+.aperture__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 28rem;
+}
+
+.aperture__copy h3 {
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+  line-height: 1.1;
+}
+
+.aperture__copy p {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+
+/* ---- The last frame --------------------------------------------- */
+
+.aperture__outro {
+  display: flex;
+  background-color: var(--color-navy-950);
+}
+
+.aperture__outro-img {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* The ground the closing line is read against. Drawn on each photograph
+   rather than over the layer, so it is clipped along with the picture it
+   belongs to: a scrim across the whole layer would be painted from the
+   first frame, and the slit would open onto navy instead of onto the two
+   columns behind it. The radial is for the middle, where the heading
+   crosses the seam between a lit interior and a dusk exterior. */
+.aperture__outro-img::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(72% 58% at 50% 46%, rgb(6 20 49 / 0.5), transparent 72%),
+    linear-gradient(
+      to bottom,
+      rgb(6 20 49 / 0.62) 0%,
+      rgb(6 20 49 / 0.72) 55%,
+      rgb(6 20 49 / 0.84) 100%
+    );
+}
+
+.aperture__outro-copy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(2rem, 5vh, 3rem);
+  padding-inline: 1.25rem;
+  text-align: center;
+}
+
+.aperture__outro-copy h2 {
+  max-width: 20ch;
+  font-size: clamp(2rem, 5.4vw, 4rem);
+  line-height: 1.06;
+  color: #ffffff;
+}
+
+/* One line of the heading, and the mask it rises out of. The padding is
+   for the descenders: a mask cut to the line box clips the tail of a `g`. */
+.aperture__line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+}
+
+.aperture__line > span {
+  display: block;
+}
+
+.aperture__outro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+/* ---- The enhancement: the track, the pin, and the scrub ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* One window of stage, four more of travel to scrub it through. */
+  .aperture {
+    height: 500svh;
+  }
+
+  .aperture__stage {
+    position: sticky;
+    top: 0;
+    display: block;
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  .aperture__back,
+  .aperture__outro,
+  .aperture__front {
+    position: absolute;
+    inset: 0;
+  }
+
+  .aperture__back { z-index: 0; }
+  .aperture__outro { z-index: 1; }
+  .aperture__front { z-index: 2; }
+
+  /* Nothing of the last frame exists until it is wiped in — the layer's
+     own ground included. */
+  .aperture__outro {
+    background-color: transparent;
+  }
+
+  /* Held still, every one of them: the scrub is the only clock on this
+     section, and a paused animation with a negative current time sits on
+     its first frame until the scrub reaches it. */
+  .aperture__front,
+  .aperture__front-scale,
+  .aperture__front-clip,
+  .aperture__front-copy,
+  .aperture__veil,
+  .aperture__flash,
+  .aperture__copy,
+  .aperture__outro-img,
+  .aperture__line > span,
+  .aperture__outro-actions {
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-play-state: paused;
+  }
+
+  /* 1 — the picture closes to a slit, going dark as it goes.
+
+     Three nested elements carry the three moves because two of them are
+     transforms, and two animations on one property do not compose — the
+     last one simply wins. Innermost is the clip, so the slit is cut in
+     the picture's own coordinates and is then carried round by the turn
+     rather than staying upright while the picture rotates inside it. */
+  .aperture__front-clip,
+  .aperture__veil {
+    animation-duration: 250ms;
+    animation-delay: calc(0ms - var(--aperture, 0ms));
+  }
+
+  .aperture__front-clip {
+    animation-name: aperture-close;
+    will-change: clip-path;
+  }
+
+  /* The heading goes before the picture does. Left where it was it would
+     be cut down the middle by the closing edges and read as a fault
+     rather than as a move — the template centres its heading, which is
+     the other way of solving the same thing, but every other heading on
+     this page starts on the left gutter and that is worth more than the
+     slice. Gone by the time the picture is half closed. */
+  .aperture__front-copy {
+    animation-name: aperture-fade-out;
+    animation-duration: 120ms;
+    animation-delay: calc(0ms - var(--aperture, 0ms));
+  }
+
+  .aperture__veil {
+    animation-name: aperture-fade-in;
+  }
+
+  /* 2 — the slit turns */
+  .aperture__front {
+    animation-name: aperture-turn;
+    animation-duration: 200ms;
+    animation-delay: calc(250ms - var(--aperture, 0ms));
+    will-change: transform;
+  }
+
+  /* 3 — it shrinks away, and the columns behind it close in after it */
+  .aperture__front-scale,
+  .aperture__copy {
+    animation-duration: 200ms;
+    animation-delay: calc(450ms - var(--aperture, 0ms));
+  }
+
+  .aperture__front-scale {
+    animation-name: aperture-shrink;
+    will-change: transform;
+  }
+
+  .aperture__col:nth-child(1) .aperture__copy {
+    animation-name: aperture-part-right;
+  }
+
+  .aperture__col:nth-child(2) .aperture__copy {
+    animation-name: aperture-part-left;
+  }
+
+  /* The brass is spent in the first quarter of that shrink: by the time
+     the slit is small enough to read as a mark rather than as a picture,
+     it should already be the mark's colour. */
+  .aperture__flash {
+    animation-name: aperture-fade-in;
+    animation-duration: 50ms;
+    animation-delay: calc(450ms - var(--aperture, 0ms));
+  }
+
+  /* 4 — two photographs wipe in over the top */
+  .aperture__outro-img {
+    animation-duration: 200ms;
+    animation-delay: calc(650ms - var(--aperture, 0ms));
+    will-change: clip-path;
+  }
+
+  .aperture__outro-img:nth-child(1) {
+    animation-name: aperture-wipe-down;
+  }
+
+  .aperture__outro-img:nth-child(2) {
+    animation-name: aperture-wipe-up;
+  }
+
+  /* 5 — the closing line, a line at a time, then the buttons under it.
+     The last of it lands on 1000ms exactly: anything that finished after
+     the scrub ran out would never be seen finished. */
+  .aperture__line > span {
+    animation-name: aperture-rise;
+    animation-duration: 90ms;
+  }
+
+  .aperture__line:nth-child(1) > span {
+    animation-delay: calc(860ms - var(--aperture, 0ms));
+  }
+
+  .aperture__line:nth-child(2) > span {
+    animation-delay: calc(900ms - var(--aperture, 0ms));
+  }
+
+  .aperture__outro-actions {
+    animation-name: aperture-lift;
+    animation-duration: 60ms;
+    animation-delay: calc(940ms - var(--aperture, 0ms));
+  }
+}
+
+/* A 4% slit, which is about as narrow as a picture can be closed to and
+   still read as a picture on the way there. */
+@keyframes aperture-close {
+  from { clip-path: inset(0% 0% 0% 0%); }
+  to   { clip-path: inset(0% 48% 0% 48%); }
+}
+
+@keyframes aperture-turn {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(65deg); }
+}
+
+@keyframes aperture-shrink {
+  from { transform: scale(1); }
+  to   { transform: scale(0); }
+}
+
+@keyframes aperture-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes aperture-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* The columns leave the way the slit left: inwards, after it.
+
+   They dissolve on the way rather than at the end of it. Each one travels
+   its own width, which is further than the gap between them — held solid
+   they would arrive on top of each other in the middle of the window and
+   read as a collision. Solid until they are nearly touching, gone by the
+   time they would overlap. */
+@keyframes aperture-part-right {
+  0%   { opacity: 1; transform: translateX(0); }
+  45%  { opacity: 1; }
+  65%  { opacity: 0; }
+  100% { opacity: 0; transform: translateX(100%); }
+}
+
+@keyframes aperture-part-left {
+  0%   { opacity: 1; transform: translateX(0); }
+  45%  { opacity: 1; }
+  65%  { opacity: 0; }
+  100% { opacity: 0; transform: translateX(-100%); }
+}
+
+@keyframes aperture-wipe-down {
+  from { clip-path: inset(0% 0% 100% 0%); }
+  to   { clip-path: inset(0% 0% 0% 0%); }
+}
+
+@keyframes aperture-wipe-up {
+  from { clip-path: inset(100% 0% 0% 0%); }
+  to   { clip-path: inset(0% 0% 0% 0%); }
+}
+
+@keyframes aperture-rise {
+  from { transform: translateY(105%); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes aperture-lift {
+  from { opacity: 0; transform: translateY(1.25rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ------------------------------------------------------------------
    Motion preferences — one global opt-out
 ------------------------------------------------------------------- */
 
@@ -981,4 +1526,65 @@
 @media print {
   .reveal { opacity: 1 !important; transform: none !important; filter: none !important; }
   video { display: none !important; }
+}
+
+/* ------------------------------------------------------------------
+   The pinned pane — "Why choose Vijaya" on /residential.
+
+   The pane holds still while the sections under it ride up over the top:
+   the same arrangement the hero on that page uses, one screen later.
+
+   Two things about it are worth writing down.
+
+   The first is why the pin is conditional. `position: sticky` with `top`
+   locks an element the instant its top edge reaches the top of the
+   window, so whatever sits below the fold at that moment is locked out of
+   frame for good — a top-pinned pane has to fit the window or part of it
+   becomes unreachable. Six cards in three columns under a two-line
+   heading only fit on a wide, reasonably tall screen, so those are the
+   conditions the pin is switched on under. Everywhere else the pane is an
+   ordinary section and scrolls past like any other, which is the right
+   answer for a phone anyway: at that width the cards are one per row and
+   the section is twice the height of the screen.
+
+   The second is that `bottom: 0` is not the way round to do this, however
+   much it sounds like "pin it once it has been scrolled through". A
+   sticky offset pulls an element *toward* the edge it names, clamped to
+   its containing block — so `bottom: 0` drags the pane up the page to sit
+   at the foot of the window from the moment the containing block starts
+   moving, and the pane is on screen from the top of the page.
+------------------------------------------------------------------- */
+
+@media (min-width: 1024px) and (min-height: 760px) {
+  .pin-pane {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    padding-block: clamp(1.5rem, 4vh, 4rem);
+  }
+
+  /* The rest of this block trims the pane to the window it now has to live
+     in. Every figure is height-relative, so the pane composes itself
+     against the screen it is actually on rather than against one reference
+     laptop — and each of them only applies while the pane is pinned, which
+     is why they are in here and not on the elements themselves. */
+
+  .pin-pane h2 {
+    font-size: clamp(1.875rem, min(3.4vw, 5.4vh), 3.5rem);
+  }
+
+  .pin-pane .pin-pane-cards {
+    margin-top: clamp(1.25rem, 3.2vh, 3rem);
+  }
+
+  /* The emblem is the one thing on a card that gives back height without
+     costing a word of what the card says, so it takes the deepest cut. */
+  .pin-pane .flip-card-inner svg {
+    height: clamp(2.25rem, 5vh, 3.5rem);
+    width: clamp(2.25rem, 5vh, 3.5rem);
+  }
+
+  .pin-pane .flip-card-inner > div {
+    padding: clamp(1.125rem, 2.6vh, 1.75rem);
+  }
 }

@@ -62,9 +62,6 @@ export default function HomePage() {
       {/* ------------------------------------------------- Find a residence */}
       <FindResidences />
 
-      {/* --------------------------------------------------- Gooey slideshow */}
-      <DestinationSlideshow />
-
       {/* ------------------------------------------------------- What we build */}
       <ServiceGrid
         id="what-we-build"
@@ -73,6 +70,9 @@ export default function HomePage() {
         subtitle="Vijaya Enterprises is a diversified construction and development company — not only a residential developer. Whatever the sector, the standard is the same."
         services={buildTypes}
       />
+
+      {/* --------------------------------------------------- Gooey slideshow */}
+      <DestinationSlideshow />
 
       {/* ------------------------------------------------------- Residential */}
       <Section tone="white" size="lg">

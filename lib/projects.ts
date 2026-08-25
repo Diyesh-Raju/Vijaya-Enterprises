@@ -9,7 +9,7 @@ import { img, alt } from "@/lib/images";
  * the card becomes a link to its own page at /residential/<slug>. Entries with
  * neither still list and still filter, they just show as a placeholder card.
  *
- * ⚠️ Entries 2-9 are placeholders. Replace them as each project's photography
+ * ⚠️ Entries 2-8 are placeholders. Replace them as each project's photography
  * and details come in — nothing else needs editing.
  */
 export type Project = {
@@ -65,12 +65,12 @@ export const projects: readonly Project[] = [
     bhk: ["2 BHK", "3 BHK", "4 BHK"],
     // Locality stays as the plain city until the area is confirmed — no
     // direction is claimed anywhere on the site.
-    // ⚠️ UNCONFIRMED — `status` and `possession` carried over from the
-    // placeholder that used to sit in this slot; they were not part of the
-    // supplied project details, and they show on the card, in the hero
-    // strapline and in the About facts. Confirm them before this goes public.
+    // ⚠️ UNCONFIRMED — `possession` carried over from the placeholder that
+    // used to sit in this slot; it was not part of the supplied project
+    // details, and it drives the possession filter. Confirm it before this
+    // goes public. `status` is the client's own: the project is sold out.
     locality: "Bengaluru",
-    status: "Ongoing",
+    status: "Sold Out",
     possession: "Within a year",
     image: img.haraVijayaHeights,
     imageAlt: alt.haraVijayaHeights,
@@ -84,7 +84,6 @@ export const projects: readonly Project[] = [
   { name: "Project 6", bhk: ["2 BHK"], locality: "Bengaluru", status: "Ongoing", possession: "Within a year" },
   { name: "Project 7", bhk: ["3 BHK"], locality: "Bengaluru", status: "Ongoing", possession: "Within a year" },
   { name: "Project 8", bhk: ["4 BHK"], locality: "Bengaluru", status: "Upcoming", possession: "One to three years" },
-  { name: "Project 9", bhk: ["3 BHK"], locality: "Bengaluru", status: "Completed", possession: "Ready to move" },
 ];
 
 /** Only projects with a slug have a page of their own. */

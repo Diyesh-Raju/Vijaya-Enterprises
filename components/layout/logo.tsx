@@ -35,10 +35,11 @@ export function Logo({
   // something to fade to.
   //
   // The artwork is 1000px wide, but the largest placement on the site is the
-  // 112px-tall footer lockup at 247px. Declaring the display size keeps the
-  // optimiser from generating (and the browser from fetching) a 1000px image
-  // for it; CSS still drives the rendered height.
-  const size = { width: 320, height: 145 };
+  // 112px-tall footer lockup at around 247px. Declaring the display size keeps
+  // the optimiser from generating (and the browser from fetching) a 1000px
+  // image for it, while still leaving the 2× candidate wide enough for that
+  // placement to stay sharp; CSS drives the rendered height.
+  const size = { width: 400, height: 181 };
 
   return (
     <span className={`relative inline-flex ${className}`}>
