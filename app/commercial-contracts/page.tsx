@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { StaticImageData } from "next/image";
-import { PageHero } from "@/components/sections/page-hero";
+import { HomeHero } from "@/components/sections/home-hero";
 import { CtaBand } from "@/components/sections/cta-band";
 import { Container, Section, SectionHeading, Eyebrow } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
@@ -109,14 +109,7 @@ const undertakings: Undertaking[] = [
 export default function CommercialContractsPage() {
   return (
     <>
-      <PageHero
-        eyebrow="Private Contract Construction"
-        title="Build with experience you can trust."
-        lead="Residential. Commercial. Industrial. Institutional. Whatever you need to build, we bring more than five decades of experience to the project."
-        image={img.rebarWorkers}
-        imageAlt={alt.rebarWorkers}
-        cta={{ href: "/contact", label: "Discuss Your Construction Project" }}
-      />
+      <HomeHero />
 
       {/* ---------------------------------------------------------- Opening */}
       <Section tone="white" size="lg">

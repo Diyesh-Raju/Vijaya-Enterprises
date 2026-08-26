@@ -49,6 +49,7 @@ import haraVijayaHeights from "@/assets/images/hara-vijaya-heights.jpg";
 import haraVijayaHeightsHero from "@/assets/images/hara-vijaya-heights-hero.jpg";
 import haraVijayaVision from "@/assets/images/hara-vijaya-vision.jpg";
 import homeDusk from "@/assets/images/home-dusk.jpg";
+import homeScrollPoster from "@/assets/images/home-scroll-poster.jpg";
 import homeLawn from "@/assets/images/home-lawn.jpg";
 import industrialEngineer from "@/assets/images/industrial-engineer.jpg";
 import institutionCampus from "@/assets/images/institution-campus.jpg";
@@ -88,6 +89,7 @@ export const img = {
   haraVijayaVision,
   homeDusk,
   homeLawn,
+  homeScrollPoster,
   industrialEngineer,
   institutionCampus,
   institutionHospital,
@@ -123,6 +125,8 @@ export const alt = {
   citySunset: "City skyline and arterial roads at sunset",
   cranesSkyline: "Tower cranes rising over buildings under construction",
   heroPoster: "Tower cranes working above a city skyline under construction",
+  homeScrollPoster:
+    "A landscaped residential development of white apartment towers seen from the air",
   haraVijayaConcept:
     "Hara Vijaya Heights lit at twilight, its towers rising over the open lawn",
   haraVijayaVision:
@@ -161,6 +165,8 @@ export const alt = {
 
 /** Background video files (these do live in `public/`, served by URL). */
 export const video = {
+  homeScrollDesktop: "/video/home-scroll.mp4",
+  homeScrollMobile: "/video/home-scroll-mobile.mp4",
   heroDesktop: "/video/hero.mp4",
   heroMobile: "/video/hero-mobile.mp4",
   legacyDesktop: "/video/legacy.mp4",

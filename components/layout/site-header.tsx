@@ -13,11 +13,13 @@ const SCROLL_THRESHOLD = 24;
  * Pages that do not open on a dark hero.
  *
  * The bar is transparent with white type until the hero has scrolled away,
- * which is right for every page that opens on a photograph and wrong for one
- * that opens on a pale section — there the lockup and the word "Menu" would
- * be white on near-white. These get the frosted bar from the first pixel.
+ * which is right for every page that opens on a graded photograph and wrong
+ * for one that opens on a pale section — there the lockup and the word "Menu"
+ * would be white on near-white. These get the frosted bar from the first
+ * pixel. The home page is on the list for the same reason: its hero is an
+ * ungraded video that opens on a bright sky.
  */
-const LIGHT_FROM_TOP = ["/faq"];
+const LIGHT_FROM_TOP = ["/", "/faq"];
 
 function subscribeToScroll(onChange: () => void) {
   window.addEventListener("scroll", onChange, { passive: true });

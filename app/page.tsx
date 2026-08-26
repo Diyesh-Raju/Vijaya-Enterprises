@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { Metadata } from "next";
-import { HomeHero } from "@/components/sections/home-hero";
+import { ScrollHero } from "@/components/sections/scroll-hero";
 import { CtaBand } from "@/components/sections/cta-band";
 import { FindResidences } from "@/components/sections/find-residences";
 import { FiftyYears } from "@/components/sections/fifty-years";
@@ -54,7 +54,7 @@ const buildTypes: readonly Service[] = [
 export default function HomePage() {
   return (
     <>
-      <HomeHero />
+      <ScrollHero />
 
       {/* ------------------------------------------------------ 50 years of */}
       <FiftyYears />

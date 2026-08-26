@@ -43,3 +43,7 @@ next-env.d.ts
 # local agent tooling / editor config
 .claude/
 .gstack/
+
+# Hero source clips — the originals behind public/video/home-scroll*.mp4.
+# 60 MB of render that nothing serves; kept locally, out of the history.
+/assets/video-source/*.mp4
