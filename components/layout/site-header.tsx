@@ -9,24 +9,41 @@ import { cn } from "@/lib/cn";
 
 const SCROLL_THRESHOLD = 24;
 
+/** Roughly the height of the bar: where a dark hero stops covering it. */
+const HEADER_CLEARANCE = 96;
+
 /**
  * Pages that do not open on a dark hero.
  *
  * The bar is transparent with white type until the hero has scrolled away,
- * which is right for every page that opens on a graded photograph and wrong
- * for one that opens on a pale section — there the lockup and the word "Menu"
- * would be white on near-white. These get the frosted bar from the first
- * pixel. The home page is on the list for the same reason: its hero is an
- * ungraded video that opens on a bright sky.
+ * which is right for every page that opens on a photograph and wrong for one
+ * that opens on a pale section — there the lockup and the word "Menu" would
+ * be white on near-white. These get the frosted bar from the first pixel.
  */
-const LIGHT_FROM_TOP = ["/", "/faq"];
+const LIGHT_FROM_TOP = ["/faq"];
 
 function subscribeToScroll(onChange: () => void) {
   window.addEventListener("scroll", onChange, { passive: true });
-  return () => window.removeEventListener("scroll", onChange);
+  window.addEventListener("resize", onChange);
+  return () => {
+    window.removeEventListener("scroll", onChange);
+    window.removeEventListener("resize", onChange);
+  };
 }
 
-const isScrolled = () => window.scrollY > SCROLL_THRESHOLD;
+/**
+ * A page whose hero pins to the viewport — the home page's scroll-scrubbed
+ * one — marks it `data-dark-hero`, because "the hero has scrolled away" is
+ * then nothing to do with `scrollY`: the panel sits under the bar for three
+ * screens before it moves at all, and a frosted bar dropping in over it a few
+ * pixels down is the thing that gets in the way. Where the attribute is
+ * absent the old rule stands, and every other page is untouched.
+ */
+const isScrolled = () => {
+  const hero = document.querySelector("[data-dark-hero]");
+  if (hero) return hero.getBoundingClientRect().bottom <= HEADER_CLEARANCE;
+  return window.scrollY > SCROLL_THRESHOLD;
+};
 
 /**
  * Header: the lockup on the left, and everything else behind one word.

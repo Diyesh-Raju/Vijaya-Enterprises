@@ -221,6 +221,21 @@
   min-height: 100svh;
 }
 
+/* The pinned panel of the home page's scroll hero, and the track it is
+   pinned inside. Same two-declaration trick as above, for the same reason —
+   and here the fallback matters more than comfort: a browser that drops an
+   `svh` height leaves the panel at `auto`, which collapses it to nothing,
+   because everything inside it is absolutely positioned. */
+@utility h-hero {
+  height: 100vh;
+  height: 100svh;
+}
+
+@utility h-hero-track {
+  height: calc(var(--track-screens, 1) * 100vh);
+  height: calc(var(--track-screens, 1) * 100svh);
+}
+
 /* Scroll reveal: hidden until the observer marks it visible. Uses
    data attributes so a JS failure can never leave content invisible
    (the no-js / no-observer path sets data-reveal="on" immediately). */

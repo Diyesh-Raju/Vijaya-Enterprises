@@ -21,10 +21,13 @@ export function Logo({
   className = "",
   reversed = false,
   priority = false,
+  width = 400,
 }: {
   className?: string;
   reversed?: boolean;
   priority?: boolean;
+  /** Widest the lockup will be drawn, in CSS pixels. See `size` below. */
+  width?: number;
 }) {
   const fade =
     "transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]";
@@ -34,12 +37,13 @@ export function Logo({
   // well, so the browser still fetches it up front and the cross-fade has
   // something to fade to.
   //
-  // The artwork is 1000px wide, but the largest placement on the site is the
-  // 112px-tall footer lockup at around 247px. Declaring the display size keeps
-  // the optimiser from generating (and the browser from fetching) a 1000px
-  // image for it, while still leaving the 2× candidate wide enough for that
-  // placement to stay sharp; CSS drives the rendered height.
-  const size = { width: 400, height: 181 };
+  // The artwork is 1000px wide, and most placements are nowhere near it: the
+  // footer lockup, the largest of them, is 112px tall at around 247px wide.
+  // Declaring the display size keeps the optimiser from generating (and the
+  // browser from fetching) a 1000px image for those, while still leaving the
+  // 2× candidate wide enough to stay sharp; CSS drives the rendered height.
+  // The home page's end card is the exception and asks for the full width.
+  const size = { width, height: Math.round((width * 181) / 400) };
 
   return (
     <span className={`relative inline-flex ${className}`}>

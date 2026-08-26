@@ -49,6 +49,7 @@ import haraVijayaHeights from "@/assets/images/hara-vijaya-heights.jpg";
 import haraVijayaHeightsHero from "@/assets/images/hara-vijaya-heights-hero.jpg";
 import haraVijayaVision from "@/assets/images/hara-vijaya-vision.jpg";
 import homeDusk from "@/assets/images/home-dusk.jpg";
+import homeScrollEnd from "@/assets/images/home-scroll-end.jpg";
 import homeScrollPoster from "@/assets/images/home-scroll-poster.jpg";
 import homeLawn from "@/assets/images/home-lawn.jpg";
 import industrialEngineer from "@/assets/images/industrial-engineer.jpg";
@@ -89,6 +90,7 @@ export const img = {
   haraVijayaVision,
   homeDusk,
   homeLawn,
+  homeScrollEnd,
   homeScrollPoster,
   industrialEngineer,
   institutionCampus,
@@ -125,6 +127,8 @@ export const alt = {
   citySunset: "City skyline and arterial roads at sunset",
   cranesSkyline: "Tower cranes rising over buildings under construction",
   heroPoster: "Tower cranes working above a city skyline under construction",
+  homeScrollEnd:
+    "The entrance foyer of a completed home, softly out of focus",
   homeScrollPoster:
     "A landscaped residential development of white apartment towers seen from the air",
   haraVijayaConcept:
