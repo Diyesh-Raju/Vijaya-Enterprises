@@ -65,14 +65,34 @@ CLIP_A = SOURCE / "walkthrough-exterior-to-living.mp4"
 CLIP_B = SOURCE / "walkthrough-living-to-foyer.mp4"
 
 # What ffmpeg hands over, as x, y, w, h in source pixels. The two renders have
-# different native ratios, so each needs its own 16:9 window; clip B keeps the
-# full width of its render, because the pan below has to have somewhere to go.
+# different native ratios, so each needs its own window; clip B keeps the full
+# width of its render, because the pan below has to have somewhere to go.
 CROP_A = (0, 185, 3524, 1982)
 CROP_B = (0, 1, 3988, 2160)
 
-# The 16:9 window inside each of those, centred. Clip A's is the whole thing.
-WINDOW_A = (3524, 1982)
-WINDOW_B = (3840, 2160)
+# The hero's shape, and the reason it is not 16:9.
+#
+# The panel the clip fills is the viewport less the header, which is a wider
+# box than the viewport itself. Measured across the sizes this is actually read
+# at, that box runs from about 1.71 to 2.04 and clusters near 1.9:
+#
+#     1366×768  → 2.036      1663×971  → 1.903
+#     1440×900  → 1.793      1920×1080 → 1.953
+#     1512×982  → 1.708      2560×1440 → 1.906
+#
+# A 16:9 clip in a box that shape has to either give up part of the frame or
+# sit in it with a margin either side, and neither is wanted. So the clip is
+# cut to the shape of the box instead. 40:21 is the middle of that cluster,
+# and it divides cleanly: every output width here lands on an even height, and
+# clip B's window comes out at a whole 2016 pixels.
+#
+# The height for it comes out of the renders' own spare, which the 16:9 window
+# was throwing away — 66 source pixels off each of clip A's edges, 72 off clip
+# B's. Both windows keep their centre, so the join measured below is untouched.
+ASPECT = 40 / 21
+
+WINDOW_A = (3524, 3524 / ASPECT)
+WINDOW_B = (3840, 3840 / ASPECT)
 
 FPS = 60
 
@@ -100,7 +120,7 @@ RELEASE_S = 2.4
 # so anything past roughly 3.5K is interpolation rather than detail.
 OUTPUTS = {
     "desktop": {
-        "size": (2560, 1440), "crf": 32, "level": "5.1",
+        "size": (2560, 1344), "crf": 34, "level": "5.1",
         "name": "home-scroll.mp4",
     },
     # The phone file stays at 1080p even though a phone is a few hundred CSS
@@ -109,7 +129,7 @@ OUTPUTS = {
     # third of the frame, magnified. It needs the pixels more than the desktop
     # file does, not less. The extra CRF is what keeps it near 11MB at `GOP` 2.
     "mobile": {
-        "size": (1920, 1080), "crf": 34, "level": "4.2",
+        "size": (1920, 1008), "crf": 34, "level": "4.2",
         "name": "home-scroll-mobile.mp4",
     },
 }
@@ -353,6 +373,61 @@ def build(kind: str) -> None:
           f"{out.stat().st_size / 1_000_000:.1f} MB")
 
 
+def stills() -> None:
+    """Write the poster and the blurred end frame.
+
+    Both are cross-faded against the clip on the page — the poster is what the
+    hero shows until the first frame decodes, the end frame is what the close
+    dissolves to instead of running a full-screen blur over live video — so
+    both have to be framed exactly as the clip is or the swap shows. They are
+    derived from the same windows the clip is cut with rather than written out
+    by hand, because the hand-written version drifted every time the shape of
+    the hero changed.
+
+    They come from the renders rather than from the encode, so neither carries
+    the clip's compression.
+    """
+    ax, ay, _, ah = CROP_A
+    aw, awh = WINDOW_A
+    # The centred window, in the *source's* own coordinates.
+    poster_crop = (int(aw), round(awh), ax, round(ay + (ah - awh) / 2))
+
+    bx, by, bw_full, bh = CROP_B
+    bw, bwh = WINDOW_B
+    # Clip B ends with the push fully released, so only the pan is left.
+    end_crop = (
+        int(bw), round(bwh),
+        round(bx + (bw_full - bw) / 2 - PAN * bw),
+        round(by + (bh - bwh) / 2),
+    )
+
+    images = ROOT / "assets" / "images"
+    jobs = [
+        # Kept at the window's own resolution: this is the home page's largest
+        # contentful paint, and `next/image` cannot serve a variant sharper
+        # than its master.
+        (CLIP_A, None, poster_crop, f"scale={int(aw)}:{round(awh)}:flags=lanczos",
+         3, images / "home-scroll-poster.jpg"),
+        # Blurred once here so the close never asks a GPU for a full-screen
+        # blur over live video.
+        (CLIP_B, "3.983333", end_crop,
+         f"scale=1280:{round(1280 / ASPECT)}:flags=lanczos,gblur=sigma=6",
+         4, images / "home-scroll-end.jpg"),
+    ]
+
+    for src, seek, (cw, ch, cx, cy), tail, q, out in jobs:
+        cmd = ["ffmpeg", "-v", "error", "-y"]
+        if seek:
+            cmd += ["-ss", seek]
+        cmd += [
+            "-i", str(src), "-frames:v", "1",
+            "-vf", f"crop={cw}:{ch}:{cx}:{cy},{tail}",
+            "-q:v", str(q), str(out),
+        ]
+        subprocess.run(cmd, check=True)
+        print(f"   {out.relative_to(ROOT)}  {out.stat().st_size / 1000:.0f} KB")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--only", choices=sorted(OUTPUTS), help="build one file")
@@ -369,12 +444,15 @@ def main() -> None:
     if args.gop:
         globals()["GOP"] = args.gop
 
+    if not args.out and not args.height:
+        stills()
+
     for kind in [args.only] if args.only else sorted(OUTPUTS):
         spec = OUTPUTS[kind]
         if args.crf:
             spec["crf"] = args.crf
         if args.height:
-            spec["size"] = (args.height * 16 // 9, args.height)
+            spec["size"] = (round(args.height * ASPECT / 2) * 2, args.height)
         if args.out:
             spec["name"] = args.out
         build(kind)
