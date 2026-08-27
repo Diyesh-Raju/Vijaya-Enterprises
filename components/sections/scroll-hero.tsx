@@ -365,16 +365,25 @@ export function ScrollHero() {
   return (
     <section
       ref={trackRef}
-      className={cn("relative bg-black", mounted && "h-hero-track")}
+      // The bar's height as top padding, so the panel's resting position is
+      // already under it and `sticky` has nothing to correct on the first
+      // paint. White rather than black: that strip is what the frosted bar
+      // has behind it at the top of the page.
+      className={cn(
+        "relative bg-white pt-[var(--header-h)]",
+        mounted && "h-hero-track",
+      )}
       style={
         mounted
           ? ({ "--track-screens": TRACK_SCREENS } as React.CSSProperties)
           : undefined
       }
     >
-      {/* `data-dark-hero` keeps the header transparent for as long as this
-          panel is pinned under it — see `site-header.tsx`. */}
-      <div data-dark-hero className="sticky top-0 h-hero overflow-hidden">
+      {/* Pins under the bar rather than behind it, and runs to the bottom of
+          the viewport — full width, flush at the sides and the foot. Padding
+          and offset are the same height, so the panel is where it pins from
+          the first pixel and the scrub still ends exactly as it unpins. */}
+      <div className="sticky top-[var(--header-h)] h-hero-panel overflow-hidden bg-black">
         {/* `next/image` with `fill` will not accept a `sticky` parent as its
             containing block, so the media gets a wrapper of its own — which
             is also the thing the close pushes in. */}

@@ -9,9 +9,6 @@ import { cn } from "@/lib/cn";
 
 const SCROLL_THRESHOLD = 24;
 
-/** Roughly the height of the bar: where a dark hero stops covering it. */
-const HEADER_CLEARANCE = 96;
-
 /**
  * Pages that do not open on a dark hero.
  *
@@ -19,8 +16,12 @@ const HEADER_CLEARANCE = 96;
  * which is right for every page that opens on a photograph and wrong for one
  * that opens on a pale section — there the lockup and the word "Menu" would
  * be white on near-white. These get the frosted bar from the first pixel.
+ *
+ * The home page is on the list because its walkthrough now starts *below*
+ * the bar rather than running behind it: there is white paper up there, not
+ * film, so a transparent bar would leave the lockup on nothing.
  */
-const LIGHT_FROM_TOP = ["/faq"];
+const LIGHT_FROM_TOP = ["/", "/faq"];
 
 function subscribeToScroll(onChange: () => void) {
   window.addEventListener("scroll", onChange, { passive: true });
@@ -31,19 +32,7 @@ function subscribeToScroll(onChange: () => void) {
   };
 }
 
-/**
- * A page whose hero pins to the viewport — the home page's scroll-scrubbed
- * one — marks it `data-dark-hero`, because "the hero has scrolled away" is
- * then nothing to do with `scrollY`: the panel sits under the bar for three
- * screens before it moves at all, and a frosted bar dropping in over it a few
- * pixels down is the thing that gets in the way. Where the attribute is
- * absent the old rule stands, and every other page is untouched.
- */
-const isScrolled = () => {
-  const hero = document.querySelector("[data-dark-hero]");
-  if (hero) return hero.getBoundingClientRect().bottom <= HEADER_CLEARANCE;
-  return window.scrollY > SCROLL_THRESHOLD;
-};
+const isScrolled = () => window.scrollY > SCROLL_THRESHOLD;
 
 /**
  * Header: the lockup on the left, and everything else behind one word.
@@ -53,8 +42,10 @@ const isScrolled = () => {
  * logo, which goes home, and the trigger, which is the word "Menu" beside a
  * ringed set of three lines.
  *
- * Every page opens on a dark hero, so the bar starts transparent with white
- * type and swaps to a frosted white bar once you scroll past the fold.
+ * Most pages open on a dark hero, so the bar starts transparent with white
+ * type and swaps to a frosted white bar — with a hairline under it — once you
+ * scroll past the fold. `LIGHT_FROM_TOP` names the pages that skip the
+ * transparent state and are frosted from the first pixel.
  */
 export function SiteHeader() {
   const pathname = usePathname();
@@ -143,8 +134,10 @@ export function SiteHeader() {
     <>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          solid && !open ? "glass shadow-soft" : "bg-transparent",
+          "fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,box-shadow,backdrop-filter] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          solid && !open
+            ? "glass border-line shadow-soft"
+            : "border-transparent bg-transparent",
         )}
       >
         <div className="container-page">

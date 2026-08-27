@@ -128,6 +128,19 @@
     /* Header height + breathing room for in-page anchors */
     scroll-padding-top: 6.5rem;
     background-color: var(--color-navy-deep);
+
+    /* The fixed bar's own height, its hairline included: 5rem of content
+       plus the 1px rule under it. Anything that has to start *below* the bar
+       rather than behind it reads this instead of guessing — see the home
+       page's scroll hero. The bar carries its border in every state — merely
+       transparent where the bar is — so this height never changes. */
+    --header-h: calc(5rem + 1px);
+  }
+
+  @media (min-width: 640px) {
+    html {
+      --header-h: calc(6rem + 1px);
+    }
   }
 
   body {
@@ -225,10 +238,14 @@
    pinned inside. Same two-declaration trick as above, for the same reason —
    and here the fallback matters more than comfort: a browser that drops an
    `svh` height leaves the panel at `auto`, which collapses it to nothing,
-   because everything inside it is absolutely positioned. */
-@utility h-hero {
-  height: 100vh;
-  height: 100svh;
+   because everything inside it is absolutely positioned.
+
+   The panel is a screen *less the bar*: it starts under the header rather
+   than behind it, and reaches the bottom of the viewport. Its track carries
+   the same height as top padding, so the two line up. */
+@utility h-hero-panel {
+  height: calc(100vh - var(--header-h));
+  height: calc(100svh - var(--header-h));
 }
 
 @utility h-hero-track {
