@@ -26,49 +26,74 @@ python3 assets/video-source/build-hero-video.py --only mobile
 ```
 
 Needs `numpy`, `pillow` and `opencv-python`. About 45 seconds per file. It
-writes `public/video/home-scroll.mp4` (2560×1136, crf 34, ~14 MB) and
-`home-scroll-mobile.mp4` (1920×852, crf 34, ~10 MB), both 60fps, both with a
+writes `public/video/home-scroll.mp4` (3504×1460, crf 34, ~21 MB) and
+`home-scroll-mobile.mp4` (1920×800, crf 34, ~9 MB), both 60fps, both with a
 keyframe every second frame — and both stills, which are cut from the same
 windows so their framing cannot drift from the clip's.
 
 `--gop`, `--crf`, `--height` and `--out` override the defaults without editing
 them, which is how the table below was produced.
 
-## Why 160:71 rather than 16:9
+## Why 2.4:1, and why the height is the thing that pays
 
-The clip does not fill the viewport. It fills what is left of it between the
-header and the figures on the block at the foot of the hero, which is a much
-wider box. Measured in a browser across the sizes this is actually read at:
+The hero is full-bleed, so `object-cover` scales the clip to the box's *width*
+and crops the height. Two things follow, and the second is the one that took a
+while to see:
 
-| viewport | film box | ratio | | viewport | film box | ratio |
-| --------- | -------- | ----- | - | --------- | --------- | ----- |
-| 1366×768 | 1366×538 | 2.541 | | 1663×971 | 1663×741 | 2.246 |
-| 1440×900 | 1440×670 | 2.151 | | 1920×1080 | 1920×850 | 2.260 |
-| 1512×982 | 1512×752 | 2.012 | | 2560×1440 | 2560×1210 | 2.117 |
+1. The encode width is the only thing that decides whether the hero is sharp.
+   On a Retina laptop 1676 CSS pixels across is 3352 device pixels, and a
+   2560-wide file is a 1.31× upscale onto that.
+2. The box height is therefore free. Nothing about it changes the sampling —
+   a shorter band crops more of the frame and samples it identically.
 
-A 16:9 clip in a box that shape has to either give up part of the frame or sit
-in it with a margin either side. Both were tried and both were wrong: covering
-took ~48px off the top, which is the part that meets the bar, and fitting put
-black bars down both edges.
+So height is currency. Clip A's window is 3524px across, which makes 3504 the
+native width — 1.05× oversampled on that screen, and past 3524 the encoder is
+inventing detail rather than carrying it. That width at 16:9 is 6.9 megapixels
+a frame, a ~27MB file. Cut to 2.4:1 it is 5.1 and lands at 21MB, which is where
+the previous 2560-wide file already was. The hero gave up height it had been
+cropping away to buy the width it was actually short of.
 
-So the clip is cut to the shape of the box. 160:71 looks arbitrary and is not —
-it is the ratio that lands every size here on a whole pixel. 2560 and 1920 both
-divide by 160, so the outputs come out at exactly 1136 and 852 and clip B's
-window at exactly 1704. It also sits between the two sizes that matter most, so
-the crop on a 1663-wide screen is 2.9px at the sides and on 1920×1080 is 2.5px
-at the foot.
+The band is `aspect-ratio: 12 / 5` on the panel, sized off its own width, and
+capped at the screen less the header for a short landscape window — an
+ultrawide at 2560×1080 wants 1067px of band and has 983, so there the height
+binds and `cover` trims the sides instead, which is the right way round to
+fail. Below 48rem the panel keeps the whole screen: 2.4:1 of a phone's width is
+a 163px ribbon with two thirds of the viewport blank under it, and a portrait
+panel crops this clip to the middle fifth of the frame whatever its height, so
+the height may as well go to the picture.
 
-The height comes out of the renders' own spare, which the 16:9 window was
-throwing away. Both windows keep their centre, so the join is untouched.
+What this leaves, on a laptop, is a strip of page under the band while the hero
+is pinned — 166px at 1676×961. That is the page's own white and the section
+below it (`FiftyYears`) is white too, so it reads as the space above a section
+rather than a hole.
 
-## Why 1440-ish
+## Why 3504 across, and the decode cliff that nearly hid it
 
-On a Retina display the panel is two device pixels per CSS pixel, which had
-1080p landing on a 3024-pixel-wide laptop panel at a 1.6× upscale — soft, and
-no amount of bitrate fixes it, because the pixels are not there. 2560 across
-lands at about 1.2×. It is also the ceiling worth paying for: clip A's window
-is 3524px wide, so past roughly 3.5K the encoder would be interpolating rather
-than carrying detail.
+1440p was chosen back when the clip was stretched over the full screen and
+2560 was reckoned the ceiling worth paying for. Both halves of that changed:
+the band is shorter, and the ceiling is the render, not a guess. 3504 is clip
+A's own window, so its frames are resampled by nothing at all on the way out —
+the desktop file is the render at 1:1.
+
+Timing it is where this gets interesting, because the first measurement said
+not to do it. Timed the usual way — 80 seeks landing off-keyframe on a fully
+buffered file — the numbers came back:
+
+| file | software decode | with hardware decode |
+| ------------ | ------- | ------ |
+| 2880×1200 | 28.0 median, 39.3 p95 | 7.7 median, 8.9 p95 |
+| 3504×1460 | 39.5 median, 55.4 p95 | 11.6 median, 13.8 p95 |
+
+The left column is Chrome run with `--disable-gpu`, and it is not a slower
+version of the right one — it is a different shape of answer. 2880×1200 has
+*fewer* pixels than the 2560×1440 file it replaced and still measured 2.5×
+slower there, which is the tell: past about 2560 across, the software path
+falls off a cliff that has nothing to do with pixel count.
+
+With the hardware decoder, which is what any browser actually uses for H.264,
+both are inside a single 60fps frame. So measure this with the GPU on. Timing
+a hero encode under `--disable-gpu` will tell you to ship a smaller file than
+you need to.
 
 ## Why a keyframe every second frame
 
@@ -81,9 +106,10 @@ frames, and the hero visibly lagged the wheel.
 
 Seek cost tracks two things: how many frames must be decoded to reach the
 target, and how many bits must be read to do it. A shorter GOP and a higher
-CRF therefore pull the same way, and together they beat either alone. At
-Measured at 2560×1440 while the clip was still 16:9, SSIM against a crf-12
-reference of the same shape:
+CRF therefore pull the same way, and together they beat either alone. Measured
+at 2560×1440 back when that was the shipped size, SSIM against a crf-12
+reference — and, like everything in this section, on the software decoder, so
+read the columns against each other rather than against the table above:
 
 | gop | crf | size | SSIM | median | p95 | max |
 | --- | --- | ------- | ----- | ------ | ---- | ---- |
@@ -93,9 +119,10 @@ reference of the same shape:
 | 2 | 28 | 31.8 MB | 0.947 | 16.3 | 29.4 | 31.2 |
 | **2** | **32** | 21.1 MB | 0.918 | **12.6** | **22.0** | **22.9** |
 
-Widening to 40:21 cost a little of that back — the frame carries proportionally
-more building and less sky, which is more expensive per bit — so the shipped
-CRF is 34 rather than 32. At 2560×1344, against a 40:21 reference:
+The shipped CRF is 34 rather than the 32 in that table. It was raised while the
+clip was briefly cut to 40:21, where the frame carried proportionally more
+building and less sky and so cost more per bit; measured at 2560×1344 against a
+40:21 reference:
 
 | crf | size | SSIM | median | p95 |
 | --- | ------- | ----- | ------ | ---- |
@@ -103,7 +130,10 @@ CRF is 34 rather than 32. At 2560×1344, against a 40:21 reference:
 | **34** | **16.4 MB** | 0.898 | **16.8** | **24.6** |
 | 36 | 13.4 MB | 0.880 | 16.7 | 24.7 |
 
-34 is where the curve flattens: 36 buys no more speed and only loses detail.
+34 is where the curve flattens: 36 buys no more speed and only loses detail, and
+it has been kept through every reshaping since. At the shipped 3504×1460 it is a
+21.2 MB file that seeks in 11.6ms median and 13.8 p95 with the hardware decoder.
+
 Absolute figures move with whatever else the machine is doing — the same
 reference file measured anywhere from 12.5ms to 19.5ms median across runs — so
 read the columns against each other, not on their own.
@@ -112,23 +142,27 @@ The SSIM given up along the way does not show. At 1:1 on the densest part of
 the frame, balcony railings and foliage, crf 34 cannot be told from crf 32, and
 neither can be told from the `6/28` encode that lagged.
 
-The phone file stays at 1080-ish rather than dropping to 720p. In portrait the
-panel is far narrower than the clip, so the picture is cropped hard at the
-sides and what survives is the middle third of the frame, magnified — it needs
-the pixels more than the desktop file does, not less.
+The phone file stays 1920 across and is only re-cut in height. In portrait the
+panel is far narrower than the clip, so the picture is cropped hard at the sides
+and what survives is the middle fifth of the frame, magnified — it needs the
+width more than the desktop file does, not less.
 
 The denoise pass is gone. It existed to hold the bitrate down when every third
 frame was a keyframe; it saves under a percent, and it was taking fine texture
 off a render with none to spare. CRF holds the bitrate instead, and CRF does
 not blur.
 
-The script's docstring covers the join in detail. In short: the second clip is
-pushed in 8.5% and nudged 22px so its opening framing lands on the first clip's
-closing framing, the two are warped into correspondence with optical flow so
-the furniture — which the two renders place differently — moves rather than
-doubles, they are dissolved in linear light, and the push is then released back
-to nothing over the two seconds that follow. Cross-correlated over the overlap,
-the frames sit at 0.96 against the 0.53 a plain dissolve managed.
+The script's docstring covers the join in detail. In short: one clip is pushed
+in 8.5% and nudged 22px so the two framings land on each other, the pair are
+warped into correspondence with optical flow so the furniture — which the two
+renders place differently — moves rather than doubles, they are dissolved in
+linear light, and the push is released back to nothing over the two seconds
+either side of the dissolve. Cross-correlated over the overlap, the frames sit
+at 0.96 against the 0.53 a plain dissolve managed.
+
+Clip B carries the push, which at 16:9 it has the room for: its window is 3840
+of 3988 columns and 2160 of 2162 rows, and pushed in by 1.085 it sits at
+3539×1991, well inside the render.
 
 Everything is composited in Python rather than ffmpeg because the release has
 to be sub-pixel smooth: `zoompan` rounds its crop origin to a whole source
@@ -143,13 +177,13 @@ them drifted every time the shape of the hero changed — which shows, because
 both are cross-faded against the clip on the page.
 
 `home-scroll-poster.jpg` is the first frame, at the window's own resolution
-(3524×1850). It comes from the render rather than the encode so it carries none
+(3504×1460). It comes from the render rather than the encode so it carries none
 of the clip's compression, and it is not resized down: it is the home page's
 largest-contentful paint, `next/image` serves a variant sized to whatever is
 asking, and a master that stops short caps how sharp the largest of those can
 be.
 
-`home-scroll-end.jpg` is the last frame at 1280×672, blurred once at build time
+`home-scroll-end.jpg` is the last frame at 1280×533, blurred once at build time
 so the close never asks a GPU to run a full-screen blur over live video. Its
 crop is the build's final framing — the same window, offset by the 44 source
 pixels the pan works out to once the push has been released — so the cross-fade

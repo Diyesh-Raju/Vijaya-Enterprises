@@ -1,5 +1,5 @@
 import { Marquee } from "@/components/ui/marquee";
-import { Container, Eyebrow } from "@/components/ui/section";
+import { Container, SectionHeading } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { trustedBy, type TrustedOrg } from "@/lib/site";
 
@@ -86,17 +86,14 @@ export function TrustedBy() {
   return (
     <section className="relative isolate overflow-hidden border-t border-line bg-white py-16 sm:py-20 lg:py-24">
       <Container>
-        <div className="mx-auto max-w-2xl text-center">
-          <Reveal>
-            <Eyebrow className="justify-center">Trusted By</Eyebrow>
-          </Reveal>
-          <Reveal delay={80}>
-            <p className="mt-6 text-[1.0625rem] leading-[1.8] text-slate-body">
-              Public sector undertakings, banks, laboratories and institutions
-              that have put their construction in our hands.
-            </p>
-          </Reveal>
-        </div>
+        {/* The band's own heading, at the same display size as every other
+            section on the page — it used to be only the brass eyebrow, which
+            read as a label on the logos rather than a heading of its own. */}
+        <SectionHeading
+          align="center"
+          title="Trusted by industry leaders"
+          lead="Public sector undertakings, banks, laboratories and institutions that have put their construction in our hands."
+        />
       </Container>
 
       <Reveal delay={160}>

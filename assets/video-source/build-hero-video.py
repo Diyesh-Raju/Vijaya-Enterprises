@@ -64,40 +64,41 @@ SOURCE = ROOT / "assets" / "video-source"
 CLIP_A = SOURCE / "walkthrough-exterior-to-living.mp4"
 CLIP_B = SOURCE / "walkthrough-living-to-foyer.mp4"
 
-# What ffmpeg hands over, as x, y, w, h in source pixels. The two renders have
-# different native ratios, so each needs its own window; clip B keeps the full
-# width of its render, because the pan below has to have somewhere to go.
-CROP_A = (0, 185, 3524, 1982)
-CROP_B = (0, 1, 3988, 2160)
+# What ffmpeg hands over, as x, y, w, h in source pixels: the whole of each
+# render. These used to be hand-cut windows, 3524×1982 and 3988×2160, chosen
+# to be exactly what `WINDOW_A` and `WINDOW_B` would then take out of them —
+# which left no slack at all, and `3524 / (16/9)` is 1982.25, a quarter of a
+# pixel more than that. Both windows are centred on the source either way, so
+# handing over the whole frame changes no framing and leaves the rounding
+# somewhere to go.
+CROP_A = (0, 0, 3524, 2352)
+CROP_B = (0, 0, 3988, 2162)
 
-# The hero's shape, and the reason it is not 16:9.
+# The hero's shape: 2.4:1, and the reason is sharpness rather than taste.
 #
-# The clip does not fill the viewport. It fills what is left of it between the
-# header and the figures on the block at the foot of the hero, which is a much
-# wider box than the viewport. Measured in a browser across the sizes this is
-# actually read at:
+# The film is full-bleed, so `object-cover` scales it to the box's *width* and
+# crops the height. That makes the encode width the only thing that decides
+# whether the hero is sharp, and the box height irrelevant to it: on a Retina
+# laptop 1676 CSS pixels across is 3352 device pixels, and a 2560-wide file is
+# a 1.31× upscale onto that, which is what soft hero video looks like.
 #
-#     1366×768  → 1366×538  2.541      1663×971  → 1663×741  2.246
-#     1440×900  → 1440×670  2.151      1920×1080 → 1920×850  2.260
-#     1512×982  → 1512×752  2.012      2560×1440 → 2560×1210  2.117
+# The fix is to encode at the width the render actually has. Clip A's window is
+# 3524px across, so 3504 is native — 1.05× oversampled on that screen, and past
+# 3524 the encoder would be inventing detail rather than carrying it.
 #
-# A 16:9 clip in a box that shape has to either give up part of the frame or
-# sit in it with a margin either side, and neither is wanted. Both were tried
-# and both were wrong. So the clip is cut to the shape of the box instead.
+# Width costs pixels, though, and 3504 at 16:9 is 6.9 megapixels a frame, which
+# is a ~27MB file and a slower scrub. Height is what pays for it: the band is
+# shorter than the screen now, so the frame is 3504×1460 and 5.1 megapixels,
+# and the file lands near where the 2560-wide one did. That is the whole trade
+# — the hero gave up height it was cropping away anyway to buy the width it was
+# actually short of.
 #
-# 160:71 is the number, which looks arbitrary and is not: it is the ratio that
-# lands *every* size here on a whole pixel. 2560 and 1920 both divide by 160,
-# so the outputs come out at exactly 1136 and 852, and clip B's window at
-# exactly 1704. It also sits between the two sizes that matter most — the
-# screen this was reported on, and 1920×1080 — so the crop on both is a couple
-# of pixels.
-#
-# The height for it comes out of the renders' own spare, which the 16:9 window
-# was throwing away. Both windows keep their centre, so the join measured
-# below is untouched by any of this.
-ASPECT = 160 / 71
+# 2.4:1 is the anamorphic scope ratio, which is also why it reads as a decision
+# rather than an accident, and it divides cleanly: 3504×1460 and 1920×800 are
+# both exactly 12:5 with even sides.
+ASPECT = 12 / 5
 
-WINDOW_A = (3524, 3524 / ASPECT)
+WINDOW_A = (3504, 3504 / ASPECT)
 WINDOW_B = (3840, 3840 / ASPECT)
 
 FPS = 60
@@ -118,24 +119,26 @@ PAN = 22 / 1920
 # When the push is fully released, in seconds from clip B's first frame.
 RELEASE_S = 2.4
 
-# The hero is `100svh` with `object-cover`, so the file is stretched across the
-# whole screen — and on any Retina display that is two device pixels per CSS
-# pixel. 1080p was landing on a 3024-pixel-wide laptop panel at a 1.6× upscale,
-# which is what soft hero video actually looks like; 1440p lands at 1.2×. It is
-# also about the ceiling worth paying for: clip A's 16:9 window is 3524px wide,
-# so anything past roughly 3.5K is interpolation rather than detail.
+# 3504 across is clip A's own window, so its frames are resampled by nothing at
+# all on the way out — the desktop file is the render at 1:1. On the 1676-wide
+# screen this is read at, that is 1.05× oversampled at Retina density; on a
+# 2560-wide one it is a 1.37× upscale, which is the point past which the source
+# simply has no more detail to give.
+#
+# Level 5.2 rather than 5.1: 3504×1460 is 20148 macroblocks, and 60 of those a
+# second is 1.21M MB/s against 5.1's ceiling of 983K.
 OUTPUTS = {
     "desktop": {
-        "size": (2560, 1136), "crf": 34, "level": "5.1",
+        "size": (3504, 1460), "crf": 34, "level": "5.2",
         "name": "home-scroll.mp4",
     },
-    # The phone file stays at 1080p even though a phone is a few hundred CSS
-    # pixels wide: in portrait the panel is far narrower than the clip, so the
-    # picture is cropped hard at the sides and what survives is the middle
-    # third of the frame, magnified. It needs the pixels more than the desktop
-    # file does, not less. The extra CRF is what keeps it near 11MB at `GOP` 2.
+    # The phone file is unchanged in width and only re-cut in height. In
+    # portrait the panel is far narrower than the clip, so the picture is
+    # cropped hard at the sides and what survives is the middle third of the
+    # frame, magnified — it needs the pixels more than the desktop file does,
+    # not less.
     "mobile": {
-        "size": (1920, 852), "crf": 34, "level": "4.2",
+        "size": (1920, 800), "crf": 34, "level": "4.2",
         "name": "home-scroll-mobile.mp4",
     },
 }

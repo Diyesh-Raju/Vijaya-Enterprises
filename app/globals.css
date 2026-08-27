@@ -71,7 +71,11 @@
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
 
-  --animate-marquee: marquee var(--marquee-duration, 42s) linear infinite;
+  /* The default pace. A row that needs another one sets `animation-duration`
+     on the animating element (see `Marquee`'s `speed`) — a custom property
+     read from here could not work, because `@theme` declares this on
+     `:root` and every descendant inherits it already substituted. */
+  --animate-marquee: marquee 42s linear infinite;
   --animate-ken-burns: ken-burns 26s var(--ease-in-out-soft) infinite alternate;
   --animate-fade-in: fade-in 0.9s var(--ease-out-soft) both;
   --animate-rise: rise 1s var(--ease-out-soft) both;
@@ -241,17 +245,47 @@
 }
 
 /* The pinned panel of the home page's scroll hero, and the track it is
-   pinned inside. Same two-declaration trick as above, for the same reason —
-   and here the fallback matters more than comfort: a browser that drops an
-   `svh` height leaves the panel at `auto`, which collapses it to nothing,
-   because everything inside it is absolutely positioned.
+   pinned inside.
 
-   The panel is a screen *less the bar*: it starts under the header rather
-   than behind it, and reaches the bottom of the viewport. Its track carries
-   the same height as top padding, so the two line up. */
+   The panel is a band rather than a screen. It starts under the header, as it
+   always did, and its height comes off its own width at 2.4:1 — the shape the
+   clip is cut to, so `object-cover` has almost nothing to trim.
+
+   Height off the width, and not the other way round, because on a full-bleed
+   hero the width is the only thing that decides whether the film is sharp:
+   `cover` scales the clip to the box's width and crops the height, so the box
+   height is free. Spending it — a shorter band for the same width — is what
+   buys the encode the pixels it needs. `build-hero-video.py` has the numbers.
+
+   `aspect-ratio` reads the panel's own measured width, so a Windows scrollbar
+   cannot throw it out the way a `100vw` sum would.
+
+   The cap is for a short landscape window, where 2.4:1 of the full width is
+   still taller than there is room for — an ultrawide at 2560×1080 wants 1067px
+   and has 983. There the height binds instead and `cover` trims the sides by a
+   few percent, which is the right way round to fail. Two declarations, because
+   a browser that has never heard of `svh` must still get the first. */
 @utility h-hero-panel {
   height: calc(100vh - var(--header-h));
   height: calc(100svh - var(--header-h));
+}
+
+/* The band shape, from the width the phone file stops being used at — the
+   same 48rem as `WIDE_QUERY` in `scroll-hero.tsx`, so the shape of the box and
+   the file that fills it turn over together.
+
+   Below it the panel keeps the screen, because 2.4:1 of a phone's width is a
+   163px ribbon with two thirds of the viewport blank under it. A portrait
+   panel crops this clip hard at the sides whatever its height — it shows the
+   middle fifth of the frame either way — so the height may as well be spent on
+   the picture there. */
+@media (min-width: 48rem) {
+  .h-hero-panel {
+    aspect-ratio: 12 / 5;
+    height: auto;
+    max-height: calc(100vh - var(--header-h));
+    max-height: calc(100svh - var(--header-h));
+  }
 }
 
 @utility h-hero-track {
@@ -386,6 +420,21 @@
   .trusted-row { --logo-scale: 1; }
 }
 
+/* The Commercial Contracts page runs the same roster as cards rather than a
+   bare row, so every mark has to leave its card some padding: the same wells
+   and the same per-entry heights, pulled down about a third. */
+.trusted-tile-row {
+  --logo-scale: 0.42;
+}
+
+@media (min-width: 640px) {
+  .trusted-tile-row { --logo-scale: 0.5; }
+}
+
+@media (min-width: 1024px) {
+  .trusted-tile-row { --logo-scale: 0.56; }
+}
+
 /* ------------------------------------------------------------------
    Gooey slideshow — the Codrops "Gooey Hover" demo.
 
@@ -393,18 +442,24 @@
    rem there is 10px; every length below has been divided by ten to mean
    the same thing against this site's 16px root.
 
-   The demo's colour, as drawn: five dark grounds and five pale inks,
-   one pair to a tile, swapped on hover and eased across half a second.
+   The demo's colour, reworked for a lit ground. The band stands on a
+   photograph now — a brushed swirl in warm taupe — so the demo's five
+   dark grounds have become five washes laid *over* it at low alpha, and
+   its five pale inks have gone deep so they still read against beige.
+   One pair to a tile, swapped on hover and eased across half a second.
    The demo hangs the pair on `body`; here it hangs on the section, so
-   the band goes dark by itself and the page either side of it stands.
+   the band carries its own colour and the page either side of it stands.
 ------------------------------------------------------------------- */
 
 .gooey {
-  --gooey-text1: #deedcf;
-  --gooey-text2: #ffcbcc;
-  --gooey-text3: #b9e6e3;
-  --gooey-text4: #e1d0a1;
-  --gooey-text5: #ccd3f6;
+  /* Deepened from the demo's pale five, hue for hue: forest, rose, teal,
+     bronze, indigo. Pale ink on a beige ground would be no ink at all. */
+  --gooey-text1: #2c4a35;
+  --gooey-text2: #6b2f38;
+  --gooey-text3: #1e4650;
+  --gooey-text4: #5c4419;
+  --gooey-text5: #2d3668;
+  /* The demo's grounds, kept — they are washes over the photograph now. */
   --gooey-bg1: #3f4849;
   --gooey-bg2: #493f46;
   --gooey-bg3: #2b3242;
@@ -414,7 +469,81 @@
   --gooey-bg: var(--gooey-bg1);
 
   color: var(--gooey-text);
+  /* The mid-tone of the swirl, so any sliver the backdrop does not reach
+     — the edges of the band as it enters and leaves — matches it. */
+  background-color: #bfa98f;
+  transition: color 0.5s;
+
+  /* The band's own passage through the window, named so the ground can be
+     walked by it directly. See `.gooey__backdrop::before`. */
+  view-timeline-name: --gooey-band;
+}
+
+/* The ground: the brushed swirl, laid under the whole stage and walked
+   sideways by the same scroll that walks the strip. The slack either side
+   (the negative inset below) is what the walk is taken out of, so the
+   photograph never pulls its own edge into view. */
+.gooey__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.gooey__backdrop::before,
+.gooey__backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0 -14%;
+}
+
+/*
+ * The walk itself, driven by the scroll and not by a frame loop.
+ *
+ * This used to be a transform written from `requestAnimationFrame`, and it
+ * juddered: the stage the ground sits in is `position: sticky`, which the
+ * browser moves on the compositor, so a transform arriving from the main
+ * thread a frame later shudders against the very frame it is meant to be
+ * lying still behind. Worse, it arrived as a custom property, and changing
+ * one of those invalidates style for the element and everything under it —
+ * a full recalculation per frame to move a background sideways.
+ *
+ * A scroll-driven animation has neither problem. It is sampled from the
+ * scroll position itself, in step with the sticky stage, and never touches
+ * the main thread. The component keeps the old loop only for browsers that
+ * cannot do this, which is what `--gooey-drift` is still here for.
+ */
+@keyframes gooey-drift {
+  from { transform: translate3d(10%, 0, 0); }
+  to { transform: translate3d(-10%, 0, 0); }
+}
+
+.gooey__backdrop::before {
+  background: url("/gooey/backdrop.jpg") center / cover no-repeat;
+  transform: translate3d(var(--gooey-drift, 0%), 0, 0);
+  will-change: transform;
+
+  animation: gooey-drift linear both;
+  animation-timeline: --gooey-band;
+  /* Loose: the band's whole passage through the window, which is the same
+     stretch the fallback measures. */
+  animation-range: cover 0% cover 100%;
+}
+
+/* Pinned: exactly the runway the stage is held for. On a subject taller
+   than the window, `contain` runs from its top meeting the top of the
+   window to its bottom meeting the bottom — which, since the stage is one
+   window tall, is the scroll the strip is walked over, to the pixel. */
+.gooey[data-pinned="on"] .gooey__backdrop::before {
+  animation-range: contain 0% contain 100%;
+}
+
+/* The hover tint, kept from the demo but reduced to a wash: the ground is
+   a photograph now, so the pair colours it rather than replacing it. */
+.gooey__backdrop::after {
   background-color: var(--gooey-bg);
+  opacity: 0.18;
   transition: background-color 0.5s;
 }
 
@@ -423,10 +552,15 @@
   font-weight: 400;
   text-transform: uppercase;
   white-space: nowrap;
-  font-size: calc(4vw + 5rem);
+  /* The demo's size, with a ceiling in vw. It sets this line `nowrap` and
+     lets it run off the side, which reads as texture for a long phrase and
+     as a broken word for a short one — and this one is short. */
+  font-size: min(calc(4vw + 5rem), 12vw);
   line-height: 0.975;
   color: inherit;
-  opacity: 0.1;
+  /* A shade more than the demo's 0.1: the ink is dark now and the ground
+     it is cut into is busy, so it needs the extra to stay a word. */
+  opacity: 0.16;
 }
 
 .gooey__title-offset {
@@ -439,6 +573,10 @@
    the window is wide enough and motion is welcome) it becomes one window
    tall and holds still while the section's runway scrolls past it. */
 .gooey__stage {
+  position: relative;
+  /* So the backdrop's z-index: -1 stays inside the stage — above the
+     section's own ground, below every line of the content. */
+  isolation: isolate;
   padding-block: 5rem;
 }
 
@@ -452,11 +590,18 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  /* And when the content is taller than the window will take, it grows
+     downward rather than out of both ends — the top is where the header is,
+     and a display line cut in half by the bar is the one thing that cannot
+     be allowed to happen. Declared after the plain `center` so a browser
+     that does not know the keyword keeps the old behaviour. */
+  justify-content: safe center;
   height: 100svh;
-  /* The pad at the top is the header's own height: the stage is held against
-     the top of the window, so anything centred in it is centred behind the
-     bar as well, and the title lost its first line under the frosted strip. */
-  padding-top: 6rem;
+  /* The pad at the top is the header's own height with a little over: the
+     stage is held against the top of the window, so anything centred in it
+     is centred behind the bar as well, and the display line's ink sits
+     above its own box — `line-height` here is under 1. */
+  padding-top: 7rem;
   padding-bottom: 1rem;
 }
 
@@ -464,12 +609,12 @@
    the tiles gives way rather than the tiles themselves: the gaps close up,
    and the display line takes a ceiling in vh so two lines of it cannot eat
    the room the strip needs on a short screen. */
-.gooey[data-pinned="on"] .gooey__stage > * + * {
+.gooey[data-pinned="on"] .gooey__stage > *:not(.gooey__backdrop) + * {
   margin-top: clamp(0.75rem, 3vh, 2.5rem);
 }
 
 .gooey[data-pinned="on"] .gooey__title {
-  font-size: min(calc(4vw + 5rem), 12vh);
+  font-size: min(calc(4vw + 5rem), 10vh, 12vw);
 }
 
 .gooey__viewport {
@@ -557,6 +702,14 @@
   width: 100%;
   font-size: 0.875rem;
   color: var(--gooey-text);
+  /* A pale halo — near enough the ground's own tone to be invisible against
+     it, and the only thing holding these titles apart from the dark half of
+     the photographs they run across. Two passes: a tight one that cuts the
+     letterform out, a wide one that lifts the whole word off the picture. */
+  text-shadow:
+    0 0 2px rgb(248 242 232 / 0.9),
+    0 1px 12px rgb(248 242 232 / 0.85),
+    0 2px 30px rgb(248 242 232 / 0.7);
   transition: color 0.3s;
 }
 
@@ -571,7 +724,9 @@
 
 @media (hover: hover) and (pointer: fine) {
   .gooey__tile:hover .gooey__content {
-    color: #fff;
+    /* The demo goes to white here, which on a lit ground is a title that
+       disappears. It goes the other way instead: to the darkest ink. */
+    color: #241a10;
   }
 }
 
@@ -617,7 +772,7 @@
   position: relative;
   width: 8.125rem;
   height: 0.25rem;
-  background-color: rgb(255 255 255 / 0.2);
+  background-color: rgb(58 44 30 / 0.2);
   border-radius: 0.25rem;
 }
 
@@ -628,16 +783,22 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #fff;
+  background-color: #3a2c1e;
   border-radius: 0.25rem;
   transition: transform 1.1s var(--ease-out-soft);
 }
 
-/* Reduced motion: the strip still walks, it just stops sliding there. */
+/* Reduced motion: the strip still walks, it just stops sliding there —
+   and the ground under it stops walking at all. */
 @media (prefers-reduced-motion: reduce) {
   .gooey__track,
   .gooey__progress {
     transition: none;
+  }
+
+  .gooey__backdrop::before {
+    animation: none;
+    transform: none;
   }
 }
 

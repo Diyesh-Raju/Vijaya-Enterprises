@@ -11,8 +11,17 @@ import { Container } from "@/components/ui/section";
  * over a WebGL plane laid on top of the picture. That part is the template
  * untouched; `lib/gooey-scene.ts` holds it and notes what had to move.
  *
- * The demo's colour is here too: five dark grounds and five pale inks, one
- * pair to a tile, swapped on hover.
+ * The demo's colour is here too, reworked: the band stands on a photograph
+ * — a brushed swirl in warm taupe — so the demo's five dark grounds have
+ * become five washes over it and its five pale inks have gone deep enough
+ * to read against beige. One pair to a tile, swapped on hover.
+ *
+ * THE GROUND WALKS TOO, but not from here. The backdrop drifts sideways
+ * across the same scroll that walks the strip, so the band reads as one
+ * thing moving rather than pictures on a still wall — and it is a CSS
+ * scroll-driven animation that does it, sampled from the scroll in step
+ * with the sticky stage instead of a frame behind it. What is below is
+ * only the fallback for a browser that has no such thing.
  *
  * THE STRIP IS WALKED BY THE PAGE. The section is a tall track with a pinned
  * stage inside it: while the stage is pinned, scrolling down draws the strip
@@ -28,9 +37,9 @@ import { Container } from "@/components/ui/section";
  * you swipe, which is also what is left if JavaScript never arrives, since
  * the pinning is switched on by an attribute this component sets.
  *
- * ⚠️ The tiles are the demo's own travel photography, kept as-is on request:
- * five destinations under "What's your next destination?". On a construction
- * company's home page that is somebody else's content. Replace the pairs in
+ * ⚠️ The tiles are still the demo's own travel photography, kept as-is on
+ * request, now standing under "Our Accolades". On a construction company's
+ * home page that is somebody else's content. Replace the pairs in
  * `public/gooey/` — a base and a hover frame each, 1024×1024 — and the copy
  * below, and everything else keeps working.
  */
@@ -66,6 +75,32 @@ const BAR_START = 1 / COUNT;
 const barTransform = (progress: number) =>
   `translateX(${-100 + (BAR_START + progress * (1 - BAR_START)) * 100}%)`;
 
+/**
+ * How far the ground walks, each way, as a share of its own width.
+ *
+ * It has 14% of slack either side (`.gooey__backdrop::before` is inset
+ * negatively), and the walk is taken out of that, so this has to stay under
+ * it or the photograph's edge comes into view at one end of the section.
+ *
+ * ⚠️ The `gooey-drift` keyframes hold the same number. Both ends of the walk
+ * are written twice because only one of them ever runs, and the pair has to
+ * agree about where the ground starts and stops.
+ */
+const DRIFT = 10;
+const driftOffset = (progress: number) => `${DRIFT - progress * DRIFT * 2}%`;
+
+/**
+ * Whether the browser can walk the ground by itself.
+ *
+ * Where it can, the CSS animation is the whole story and this file leaves
+ * the backdrop alone: a transform written per frame from here arrives after
+ * the sticky stage has already moved, which is a judder, and writing it as
+ * a custom property costs a style recalculation of the subtree on top.
+ */
+const scrollDriven = () =>
+  typeof CSS !== "undefined" &&
+  CSS.supports?.("animation-timeline", "view()") === true;
+
 export function DestinationSlideshow() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -74,6 +109,7 @@ export function DestinationSlideshow() {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLUListElement | null>(null);
   const barRef = useRef<HTMLSpanElement | null>(null);
+  const backdropRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -116,27 +152,48 @@ export function DestinationSlideshow() {
     let travel = 0;
     let frame = 0;
 
+    const clamp = (n: number) => Math.min(Math.max(n, 0), 1);
+
     const paintBar = (progress: number) => {
       if (barRef.current) barRef.current.style.transform = barTransform(progress);
     };
+
+    /** The ground — a no-op wherever CSS is already walking it. */
+    const paintDrift = scrollDriven()
+      ? () => {}
+      : (progress: number) => {
+          backdropRef.current?.style.setProperty(
+            "--gooey-drift",
+            driftOffset(progress),
+          );
+        };
 
     /** Pinned: how far through the runway the page is, 0 → 1. */
     const writePinned = () => {
       frame = 0;
       const runway = section.offsetHeight - stage.offsetHeight;
       const scrolled = -section.getBoundingClientRect().top;
-      const progress =
-        runway > 0 ? Math.min(Math.max(scrolled / runway, 0), 1) : 0;
+      const progress = runway > 0 ? clamp(scrolled / runway) : 0;
 
       track.style.transform = `translate3d(${-(progress * travel)}px, 0, 0)`;
       paintBar(progress);
+      paintDrift(progress);
     };
 
-    /** Loose: the viewport is the scroller, so only the bar has anything to do. */
+    /**
+     * Loose: the viewport is the scroller, so the strip needs nothing done to
+     * it and the bar just reports where it has been dragged to. The ground
+     * has no runway to read here, so it takes its walk from the section's own
+     * passage through the window — which is the scroll you can see.
+     */
     const writeLoose = () => {
       frame = 0;
       const reach = viewport.scrollWidth - viewport.clientWidth;
       paintBar(reach > 0 ? viewport.scrollLeft / reach : 0);
+
+      const rect = section.getBoundingClientRect();
+      const window_ = window.innerHeight;
+      paintDrift(clamp((window_ - rect.top) / (window_ + rect.height)));
     };
 
     let write = writePinned;
@@ -204,6 +261,7 @@ export function DestinationSlideshow() {
       delete section.dataset.pinned;
       section.style.height = "";
       track.style.transform = "";
+      backdropRef.current?.style.removeProperty("--gooey-drift");
     };
   }, []);
 
@@ -229,10 +287,14 @@ export function DestinationSlideshow() {
     // there. Clip crops without any of that.
     <section ref={sectionRef} className="gooey relative isolate overflow-x-clip">
       <div ref={stageRef} className="gooey__stage">
+        {/* The ground. It sits behind everything in the stage rather than on
+            the section, so while the stage is pinned it is exactly the window
+            it has to fill, and it walks with the scroll from there. */}
+        <div ref={backdropRef} aria-hidden="true" className="gooey__backdrop" />
+
         <Container>
           <h2 className="gooey__title">
-            What&rsquo;s your next{" "}
-            <span className="gooey__title-offset">destination?</span>
+            Our <span className="gooey__title-offset">Accolades</span>
           </h2>
         </Container>
 

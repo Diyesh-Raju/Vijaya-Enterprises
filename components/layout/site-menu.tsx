@@ -108,33 +108,33 @@ export function SiteMenu({
 
             Full-bleed, top to bottom — and already as far zoomed out as a
             covering image can be. `object-cover` scales by whichever axis
-            needs more, and against a column taller than it is wide that is
-            always the height, so the photograph is drawn at exactly the size
-            that fills the column and not a pixel larger. Any less and there
-            would be a gap. The only lever left on how much of the room reads
-            is the width of this column, which is why it takes 58 of the 100
-            — as much as the longest link opposite can spare. */}
+            needs more, which for a 3:2 photograph in this column is the
+            height, so it is drawn at exactly the size that fills the column
+            and not a pixel larger. Any less and there would be a gap. The
+            only lever left on how much of the balcony reads is the width of
+            this column, which is why it takes 58 of the 100 — as much as the
+            longest link opposite can spare. */}
         <div className="relative hidden overflow-hidden bg-navy-950 lg:block">
           <Image
             src={img.menuInterior}
             alt={alt.menuInterior}
             fill
-            // Which axis `cover` binds to decides this, and it flipped when
-            // the picture became a portrait one: against a column roughly as
-            // wide as it is tall, a tall photograph is bound by *width*, so it
-            // is painted at about the column's own measure rather than the
-            // viewport-and-a-bit a 16:9 frame needed. 65 rather than 58 is
-            // headroom for tall windows, where height takes over again.
-            sizes="(max-width: 1024px) 1px, 65vw"
+            // Which axis `cover` binds to decides this. Against a column
+            // roughly as wide as it is tall, a 3:2 photograph is bound by
+            // *height*, so it is painted about half again as wide as the
+            // column itself — wider than the 58 the column takes. 85 covers
+            // that, and the source caps what actually gets requested.
+            sizes="(max-width: 1024px) 1px, 85vw"
             quality={85}
             placeholder="blur"
             // Still easing after the links have finished arriving — that
             // overlap is what makes the two halves read as one movement
             // rather than two.
-            // Hung a little high: it keeps the plant and the lit dining room
-            // beyond it in frame, and stops the near arm of the sofa taking
-            // the bottom third.
-            style={{ objectPosition: "50% 35%", transitionDuration: "1600ms" }}
+            // Centred. Bound by height, the whole frame top to bottom is
+            // already in view and only the sides are trimmed — evenly, which
+            // leaves the shrine on its axis with the lantern still in at one
+            // edge and the sunset at the other.
+            style={{ objectPosition: "50% 50%", transitionDuration: "1600ms" }}
             className={cn(
               "object-cover transition-transform ease-out",
               open ? "scale-100" : "scale-[1.05]",

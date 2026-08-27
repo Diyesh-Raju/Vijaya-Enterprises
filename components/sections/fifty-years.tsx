@@ -1,39 +1,44 @@
+import type { ReactElement } from "react";
 import { Container, Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
-import { GradientCard } from "@/components/ui/gradient-card";
+import { GradientCard, type CardStat } from "@/components/ui/gradient-card";
 import {
+  AreaIcon,
   BuildingIcon,
   HeartIcon,
-  HourglassIcon,
 } from "@/components/ui/line-icons";
 
 /**
  * The band directly under the hero: the headline figure on the left, three
  * dark cards stacked on the right.
  *
- * Everything in the cards is stated elsewhere on the site in longer form —
- * this is the short version, put where a visitor lands rather than where they
- * scroll to. The heading carries the whole left column on its own, so it is
- * set very large and given nothing to compete with.
+ * The cards carry the numbers rather than prose — what has been built, how
+ * much of it, and for how many families. The heading carries the whole left
+ * column on its own, so it is set very large and given nothing to compete
+ * with.
  */
-const points = [
+const points: {
+  icon: (props: { className?: string }) => ReactElement;
+  title: string;
+  stats: CardStat[];
+}[] = [
   {
-    icon: HourglassIcon,
-    title: "Since 1973",
-    description:
-      "Five decades of building, through every change in materials, technology and what customers expect of a home.",
+    icon: AreaIcon,
+    title: "Sq. Ft. Delivered",
+    stats: [{ value: "+5,00,000" }],
   },
   {
     icon: BuildingIcon,
-    title: "Four Verticals",
-    description:
-      "Residential, commercial, industrial and institutional. One construction partner, whatever the sector asks for.",
+    title: "Residential Portfolio Scale",
+    stats: [
+      { label: "Apartment projects", value: "30" },
+      { label: "No. of flats constructed", value: "1,200" },
+    ],
   },
   {
     icon: HeartIcon,
-    title: "Like Family",
-    description:
-      "Every project, every customer. The promise Vijaya was built on, and the reason its reputation has lasted generations.",
+    title: "Trusted by Families",
+    stats: [{ value: "+1,500", label: "happy families" }],
   },
 ];
 
@@ -66,7 +71,7 @@ export function FiftyYears() {
                   <GradientCard
                     icon={point.icon}
                     title={point.title}
-                    description={point.description}
+                    stats={point.stats}
                   />
                 </Reveal>
               ))}

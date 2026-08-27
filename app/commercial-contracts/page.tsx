@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { StaticImageData } from "next/image";
 import { HomeHero } from "@/components/sections/home-hero";
+import { TrustedExperts } from "@/components/sections/trusted-experts";
 import { CtaBand } from "@/components/sections/cta-band";
 import { Container, Section, SectionHeading, Eyebrow } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
@@ -110,6 +111,9 @@ export default function CommercialContractsPage() {
   return (
     <>
       <HomeHero />
+
+      {/* ------------------------------------------------------- Trusted by */}
+      <TrustedExperts />
 
       {/* ---------------------------------------------------------- Opening */}
       <Section tone="white" size="lg">

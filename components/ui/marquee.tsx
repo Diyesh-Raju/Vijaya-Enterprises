@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 /** Defined at module scope: a component created during render would be a new
@@ -80,15 +80,17 @@ export function Marquee({ items, children, className, onNavy = false, speed }: M
     );
 
   return (
-    <div
-      className={cn("fade-edges group relative overflow-hidden", className)}
-      style={
-        speed
-          ? ({ "--marquee-duration": `${speed}s` } as CSSProperties)
-          : undefined
-      }
-    >
-      <div className="flex w-max animate-marquee items-center group-hover:[animation-play-state:paused] motion-reduce:animate-none">
+    <div className={cn("fade-edges group relative overflow-hidden", className)}>
+      {/* The duration goes on the animating element itself rather than on a
+          custom property the theme's `--animate-marquee` reads: that shorthand
+          is declared in `@theme`, so any `var()` inside it is substituted at
+          `:root` and every descendant inherits the *resolved* value — a
+          property set further down the tree could never reach it.
+          `animation-duration` set inline outranks the shorthand's duration. */}
+      <div
+        className="flex w-max animate-marquee items-center group-hover:[animation-play-state:paused] motion-reduce:animate-none"
+        style={speed ? { animationDuration: `${speed}s` } : undefined}
+      >
         {pass(false)}
         {pass(true)}
       </div>

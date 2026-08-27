@@ -155,7 +155,7 @@ export const alt = {
   legacyPoster: "A building frame and tower crane silhouetted against the sunset",
   meetingHands: "A project discussion in progress across a meeting table",
   menuInterior:
-    "An apartment living room at dusk, warmly lit, with a tall bird-of-paradise plant, olive foliage on the table and the dining room beyond",
+    "A balcony shrine at dusk, warmly lit, with a marble platform, brass lamps and bamboo either side, open to the city skyline",
   officeInterior: "Completed commercial office interior with glazed partitions",
   rebarWorkers: "Site team tying reinforcement steel on a column cage",
   residentialInterior:
