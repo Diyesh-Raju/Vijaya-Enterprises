@@ -100,23 +100,47 @@ RELEASE_S = 2.4
 # so anything past roughly 3.5K is interpolation rather than detail.
 OUTPUTS = {
     "desktop": {
-        "size": (2560, 1440), "crf": 28, "level": "5.1",
+        "size": (2560, 1440), "crf": 32, "level": "5.1",
         "name": "home-scroll.mp4",
     },
+    # The phone file stays at 1080p even though a phone is a few hundred CSS
+    # pixels wide: in portrait the panel is far narrower than the clip, so the
+    # picture is cropped hard at the sides and what survives is the middle
+    # third of the frame, magnified. It needs the pixels more than the desktop
+    # file does, not less. The extra CRF is what keeps it near 11MB at `GOP` 2.
     "mobile": {
-        "size": (1920, 1080), "crf": 32, "level": "4.2",
+        "size": (1920, 1080), "crf": 34, "level": "4.2",
         "name": "home-scroll-mobile.mp4",
     },
 }
 
 # Frames between keyframes. `ScrollHero` seeks to an arbitrary time on every
 # animation frame, so this is the number that decides whether the scrub feels
-# attached to the wheel. It used to be 3, on the theory that a seek should
-# never decode more than a frame or two — but 3 costs 75% more bitrate than 6
-# does, and measured here a seek at 1440p/6 lands in about 3.6ms of *software*
-# decode, a fifth of an animation frame, on hardware that will be doing it in
-# silicon. Spending that headroom on resolution is the better trade.
-GOP = 6
+# attached to the wheel — and it is worth measuring rather than reasoning
+# about, because the arithmetic here is misleading. This was 6 for a while, on
+# an estimate that a seek cost about 3.6ms. Timed properly in a browser, over
+# 80 seeks landing off-keyframe across the clip, 1440p/6 was a median of 19.6ms
+# and a p95 of 37.2 — two and a half animation frames, which is exactly the lag
+# the hero had.
+#
+# Seek cost turns out to track two things: how many frames must be decoded to
+# reach the target, and how many bits must be read to do it. So a shorter GOP
+# and a higher CRF pull in the same direction, and together they beat either
+# alone. Measured at 2560×1440, all against the same crf-12 reference:
+#
+#     gop  crf   size    SSIM    median   p95    max
+#       6   28   18.6M   0.952    19.6    37.2   49.2   ← was
+#       3   30   20.3M   0.920    16.7    26.9   29.2
+#       2   30   25.9M   0.934    15.8    25.8   27.1
+#       2   28   31.8M   0.947    16.3    29.4   31.2
+#       2   32   21.1M   0.918    12.6    22.0   22.9   ← is
+#
+# `2/32` is the corner: every seek inside a frame and a half, for 2.5MB more
+# than the laggy encode and less than the alternatives. The SSIM it gives up is
+# real but not visible — side by side at 1:1 on the densest part of the frame,
+# balcony railings and foliage, it cannot be told from `6/28`, and the hero is
+# a moving picture the reader is dragging past.
+GOP = 2
 
 # Optical flow is estimated at this fraction of full resolution and then
 # smoothed, in pixels of the full frame. Both are deliberately coarse: what
@@ -256,9 +280,9 @@ def encoder(path: Path, spec: dict) -> subprocess.Popen:
     decodable without reordering, which is the other half of a cheap seek.
 
     Nothing is denoised on the way in any more. It was there to hold the
-    bitrate down when every third frame was a keyframe; at `GOP` 6 it saves
-    under a percent, and it was taking fine texture off a render that has none
-    to spare.
+    bitrate down when every third frame was a keyframe; it saves under a
+    percent, and it was taking fine texture off a render that has none to
+    spare. The bitrate is held by CRF instead, which does not blur.
     """
     w, h = spec["size"]
     return subprocess.Popen(
@@ -283,8 +307,11 @@ def encoder(path: Path, spec: dict) -> subprocess.Popen:
 def build(kind: str) -> None:
     spec = OUTPUTS[kind]
     size = spec["size"]
-    out = ROOT / "public" / "video" / spec["name"]
-    print(f"→ {out.relative_to(ROOT)}  {size[0]}×{size[1]}  crf {spec['crf']}")
+    out = Path(spec["name"])
+    if not out.is_absolute():
+        out = ROOT / "public" / "video" / out
+    label = out.relative_to(ROOT) if out.is_relative_to(ROOT) else out
+    print(f"→ {label}  {size[0]}×{size[1]}  crf {spec['crf']}  gop {GOP}")
 
     proc = encoder(out, spec)
     assert proc.stdin is not None
@@ -329,8 +356,27 @@ def build(kind: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--only", choices=sorted(OUTPUTS), help="build one file")
+    # Overrides, for measuring a candidate encode without editing the defaults
+    # above. `GOP` and resolution are the two numbers the scrub actually feels,
+    # and neither can be reasoned about from first principles — the only honest
+    # way to pick them is to build a few and time the seeks.
+    parser.add_argument("--gop", type=int, help="frames between keyframes")
+    parser.add_argument("--crf", type=int, help="x264 quality, lower is bigger")
+    parser.add_argument("--height", type=int, help="output height, 16:9 assumed")
+    parser.add_argument("--out", help="write here instead of public/video/")
     args = parser.parse_args()
+
+    if args.gop:
+        globals()["GOP"] = args.gop
+
     for kind in [args.only] if args.only else sorted(OUTPUTS):
+        spec = OUTPUTS[kind]
+        if args.crf:
+            spec["crf"] = args.crf
+        if args.height:
+            spec["size"] = (args.height * 16 // 9, args.height)
+        if args.out:
+            spec["name"] = args.out
         build(kind)
 
 

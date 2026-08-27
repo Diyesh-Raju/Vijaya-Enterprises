@@ -385,18 +385,14 @@ export function ScrollHero() {
           the first pixel and the scrub still ends exactly as it unpins. */}
       <div className="sticky top-[var(--header-h)] h-hero-panel overflow-hidden bg-black">
         {/* `next/image` with `fill` will not accept a `sticky` parent as its
-            containing block, so the media gets a wrapper of its own — which
-            is also the thing the close pushes in.
-
-            Everything in here fills with `object-cover` anchored to the top.
-            The panel is a screen less the bar, so on a 16:9 display it is
-            slightly wider than the clip's own 16:9 and `cover` has to give up
-            some height — centred, that took ~48px off the top of the frame,
-            which is the part that meets the bar and the part worth keeping.
-            Anchored, the whole loss goes to the bottom instead. Poster, clip
-            and end still are all 16:9, so one anchor holds them in register
-            through the close. */}
-        <div ref={mediaRef} className="absolute inset-0">
+            containing block, so the media gets a wrapper of its own — which is
+            also the thing the close pushes in, and the thing that carries the
+            clip's aspect ratio. `hero-media` is a 16:9 box as tall as the
+            panel: the whole frame is on screen wherever the panel is wider
+            than that, which is the case this hero is usually read in. Poster,
+            clip and end still are all 16:9, so all three fill it exactly and
+            the close cross-fades between frames that already line up. */}
+        <div ref={mediaRef} className="hero-media">
           <Image
             src={img.homeScrollPoster}
             alt={alt.homeScrollPoster}
@@ -405,7 +401,7 @@ export function ScrollHero() {
             sizes="100vw"
             placeholder="blur"
             className={cn(
-              "object-cover object-top transition-opacity duration-500",
+              "object-cover transition-opacity duration-500",
               ready ? "opacity-0" : "opacity-100",
             )}
           />
@@ -415,7 +411,7 @@ export function ScrollHero() {
               ref={videoRef}
               src={src}
               className={cn(
-                "absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-500",
+                "absolute inset-0 h-full w-full object-cover transition-opacity duration-500",
                 ready ? "opacity-100" : "opacity-0",
               )}
               // `muted` + `playsInline` are what make the priming play legal.
@@ -444,7 +440,7 @@ export function ScrollHero() {
               aria-hidden="true"
               fill
               sizes="100vw"
-              className="object-cover object-top"
+              className="object-cover"
             />
           </div>
         </div>

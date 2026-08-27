@@ -26,31 +26,65 @@ python3 assets/video-source/build-hero-video.py --only mobile
 ```
 
 Needs `numpy`, `pillow` and `opencv-python`. About 45 seconds per file. It
-writes `public/video/home-scroll.mp4` (2560×1440, crf 28, ~19 MB) and
-`home-scroll-mobile.mp4` (1920×1080, crf 32, ~7.5 MB), both 60fps, both with a
-keyframe every sixth frame.
+writes `public/video/home-scroll.mp4` (2560×1440, crf 32, ~21 MB) and
+`home-scroll-mobile.mp4` (1920×1080, crf 34, ~11.5 MB), both 60fps, both with a
+keyframe every second frame.
+
+`--gop`, `--crf`, `--height` and `--out` override the defaults without editing
+them, which is how the table below was produced.
 
 ## Why 1440p
 
-The hero is `100svh` with `object-cover`, so the file is stretched across the
-whole screen rather than sitting in a box. On a Retina display that is two
-device pixels per CSS pixel, which had 1080p landing on a 3024-pixel-wide
-laptop panel at a 1.6× upscale — soft, and no amount of bitrate fixes it,
-because the pixels are not there. 1440p lands at 1.2×.
+The hero fills a box as tall as the viewport less the header, carrying the
+clip's own 16:9. On a Retina display that is two device pixels per CSS pixel,
+which had 1080p landing on a 3024-pixel-wide laptop panel at a 1.6× upscale —
+soft, and no amount of bitrate fixes it, because the pixels are not there.
+1440p lands at about 1.2×.
 
 It is also about the ceiling worth paying for. Clip A's 16:9 window is 3524px
 wide, so past roughly 3.5K the encoder would be interpolating rather than
 carrying detail, and a 4K file would cost around 30 MB for the privilege.
 
-The bits came from the keyframe interval. `ScrollHero` seeks to an arbitrary
-time on every animation frame, so a normal two-second interval would make each
-seek decode dozens of frames — but the 3 this used to run at costs 75% more
-bitrate than 6 does, which is most of the way to 1440p on its own. Measured on
-this footage, a seek at 1440p with a 6-frame interval lands in about 3.6ms of
-*software* decode, a fifth of an animation frame, on hardware that will be
-doing it in silicon. The denoise pass went with it: it existed to hold the
-bitrate down when every third frame was a keyframe, and at 6 it saves under a
-percent while taking fine texture off a render that has none to spare.
+## Why a keyframe every second frame
+
+`ScrollHero` seeks to an arbitrary time on every animation frame, so the
+keyframe interval is what decides whether the scrub feels attached to the
+wheel. This ran at 6 for a while on an *estimate* that a seek cost about
+3.6ms. Timed in a browser instead — 80 seeks landing off-keyframe across the
+clip — it was a median of 19.6ms and a p95 of 37.2ms, two and a half animation
+frames, and the hero visibly lagged the wheel.
+
+Seek cost tracks two things: how many frames must be decoded to reach the
+target, and how many bits must be read to do it. A shorter GOP and a higher
+CRF therefore pull the same way, and together they beat either alone. At
+2560×1440, SSIM against a crf-12 reference:
+
+| gop | crf | size | SSIM | median | p95 | max |
+| --- | --- | ------ | ----- | ------ | ---- | ---- |
+| 6 | 28 | 18.6 MB | 0.952 | 19.6 | 37.2 | 49.2 |
+| 3 | 30 | 20.3 MB | 0.920 | 16.7 | 26.9 | 29.2 |
+| 2 | 30 | 25.9 MB | 0.934 | 15.8 | 25.8 | 27.1 |
+| 2 | 28 | 31.8 MB | 0.947 | 16.3 | 29.4 | 31.2 |
+| **2** | **32** | **21.1 MB** | 0.918 | **12.6** | **22.0** | **22.9** |
+
+`2/32` is the corner: every seek inside a frame and a half, for 2.5 MB more
+than the encode that lagged and less than any of the alternatives. It is also
+quicker than the 1080p/48fps file this replaced, which measured 13.3ms median
+and 25.5ms p95 — so the hero is sharper *and* smoother than it has been. The
+SSIM it gives up is real but does not show: side by side at 1:1 on the densest
+part of the frame, balcony railings and foliage, it cannot be told from
+`6/28`.
+
+The phone file stays at 1080p rather than dropping to 720p. In portrait the
+panel is far narrower than the clip, so the picture is cropped hard at the
+sides and what survives is the middle third of the frame, magnified — it needs
+the pixels more than the desktop file does, not less. crf 34 is what holds it
+near 11 MB with a keyframe every second frame.
+
+The denoise pass is gone. It existed to hold the bitrate down when every third
+frame was a keyframe; it saves under a percent, and it was taking fine texture
+off a render with none to spare. CRF holds the bitrate instead, and CRF does
+not blur.
 
 The script's docstring covers the join in detail. In short: the second clip is
 pushed in 8.5% and nudged 22px so its opening framing lands on the first clip's

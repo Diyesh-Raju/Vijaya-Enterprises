@@ -254,6 +254,29 @@
   height: calc(100svh - var(--header-h));
 }
 
+/* The hero's picture box: the clip's own 16:9, as tall as the panel, centred.
+   Sizing the *box* rather than reaching for `object-fit` is what lets one rule
+   cover both shapes of screen. Where the panel is wider than 16:9 — which most
+   desktops are, once the bar is taken off the top — the box is narrower than
+   the panel and the whole frame is on screen with a margin either side. Where
+   the panel is narrower, as every portrait phone is, the box overflows and is
+   clipped by the panel, which is what `cover` would have done and the only
+   sensible answer there: fitting a 16:9 frame into a portrait panel would
+   leave a strip of picture in a field of black. Either way the picture reaches
+   the bar at the top and the foot of the screen at the bottom. */
+@utility hero-media {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  /* The independent `translate` property, not a transform: the close animates
+     `transform` on this same element, and the two have to compose rather than
+     overwrite one another. */
+  translate: -50% 0;
+  height: 100%;
+  width: auto;
+  aspect-ratio: 16 / 9;
+}
+
 @utility h-hero-track {
   height: calc(var(--track-screens, 1) * 100vh);
   height: calc(var(--track-screens, 1) * 100svh);
