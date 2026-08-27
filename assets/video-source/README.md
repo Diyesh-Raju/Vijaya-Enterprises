@@ -26,54 +26,47 @@ python3 assets/video-source/build-hero-video.py --only mobile
 ```
 
 Needs `numpy`, `pillow` and `opencv-python`. About 45 seconds per file. It
-writes `public/video/home-scroll.mp4` (3504×1460, crf 34, ~21 MB) and
-`home-scroll-mobile.mp4` (1920×800, crf 34, ~9 MB), both 60fps, both with a
+writes `public/video/home-scroll.mp4` (3200×1800, crf 34, ~24 MB) and
+`home-scroll-mobile.mp4` (1920×1080, crf 34, ~12 MB), both 60fps, both with a
 keyframe every second frame — and both stills, which are cut from the same
 windows so their framing cannot drift from the clip's.
 
 `--gop`, `--crf`, `--height` and `--out` override the defaults without editing
 them, which is how the table below was produced.
 
-## Why 2.4:1, and why the height is the thing that pays
+## Why 16:9, and the crop that was hiding in the build
 
-The hero is full-bleed, so `object-cover` scales the clip to the box's *width*
-and crops the height. Two things follow, and the second is the one that took a
-while to see:
+The panel is the whole screen below the header — `h-hero-panel` fixes no shape
+of its own — so it is whatever the window is: about 1.95:1 on a 1920×1080
+desktop, 1.79:1 on a 1440×900 laptop, 1.71:1 on a 1512×982 MacBook. The clip
+has to fill that with no letterbox and no visible crop, and 16:9 sits inside
+that range, so `object-cover` trims a few percent off one pair of edges.
 
-1. The encode width is the only thing that decides whether the hero is sharp.
-   On a Retina laptop 1676 CSS pixels across is 3352 device pixels, and a
-   2560-wide file is a 1.31× upscale onto that.
-2. The box height is therefore free. Nothing about it changes the sampling —
-   a shorter band crops more of the frame and samples it identically.
+16:9 is also the ceiling, not a preference. `WINDOW_B` is 3840 columns wide to
+match clip A's framing and clip B's render is 3988×2162, so 3840/2162 = 1.776
+— 16:9 uses 2160 of those 2162 rows and there is no taller cut to be had.
 
-So height is currency. Clip A's window is 3524px across, which makes 3504 the
-native width — 1.05× oversampled on that screen, and past 3524 the encoder is
-inventing detail rather than carrying it. That width at 16:9 is 6.9 megapixels
-a frame, a ~27MB file. Cut to 2.4:1 it is 5.1 and lands at 21MB, which is where
-the previous 2560-wide file already was. The hero gave up height it had been
-cropping away to buy the width it was actually short of.
+This was 2.4:1 for a while, and that was a real mistake rather than a stylistic
+one. The argument for it went: the hero is full-bleed, `object-cover` scales
+the clip to the box's *width*, so the box height changes nothing about the
+sampling and a shorter band is free height to spend on width. That is sound
+only while the panel is a band *shorter than the screen*, which is what it was
+then. On a full-height panel the height binds instead — and a 2.4:1 window
+takes 1460 of clip A's 2352 rows, so two fifths of every frame was being thrown
+away in the build. The hero looked pushed in because it was.
 
-The band is `aspect-ratio: 12 / 5` on the panel, sized off its own width, and
-capped at the screen less the header for a short landscape window — an
-ultrawide at 2560×1080 wants 1067px of band and has 983, so there the height
-binds and `cover` trims the sides instead, which is the right way round to
-fail. Below 48rem the panel keeps the whole screen: 2.4:1 of a phone's width is
-a 163px ribbon with two thirds of the viewport blank under it, and a portrait
-panel crops this clip to the middle fifth of the frame whatever its height, so
-the height may as well go to the picture.
+The rows are back, and the width pays for them. Clip A's window is 3524px
+across, so 3504 is native; 3504 at 16:9 is 6.9 megapixels a frame and a ~30MB
+file, and every seek has to decode it. 3200×1800 is 5.8 — a tenth more than the
+2.4:1 file the scrub was tuned against — and 3200 is 0.91× of native, which on
+a 1676 CSS-pixel column at Retina density is a 1.05× upscale nobody can see.
 
-What this leaves, on a laptop, is a strip of page under the band while the hero
-is pinned — 166px at 1676×961. That is the page's own white and the section
-below it (`FiftyYears`) is white too, so it reads as the space above a section
-rather than a hole.
+## Why 3200 across, and the decode cliff that nearly hid it
 
-## Why 3504 across, and the decode cliff that nearly hid it
-
-1440p was chosen back when the clip was stretched over the full screen and
-2560 was reckoned the ceiling worth paying for. Both halves of that changed:
-the band is shorter, and the ceiling is the render, not a guess. 3504 is clip
-A's own window, so its frames are resampled by nothing at all on the way out —
-the desktop file is the render at 1:1.
+1440p was chosen back when 2560 was reckoned the ceiling worth paying for, and
+the ceiling is the render, not a guess: `WINDOW_A` is 3504 source columns, so
+the desktop file is the render resampled by 0.91 in the same filtered step that
+crops it — one Lanczos pass, not two.
 
 Timing it is where this gets interesting, because the first measurement said
 not to do it. Timed the usual way — 80 seeks landing off-keyframe on a fully
@@ -131,8 +124,9 @@ building and less sky and so cost more per bit; measured at 2560×1344 against a
 | 36 | 13.4 MB | 0.880 | 16.7 | 24.7 |
 
 34 is where the curve flattens: 36 buys no more speed and only loses detail, and
-it has been kept through every reshaping since. At the shipped 3504×1460 it is a
-21.2 MB file that seeks in 11.6ms median and 13.8 p95 with the hardware decoder.
+it has been kept through every reshaping since. At the shipped 3200×1800 it is a
+23.5 MB file — the 16:9 re-cut costs about a tenth more pixels a frame than the
+2.4:1 one the seek table above was measured on.
 
 Absolute figures move with whatever else the machine is doing — the same
 reference file measured anywhere from 12.5ms to 19.5ms median across runs — so
@@ -142,10 +136,13 @@ The SSIM given up along the way does not show. At 1:1 on the densest part of
 the frame, balcony railings and foliage, crf 34 cannot be told from crf 32, and
 neither can be told from the `6/28` encode that lagged.
 
-The phone file stays 1920 across and is only re-cut in height. In portrait the
-panel is far narrower than the clip, so the picture is cropped hard at the sides
-and what survives is the middle fifth of the frame, magnified — it needs the
-width more than the desktop file does, not less.
+The phone file stays 1920 across and gains the height: 1920×1080. In portrait
+the panel is far narrower than the clip, so `cover` binds on the height and
+what survives is a slice of the middle, magnified — and a taller file makes
+that slice *wider* in source pixels, because a taller frame meets the panel's
+height at a smaller scale. On a 390×763 panel the visible slice goes from 460
+source columns at 1920×800 to 552 at 1920×1080. It is the one place where the
+extra rows buy sharpness rather than cost it.
 
 The denoise pass is gone. It existed to hold the bitrate down when every third
 frame was a keyframe; it saves under a percent, and it was taking fine texture
@@ -177,13 +174,13 @@ them drifted every time the shape of the hero changed — which shows, because
 both are cross-faded against the clip on the page.
 
 `home-scroll-poster.jpg` is the first frame, at the window's own resolution
-(3504×1460). It comes from the render rather than the encode so it carries none
+(3504×1971). It comes from the render rather than the encode so it carries none
 of the clip's compression, and it is not resized down: it is the home page's
 largest-contentful paint, `next/image` serves a variant sized to whatever is
 asking, and a master that stops short caps how sharp the largest of those can
 be.
 
-`home-scroll-end.jpg` is the last frame at 1280×533, blurred once at build time
+`home-scroll-end.jpg` is the last frame at 1280×720, blurred once at build time
 so the close never asks a GPU to run a full-screen blur over live video. Its
 crop is the build's final framing — the same window, offset by the 44 source
 pixels the pan works out to once the push has been released — so the cross-fade
@@ -191,4 +188,7 @@ lands exactly on top of the frame the clip ends on.
 
 To check that they still register, seek the encode to either end and difference
 it against the still: in register the error is codec noise, and one pixel of
-offset roughly doubles it.
+offset roughly doubles it. This is worth actually running rather than reading —
+the poster crop was centred vertically and not horizontally for a long time,
+which put it 10 source columns off the clip, and phase-correlating the two is
+what found it.

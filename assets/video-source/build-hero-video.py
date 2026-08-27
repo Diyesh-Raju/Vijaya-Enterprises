@@ -74,29 +74,31 @@ CLIP_B = SOURCE / "walkthrough-living-to-foyer.mp4"
 CROP_A = (0, 0, 3524, 2352)
 CROP_B = (0, 0, 3988, 2162)
 
-# The hero's shape: 2.4:1, and the reason is sharpness rather than taste.
+# The hero's shape: 16:9, and it is the *tallest* shape this footage has.
 #
-# The film is full-bleed, so `object-cover` scales it to the box's *width* and
-# crops the height. That makes the encode width the only thing that decides
-# whether the hero is sharp, and the box height irrelevant to it: on a Retina
-# laptop 1676 CSS pixels across is 3352 device pixels, and a 2560-wide file is
-# a 1.31× upscale onto that, which is what soft hero video looks like.
+# The panel on the page is the whole screen below the header — see
+# `h-hero-panel` in `app/globals.css` — which is somewhere between 1.7:1 and
+# 1.95:1 on the machines this is read on. The clip has to fill that with no
+# letterbox and no visible crop, and 16:9 sits in the middle of that range, so
+# `object-cover` trims a few percent off one pair of edges and nothing more.
 #
-# The fix is to encode at the width the render actually has. Clip A's window is
-# 3524px across, so 3504 is native — 1.05× oversampled on that screen, and past
-# 3524 the encoder would be inventing detail rather than carrying it.
+# It is also the ceiling, not a preference. Clip B's render is 3988×2162, and
+# `WINDOW_B` is 3840 across to match clip A's framing; 3840/2162 is 1.776, so
+# 16:9 uses 2160 of those 2162 rows. There is no taller cut available.
 #
-# Width costs pixels, though, and 3504 at 16:9 is 6.9 megapixels a frame, which
-# is a ~27MB file and a slower scrub. Height is what pays for it: the band is
-# shorter than the screen now, so the frame is 3504×1460 and 5.1 megapixels,
-# and the file lands near where the 2560-wide one did. That is the whole trade
-# — the hero gave up height it was cropping away anyway to buy the width it was
-# actually short of.
+# This was 2.4:1 for a while, which was a real mistake and not a stylistic
+# one: a 2.4:1 window takes 1460 of clip A's 2352 rows, so nearly two fifths
+# of every frame was being thrown away here and the hero looked pushed in.
+# The old note argued the height was free because `cover` scales to the box's
+# *width* — true only while the panel was a band shorter than the screen. On a
+# full-height panel the height binds instead, and the rows matter.
 #
-# 2.4:1 is the anamorphic scope ratio, which is also why it reads as a decision
-# rather than an accident, and it divides cleanly: 3504×1460 and 1920×800 are
-# both exactly 12:5 with even sides.
-ASPECT = 12 / 5
+# Width still decides sharpness, and 3200 is 0.91× of clip A's native 3524 —
+# on a 1676 CSS-pixel column at Retina density that is a 1.05× upscale, which
+# is invisible. Going native instead would put the frame at 6.9 megapixels and
+# the file near 30MB, and every seek has to decode it; 3200×1800 is 5.8, a
+# tenth more than the 2.4:1 file the scrub was tuned against.
+ASPECT = 16 / 9
 
 WINDOW_A = (3504, 3504 / ASPECT)
 WINDOW_B = (3840, 3840 / ASPECT)
@@ -119,26 +121,24 @@ PAN = 22 / 1920
 # When the push is fully released, in seconds from clip B's first frame.
 RELEASE_S = 2.4
 
-# 3504 across is clip A's own window, so its frames are resampled by nothing at
-# all on the way out — the desktop file is the render at 1:1. On the 1676-wide
-# screen this is read at, that is 1.05× oversampled at Retina density; on a
-# 2560-wide one it is a 1.37× upscale, which is the point past which the source
-# simply has no more detail to give.
+# `WINDOW_A` is 3504 source pixels across and the desktop file is 3200, so the
+# frames come down by 0.91 in the same filtered step that crops them — one
+# Lanczos pass, not two. See the note on `ASPECT` for why not native.
 #
-# Level 5.2 rather than 5.1: 3504×1460 is 20148 macroblocks, and 60 of those a
-# second is 1.21M MB/s against 5.1's ceiling of 983K.
+# Level 5.2 rather than 5.1: 3200×1800 is 18000 macroblocks, and 60 of those a
+# second is 1.08M MB/s against 5.1's ceiling of 983K.
 OUTPUTS = {
     "desktop": {
-        "size": (3504, 1460), "crf": 34, "level": "5.2",
+        "size": (3200, 1800), "crf": 34, "level": "5.2",
         "name": "home-scroll.mp4",
     },
-    # The phone file is unchanged in width and only re-cut in height. In
-    # portrait the panel is far narrower than the clip, so the picture is
-    # cropped hard at the sides and what survives is the middle third of the
-    # frame, magnified — it needs the pixels more than the desktop file does,
-    # not less.
+    # The phone file keeps its width and gains the height. In portrait the
+    # panel is far narrower than the clip, so `cover` binds on the height and
+    # what survives is a slice of the middle, magnified — and a taller file is
+    # what makes that slice wider in source pixels, so it is the one place
+    # where the extra rows buy sharpness rather than cost it.
     "mobile": {
-        "size": (1920, 800), "crf": 34, "level": "4.2",
+        "size": (1920, 1080), "crf": 34, "level": "4.2",
         "name": "home-scroll-mobile.mp4",
     },
 }
@@ -396,10 +396,17 @@ def stills() -> None:
     They come from the renders rather than from the encode, so neither carries
     the clip's compression.
     """
-    ax, ay, _, ah = CROP_A
+    ax, ay, aw_full, ah = CROP_A
     aw, awh = WINDOW_A
-    # The centred window, in the *source's* own coordinates.
-    poster_crop = (int(aw), round(awh), ax, round(ay + (ah - awh) / 2))
+    # The centred window, in the *source's* own coordinates — centred on both
+    # axes, which `scaled()` does and this used to do only vertically. Ten
+    # source pixels of horizontal drift is small, but it is a sideways jolt
+    # exactly as the clip takes over from the poster, which is the one moment
+    # the two are on screen together.
+    poster_crop = (
+        int(aw), round(awh),
+        round(ax + (aw_full - aw) / 2), round(ay + (ah - awh) / 2),
+    )
 
     bx, by, bw_full, bh = CROP_B
     bw, bwh = WINDOW_B

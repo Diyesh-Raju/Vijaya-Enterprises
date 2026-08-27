@@ -384,19 +384,20 @@ export function ScrollHero() {
           offset are the same height, so the panel is where it pins from the
           first pixel and the scrub still ends exactly as it unpins.
 
-          Nothing shares the panel with the film any more. There used to be a
-          block of figures across the foot of it, and it was that block, not
-          the viewport, that made the box a 2.2:1 letterbox no 16:9 frame could
-          fill.
+          Nothing shares the panel with the film: it is the whole screen below
+          the bar, so the walkthrough is the first and only thing on it.
 
-          Without it the panel is a 2.4:1 band, sized off its own width, and it
-          no longer reaches the foot of the screen. That is not a crop for its
-          own sake: `cover` scales the film to the box's *width*, so the height
-          is the one dimension the hero can spend, and spending it is what pays
-          for an encode wide enough to be sharp on a Retina panel. See
-          `h-hero-panel` in `app/globals.css` and the shape note in
-          `build-hero-video.py`, which cuts poster, clip and end still from the
-          same windows so the two cross-fades land on frames that line up. */}
+          The clip is cut at 16:9, which is the tallest shape the render has
+          and within a few percent of the panel's own on every screen this is
+          read on, so `object-cover` fills the box with no letterbox and trims
+          only those few percent. That shape is the whole reason the hero is
+          not pushed in: `build-hero-video.py` used to cut a 2.4:1 band out of
+          a 3524×2352 render and throw away two fifths of every frame. It cuts
+          poster, clip and end still from the same windows, so the two
+          cross-fades land on frames that line up.
+
+          No `object-position`: centred, so the few percent comes off evenly.
+          See also `h-hero-panel` in `app/globals.css`. */}
       <div className="sticky top-[var(--header-h)] isolate h-hero-panel w-full overflow-hidden bg-black">
         {/* `next/image` with `fill` needs a positioned containing block, so the
             media gets a wrapper of its own — which is also the thing the close
@@ -411,7 +412,7 @@ export function ScrollHero() {
             sizes="100vw"
             placeholder="blur"
             className={cn(
-              "object-cover object-top transition-opacity duration-500",
+              "object-cover transition-opacity duration-500",
               ready ? "opacity-0" : "opacity-100",
             )}
           />
@@ -421,7 +422,7 @@ export function ScrollHero() {
               ref={videoRef}
               src={src}
               className={cn(
-                "absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-500",
+                "absolute inset-0 h-full w-full object-cover transition-opacity duration-500",
                 ready ? "opacity-100" : "opacity-0",
               )}
               // `muted` + `playsInline` are what make the priming play legal.
@@ -450,7 +451,7 @@ export function ScrollHero() {
               aria-hidden="true"
               fill
               sizes="100vw"
-              className="object-cover object-top"
+              className="object-cover"
             />
           </div>
 

@@ -247,45 +247,20 @@
 /* The pinned panel of the home page's scroll hero, and the track it is
    pinned inside.
 
-   The panel is a band rather than a screen. It starts under the header, as it
-   always did, and its height comes off its own width at 2.4:1 — the shape the
-   clip is cut to, so `object-cover` has almost nothing to trim.
+   The panel is the whole screen below the header, at every width: it starts
+   at the bottom edge of the bar and runs to the bottom of the viewport, so
+   the walkthrough plays full-bleed rather than in a band with page under it.
 
-   Height off the width, and not the other way round, because on a full-bleed
-   hero the width is the only thing that decides whether the film is sharp:
-   `cover` scales the clip to the box's width and crops the height, so the box
-   height is free. Spending it — a shorter band for the same width — is what
-   buys the encode the pixels it needs. `build-hero-video.py` has the numbers.
-
-   `aspect-ratio` reads the panel's own measured width, so a Windows scrollbar
-   cannot throw it out the way a `100vw` sum would.
-
-   The cap is for a short landscape window, where 2.4:1 of the full width is
-   still taller than there is room for — an ultrawide at 2560×1080 wants 1067px
-   and has 983. There the height binds instead and `cover` trims the sides by a
-   few percent, which is the right way round to fail. Two declarations, because
-   a browser that has never heard of `svh` must still get the first. */
+   Nothing here fixes the shape, so the panel is whatever the window is —
+   between about 1.7:1 and 1.95:1 on a laptop or a desktop. The clip is cut at
+   16:9 to sit inside that range (see `ASPECT` in `build-hero-video.py`), so
+   the `object-cover` on the media trims a few percent off one pair of edges
+   and never letterboxes. Two declarations, because a browser that has never
+   heard of `svh` must still get the first; `svh` is what keeps mobile Safari
+   from jumping as the URL bar collapses. */
 @utility h-hero-panel {
   height: calc(100vh - var(--header-h));
   height: calc(100svh - var(--header-h));
-}
-
-/* The band shape, from the width the phone file stops being used at — the
-   same 48rem as `WIDE_QUERY` in `scroll-hero.tsx`, so the shape of the box and
-   the file that fills it turn over together.
-
-   Below it the panel keeps the screen, because 2.4:1 of a phone's width is a
-   163px ribbon with two thirds of the viewport blank under it. A portrait
-   panel crops this clip hard at the sides whatever its height — it shows the
-   middle fifth of the frame either way — so the height may as well be spent on
-   the picture there. */
-@media (min-width: 48rem) {
-  .h-hero-panel {
-    aspect-ratio: 12 / 5;
-    height: auto;
-    max-height: calc(100vh - var(--header-h));
-    max-height: calc(100svh - var(--header-h));
-  }
 }
 
 @utility h-hero-track {
