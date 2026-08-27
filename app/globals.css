@@ -778,61 +778,42 @@
 }
 
 /* ------------------------------------------------------------------
-   Residential hero — a black line cutting one photograph to the next.
+   Residential hero — horizontal blinds cutting one photograph to the next.
 
-   The line rises out of the bottom-right corner, sweeps up the picture
-   and leaves at the top-left with the next frame behind it. There is no
-   line element: the incoming photograph is clipped to the half-plane
-   the sweep has already passed, and its parent carries a hard, unblurred
-   `drop-shadow` offset up and to the left. The shadow is the same
-   silhouette a few pixels ahead of the picture's own edge, so the only
-   part of it that ever shows is a band along the leading edge. That band
-   is the line — it cannot fall out of step with the wipe, because it is
-   the wipe.
+   The incoming picture arrives in bands. It is cut into
+   `--reshero-blinds` full-width strips; each strip opens outward from its
+   own centre line, and the strips go one after the next down the frame,
+   so the new photograph assembles itself from the top down while the old
+   one is still holding underneath.
 
-   The filter has to sit on the parent. Filters are applied before
-   clipping, so a `drop-shadow` on the same element the `clip-path` is on
-   would be cut away with everything else outside the polygon.
+   There is no mask and no SVG. A band is an ordinary element with the
+   picture inside it laid out at the full height of the hero and pushed up
+   by the band's own index, so the strips line up into one continuous
+   photograph and each band is a window onto its own slice of it. Every
+   copy is the same `src`, so the browser fetches and decodes one picture
+   and paints it thirty times.
 
-   THE POLYGON. The swept region is {x + y ≥ k} over the unit square,
-   with k running 2 → 0: a triangle growing out of the bottom-right
-   corner until it reaches the diagonal, then a pentagon closing on the
-   top-left. Written as five points it covers both, with two pairs
-   collapsing onto each other in the half where the shape is a triangle.
-   Every coordinate is piecewise-linear in k with its only bend at k = 1,
-   which is why there is a keyframe at exactly 50% — with it the
-   interpolated polygon is the *exact* half-plane at every frame, under
-   any easing curve. Without it the edge would bow away from the corners
-   through the middle of the sweep.
+   `clip-path` rather than `height`: a band that opened by growing would
+   relayout the picture inside it on every frame, and the picture must not
+   move at all — only the window onto it opens. An `inset()` clip is a
+   composited property, so the whole set animates without a repaint.
 
-   Because the polygon is written in percentages, the line meets both
-   corners dead-on whatever shape the hero happens to be, and its angle
-   follows the hero's own diagonal.
+   THE TIMING. `--reshero-blind-open` is how long one band takes to open,
+   `--reshero-blind-step` the delay between neighbours. The component
+   derives both from `WIPE_MS`, so that
+   `open + step × (blinds − 1) = WIPE_MS` — the last band finishes exactly
+   as the sweep is declared over and the frame is promoted.
 ------------------------------------------------------------------- */
 
 .reshero {
-  /* Neutral, and a shade off pure black — #000 against a bright sky reads
-     as a hole punched in the picture rather than as an edge drawn on it.
-     No blue in it: the hero grades in neutral shade, and a navy-black line
-     would be the one thing on the stage still carrying a colour cast. */
-  --reshero-line: #060607;
-  --reshero-line-shift: 4px;
-  --reshero-wipe: 950ms;
-  /* Leaves the corner promptly, then settles into the far one — a stroke
-     being drawn, not a panel sliding. A harder ease-in (quart and up)
-     loiters at both corners and then bolts across the middle, which at
-     this tempo reads as a stutter rather than as weight. */
-  --reshero-sweep: cubic-bezier(0.5, 0, 0.2, 1);
-}
-
-@media (min-width: 80rem) {
-  .reshero {
-    --reshero-line-shift: 5px;
-  }
+  /* Quick away from the centre line, then easing into the join — the
+     `power3.out` of the template this follows. Anything slower off the
+     mark loses the snap the effect lives on at this tempo. */
+  --reshero-blind-ease: cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 /* Every frame is mounted and stacked; only two are ever on screen — the
-   one that has settled, and the one the line is drawing in over it. */
+   one that has settled, and the one arriving over it in bands. */
 .reshero__frame {
   position: absolute;
   inset: 0;
@@ -848,50 +829,72 @@
 .reshero__frame.is--rising {
   z-index: 2;
   opacity: 1;
-  filter: drop-shadow(
-    calc(0px - var(--reshero-line-shift))
-    calc(0px - var(--reshero-line-shift))
-    0
-    var(--reshero-line)
-  );
 }
 
-.reshero__clip {
+/* The picture, whole. It stays mounted underneath while the bands open
+   rather than being swapped in once they finish: by then the bands show
+   exactly this, so promoting the frame is one element revealing another
+   that is pixel for pixel the same. Nothing is mounted, fetched or
+   decoded at the moment of the swap, so there is nothing there to flash. */
+.reshero__photo {
   position: absolute;
   inset: 0;
 }
 
-.reshero__frame.is--rising .reshero__clip {
-  animation: reshero-wipe var(--reshero-wipe) var(--reshero-sweep) both;
+.reshero__frame.is--rising .reshero__photo {
+  opacity: 0;
+}
+
+.reshero__blinds {
+  position: absolute;
+  inset: 0;
+}
+
+/* One band: a window on its own slice of the frame, shut until its turn.
+   The bands tile the frame exactly — band `i` starts where band `i - 1`
+   ends, both computed from the same fraction — so no seam opens between
+   them however the height divides. */
+.reshero__blind {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--i) * 100% / var(--reshero-blinds));
+  height: calc(100% / var(--reshero-blinds));
+  overflow: hidden;
+  animation: reshero-blind var(--reshero-blind-open) var(--reshero-blind-ease)
+    both;
+  animation-delay: calc(var(--i) * var(--reshero-blind-step));
   will-change: clip-path;
 }
 
-@keyframes reshero-wipe {
-  /* Collapsed onto the bottom-right corner: nothing of the new picture,
-     and no silhouette for the shadow to draw an edge along. */
-  from {
-    clip-path: polygon(100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%);
-  }
+/* The slice. Sized to the whole stage and pulled up by the band's index,
+   so what sits behind the window is this band's own part of the picture
+   and the set reads as one photograph rather than thirty. */
+.reshero__blind-photo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--i) * -100%);
+  height: calc(100% * var(--reshero-blinds));
+}
 
-  /* k = 1. The line lies on the hero's own diagonal, at full length. */
-  50% {
-    clip-path: polygon(100% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 100%);
+/* Shut is a zero-height sliver on the band's centre line, so the band
+   opens away from the middle in both directions at once. */
+@keyframes reshero-blind {
+  from {
+    clip-path: inset(50% 0 50% 0);
   }
 
   to {
-    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%);
+    clip-path: inset(0 0 0 0);
   }
 }
 
 /* Reduced motion: the component never starts the cycle, so the hero is
-   simply its first photograph. This is the belt to that braces — nothing
-   sweeps even if a frame is somehow marked as rising. */
+   simply its first photograph. This is the belt to that braces — no band
+   opens on its own even if a frame is somehow marked as rising. */
 @media (prefers-reduced-motion: reduce) {
-  .reshero__frame.is--rising {
-    filter: none;
-  }
-
-  .reshero__frame.is--rising .reshero__clip {
+  .reshero__blind {
     animation: none;
   }
 }

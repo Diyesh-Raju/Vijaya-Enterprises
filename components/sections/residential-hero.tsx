@@ -8,19 +8,20 @@ import { img, alt } from "@/lib/images";
 
 /**
  * The Residential hero: one full-bleed photograph at a time, cut to the next
- * by a black line that rises out of the bottom-right corner, sweeps up the
- * diagonal and leaves at the top-left with the new picture behind it.
+ * in horizontal blinds — the arriving picture is sliced into bands, each band
+ * opens outward from its own centre line, and the bands go one after the next
+ * down the frame until the photograph is whole.
  *
- * The line is not an element. The incoming photograph is clipped to the
- * half-plane behind the sweep — a five-point polygon animated in
- * `globals.css` — and its parent carries a hard `drop-shadow` offset up and
- * to the left, so the shadow's leading edge runs a few pixels ahead of the
- * picture's. That is the line. It costs one filter and no extra layout, it
- * lands exactly on the corners at both ends whatever the hero's shape, and
- * there is nothing to keep in sync with the wipe because it *is* the wipe.
+ * The transition is the one from the `Scroll-Transition-main` template
+ * (`index.html`, Horizontal Blinds), on this hero's own clock rather than on
+ * scroll. The template drives its bands from a GSAP timeline scrubbed by
+ * ScrollTrigger; here the same shape is a CSS animation per band with a
+ * staggered `animation-delay`, started by the interval below. That keeps the
+ * two runtime dependencies the template needs — GSAP and Lenis — off the
+ * page, and it is why nothing here reads the scroll position.
  *
- * See `.reshero` in `globals.css` for the geometry and why the polygon needs
- * a keyframe at the halfway mark.
+ * See `.reshero` in `globals.css` for how a band composes its slice of the
+ * picture and why the clip, rather than the height, is what moves.
  */
 
 /**
@@ -44,12 +45,40 @@ const FRAMES = [
 
 /**
  * How long each picture holds before the next one starts arriving, and how
- * long the line takes to cross. The gap between them is the still moment, so
- * the wipe has to stay comfortably under the interval — at 1800/950 a frame
- * sits untouched for the better part of a second.
+ * long the bands take to finish it. The gap between them is the still moment,
+ * so the sweep has to stay comfortably under the interval — at 2600/1500 a
+ * frame sits untouched for a full second after the last band lands.
+ *
+ * These two are what set the pace of the wave down the picture, since the
+ * hand-off below is a fraction of the sweep. The interval has to move with
+ * the sweep rather than stay where it was: hold it at 1800 against a 1500ms
+ * sweep and the still moment collapses to a blink, leaving a hero that is
+ * never once at rest.
  */
-const INTERVAL_MS = 1800;
-const WIPE_MS = 950;
+const INTERVAL_MS = 2600;
+const WIPE_MS = 1500;
+
+/**
+ * How many bands the arriving picture is cut into, and how much of the sweep
+ * goes on handing off from one band to the next rather than on a band's own
+ * opening.
+ *
+ * `HANDOFF` is the knob for how fast the wave travels from the top of the
+ * picture to the bottom: it is the share of the sweep between the first band
+ * starting and the last one starting, so raising it slows the travel and
+ * quickens each band, and lowering it does the reverse. Past about 0.75 the
+ * bands snap rather than open and the set reads as a shutter closing; below
+ * about 0.4 they move nearly as one and the wave stops reading at all.
+ *
+ * Both derived values are spent in `globals.css`, and together they fill
+ * exactly `WIPE_MS` — the last band lands on the same tick that promotes the
+ * frame, so the picture is whole at the instant it is called settled.
+ */
+const BLINDS = 30;
+const HANDOFF = 0.65;
+
+const BLIND_OPEN_MS = Math.round(WIPE_MS * (1 - HANDOFF));
+const BLIND_STEP_MS = (WIPE_MS - BLIND_OPEN_MS) / (BLINDS - 1);
 
 export function ResidentialHero() {
   /** `rising` is the frame the line is currently drawing in, if any. */
@@ -96,9 +125,9 @@ export function ResidentialHero() {
    * a full-bleed photograph edge to edge, and rounding would cut the
    * corners off the picture itself.
    *
-   * `overflow-hidden` stays regardless: the line is drawn by a drop-shadow
-   * that spills past the stage at both ends of the sweep, and something
-   * has to clip it.
+   * `overflow-hidden` stays regardless: a band is laid out at the full
+   * height of the stage and pulled up into place, so every band but the
+   * first hangs over the edge until its own window cuts it back.
    *
    * PINNED. `sticky top-0` holds the hero against the top of the window
    * while the page below rises over it — the photograph never moves, the
@@ -136,11 +165,15 @@ export function ResidentialHero() {
             )}
             style={
               isRising
-                ? ({ "--reshero-wipe": `${WIPE_MS}ms` } as CSSProperties)
+                ? ({
+                    "--reshero-blinds": BLINDS,
+                    "--reshero-blind-open": `${BLIND_OPEN_MS}ms`,
+                    "--reshero-blind-step": `${BLIND_STEP_MS}ms`,
+                  } as CSSProperties)
                 : undefined
             }
           >
-            <div className="reshero__clip">
+            <div className="reshero__photo">
               <Image
                 src={photo.src}
                 alt={index === 0 ? photo.alt : ""}
@@ -154,6 +187,36 @@ export function ResidentialHero() {
                 className="object-cover"
               />
             </div>
+
+            {/* The bands, mounted only for the sweep that needs them. They
+                are the same picture over again — same `src`, same `sizes`,
+                same crop — so they cost one download and one decode between
+                them, and the copy underneath has already made both by the
+                time a frame rises. */}
+            {isRising && (
+              <div className="reshero__blinds" aria-hidden="true">
+                {Array.from({ length: BLINDS }, (_, band) => (
+                  <div
+                    key={band}
+                    className="reshero__blind"
+                    style={{ "--i": band } as CSSProperties}
+                  >
+                    <div className="reshero__blind-photo">
+                      <Image
+                        src={photo.src}
+                        alt=""
+                        fill
+                        quality={85}
+                        sizes="100vw"
+                        loading="eager"
+                        style={{ objectPosition: photo.position }}
+                        className="object-cover"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         );
       })}
