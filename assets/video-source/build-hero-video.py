@@ -72,24 +72,30 @@ CROP_B = (0, 1, 3988, 2160)
 
 # The hero's shape, and the reason it is not 16:9.
 #
-# The panel the clip fills is the viewport less the header, which is a wider
-# box than the viewport itself. Measured across the sizes this is actually read
-# at, that box runs from about 1.71 to 2.04 and clusters near 1.9:
+# The clip does not fill the viewport. It fills what is left of it between the
+# header and the figures on the block at the foot of the hero, which is a much
+# wider box than the viewport. Measured in a browser across the sizes this is
+# actually read at:
 #
-#     1366×768  → 2.036      1663×971  → 1.903
-#     1440×900  → 1.793      1920×1080 → 1.953
-#     1512×982  → 1.708      2560×1440 → 1.906
+#     1366×768  → 1366×538  2.541      1663×971  → 1663×741  2.246
+#     1440×900  → 1440×670  2.151      1920×1080 → 1920×850  2.260
+#     1512×982  → 1512×752  2.012      2560×1440 → 2560×1210  2.117
 #
 # A 16:9 clip in a box that shape has to either give up part of the frame or
-# sit in it with a margin either side, and neither is wanted. So the clip is
-# cut to the shape of the box instead. 40:21 is the middle of that cluster,
-# and it divides cleanly: every output width here lands on an even height, and
-# clip B's window comes out at a whole 2016 pixels.
+# sit in it with a margin either side, and neither is wanted. Both were tried
+# and both were wrong. So the clip is cut to the shape of the box instead.
+#
+# 160:71 is the number, which looks arbitrary and is not: it is the ratio that
+# lands *every* size here on a whole pixel. 2560 and 1920 both divide by 160,
+# so the outputs come out at exactly 1136 and 852, and clip B's window at
+# exactly 1704. It also sits between the two sizes that matter most — the
+# screen this was reported on, and 1920×1080 — so the crop on both is a couple
+# of pixels.
 #
 # The height for it comes out of the renders' own spare, which the 16:9 window
-# was throwing away — 66 source pixels off each of clip A's edges, 72 off clip
-# B's. Both windows keep their centre, so the join measured below is untouched.
-ASPECT = 40 / 21
+# was throwing away. Both windows keep their centre, so the join measured
+# below is untouched by any of this.
+ASPECT = 160 / 71
 
 WINDOW_A = (3524, 3524 / ASPECT)
 WINDOW_B = (3840, 3840 / ASPECT)
@@ -120,7 +126,7 @@ RELEASE_S = 2.4
 # so anything past roughly 3.5K is interpolation rather than detail.
 OUTPUTS = {
     "desktop": {
-        "size": (2560, 1344), "crf": 34, "level": "5.1",
+        "size": (2560, 1136), "crf": 34, "level": "5.1",
         "name": "home-scroll.mp4",
     },
     # The phone file stays at 1080p even though a phone is a few hundred CSS
@@ -129,7 +135,7 @@ OUTPUTS = {
     # third of the frame, magnified. It needs the pixels more than the desktop
     # file does, not less. The extra CRF is what keeps it near 11MB at `GOP` 2.
     "mobile": {
-        "size": (1920, 1008), "crf": 34, "level": "4.2",
+        "size": (1920, 852), "crf": 34, "level": "4.2",
         "name": "home-scroll-mobile.mp4",
     },
 }

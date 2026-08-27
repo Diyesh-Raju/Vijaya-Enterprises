@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Logo } from "@/components/layout/logo";
+import { Counter } from "@/components/ui/counter";
 import { cn } from "@/lib/cn";
 import { img, alt, video } from "@/lib/images";
 
@@ -55,6 +56,22 @@ const RECOVER_COOLDOWN_MS = 5000;
 
 /** `HTMLMediaElement.HAVE_CURRENT_DATA` — there is a frame to draw. */
 const HAVE_CURRENT_DATA = 2;
+
+/**
+ * The three figures on the block under the film. The same set the old hero
+ * carried and `HomeHero` still carries on Commercial Contracts — 1973 is a
+ * year rather than a quantity, so it is written out instead of counted up to.
+ */
+const STATS: readonly {
+  value: number;
+  suffix: string;
+  label: string;
+  plain?: boolean;
+}[] = [
+  { value: 50, suffix: "+", label: "Years of experience" },
+  { value: 4, suffix: "", label: "Construction verticals" },
+  { value: 1973, suffix: "", label: "Building since", plain: true },
+];
 
 const WIDE_QUERY = "(min-width: 768px)";
 
@@ -382,116 +399,158 @@ export function ScrollHero() {
       {/* Pins under the bar rather than behind it, and runs to the bottom of
           the viewport — full width, flush at the sides and the foot. Padding
           and offset are the same height, so the panel is where it pins from
-          the first pixel and the scrub still ends exactly as it unpins. */}
-      <div className="sticky top-[var(--header-h)] h-hero-panel overflow-hidden bg-black">
-        {/* `next/image` with `fill` will not accept a `sticky` parent as its
-            containing block, so the media gets a wrapper of its own — which
-            is also the thing the close pushes in.
+          the first pixel and the scrub still ends exactly as it unpins.
 
-            Everything fills it edge to edge, anchored to the top. The clip is
-            cut to 40:21 — the shape this panel actually is, once the bar is
-            off the top — so on most screens `cover` has almost nothing to
-            trim, and there is never a margin at the sides. What little it does
-            trim comes off the bottom, so the sky and the tower tops that meet
-            the bar are never the part that goes. Poster, clip and end still
-            are all cut from the same windows by `build-hero-video.py`, so the
-            two cross-fades land on frames that already line up. */}
-        <div ref={mediaRef} className="absolute inset-0">
-          <Image
-            src={img.homeScrollPoster}
-            alt={alt.homeScrollPoster}
-            fill
-            priority
-            sizes="100vw"
-            placeholder="blur"
-            className={cn(
-              "object-cover object-top transition-opacity duration-500",
-              ready ? "opacity-0" : "opacity-100",
+          A column: the film on top, the figures on a frosted block beneath it.
+          The film takes what the block leaves rather than running behind it,
+          so the two never overlap. */}
+      <div className="sticky top-[var(--header-h)] flex h-hero-panel flex-col overflow-hidden bg-black">
+        {/* Everything to do with the walkthrough is positioned against *this*
+            box rather than the panel, so the close lands on the film and never
+            over the figures. */}
+        <div className="relative isolate flex-1 overflow-hidden">
+          {/* `next/image` with `fill` needs a positioned containing block, so
+              the media gets a wrapper of its own — which is also the thing the
+              close pushes in.
+
+              Everything fills it edge to edge, anchored to the top. The clip is
+              cut to the shape this box actually is — the viewport, less the bar
+              above and the block below — so on most screens `cover` has almost
+              nothing to trim and there is never a margin at the sides. What
+              little it does trim comes off the bottom, so the sky and the tower
+              tops that meet the bar are never the part that goes. Poster, clip
+              and end still are all cut from the same windows by
+              `build-hero-video.py`, so the two cross-fades land on frames that
+              already line up. */}
+          <div ref={mediaRef} className="absolute inset-0">
+            <Image
+              src={img.homeScrollPoster}
+              alt={alt.homeScrollPoster}
+              fill
+              priority
+              sizes="100vw"
+              placeholder="blur"
+              className={cn(
+                "object-cover object-top transition-opacity duration-500",
+                ready ? "opacity-0" : "opacity-100",
+              )}
+            />
+
+            {src && (
+              <video
+                ref={videoRef}
+                src={src}
+                className={cn(
+                  "absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-500",
+                  ready ? "opacity-100" : "opacity-0",
+                )}
+                // `muted` + `playsInline` are what make the priming play legal.
+                muted
+                playsInline
+                preload="auto"
+                // Decorative: the poster carries the alternative text.
+                aria-hidden="true"
+                tabIndex={-1}
+                disablePictureInPicture
+                // Any of these means there is a frame to show. Whichever the
+                // browser fires first wins; the rest are no-ops.
+                onLoadedData={(event) => reveal(event.currentTarget)}
+                onCanPlay={(event) => reveal(event.currentTarget)}
+                onSeeked={(event) => reveal(event.currentTarget)}
+                onError={() => setFailed(true)}
+              />
             )}
+
+            {/* The last frame, blurred once at build time. Cross-fading to this
+                is what the close does instead of blurring live video. */}
+            <div ref={softRef} className="absolute inset-0 opacity-0">
+              <Image
+                src={img.homeScrollEnd}
+                alt=""
+                aria-hidden="true"
+                fill
+                sizes="100vw"
+                className="object-cover object-top"
+              />
+            </div>
+          </div>
+
+          {/* Sits outside the media wrapper, so the push-in does not scale it.
+              An ellipse rather than a flat wash: it darkens the middle, where
+              the lockup lands, and leaves the edges of the shot alone. */}
+          <div
+            ref={veilRef}
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-[5] opacity-0"
+            style={{
+              background:
+                "radial-gradient(65% 45% at 50% 50%, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.55) 38%, rgba(0,0,0,0) 75%)",
+            }}
           />
 
-          {src && (
-            <video
-              ref={videoRef}
-              src={src}
-              className={cn(
-                "absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-500",
-                ready ? "opacity-100" : "opacity-0",
-              )}
-              // `muted` + `playsInline` are what make the priming play legal.
-              muted
-              playsInline
-              preload="auto"
-              // Decorative: the poster carries the alternative text.
-              aria-hidden="true"
-              tabIndex={-1}
-              disablePictureInPicture
-              // Any of these means there is a frame to show. Whichever the
-              // browser fires first wins; the rest are no-ops.
-              onLoadedData={(event) => reveal(event.currentTarget)}
-              onCanPlay={(event) => reveal(event.currentTarget)}
-              onSeeked={(event) => reveal(event.currentTarget)}
-              onError={() => setFailed(true)}
-            />
-          )}
+          {/* The close. This is also where the page keeps its `h1`: the lockup
+              is what the home page leads on now that no headline sits over the
+              walkthrough, so it carries the name rather than merely repeating
+              the header's decorative copy of it.
 
-          {/* The last frame, blurred once at build time. Cross-fading to this
-              is what the close does instead of blurring live video. */}
-          <div ref={softRef} className="absolute inset-0 opacity-0">
-            <Image
-              src={img.homeScrollEnd}
-              alt=""
-              aria-hidden="true"
-              fill
-              sizes="100vw"
-              className="object-cover object-top"
-            />
+              The lockup and the line centre together, as one block: the pair
+              balances on the middle of the film, which puts the lockup itself
+              a little above it. */}
+          <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center">
+            <h1 ref={markRef} className="m-0 leading-none opacity-0">
+              <span className="sr-only">
+                Vijaya Enterprises — building trust since 1973
+              </span>
+              {/* Nudged left of, and up from, the centre its box sits on.
+                  Percentages of the lockup's own width and height, so both
+                  shifts stay proportional at every breakpoint instead of
+                  looking heavy-handed on a phone. */}
+              <Logo
+                reversed
+                width={1000}
+                className="h-24 w-auto -translate-x-[7%] -translate-y-[8%] sm:h-36 lg:h-48"
+              />
+            </h1>
+            <p
+              ref={tagRef}
+              className="mt-6 max-w-3xl text-[0.625rem] uppercase leading-relaxed tracking-[0.3em] text-white/90 opacity-0 sm:mt-8 sm:text-xs sm:tracking-[0.38em] md:text-sm"
+              style={{ textShadow: "0 2px 14px rgba(0,0,0,0.75)" }}
+            >
+              One trusted partner for construction and development
+            </p>
           </div>
         </div>
 
-        {/* Sits outside the media wrapper, so the push-in does not scale it.
-            An ellipse rather than a flat wash: it darkens the middle, where
-            the lockup lands, and leaves the edges of the shot alone. */}
-        <div
-          ref={veilRef}
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-[5] opacity-0"
-          style={{
-            background:
-              "radial-gradient(65% 45% at 50% 50%, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.55) 38%, rgba(0,0,0,0) 75%)",
-          }}
-        />
-
-        {/* The close. This is also where the page keeps its `h1`: the lockup
-            is what the home page leads on now that no headline sits over the
-            walkthrough, so it carries the name rather than merely repeating
-            the header's decorative copy of it.
-
-            The lockup and the line centre together, as one block: the pair
-            balances on the middle of the screen, which puts the lockup itself
-            a little above it. */}
-        <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center">
-          <h1 ref={markRef} className="m-0 leading-none opacity-0">
-            <span className="sr-only">
-              Vijaya Enterprises — building trust since 1973
-            </span>
-            {/* Nudged left of, and up from, the centre its box sits on.
-                Percentages of the lockup's own width and height, so both
-                shifts stay proportional at every breakpoint instead of
-                looking heavy-handed on a phone. */}
-            <Logo
-              reversed
-              width={1000}
-              className="h-24 w-auto -translate-x-[7%] -translate-y-[8%] sm:h-36 lg:h-48"
-            />
-          </h1>
-          <p
-            ref={tagRef}
-            className="mt-6 max-w-3xl text-[0.625rem] uppercase leading-relaxed tracking-[0.3em] text-white/90 opacity-0 sm:mt-8 sm:text-xs sm:tracking-[0.38em] md:text-sm"
-            style={{ textShadow: "0 2px 14px rgba(0,0,0,0.75)" }}
-          >
-            One trusted partner for construction and development
-          </p>
+        {/* The proof strip, on a frosted block that closes the hero the way
+            the bar opens it — same glass, same hairline, the other way up.
+            It is part of the pinned panel rather than the page beneath, so it
+            holds under the walkthrough for the whole scrub. */}
+        <div className="glass-navy shrink-0 border-t border-white/12">
+          <div className="container-page">
+            <dl className="grid grid-cols-3 gap-4 py-6 sm:gap-10 sm:py-8">
+              {STATS.map((stat) => (
+                <div key={stat.label}>
+                  <dt className="sr-only">{stat.label}</dt>
+                  <dd>
+                    <span className="block font-display text-[1.75rem] leading-none text-white sm:text-[2.5rem]">
+                      {stat.plain ? (
+                        stat.value
+                      ) : (
+                        <Counter to={stat.value} suffix={stat.suffix} />
+                      )}
+                    </span>
+                    {/* The label has to survive three-up on a phone, where
+                        "Construction verticals" is the widest thing on the
+                        screen — hence the smaller type and the tighter
+                        letterspacing until there is room for the full one. */}
+                    <span className="mt-2 block text-[0.5625rem] uppercase leading-snug tracking-[0.12em] text-navy-100/65 sm:mt-3 sm:text-[0.75rem] sm:tracking-[0.2em]">
+                      {stat.label}
+                    </span>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
         </div>
       </div>
     </section>

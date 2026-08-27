@@ -26,37 +26,40 @@ python3 assets/video-source/build-hero-video.py --only mobile
 ```
 
 Needs `numpy`, `pillow` and `opencv-python`. About 45 seconds per file. It
-writes `public/video/home-scroll.mp4` (2560×1344, crf 34, ~16 MB) and
-`home-scroll-mobile.mp4` (1920×1008, crf 34, ~11 MB), both 60fps, both with a
+writes `public/video/home-scroll.mp4` (2560×1136, crf 34, ~14 MB) and
+`home-scroll-mobile.mp4` (1920×852, crf 34, ~10 MB), both 60fps, both with a
 keyframe every second frame — and both stills, which are cut from the same
 windows so their framing cannot drift from the clip's.
 
 `--gop`, `--crf`, `--height` and `--out` override the defaults without editing
 them, which is how the table below was produced.
 
-## Why 40:21 rather than 16:9
+## Why 160:71 rather than 16:9
 
-The clip fills the viewport less the header, which is a wider box than the
-viewport. Across the sizes this is actually read at, that box runs from about
-1.71 to 2.04 and clusters near 1.9:
+The clip does not fill the viewport. It fills what is left of it between the
+header and the figures on the block at the foot of the hero, which is a much
+wider box. Measured in a browser across the sizes this is actually read at:
 
-| viewport | panel | ratio | | viewport | panel | ratio |
-| --------- | -------- | ----- | - | --------- | -------- | ----- |
-| 1366×768 | 1366×671 | 2.036 | | 1663×971 | 1663×874 | 1.903 |
-| 1440×900 | 1440×803 | 1.793 | | 1920×1080 | 1920×983 | 1.953 |
-| 1512×982 | 1512×885 | 1.708 | | 2560×1440 | 2560×1343 | 1.906 |
+| viewport | film box | ratio | | viewport | film box | ratio |
+| --------- | -------- | ----- | - | --------- | --------- | ----- |
+| 1366×768 | 1366×538 | 2.541 | | 1663×971 | 1663×741 | 2.246 |
+| 1440×900 | 1440×670 | 2.151 | | 1920×1080 | 1920×850 | 2.260 |
+| 1512×982 | 1512×752 | 2.012 | | 2560×1440 | 2560×1210 | 2.117 |
 
 A 16:9 clip in a box that shape has to either give up part of the frame or sit
 in it with a margin either side. Both were tried and both were wrong: covering
 took ~48px off the top, which is the part that meets the bar, and fitting put
-black bars down both edges. So the clip is cut to the shape of the box
-instead — 40:21, the middle of that cluster, which also divides cleanly: every
-output width lands on an even height and clip B's window comes out at a whole
-2016 pixels. On a 1663-wide screen the crop is now under a pixel.
+black bars down both edges.
+
+So the clip is cut to the shape of the box. 160:71 looks arbitrary and is not —
+it is the ratio that lands every size here on a whole pixel. 2560 and 1920 both
+divide by 160, so the outputs come out at exactly 1136 and 852 and clip B's
+window at exactly 1704. It also sits between the two sizes that matter most, so
+the crop on a 1663-wide screen is 2.9px at the sides and on 1920×1080 is 2.5px
+at the foot.
 
 The height comes out of the renders' own spare, which the 16:9 window was
-throwing away: 66 source pixels off each of clip A's edges, 72 off clip B's.
-Both windows keep their centre, so the join is untouched.
+throwing away. Both windows keep their centre, so the join is untouched.
 
 ## Why 1440-ish
 
