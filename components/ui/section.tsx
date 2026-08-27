@@ -21,34 +21,69 @@ const tones: Record<Tone, string> = {
   "navy-deep": "bg-navy-deep text-white",
 };
 
+/** Vertical rhythm below `lg`, where a pinned section is an ordinary one. */
+const padding: Record<"sm" | "md" | "lg", string> = {
+  sm: "py-16 sm:py-20",
+  md: "py-20 sm:py-28",
+  lg: "py-24 sm:py-32",
+};
+
+/** …and from `lg` up, unless the section pins (see `pin` below). */
+const paddingLg: Record<"sm" | "md" | "lg", string> = {
+  sm: "lg:py-24",
+  md: "lg:py-36",
+  lg: "lg:py-44",
+};
+
+/**
+ * A pinned section holds still while the page keeps scrolling and lets what
+ * follows ride up over it. It sticks one screen tall under the header, so its
+ * own `lg` padding is replaced by a floor — the content is centred in the
+ * screen it holds, and the padding only comes into play on a window too short
+ * to seat it.
+ *
+ * Nothing here manages z-index: every section is opaque, so a later one in the
+ * DOM paints over a pinned earlier one on its way up. The pin therefore only
+ * works while what follows it is opaque too.
+ *
+ * Below `lg` the pin is dropped. Layouts stack there into something taller
+ * than a screen, and a sticky band taller than the screen it sticks to can
+ * only ever show its top.
+ */
+const pinned =
+  "lg:sticky lg:top-[var(--header-h)] lg:flex lg:min-h-[calc(100svh-var(--header-h))] lg:items-center lg:py-16";
+
 export function Section({
   children,
   tone = "white",
   className,
   id,
   size = "md",
+  pin = false,
 }: {
   children: ReactNode;
   tone?: Tone;
   className?: string;
   id?: string;
   size?: "sm" | "md" | "lg";
+  pin?: boolean;
 }) {
-  const padding =
-    size === "sm"
-      ? "py-16 sm:py-20 lg:py-24"
-      : size === "lg"
-        ? "py-24 sm:py-32 lg:py-44"
-        : "py-20 sm:py-28 lg:py-36";
-
   return (
     <section
       id={id}
       // `isolate` keeps decorative absolutely-positioned children from
       // escaping their section and overlapping the next one.
-      className={cn("relative isolate", tones[tone], padding, className)}
+      className={cn(
+        "relative isolate",
+        tones[tone],
+        padding[size],
+        pin ? pinned : paddingLg[size],
+        className,
+      )}
     >
-      {children}
+      {/* Pinned, the section is a centring flex box, so its content needs one
+          full-width child to lay out inside rather than shrink to fit. */}
+      {pin ? <div className="w-full">{children}</div> : children}
     </section>
   );
 }

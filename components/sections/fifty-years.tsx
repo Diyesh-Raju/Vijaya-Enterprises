@@ -16,6 +16,10 @@ import {
  * much of it, and for how many families. The heading carries the whole left
  * column on its own, so it is set very large and given nothing to compete
  * with.
+ *
+ * From `lg` up the band pins and the enquiry panel rides up over it — see
+ * `pin` in `components/ui/section.tsx` for how that works and what it asks of
+ * the section that follows.
  */
 const points: {
   icon: (props: { className?: string }) => ReactElement;
@@ -44,7 +48,7 @@ const points: {
 
 export function FiftyYears() {
   return (
-    <Section tone="white" size="md">
+    <Section tone="white" size="md" pin>
       <Container>
         <div className="grid gap-14 lg:grid-cols-12 lg:items-center lg:gap-16">
           <div className="lg:col-span-5">

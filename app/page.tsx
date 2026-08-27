@@ -67,6 +67,7 @@ export default function HomePage() {
         title="One Construction Partner. Many Possibilities."
         subtitle="Vijaya Enterprises is a diversified construction and development company — not only a residential developer. Whatever the sector, the standard is the same."
         services={buildTypes}
+        pin
       />
 
       {/* --------------------------------------------------- Gooey slideshow */}

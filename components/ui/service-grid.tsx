@@ -31,6 +31,7 @@ export function ServiceGrid({
   tone = "mist",
   id,
   className,
+  pin = false,
 }: {
   eyebrow?: string;
   title: string;
@@ -39,9 +40,11 @@ export function ServiceGrid({
   tone?: "white" | "mist";
   id?: string;
   className?: string;
+  /** Hold the grid still and let the next section ride up over it (`lg`+). */
+  pin?: boolean;
 }) {
   return (
-    <Section tone={tone} size="lg" id={id} className={className}>
+    <Section tone={tone} size="lg" id={id} className={className} pin={pin}>
       <Container>
         <SectionHeading
           align="center"
