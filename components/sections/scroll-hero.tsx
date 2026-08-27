@@ -39,7 +39,7 @@ const TAG_END = 0.95;
  */
 const EASE_RATE = 6;
 
-/** Roughly half a frame at 48fps: closer than this and a seek is pointless. */
+/** Under a frame at 60fps: closer than this and a seek is pointless. */
 const SEEK_EPSILON = 0.01;
 
 /**
@@ -91,9 +91,9 @@ const ramp = (value: number, from: number, to: number) => {
  *
  * Everything below is about it never getting stuck, on any machine:
  *
- *   • The clip carries a keyframe every third frame, so seeking to an
+ *   • The clip carries a keyframe every sixth frame, so seeking to an
  *     arbitrary time decodes almost nothing. `assets/video-source/README.md`
- *     has the ffmpeg recipe.
+ *     covers how it is built.
  *   • The position is read inside the animation frame rather than from scroll
  *     events, so nothing depends on how a browser batches or throttles those.
  *   • Convergence is integrated over elapsed *time*, so a 120Hz display and a
