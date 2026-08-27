@@ -141,7 +141,11 @@ export function SiteHeader() {
         )}
       >
         <div className="container-page">
-          <div className="flex h-20 items-center justify-between gap-4 sm:h-24">
+          {/* The row takes its height from `--header-h` less the hairline, so
+              the bar is exactly `--header-h` tall and whatever starts below
+              it — the home page's hero — cannot drift out of register with
+              it at any breakpoint or root font size. */}
+          <div className="flex h-[calc(var(--header-h)-1px)] items-center justify-between gap-4">
             {/* Left — the lockup, unchanged, and it still goes home */}
             <Link
               href="/"

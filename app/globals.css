@@ -129,15 +129,21 @@
     scroll-padding-top: 6.5rem;
     background-color: var(--color-navy-deep);
 
-    /* The fixed bar's own height, its hairline included: 5rem of content
-       plus the 1px rule under it. Anything that has to start *below* the bar
-       rather than behind it reads this instead of guessing — see the home
-       page's scroll hero. The bar carries its border in every state — merely
-       transparent where the bar is — so this height never changes. */
+    /* The fixed bar's height, its hairline included. This is the *source* of
+       that height, not a copy of it: the bar sizes its row from this variable
+       (`site-header.tsx`), so the two cannot drift apart. Anything that has
+       to start below the bar rather than behind it reads the same value — see
+       the home page's scroll hero. The bar carries its border in every state,
+       merely transparent where the bar is, so the height never changes.
+
+       The breakpoint is `40rem` rather than `640px` because that is what
+       Tailwind's `sm:` is, and the two must turn over together: on a browser
+       whose default font is not 16px they are different widths, and the band
+       between them would put the hero behind the bar. */
     --header-h: calc(5rem + 1px);
   }
 
-  @media (min-width: 640px) {
+  @media (min-width: 40rem) {
     html {
       --header-h: calc(6rem + 1px);
     }
