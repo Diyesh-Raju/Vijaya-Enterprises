@@ -359,8 +359,11 @@ export function AwardsComponent({
             </span>
           )}
 
+          {/* The face carries no italic of its own, and a browser-slanted one
+              on a grotesk reads as a mistake — the credit is set apart by
+              weight instead. */}
           {recipient && (
-            <span className="mt-[0.6em] font-display text-[0.95em] italic leading-none text-slate-body">
+            <span className="mt-[0.6em] font-display text-[0.95em] font-medium leading-none text-slate-body">
               {recipient}
             </span>
           )}

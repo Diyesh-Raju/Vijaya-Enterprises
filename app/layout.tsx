@@ -1,22 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Manrope } from "next/font/google";
+import { Manrope } from "next/font/google";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { site, contact } from "@/lib/site";
 import "./globals.css";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  display: "swap",
-  // Keep the fallback metrics close so the swap does not shift layout.
-  adjustFontFallback: true,
-});
-
+// The one face on the site. Headings and body are both set in it; the
+// variable weight range is what separates them, so nothing else is loaded.
 const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
   display: "swap",
+  // Keep the fallback metrics close so the swap does not shift layout.
+  adjustFontFallback: true,
 });
 
 export const metadata: Metadata = {
@@ -117,7 +113,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // changes unless this attribute is present — without it every navigation
       // would animate a long scroll to the top.
       data-scroll-behavior="smooth"
-      className={`${fraunces.variable} ${manrope.variable}`}
+      className={manrope.variable}
     >
       <head>
         {/* Scroll reveals start hidden and are switched on by an observer.

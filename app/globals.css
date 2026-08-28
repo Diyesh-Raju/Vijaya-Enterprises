@@ -58,9 +58,13 @@
   --radius-4xl: 4rem;
 
   /* Type -------------------------------------------------------- */
-  --font-display: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
+  /* One face across the site. Headings used to be set in a serif; they are
+     now the same grotesk as the body, separated from it by weight and
+     tracking rather than by a change of voice. `--font-display` is kept as a
+     name so every heading and pull-quote still has one place to be changed. */
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: var(--font-sans);
 
   /* Shadows — soft, wide, navy-tinted (never grey/harsh) -------- */
   --shadow-soft: 0 2px 8px -2px rgb(10 31 68 / 0.06), 0 12px 32px -12px rgb(10 31 68 / 0.12);
@@ -165,12 +169,24 @@
     overflow-x: clip;
   }
 
-  /* Headings default to the display face */
+  /* Headings default to the display face. Set in the same grotesk as the
+     body at semibold and tracked in a little — the weight and the tightening
+     are what make a line read as a heading now that the face no longer
+     changes. Anything wanting a different weight says so with a utility,
+     which sits in a later layer and wins. */
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    font-weight: 400;
-    letter-spacing: -0.02em;
+    font-weight: 600;
+    letter-spacing: -0.015em;
     color: var(--color-navy-900);
+  }
+
+  /* The same treatment where display type is asked for by class rather than
+     by tag — pull quotes, standfirsts, the big figures. In `base`, so a
+     weight utility on the element still overrides it. */
+  .font-display {
+    font-weight: 600;
+    letter-spacing: -0.015em;
   }
 
   p { color: var(--color-slate-body); }
@@ -524,7 +540,7 @@
 
 .gooey__title {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 600;
   text-transform: uppercase;
   white-space: nowrap;
   /* The demo's size, with a ceiling in vw. It sets this line `nowrap` and
@@ -707,7 +723,7 @@
 
 .gooey__tile-title {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 600;
   /* The demo's tile title carries no colour of its own — it takes the ink
      from the caption around it. This site's base layer paints every heading
      navy, so it has to be told to inherit again. */
@@ -1018,6 +1034,7 @@
 
 .smoky-button__label {
   font-family: var(--font-display);
+  font-weight: 600;
   font-size: clamp(1.375rem, 2.6vw, 1.875rem);
   line-height: 1.1;
   letter-spacing: -0.01em;
@@ -1674,6 +1691,822 @@
 @keyframes aperture-lift {
   from { opacity: 0; transform: translateY(1.25rem); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ------------------------------------------------------------------
+   What we undertake — the five kinds of work, one screen at a time, on
+   /commercial-contracts.
+
+   A tall track with a pinned screen inside it and five panels stacked in
+   the screen. A panel is three layers: the photograph across the whole
+   screen, the same photograph again in a portrait card left of centre,
+   and the description over the right of the screen opposite it.
+
+   That is the template's arrangement (`files3.1`), and so is the
+   changeover. Unlike the aperture that closes /residential this one is a
+   single move rather than a sequence — everything in it happens at once,
+   over 200 units, which is a whole screen of scrolling:
+
+     the next photograph wipes up from the bottom edge
+     …off a 1.35 zoom, while the one it replaces pushes on to 1.15
+     the card wipes down from the top edge, against it
+     both pictures pan downwards a little as they change over
+     the count rolls over, old digit out of the top, new one up into it
+
+   The description is the addition — the template carries no copy at all.
+   It leaves to the right as the move opens and comes back a part at a
+   time over the second half of it, by which point the photograph behind
+   it has most of the screen.
+
+   Each panel publishes the instant it leaves on (`--exit`) and the
+   instant it arrived on (`--enter`), and every rule below is one literal
+   offset from one of those two. See `components/sections/undertakings.tsx`
+   for where the two come from.
+
+   The block below the enhancement is the whole design for anyone who has
+   asked for less motion: no track, no pin, no travel — five ordinary
+   screens, in reading order.
+------------------------------------------------------------------- */
+
+.undertake {
+  position: relative;
+  background-color: var(--color-navy-950);
+}
+
+/* Zero-size, and only ever a scroll target — `#industrial` and its
+   neighbours, which the home page links straight into.
+
+   Unpinned, the five screens are laid out one after another and each
+   anchor sits at its own share of the track, which lands it on its
+   screen. That is an even split rather than a measurement: unpinned the
+   screens are the same height to the pixel, so the split is exact. */
+.undertake__anchor {
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  top: calc(var(--at-flow) * 100%);
+  scroll-margin-top: var(--header-h);
+}
+
+/* One screen of picture, under the header rather than under the top of
+   the window: the bar is `fixed` and opaque once the page has moved, and
+   a panel run to 0 would put its eyebrow underneath it.
+
+   Square-cornered and full-bleed, unlike every other picture on the site.
+   This one is the screen rather than something on it, and a radius would
+   cut the corners off the photograph itself. */
+.undertake__panel {
+  position: relative;
+  height: calc(100svh - var(--header-h));
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.undertake__bg,
+.undertake__zoom,
+.undertake__drift,
+.undertake__scrim,
+.undertake__copy-layer {
+  position: absolute;
+  inset: 0;
+}
+
+/* The photograph. The clip is what it arrives on — see `undertake-bg-in`
+   — and it is the element the picture and its shade are cut by together,
+   so the shade is never left hanging over the picture still leaving. */
+.undertake__bg {
+  z-index: 0;
+  clip-path: inset(0% 0% 0% 0%);
+}
+
+/* Shade under the description, and the only reason it is readable.
+
+   Not a light wash. These five photographs are bright and busy — racking,
+   glazing, a lit warehouse aisle — and a gradient gentle enough to leave
+   them alone is a gradient a bullet list disappears into. So it is a deep
+   band over the side the description is read on, feathered out over
+   nearly half the frame so that it reads as the light going rather than
+   as a panel laid on top. The picture keeps the other side, whole.
+
+   The template's own is the same thing pointed the other way, because its
+   screen carries nothing but a logo in the top left. */
+.undertake__scrim {
+  background: linear-gradient(
+    to top,
+    rgb(6 20 49 / 0.9) 0%,
+    rgb(6 20 49 / 0.86) 42%,
+    rgb(6 20 49 / 0.55) 56%,
+    rgb(6 20 49 / 0.2) 72%,
+    rgb(6 20 49 / 0.04) 88%,
+    rgb(6 20 49 / 0.26) 100%
+  );
+}
+
+/* From `lg` up the band moves to the right, where the description does.
+   The stops are placed off the copy's own column: it runs from about a
+   tenth of the way in from the right edge to a little under half, so the
+   band holds full weight across all of that and only gives out past it. */
+@media (min-width: 1024px) {
+  .undertake__scrim {
+    background:
+      linear-gradient(
+        to left,
+        rgb(6 20 49 / 0.88) 0%,
+        rgb(6 20 49 / 0.86) 46%,
+        rgb(6 20 49 / 0.5) 56%,
+        rgb(6 20 49 / 0.18) 68%,
+        rgb(6 20 49 / 0.02) 82%,
+        transparent 92%
+      ),
+      linear-gradient(to bottom, rgb(6 20 49 / 0.2), transparent 22%);
+  }
+}
+
+/* ---- The cards --------------------------------------------------- */
+
+/* The box the five cards stand in, which is the template's portrait
+   frame. It keeps the template's proportion — 22vw by 27.5vw, four to
+   five — but not its position: centred, it would sit under the
+   description, so from `lg` up it moves to a third across and the
+   description takes the right of the screen. Above the fold on a phone,
+   with the description under it.
+
+   Both dimensions are capped against the height of the screen as well as
+   its width, and the two caps are the same fraction of each other as the
+   sizes they cap, so the card can never take a short window sideways —
+   whichever cap bites, it bites both at once and the shape holds.
+
+   Hidden unpinned: the five panels are five separate screens there, and
+   one box cannot stand in front of all of them. What is left is a
+   photograph per screen with its description over it, which is the whole
+   of that design. */
+.undertake__cards {
+  display: none;
+  position: absolute;
+  z-index: 5;
+  top: 22%;
+  left: 50%;
+  width: min(35.2vw, 20.8svh);
+  height: min(44vw, 26svh);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .undertake__cards {
+    top: 50%;
+    left: 33%;
+    width: min(22vw, 46.4svh);
+    height: min(27.5vw, 58svh);
+  }
+}
+
+/* One card. The shadow is here, on the parent of the clip, rather than on
+   the clip itself, and it is a `drop-shadow` rather than a `box-shadow`,
+   for one reason: a filter is applied before a clip-path, so a shadow on
+   the clipped element would be cut away with everything else outside the
+   clip. Cast from out here it follows whatever the clip has actually left
+   painting, so a card carries its own shadow down the screen as it wipes
+   in rather than hanging a rectangle of shade over the picture before it
+   arrives. */
+.undertake__card {
+  position: absolute;
+  inset: 0;
+  z-index: var(--i);
+  filter: drop-shadow(0 26px 50px rgb(2 8 22 / 0.55));
+}
+
+.undertake__card-clip,
+.undertake__pan,
+.undertake__pan-out {
+  position: absolute;
+  inset: 0;
+}
+
+.undertake__card-clip {
+  overflow: hidden;
+  clip-path: inset(0% 0% 0% 0%);
+}
+
+/* The headroom the pan is taken out of. The template pans half the height
+   of the card and lets the empty edge be hidden by the clip; a scrub can
+   be stopped anywhere, including on that edge, so this one pans a
+   fifteenth and the picture is oversized by more than enough to cover it
+   at either end. */
+.undertake__card-clip img {
+  transform: scale(1.2);
+}
+
+/* ---- The description --------------------------------------------- */
+
+/* It reads off the bottom of the picture on a phone, where a half-width
+   column of prose would not set, and off the right of it from `lg` up.
+   The scrim is weighted to match. */
+.undertake__copy-layer {
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  /* Clear of the count along the foot, which the description shares the
+     bottom of the screen with on a phone. */
+  padding-bottom: clamp(4.25rem, 12vh, 6.5rem);
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .undertake__copy-layer {
+    align-items: center;
+    padding-bottom: 0;
+  }
+}
+
+/* The description sits on the right half from `lg` up, and across the
+   bottom below it. */
+.undertake__grid {
+  width: 100%;
+  display: grid;
+}
+
+@media (min-width: 1024px) {
+  .undertake__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(2.5rem, 4vw, 4rem);
+  }
+
+  .undertake__copy {
+    grid-column: 2;
+  }
+}
+
+/* The four parts, and the gaps that were `mt-5` and `mt-7` when they were
+   four siblings in ordinary flow. They are laid out here rather than in
+   the markup because the scrub lifts each one in separately, and margins
+   on animated children are one more thing to keep in register. */
+.undertake__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 34rem;
+}
+
+.undertake__copy > *:nth-child(2) {
+  margin-top: 1.25rem;
+}
+
+.undertake__copy > *:nth-child(3) {
+  margin-top: 1.25rem;
+}
+
+.undertake__copy > *:nth-child(4) {
+  margin-top: 1.75rem;
+}
+
+/* ---- The count: five rules along the foot ------------------------ */
+
+/* Five of them, one per picture, where the template puts `01 / 06`. Each
+   fills over the stretch its own picture is on screen for. Filled,
+   part-filled and empty together they say both how far through the five
+   you are and that there are five — which is the thing a pinned section
+   otherwise cannot tell you, because the scrollbar is measuring a track
+   and not a sequence.
+
+   They sit in the copy's own grid column from `lg` up, so they line up
+   under the description and inside the band that already makes it
+   readable. Below that the description moves to the foot of the screen
+   and the rules go under it, across the full width. */
+.undertake__ticks {
+  display: none;
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 10;
+  padding-bottom: clamp(1.75rem, 5vh, 2.75rem);
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .undertake__ticks {
+    padding-bottom: clamp(2.25rem, 7vh, 3.75rem);
+  }
+}
+
+.undertake__tick-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (min-width: 1024px) {
+  .undertake__tick-row {
+    grid-column: 2;
+  }
+}
+
+/* One rule, unfilled. Wide enough on a phone to read as a row of five
+   rather than as dashes, and capped from `lg` up so the row does not run
+   the whole width of the description. */
+.undertake__tick {
+  position: relative;
+  flex: 1 1 0;
+  max-width: 4.5rem;
+  height: 2px;
+  border-radius: 999px;
+  overflow: hidden;
+  background-color: rgb(255 255 255 / 0.26);
+}
+
+/* The fill. Scaled from its left edge rather than grown, so a rule costs
+   one composited property and never relays out. */
+.undertake__tick-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transform-origin: left center;
+  transform: scaleX(0);
+  background-color: var(--color-brass-400);
+}
+
+/* ---- The enhancement: the track, the pin, and the scrub ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* One screen of stage; the rest is travel to scrub it through. The
+     component works the count out from the length of the sequence. */
+  .undertake {
+    height: calc(var(--undertake-screens, 8) * 100svh);
+  }
+
+  .undertake__cards,
+  .undertake__ticks {
+    display: block;
+  }
+
+  .undertake__stage {
+    position: sticky;
+    top: var(--header-h);
+    height: calc(100svh - var(--header-h));
+    overflow: hidden;
+  }
+
+  /* Pinned, the anchors are the only thing in the track that still has a
+     position of its own: each sits at its panel's share of the travel, so
+     jumping to one leaves the scrub exactly where that panel has settled.
+     `100% - 100svh` is the travel, which is the track less the screen the
+     stage holds.
+
+     The negative margin cancels the page's own `scroll-padding-top`,
+     which is there to keep an anchor's heading out from under the fixed
+     header. There is no heading here to keep clear — the anchor is a
+     scroll position and nothing else — and left in place the padding
+     would land every jump 6.5rem short of the panel it names. */
+  .undertake__anchor {
+    top: calc(var(--at) * (100% - 100svh));
+    scroll-margin-top: -6.5rem;
+  }
+
+  /* THE GATE. One panel paints at a time — from the moment it starts
+     wiping in to the moment the one after it has finished, which is
+     exactly the moment that one takes over, so the hand-off leaves
+     neither a gap nor an overlap.
+
+     A panel that has not arrived is already invisible in every part: its
+     photograph is clipped to nothing, its card with it, its description
+     is not yet lifted. The gate is not about that. It is about the four
+     that are *behind* the one on screen, which have all arrived and are
+     all opaque, and which would otherwise stay painting under it for the
+     rest of the section. The cards are gated with them and for the same
+     reason with one of its own: a card's shadow is cast outside the card,
+     where nothing covers it, so five of them left painting would pile up
+     into a darker and darker pool under the one being looked at.
+
+     `fill-mode: none` is what makes it a gate rather than a fade: outside
+     its own window the animation contributes nothing at all, and the
+     `opacity: 0` in this rule is what the panel falls back to. */
+  .undertake__panel {
+    position: absolute;
+    inset: 0;
+    height: auto;
+    z-index: var(--i);
+  }
+
+  .undertake__panel,
+  .undertake__card {
+    opacity: 0;
+    animation-name: undertake-onstage;
+    animation-timing-function: linear;
+    animation-fill-mode: none;
+    animation-play-state: paused;
+    animation-duration: calc(var(--exit) + 200ms - var(--enter));
+    animation-delay: calc(var(--enter) - var(--undertake, 0ms));
+  }
+
+  /* Held still, every one of them: the scrub is the only clock on this
+     section, and a paused animation with a negative current time sits on
+     its first frame until the scrub reaches it.
+
+     `ease-in-out-soft` is the template's `power3.inOut`, and it is on
+     everything the changeover is made of — the whole move is one gesture
+     and the parts of it accelerate and settle together. */
+  .undertake__bg,
+  .undertake__zoom,
+  .undertake__drift,
+  .undertake__card-clip,
+  .undertake__pan,
+  .undertake__pan-out {
+    animation-timing-function: var(--ease-in-out-soft);
+    animation-fill-mode: both;
+    animation-play-state: paused;
+  }
+
+  .undertake__copy,
+  .undertake__copy > * {
+    animation-timing-function: var(--ease-out-soft);
+    animation-fill-mode: both;
+    animation-play-state: paused;
+  }
+
+  /* The arrival: one move, everything in it at once, on the instant the
+     panel came in on. Nested pairs — zoom inside drift, pan inside
+     pan-out, digit inside digit — because each pair is the same property
+     animated at two different moments, and nesting is what composes them
+     without either having to know about the other. */
+  .undertake__bg,
+  .undertake__zoom,
+  .undertake__card-clip,
+  .undertake__pan {
+    animation-duration: 200ms;
+    animation-delay: calc(var(--enter) + 0ms - var(--undertake, 0ms));
+  }
+
+  .undertake__bg {
+    animation-name: undertake-bg-in;
+    will-change: clip-path;
+  }
+
+  .undertake__zoom {
+    animation-name: undertake-zoom-in;
+  }
+
+  .undertake__card-clip {
+    animation-name: undertake-card-in;
+    will-change: clip-path;
+  }
+
+  .undertake__pan {
+    animation-name: undertake-pan-in;
+  }
+
+  /* The departure: the same move, from the other side of it, on the
+     instant the panel leaves on. The photograph is not taken off — it is
+     covered by the one arriving over it, and all it does under there is
+     keep moving, which is what stops the changeover reading as a slide
+     laid over a still. */
+  .undertake__drift,
+  .undertake__pan-out {
+    animation-duration: 200ms;
+    animation-delay: calc(var(--exit) + 0ms - var(--undertake, 0ms));
+  }
+
+  .undertake__drift {
+    animation-name: undertake-drift-out;
+  }
+
+  .undertake__pan-out {
+    animation-name: undertake-pan-out;
+  }
+
+  /* A rule fills over its own picture's stretch of the clock. Unlike
+     every other rule in this block the two times are handed over whole
+     rather than as an offset from `--exit` or `--enter`: the first and the
+     last stretch are clipped to the ends of the scrub, which is arithmetic
+     the component does — see the note on the row there.
+
+     `fill-mode: both` rather than the gate's `none`: before its stretch a
+     rule is empty and after it is full, which is the whole point of the
+     row. Linear, because it is a measurement — easing it would have the
+     row report a position the page is not at. */
+  .undertake__tick-fill {
+    animation-name: undertake-fill;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-play-state: paused;
+    animation-duration: var(--fill-for);
+    animation-delay: calc(var(--fill-at) - var(--undertake, 0ms));
+  }
+
+  /* The description leaves at the top of the move, well ahead of the
+     picture it belongs to. It has to: the photograph arriving comes up
+     from the bottom edge and would otherwise cut through a block of prose
+     on its way past. */
+  .undertake__copy {
+    animation-name: undertake-part-out;
+    animation-duration: 70ms;
+    animation-delay: calc(var(--exit) + 0ms - var(--undertake, 0ms));
+  }
+
+  /* And comes back a part at a time over the second half of it, once the
+     new photograph has most of the screen. The last of the four lands on
+     195, just inside the end of the move — a hold that begins with a
+     bullet list still fading up is not a hold. It is also what puts the
+     first panel's arrival wholly behind the scrub: at `--enter` of -320
+     the last of its four finishes long before zero. */
+  .undertake__copy > * {
+    animation-name: undertake-lift;
+    animation-duration: 45ms;
+  }
+
+  .undertake__copy > *:nth-child(1) {
+    animation-delay: calc(var(--enter) + 120ms - var(--undertake, 0ms));
+  }
+
+  .undertake__copy > *:nth-child(2) {
+    animation-delay: calc(var(--enter) + 130ms - var(--undertake, 0ms));
+  }
+
+  .undertake__copy > *:nth-child(3) {
+    animation-delay: calc(var(--enter) + 140ms - var(--undertake, 0ms));
+  }
+
+  .undertake__copy > *:nth-child(4) {
+    animation-delay: calc(var(--enter) + 150ms - var(--undertake, 0ms));
+  }
+}
+
+/* The photograph comes up from the bottom edge, and the card against it
+   comes down from the top. Opposite directions on purpose: the two are
+   the same picture, and if they moved together the card would read as a
+   piece of the screen behind it rather than as a thing in front. */
+@keyframes undertake-bg-in {
+  from { clip-path: inset(100% 0% 0% 0%); }
+  to   { clip-path: inset(0% 0% 0% 0%); }
+}
+
+@keyframes undertake-card-in {
+  from { clip-path: inset(0% 0% 100% 0%); }
+  to   { clip-path: inset(0% 0% 0% 0%); }
+}
+
+@keyframes undertake-zoom-in {
+  from { transform: scale(1.35); }
+  to   { transform: scale(1); }
+}
+
+@keyframes undertake-drift-out {
+  from { transform: scale(1); }
+  to   { transform: scale(1.15); }
+}
+
+@keyframes undertake-pan-in {
+  from { transform: translateY(-7%); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes undertake-pan-out {
+  from { transform: translateY(0); }
+  to   { transform: translateY(7%); }
+}
+
+@keyframes undertake-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* Not a fade — a window. It says nothing but "on", and everything about
+   when it is on is in the delay and the duration that carry it. */
+@keyframes undertake-onstage {
+  from { opacity: 1; }
+  to   { opacity: 1; }
+}
+
+/* The description leaves sideways, dissolving on the way rather than at
+   the end of it. A short travel: this is a block of prose with the edge
+   of the screen just past it, and anything further reads as it being
+   thrown off the page rather than as it stepping aside. */
+@keyframes undertake-part-out {
+  0%   { opacity: 1; transform: translateX(0); }
+  50%  { opacity: 1; }
+  75%  { opacity: 0; }
+  100% { opacity: 0; transform: translateX(12%); }
+}
+
+@keyframes undertake-lift {
+  from { opacity: 0; transform: translateY(1.25rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ------------------------------------------------------------------
+   Scroll-lit paragraph — see `components/ui/scroll-lit.tsx`
+------------------------------------------------------------------- */
+
+/* The default is the finished paragraph: dark, no dimming at all. Only once
+   the component has said `data-lit="on"` do the words take their share of
+   `--lit`, so no JavaScript and reduced motion both land on plain text
+   rather than on a paragraph left pale. */
+.scroll-lit {
+  color: var(--color-navy-900);
+  --lit-off: color-mix(in oklab, var(--color-navy-900) 26%, white);
+}
+
+.scroll-lit[data-lit="on"] > span {
+  /* This word's share of the sweep: 0 before its turn, 1 after it, and a
+     ramp `--feather` words wide in between. `--lit` runs 0 → 1 over the
+     whole paragraph, so it is multiplied up into word numbers first — and
+     by the count plus the feather, so that the last word is fully lit at
+     the end of the run rather than the feather's width before it. */
+  --w: clamp(
+    0,
+    calc(
+      (var(--lit, 0) * (var(--words) + var(--feather)) - var(--i)) /
+        var(--feather)
+    ),
+    1
+  );
+  color: color-mix(
+    in oklab,
+    var(--color-navy-900) calc(var(--w) * 100%),
+    var(--lit-off)
+  );
+}
+
+/* ------------------------------------------------------------------
+   How a contract runs — the five stages on /commercial-contracts.
+
+   One photograph per stage, one screen each, with the copy along the
+   bottom edge. The layout is here; what makes it a section rather than
+   five pictures in a row is the changeover, and the whole of that is the
+   three rules under "the hold" below. See `ContractStages`.
+------------------------------------------------------------------- */
+
+.stages__panel {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  /* Behind the picture while it decodes, and the ground the blur-up
+     placeholder resolves out of. Never seen once loaded. */
+  background-color: var(--color-navy-deep);
+  /* A shape, not a height: three-by-four on a phone and four-by-three on
+     a tablet, so a landscape photograph keeps enough of its width to be
+     worth showing — but written as a floor rather than an aspect ratio,
+     because a panel is only ever as short as the words on it allow. A
+     stage whose description runs to five lines makes its own screen
+     taller instead of overrunning it. */
+  min-height: 133vw;
+}
+
+@media (min-width: 640px) {
+  .stages__panel { min-height: 75vw; }
+}
+
+/* From `lg` the panel is the screen, which is what the hold below needs:
+   the picture is drawn at window size, so any panel shorter than the
+   window would show a slice of it rather than the frame. */
+@media (min-width: 1024px) {
+  .stages__panel {
+    min-height: 100vh;
+    min-height: 100svh;
+  }
+}
+
+.stages__media,
+.stages__hold {
+  position: absolute;
+  inset: 0;
+}
+
+.stages__media {
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* ---- The hold ---------------------------------------------------- */
+
+/* The three rules that make the section. `stages__hold` is taken out of
+   the page and held against the window, so it does not travel with the
+   panel it belongs to; `clip-path` on `stages__media` cuts it back to the
+   panel's own box, which is the one thing that does travel. An ancestor's
+   `overflow` cannot clip a fixed descendant, but its `clip-path` can, and
+   — unlike `transform`, `filter` or `contain` — clipping alone does not
+   make the ancestor the box a fixed child is positioned against. So the
+   picture stays still and the window on to it moves: a wipe, not a slide.
+
+   `overflow: visible` because the clip has taken over the job, and a
+   `hidden` here would additionally cut the picture to the media box in
+   the browsers that resolve the fixed child against the panel. */
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .stages__media {
+    clip-path: inset(0);
+    overflow: visible;
+  }
+
+  .stages__hold {
+    position: fixed;
+  }
+}
+
+/* ---- Shade, and the copy over it --------------------------------- */
+
+/* Deep along the bottom edge where the words are, gone by halfway up.
+   The second gradient is only for the badge in the top corner, which sits
+   on whatever the top of the photograph happens to be. */
+.stages__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* Deep enough at the foot to carry white text over a pale photograph —
+     the drawing board is nearly white — and gone before it reaches the
+     part of the picture worth looking at. It rides up with the words on
+     the way out, not with the picture, which is the reference's
+     arrangement and the reason the outgoing screen darkens as it leaves.
+     Heavier on a phone, where the copy takes more of the panel. */
+  background-image:
+    linear-gradient(
+      to top,
+      rgb(4 13 32 / 0.94) 0%,
+      rgb(4 13 32 / 0.86) 28%,
+      rgb(4 13 32 / 0.34) 58%,
+      rgb(4 13 32 / 0) 84%
+    ),
+    linear-gradient(to bottom, rgb(4 13 32 / 0.4) 0%, rgb(4 13 32 / 0) 18%);
+}
+
+@media (min-width: 1024px) {
+  .stages__scrim {
+    background-image:
+      linear-gradient(
+        to top,
+        rgb(4 13 32 / 0.92) 0%,
+        rgb(4 13 32 / 0.72) 15%,
+        rgb(4 13 32 / 0.22) 40%,
+        rgb(4 13 32 / 0) 64%
+      ),
+      linear-gradient(to bottom, rgb(4 13 32 / 0.38) 0%, rgb(4 13 32 / 0) 18%);
+  }
+}
+
+/* In flow rather than laid over the panel, so a panel is never shorter
+   than the words on it. The badge and the foot are pushed apart by the
+   space that is left. */
+.stages__copy {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 3rem;
+  padding-block: 1.5rem 2rem;
+}
+
+@media (min-width: 640px) {
+  .stages__copy { padding-block: 2rem 3rem; }
+}
+
+@media (min-width: 1024px) {
+  /* Clear of the header, which is over the top of these screens. */
+  .stages__copy { padding-block: calc(var(--header-h) + 1.5rem) 4rem; }
+}
+
+.stages__badge {
+  align-self: flex-start;
+  border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 0.28);
+  background-color: rgb(255 255 255 / 0.12);
+  backdrop-filter: blur(10px);
+  padding: 0.5rem 1.0625rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+/* The title and description at the left, the count at the right — one
+   row on anything wide enough to read a paragraph across, stacked below
+   that with the count under the copy rather than beside it. */
+.stages__foot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.75rem;
+}
+
+@media (min-width: 768px) {
+  .stages__foot {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2.5rem;
+  }
+}
+
+.stages__text {
+  max-width: 46rem;
+}
+
+.stages__count {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 /* ------------------------------------------------------------------

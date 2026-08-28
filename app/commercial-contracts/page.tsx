@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
-import type { StaticImageData } from "next/image";
 import { HomeHero } from "@/components/sections/home-hero";
 import { TrustedExperts } from "@/components/sections/trusted-experts";
 import { CtaBand } from "@/components/sections/cta-band";
-import { Container, Section, SectionHeading, Eyebrow } from "@/components/ui/section";
+import {
+  Undertakings,
+  type Undertaking,
+} from "@/components/sections/undertakings";
+import {
+  ContractStages,
+  type ContractStage,
+} from "@/components/sections/contract-stages";
+import { Container, Section, Eyebrow } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
-import { Frame } from "@/components/ui/media";
+import { ScrollLit } from "@/components/ui/scroll-lit";
 import { Button } from "@/components/ui/button";
-import { Marquee } from "@/components/ui/marquee";
 import { img, alt } from "@/lib/images";
-import { associatedOrganisations } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Commercial Contracts & Private Contract Construction",
@@ -18,23 +23,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/commercial-contracts" },
 };
 
-type Undertaking = {
-  id?: string;
-  eyebrow: string;
-  title: string;
-  message: string;
-  body: string;
-  points: string[];
-  image: StaticImageData;
-  imageAlt: string;
-};
-
 const undertakings: Undertaking[] = [
   {
     id: "commercial",
     eyebrow: "01 — Commercial Construction",
     title: "Reliable spaces for growing businesses.",
-    message: "Offices, commercial buildings and business spaces.",
     body: "Spaces designed and built to support businesses for years to come — planned around how your organisation actually works, and built to stay serviceable long after handover.",
     points: [
       "Corporate offices and workspaces",
@@ -49,7 +42,6 @@ const undertakings: Undertaking[] = [
     id: "industrial",
     eyebrow: "02 — Industrial Construction",
     title: "Engineering precision for mission-critical facilities.",
-    message: "Industrial buildings, facilities and warehouses.",
     body: "Strong foundations for industries that demand precision, reliability and performance. We have built for manufacturing, engineering and public-sector organisations where tolerances and timelines are not negotiable.",
     points: [
       "Factories and production facilities",
@@ -64,7 +56,6 @@ const undertakings: Undertaking[] = [
     id: "institutional",
     eyebrow: "03 — Institutional Construction",
     title: "Trusted construction for organisations that serve society.",
-    message: "Educational, healthcare and other institutional projects.",
     body: "Buildings for institutions carry a different kind of responsibility — they are used by the public every day, for decades. We have built for educational institutions, hospitals, banks, temples and government organisations.",
     points: [
       "Educational institutions",
@@ -79,7 +70,6 @@ const undertakings: Undertaking[] = [
     id: "residential-contracts",
     eyebrow: "04 — Residential Construction",
     title: "A home built with care for your family.",
-    message: "Individual homes and residential buildings.",
     body: "Private residential contracts, built with the same discipline we bring to a large industrial facility. Your drawings or ours, your plot, our execution.",
     points: [
       "Individual and independent homes",
@@ -94,7 +84,6 @@ const undertakings: Undertaking[] = [
     id: "renovation",
     eyebrow: "05 — Renovation & Expansion",
     title: "Upgrades, extensions and redevelopment.",
-    message: "Upgrades, extensions and redevelopment requirements.",
     body: "Not every project starts from open ground. We take on additions, upgrades and redevelopment of existing structures — work that needs judgement about what is already standing.",
     points: [
       "Extensions and additional floors",
@@ -107,6 +96,52 @@ const undertakings: Undertaking[] = [
   },
 ];
 
+/**
+ * The sequence a contract goes through, first call to handover.
+ *
+ * The page names five kinds of work it takes on but never said how the work
+ * is actually run, which is the first thing a contract client asks. Five
+ * stages, in the order they happen — and a photograph each, because they
+ * are five screens rather than five list items. See `ContractStages`.
+ */
+const stages: ContractStage[] = [
+  {
+    step: "01",
+    title: "The first conversation",
+    body: "You tell us the site, the scope and roughly what you want to spend. We listen first, then say plainly what that plot and that budget will support — before anyone draws anything.",
+    image: img.plotWalkover,
+    imageAlt: alt.plotWalkover,
+  },
+  {
+    step: "02",
+    title: "Drawings and a written estimate",
+    body: "Your architect's drawings or ours. Either way the estimate comes back broken down item by item, so you can see what each part of the building costs instead of one lump sum you have to take on faith.",
+    image: img.drawingBoard,
+    imageAlt: alt.drawingBoard,
+  },
+  {
+    step: "03",
+    title: "Agreement and schedule",
+    body: "Scope, specification, payment stages and a construction schedule, all set down in writing. Everything is agreed before the first load of material reaches the site.",
+    image: img.agreementSigning,
+    imageAlt: alt.agreementSigning,
+  },
+  {
+    step: "04",
+    title: "Execution, in house",
+    body: "The same teams that build our own developments build yours — civil, plumbing, electrical, carpentry, finishing — with one site engineer answerable for the whole job. Come and walk the site whenever you want to see the stage it has reached.",
+    image: img.slabDusk,
+    imageAlt: alt.slabDusk,
+  },
+  {
+    step: "05",
+    title: "Handover, and after",
+    body: "Snags closed, drawings and documents handed over, and we stay reachable once the building is in use. A good share of our work comes from people who have built with us before.",
+    image: img.towerOccupied,
+    imageAlt: alt.towerOccupied,
+  },
+];
+
 export default function CommercialContractsPage() {
   return (
     <>
@@ -116,7 +151,12 @@ export default function CommercialContractsPage() {
       <TrustedExperts />
 
       {/* ---------------------------------------------------------- Opening */}
-      <Section tone="white" size="lg">
+      {/* PINNED from `lg` up: this holds still under the header while "What
+          we undertake" climbs over it from below, rather than being pushed
+          up the screen by it. It asks only that what follows be opaque and
+          later in the DOM, which the track below is — see `pin` in
+          `components/ui/section.tsx`. */}
+      <Section tone="white" size="lg" pin>
         <Container>
           <div className="grid gap-14 lg:grid-cols-12 lg:gap-20">
             <div className="lg:col-span-7">
@@ -167,133 +207,95 @@ export default function CommercialContractsPage() {
       </Section>
 
       {/* ------------------------------------------------------ We undertake */}
-      <Section tone="mist" size="lg" id="we-undertake">
+      {/* No heading, and no padding: the five screens are the section. Each
+          one names itself in its own eyebrow, and anything set above them
+          would be counted as travel by the scrub — see `Undertakings`. */}
+      <section id="we-undertake" className="relative isolate">
+        <Undertakings items={undertakings} />
+      </section>
+
+      {/* ------------------------------------------------- What a contract is */}
+      {/* A short breather between the five photo screens and the stages, and
+          the one place on the site that draws the line between contract work
+          and the two arrangements where we take a share of what is built. */}
+      <Section tone="white" size="sm">
         <Container>
-          <SectionHeading
-            eyebrow="What We Undertake"
-            title="One trusted construction partner."
-            lead="We take on private construction contracts across every sector we have built in for the past five decades."
-          />
+          <div className="mx-auto max-w-3xl text-center">
+            <Reveal>
+              <Eyebrow>Contract Construction</Eyebrow>
+            </Reveal>
+            <Reveal delay={80}>
+              <h2 className="text-balance-head mt-6 text-[clamp(1.75rem,3.6vw,2.5rem)] leading-[1.12]">
+                You own the project. We build it.
+              </h2>
+            </Reveal>
+            <Reveal delay={160}>
+              {/* Lights word by word on the scroll, and is not finished until
+                  the stages below are in frame — set larger than body copy
+                  for it, but held under the heading it sits beneath. */}
+              <ScrollLit className="mt-7 text-[clamp(1.1875rem,2.1vw,1.5rem)] leading-[1.7]">
+                {`A contract with Vijaya covers the building itself — foundation
+                  to finishes, on your land, to your drawings or ours. No share
+                  and no stake: what is built stays entirely yours, and we are
+                  paid to construct it properly. Any size, anywhere in and
+                  around Bengaluru.`}
+              </ScrollLit>
+            </Reveal>
+          </div>
         </Container>
-
-        <div className="mt-16 space-y-16 sm:mt-20 sm:space-y-24">
-          {undertakings.map((item, index) => (
-            <Container key={item.title}>
-              <div
-                id={item.id}
-                className="grid items-center gap-10 scroll-mt-28 lg:grid-cols-12 lg:gap-16"
-              >
-                <div
-                  className={
-                    index % 2 === 0
-                      ? "lg:col-span-6"
-                      : "lg:order-2 lg:col-span-6"
-                  }
-                >
-                  <Reveal>
-                    <Frame
-                      src={item.image}
-                      alt={item.imageAlt}
-                      ratio="wide"
-                      sizes="(max-width: 1024px) 100vw, 45vw"
-                      rounded="rounded-[1.75rem] sm:rounded-[2.5rem]"
-                    />
-                  </Reveal>
-                </div>
-
-                <div
-                  className={
-                    index % 2 === 0
-                      ? "lg:col-span-6"
-                      : "lg:order-1 lg:col-span-6"
-                  }
-                >
-                  <Reveal delay={80}>
-                    <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-brass-600">
-                      {item.eyebrow}
-                    </p>
-                  </Reveal>
-                  <Reveal delay={140}>
-                    <h3 className="text-balance-head mt-5 font-display text-[clamp(1.5rem,2.8vw,2.25rem)] leading-[1.15] text-navy-900">
-                      {item.title}
-                    </h3>
-                  </Reveal>
-                  <Reveal delay={200}>
-                    <p className="mt-5 text-[1rem] leading-[1.8] text-slate-body">
-                      {item.body}
-                    </p>
-                  </Reveal>
-                  <Reveal delay={260}>
-                    <ul className="mt-7 grid gap-2.5 sm:grid-cols-2">
-                      {item.points.map((point) => (
-                        <li
-                          key={point}
-                          className="flex items-start gap-3 text-[0.9375rem] text-navy-800"
-                        >
-                          <span
-                            aria-hidden="true"
-                            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brass-500"
-                          />
-                          {point}
-                        </li>
-                      ))}
-                    </ul>
-                  </Reveal>
-                </div>
-              </div>
-            </Container>
-          ))}
-        </div>
       </Section>
 
-      {/* --------------------------------------------------------- Credibility */}
-      <Section tone="navy" size="lg">
+      {/* ------------------------------------------------------------ Process */}
+      {/* This replaces a second "trusted by" block that said what the client
+          band under the hero already says.
+
+          The lead-in only, now: the five stages that used to run down the
+          right of it are five screens of their own below. Nothing is held
+          under the header any more — there is nothing left beside this to
+          hold it against. */}
+      <Section tone="mist" size="lg">
         <Container>
-          <div className="grid gap-14 lg:grid-cols-12 lg:gap-20">
+          <div className="grid gap-10 lg:grid-cols-12 lg:items-end lg:gap-20">
             <div className="lg:col-span-6">
               <Reveal>
-                <Eyebrow onNavy>Proof</Eyebrow>
+                <Eyebrow>How A Contract Runs</Eyebrow>
               </Reveal>
               <Reveal delay={80}>
-                <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08] text-white">
-                  Trusted by organisations that cannot afford to get it wrong.
+                <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
+                  What happens after you call us.
                 </h2>
               </Reveal>
+            </div>
+
+            <div className="lg:col-span-6">
               <Reveal delay={160}>
-                <p className="mt-7 text-[1.0625rem] leading-[1.8] text-navy-100/80">
-                  Over five decades we have worked on projects associated with
-                  defence and aerospace, banking, education, healthcare, industrial
-                  and public-sector organisations. That range is the clearest proof
-                  of what our team can take on.
+                <p className="text-[1.0625rem] leading-[1.8] text-slate-body">
+                  A contract should be predictable long before it is signed.
+                  These are the five stages every project goes through with us,
+                  whether it is a single house or a factory floor.
                 </p>
               </Reveal>
               <Reveal delay={240}>
                 <div className="mt-9">
-                  <Button href="/our-legacy" variant="light" withArrow>
+                  <Button href="/our-legacy" variant="outline" withArrow>
                     See Our Legacy
                   </Button>
                 </div>
               </Reveal>
             </div>
-
-            <div className="lg:col-span-6">
-              <Reveal delay={120}>
-                <Frame
-                  src={img.industrialEngineer}
-                  alt={alt.industrialEngineer}
-                  ratio="landscape"
-                  sizes="(max-width: 1024px) 100vw, 45vw"
-                  rounded="rounded-[1.75rem] sm:rounded-[2.5rem]"
-                />
-              </Reveal>
-            </div>
           </div>
         </Container>
-
-        <Reveal className="mt-16 border-y border-white/10 py-8 sm:mt-20">
-          <Marquee items={associatedOrganisations} onNavy />
-        </Reveal>
       </Section>
+
+      {/* ------------------------------------------------- The five stages */}
+      {/* No heading and no padding, like the five screens above it: each
+          stage names itself, and the lead-in has just been read. */}
+      <section id="how-a-contract-runs" className="relative isolate">
+        {/* The badge is constant across the five, as the reference's
+            "Featured" is. It does not repeat the eyebrow on the lead-in
+            immediately above, which is read a second before it. */}
+        <ContractStages items={stages} badge="Contract stage" />
+      </section>
 
       <CtaBand
         eyebrow="Have A Project To Build?"

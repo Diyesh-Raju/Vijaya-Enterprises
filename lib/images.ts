@@ -13,6 +13,7 @@
  */
 
 import aerialLand from "@/assets/images/aerial-land.jpg";
+import agreementSigning from "@/assets/images/agreement-signing.jpg";
 import bankReception from "@/assets/images/bank-reception.jpg";
 import backdropFabric from "@/assets/images/backdrop-fabric.jpg";
 /**
@@ -43,6 +44,7 @@ import blueprintCraft from "@/assets/images/blueprint-craft.jpg";
 import cityNight from "@/assets/images/city-night.jpg";
 import citySunset from "@/assets/images/city-sunset.jpg";
 import cranesSkyline from "@/assets/images/cranes-skyline.jpg";
+import drawingBoard from "@/assets/images/drawing-board.jpg";
 import heroPoster from "@/assets/images/hero-poster.jpg";
 import haraVijayaConcept from "@/assets/images/hara-vijaya-concept.jpg";
 import haraVijayaHeights from "@/assets/images/hara-vijaya-heights.jpg";
@@ -61,16 +63,20 @@ import legacyPoster from "@/assets/images/legacy-poster.jpg";
 import meetingHands from "@/assets/images/meeting-hands.jpg";
 import menuInterior from "@/assets/images/menu-interior.jpg";
 import officeInterior from "@/assets/images/office-interior.jpg";
+import plotWalkover from "@/assets/images/plot-walkover.jpg";
 import rebarWorkers from "@/assets/images/rebar-workers.jpg";
 import residentialInterior from "@/assets/images/residential-interior.jpg";
 import siteTeam from "@/assets/images/site-team.jpg";
+import slabDusk from "@/assets/images/slab-dusk.jpg";
 import steelRebar from "@/assets/images/steel-rebar.jpg";
+import towerOccupied from "@/assets/images/tower-occupied.jpg";
 import towersGlass from "@/assets/images/towers-glass.jpg";
 import villaPool from "@/assets/images/villa-pool.jpg";
 import warehouseAisle from "@/assets/images/warehouse-aisle.jpg";
 
 export const img = {
   aerialLand,
+  agreementSigning,
   backdropFabric,
   backdropFooter,
   backdropHibiscus,
@@ -83,6 +89,7 @@ export const img = {
   cityNight,
   citySunset,
   cranesSkyline,
+  drawingBoard,
   heroPoster,
   haraVijayaConcept,
   haraVijayaHeights,
@@ -101,10 +108,13 @@ export const img = {
   meetingHands,
   menuInterior,
   officeInterior,
+  plotWalkover,
   rebarWorkers,
   residentialInterior,
   siteTeam,
+  slabDusk,
   steelRebar,
+  towerOccupied,
   towersGlass,
   villaPool,
   warehouseAisle,
@@ -113,6 +123,8 @@ export const img = {
 /** Descriptive alt text, kept next to the images so it never drifts. */
 export const alt = {
   aerialLand: "Aerial view of a residential development laid out across open land",
+  agreementSigning:
+    "Two people either side of a desk, one signing an agreement while the other holds the papers steady",
   backdropFabric:
     "Soft folds of cream fabric, lit from one side",
   backdropFooter:
@@ -126,6 +138,8 @@ export const alt = {
   cityNight: "Long-exposure traffic trails running through a city at night",
   citySunset: "City skyline and arterial roads at sunset",
   cranesSkyline: "Tower cranes rising over buildings under construction",
+  drawingBoard:
+    "A floor plan on a drawing board, with a scale rule, drafting pens and a drawing tube laid across it",
   heroPoster: "Tower cranes working above a city skyline under construction",
   homeScrollEnd:
     "The entrance foyer of a completed home, softly out of focus",
@@ -157,11 +171,17 @@ export const alt = {
   menuInterior:
     "A balcony shrine at dusk, warmly lit, with a marble platform, brass lamps and bamboo either side, open to the city skyline",
   officeInterior: "Completed commercial office interior with glazed partitions",
+  plotWalkover:
+    "Three men standing together on a cleared plot, two of them in hard hats, an excavator tipping earth behind them",
   rebarWorkers: "Site team tying reinforcement steel on a column cage",
   residentialInterior:
     "Warmly lit living and dining room in a completed Vijaya home, with a sofa, armchair and planting",
   siteTeam: "Site engineers and workers walking a large concrete deck",
+  slabDusk:
+    "Workers silhouetted at dusk against a pink sky, on the reinforcement cage of a floor going up",
   steelRebar: "Reinforcement steel being placed on an active construction site",
+  towerOccupied:
+    "A completed apartment block at night with its windows lit, the building in use",
   towersGlass: "Glass office towers seen from street level",
   villaPool: "Completed villa with a swimming pool and terrace",
   warehouseAisle: "Aisle inside a completed warehouse facility",

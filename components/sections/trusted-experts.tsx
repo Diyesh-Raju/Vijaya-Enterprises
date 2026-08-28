@@ -74,11 +74,10 @@ export function TrustedExperts() {
   return (
     <section className="relative w-full overflow-hidden bg-white pb-4 font-[Arial,Helvetica,sans-serif] sm:pb-6">
       <div className="relative z-10 mx-auto mt-12 w-full max-w-3xl px-6 sm:mt-16">
-        {/* The base rules put every heading in Fraunces, at 400, tracked in
-            by -0.02em. This band is none of those, so the three are named
-            back out here rather than the heading being demoted to a `div` —
-            it is the page's second heading and belongs in the outline. */}
-        <h2 className="text-center font-[Arial,Helvetica,sans-serif] text-3xl font-medium leading-tight tracking-normal md:text-5xl lg:text-6xl">
+        {/* This used to name a face and a weight back out, because the base
+            heading rules were a serif and this band wanted a grotesk. They
+            are that grotesk now, so it simply inherits. */}
+        <h2 className="text-center text-3xl leading-tight md:text-5xl lg:text-6xl">
           <span className="text-indigo-900">Trusted by experts.</span>
           <br />
           <span className="text-zinc-900">Used by the leaders.</span>

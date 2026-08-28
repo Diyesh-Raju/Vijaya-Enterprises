@@ -27,7 +27,11 @@ export function CtaBand({
   secondary?: { href: string; label: string };
 }) {
   return (
-    <section className="bg-white py-16 sm:py-20 lg:py-24">
+    // `relative isolate`: a pinned section earlier in the page is positioned,
+    // and a non-positioned background paints under every positioned element
+    // whatever the DOM order. Positioning this one puts its white backdrop
+    // back on top, so the pin is covered as it rides up.
+    <section className="relative isolate bg-white py-16 sm:py-20 lg:py-24">
       <Container>
         <div className="relative isolate overflow-hidden rounded-[2rem] bg-navy-950 sm:rounded-[3rem]">
           <Image
