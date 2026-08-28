@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Logo } from "./logo";
-import { SiteMenu } from "./site-menu";
+import { MENU_MS, SiteMenu } from "./site-menu";
 import { cn } from "@/lib/cn";
 
 const SCROLL_THRESHOLD = 24;
@@ -102,12 +102,42 @@ export function SiteHeader() {
     restoreFocus();
   }, [restoreFocus]);
 
-  // While the panel is open: lock the page and trap Escape.
+  /**
+   * While the panel is open: shove the page away behind it, lock the scroll
+   * and trap Escape.
+   *
+   * The push itself is one rule in `globals.css` hanging off `data-menu` on
+   * the root — the shell it moves is rendered by the server layout, well out
+   * of this component's reach, and an attribute on `<html>` is the cheapest
+   * wire between the two.
+   *
+   * `--menu-origin-y` is what makes the push land the same way wherever you
+   * happen to be on the page. The shell is the whole document tall, so
+   * pivoting it about its own top-right corner would fling the middle of a
+   * long page clean off the screen; the corner that matters is the top-right
+   * of the *window*, which is exactly `scrollY` down from the top of the
+   * shell. Scroll is frozen for the length of the gesture, so the figure
+   * taken here stays true for as long as it is used.
+   *
+   * The lock outlasts `open`. The page is still travelling back for a full
+   * `MENU_MS` after the close begins, and it is translated down the screen
+   * the whole time — hand the scrollbar back any earlier and the page grows
+   * a second one for a second and jumps.
+   */
   useEffect(() => {
-    if (!open) return;
-
+    const root = document.documentElement;
     const { body } = document;
-    const previousOverflow = body.style.overflow;
+
+    if (!open) {
+      root.removeAttribute("data-menu");
+      const id = window.setTimeout(() => {
+        body.style.overflow = "";
+      }, MENU_MS);
+      return () => window.clearTimeout(id);
+    }
+
+    root.style.setProperty("--menu-origin-y", `${window.scrollY}px`);
+    root.setAttribute("data-menu", "open");
     body.style.overflow = "hidden";
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -117,10 +147,7 @@ export function SiteHeader() {
     };
 
     document.addEventListener("keydown", onKeyDown);
-    return () => {
-      body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", onKeyDown);
-    };
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, close]);
 
   const isActive = (href: string) =>

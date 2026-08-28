@@ -2,14 +2,22 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { cn } from "@/lib/cn";
 import { img, alt } from "@/lib/images";
 import { navLinks, site } from "@/lib/site";
 
 /**
- * The full-screen menu: photograph down the left, links down the right,
- * drawn down over the page from the top like a blind.
+ * The full-screen menu: photograph down the left, links down the right.
+ *
+ * It no longer descends as a flat blind. The sheet is *cut* into the window
+ * by a clip-path whose bottom edge is slanted, so the right side of the dark
+ * plane arrives ahead of the left and the opening reads as a sweep rather
+ * than a drop. Under it the page itself is shoved away — see `.page-shell`
+ * in `globals.css` — and the menu's own contents come the other way, from
+ * up and to the left, rotated and oversized, settling square as the cut
+ * finishes. Three movements on one curve, which is what makes them read as
+ * one gesture with depth to it instead of three panels animating.
  *
  * It stays mounted and is driven by transitions rather than being mounted on
  * open and animated with keyframes. Keyframes only ever play forwards, so
@@ -33,19 +41,43 @@ const MENU_LINKS = [
   { href: "/faq", label: "FAQ" },
 ];
 
-/** Slow enough to watch. The blind is the whole gesture, so it gets the time. */
-const SHEET_MS = 1000;
-const LINK_STAGGER_MS = 60;
+/**
+ * The length of the whole gesture: the cut, the page behind it and the
+ * contents all run for exactly this long and start together. Exported
+ * because the header holds the scroll lock for the same span — the page is
+ * still travelling back after `open` has already gone false.
+ */
+export const MENU_MS = 1250;
+
+/** The links, once the cut is most of the way down. */
+const LINK_DELAY_MS = 750;
+const LINK_STAGGER_MS = 100;
+const LINK_MS = 1000;
+
+/** The last link to arrive is what the tail of the panel waits behind. */
+const LINKS_DONE_MS =
+  LINK_DELAY_MS + (MENU_LINKS.length - 1) * LINK_STAGGER_MS + LINK_MS;
 
 /**
- * The sheet gets its own curve rather than the site's usual `expo.out`.
- * That curve is over 90% of the way home a third of the way through its
- * duration — lovely on a button, wrong here, where it makes a one-second
- * descent look like a fast one followed by a long creep. This one keeps
- * moving through the middle and only settles at the end, so the blind reads
- * as being drawn down at a steady hand.
+ * Slow at both ends, quick through the middle. This is the curve the sheet,
+ * the page under it and the contents all share; it holds still for a beat,
+ * commits, and lands without a bounce, which is what stops a 1.25s move from
+ * reading as a lazy one.
  */
-const SHEET_EASE = "ease-[cubic-bezier(0.45,0.05,0.2,1)]";
+const SHEET_EASE = "ease-[cubic-bezier(0.86,0,0.07,1)]";
+
+/** The links, by contrast, leave immediately and decelerate the whole way. */
+const LINK_EASE = "ease-[cubic-bezier(0.165,0.84,0.44,1)]";
+
+/** Shut: a zero-height slit along the top edge. */
+const CUT_CLOSED = "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)";
+/**
+ * Open: past the bottom on the right, level with it on the left. The right
+ * corner overshoots to 175% so the slant is still steep at the moment the
+ * left corner lands — an edge that finished square would spend its last
+ * frames as a plain horizontal line.
+ */
+const CUT_OPEN = "polygon(0% 0%, 100% 0%, 100% 175%, 0% 100%)";
 
 export function SiteMenu({
   open,
@@ -57,6 +89,26 @@ export function SiteMenu({
   isActive: (href: string) => boolean;
 }) {
   const sheetRef = useRef<HTMLDivElement | null>(null);
+
+  /**
+   * True once the links have finished rising, false again the moment the
+   * sheet has finished leaving.
+   *
+   * It exists for one reason: the links rise a full body-height from below,
+   * which needs their row to be clipped or each one would be visible sliding
+   * up across its neighbour. But a clipped row also cuts the glow off the
+   * links on hover, and hovering only ever happens once everything has
+   * landed. So the clip is worn for the entrance and taken off after it.
+   */
+  const [settled, setSettled] = useState(false);
+
+  useEffect(() => {
+    const id = window.setTimeout(
+      () => setSettled(open),
+      open ? LINKS_DONE_MS : MENU_MS,
+    );
+    return () => window.clearTimeout(id);
+  }, [open]);
 
   /**
    * Move focus into the sheet when it opens, so the keyboard lands inside the
@@ -72,34 +124,60 @@ export function SiteMenu({
    */
   useEffect(() => {
     if (!open) return;
-    const id = window.setTimeout(() => sheetRef.current?.focus(), SHEET_MS / 3);
+    const id = window.setTimeout(() => sheetRef.current?.focus(), MENU_MS / 3);
     return () => window.clearTimeout(id);
   }, [open]);
-
-  const ease = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 
   return (
     <div
       id="site-menu"
       inert={!open}
+      /* The dark plane is on this element, not on the halves inside it. The
+         contents are offset and oversized while the cut is running, so they
+         do not cover the shape being cut — without a colour here you would
+         be cutting a hole through to the page rather than laying a sheet
+         over it. */
       className={cn(
-        "fixed inset-0 z-[60] overflow-hidden transition-[visibility] duration-0",
+        "fixed inset-0 z-[60] overflow-hidden bg-navy-950",
+        SHEET_EASE,
         open ? "visible" : "invisible",
       )}
-      style={{ transitionDelay: open ? "0ms" : `${SHEET_MS}ms` }}
+      style={{
+        clipPath: open ? CUT_OPEN : CUT_CLOSED,
+        // Two properties on two clocks: the cut runs for the full gesture,
+        // while visibility is a single step held back until the cut has
+        // closed, so the sheet is still painted the whole way out.
+        transitionProperty: "clip-path, visibility",
+        transitionDuration: `${MENU_MS}ms, 0ms`,
+        transitionDelay: open ? "0ms, 0ms" : `0ms, ${MENU_MS}ms`,
+      }}
     >
       {/* The whole sheet travels as one opaque surface. Moving the halves
           separately left a seam: whichever arrived first sat there while the
-          page showed through the gap beside it. */}
+          page showed through the gap beside it.
+
+          It comes in from up and to the left, half again too big and canted
+          over, pivoting about its own bottom-left corner — the opposite
+          corner to the one the page behind it pivots about, which is what
+          gives the two planes their sense of passing each other. */}
       <div
         ref={sheetRef}
         tabIndex={-1}
         className={cn(
-          "grid h-full grid-cols-1 outline-none transition-transform lg:grid-cols-[58fr_42fr]",
+          "grid h-full grid-cols-1 outline-none transition-[transform,opacity] lg:grid-cols-[58fr_42fr]",
           SHEET_EASE,
-          open ? "translate-y-0" : "-translate-y-full",
         )}
-        style={{ transitionDuration: `${SHEET_MS}ms` }}
+        style={{
+          transformOrigin: "left bottom",
+          transform: open
+            ? "translate(0px, 0px) rotate(0deg) scale(1)"
+            : "translate(-100px, -100px) rotate(-15deg) scale(1.5)",
+          // Never all the way out. A quarter-lit sheet sliding away still
+          // reads as a solid thing leaving; a transparent one reads as a
+          // fade, and the cut is already doing the disappearing.
+          opacity: open ? 1 : 0.25,
+          transitionDuration: `${MENU_MS}ms`,
+        }}
       >
         {/* ------------------------------------------------ The photograph */}
         {/* Held back below lg. At phone widths the panel is the whole screen,
@@ -127,18 +205,17 @@ export function SiteMenu({
             sizes="(max-width: 1024px) 1px, 85vw"
             quality={85}
             placeholder="blur"
-            // Still easing after the links have finished arriving — that
-            // overlap is what makes the two halves read as one movement
-            // rather than two.
             // Centred. Bound by height, the whole frame top to bottom is
             // already in view and only the sides are trimmed — evenly, which
             // leaves the shrine on its axis with the lantern still in at one
             // edge and the sunset at the other.
-            style={{ objectPosition: "50% 50%", transitionDuration: "1600ms" }}
-            className={cn(
-              "object-cover transition-transform ease-out",
-              open ? "scale-100" : "scale-[1.05]",
-            )}
+            //
+            // It no longer eases out of a slight zoom of its own. The sheet
+            // it sits on now arrives at scale 1.5, so the photograph is
+            // already coming down out of an oversize — a second, private
+            // zoom underneath that only fought it.
+            style={{ objectPosition: "50% 50%" }}
+            className="object-cover"
           />
         </div>
 
@@ -176,7 +253,11 @@ export function SiteMenu({
           <nav aria-label="Primary" className="mt-10 lg:mt-[clamp(1.25rem,6vh,4rem)]">
             <ul>
               {MENU_LINKS.map((link, index) => (
-                <li key={link.href}>
+                <li
+                  key={link.href}
+                  // Worn only for the entrance — see `settled`.
+                  className={settled ? undefined : "overflow-hidden"}
+                >
                   {/* Two elements, one job each, and that separation is the
                       whole point. Both used to live on the anchor, which meant
                       hovering inherited the entrance's one-second duration and
@@ -185,23 +266,27 @@ export function SiteMenu({
                       a quick pass down the list lit nothing at all. The
                       wrapper arrives; the anchor responds. */}
                   <span
-                    className={cn(
-                      "block transition-[opacity,transform]",
-                      ease,
-                      open
-                        ? "translate-y-0 opacity-100"
-                        : "translate-y-4 opacity-0",
-                    )}
+                    className={cn("block transition-[transform,opacity]", LINK_EASE)}
                     style={
                       {
-                        transitionDuration: `${SHEET_MS}ms`,
-                        // Staggered in, but not out: on the way out the whole
-                        // sheet is already leaving, and a stagger under that
-                        // just looks like the links are lagging behind the
-                        // thing carrying them.
+                        // A whole line-height below the row it belongs to, so
+                        // it climbs the full depth of its own slot rather
+                        // than nudging into place.
+                        transform: open
+                          ? "translateY(0%)"
+                          : "translateY(120%)",
+                        opacity: open ? 1 : 0.25,
+                        // Staggered in; on the way out they do not travel at
+                        // all. The sheet carrying them is already leaving,
+                        // and links sliding down inside a panel that is
+                        // itself sliding away just look like they are lagging
+                        // behind it. Instead they hold, and are set back
+                        // under the closed cut once it has gone —
+                        // zero-duration, at the far end of the gesture.
+                        transitionDuration: open ? `${LINK_MS}ms` : "0ms",
                         transitionDelay: open
-                          ? `${380 + index * LINK_STAGGER_MS}ms`
-                          : "0ms",
+                          ? `${LINK_DELAY_MS + index * LINK_STAGGER_MS}ms`
+                          : `${MENU_MS}ms`,
                       } as CSSProperties
                     }
                   >
@@ -256,17 +341,23 @@ export function SiteMenu({
           {/* All that is left down here is the line of record. The phone,
               the email and the CTA used to sit above it; the list is the menu,
               and three more things under it only competed with it. */}
-          <div
-            className={cn(
-              "mt-auto pt-[clamp(2rem,6vh,3.5rem)] transition-[transform,opacity] duration-700",
-              ease,
-              open ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0",
-            )}
-            style={{ transitionDelay: open ? `${SHEET_MS - 160}ms` : "0ms" }}
-          >
-            <p className="border-t border-white/10 pt-5 text-[0.8125rem] text-white/40">
-              © {new Date().getFullYear()} {site.legalName}. {site.tagline}.
-            </p>
+          <div className="mt-auto overflow-hidden pt-[clamp(2rem,6vh,3.5rem)]">
+            <div
+              className={cn("transition-[transform,opacity]", LINK_EASE)}
+              style={{
+                // Last up the list, on the same terms as the links above it.
+                transform: open ? "translateY(0%)" : "translateY(120%)",
+                opacity: open ? 1 : 0.25,
+                transitionDuration: open ? `${LINK_MS}ms` : "0ms",
+                transitionDelay: open
+                  ? `${LINK_DELAY_MS + MENU_LINKS.length * LINK_STAGGER_MS}ms`
+                  : `${MENU_MS}ms`,
+              }}
+            >
+              <p className="border-t border-white/10 pt-5 text-[0.8125rem] text-white/40">
+                © {new Date().getFullYear()} {site.legalName}. {site.tagline}.
+              </p>
+            </div>
           </div>
         </div>
       </div>

@@ -2598,3 +2598,51 @@
     padding: clamp(1.125rem, 2.6vh, 1.75rem);
   }
 }
+
+/* ------------------------------------------------------------------
+   The page behind the menu
+
+   When the full-screen menu opens, the page does not simply get covered —
+   it is pushed back and out of the way, down and to the right, canted over
+   and swollen past the edges of the window. What you actually see of it is
+   a sliver under the slanted edge of the dark sheet coming the other way,
+   for about half a second; that sliver is the whole point, because a plane
+   that visibly recedes is what tells you the menu is *in front of* the page
+   rather than merely drawn on top of it.
+
+   Timing and curve are the menu's own — `MENU_MS` and the shared ease in
+   `site-menu.tsx`. The two moves start on the same frame and finish on the
+   same frame, which is what keeps them reading as one thing.
+
+   No transform in the resting state, deliberately. A `transform` of any
+   kind — an identity matrix included — makes this element the box that
+   `position: fixed` descendants resolve against, and there are some down
+   there (the pinned stage on Commercial Contracts). Leaving the property at
+   `none` while the menu is shut keeps them anchored to the window; a
+   transition from `none` still interpolates from the identity, so nothing
+   is lost by not declaring one.
+------------------------------------------------------------------- */
+
+.page-shell {
+  /* Right edge of the window, and `--menu-origin-y` down from the top of
+     the document — i.e. the window's own top-right corner, wherever the
+     reader happens to have scrolled to. The header sets it on open. */
+  transform-origin: 100% var(--menu-origin-y, 0px);
+  transition: transform 1250ms cubic-bezier(0.86, 0, 0.07, 1);
+}
+
+[data-menu="open"] .page-shell {
+  transform: translate(300px, 450px) rotate(10deg) scale(1.5);
+}
+
+/* Nothing recedes for a reader who has asked for less movement — the sheet
+   still cuts in over the top, which is all the gesture strictly needs. */
+@media (prefers-reduced-motion: reduce) {
+  .page-shell {
+    transition: none;
+  }
+
+  [data-menu="open"] .page-shell {
+    transform: none;
+  }
+}
