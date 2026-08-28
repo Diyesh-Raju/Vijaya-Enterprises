@@ -61,6 +61,16 @@ export function SiteHeader() {
     () => false,
   );
 
+  /**
+   * The route this component last reacted to. Compared against `pathname`
+   * inside the effect below, which is how it tells a panel the reader shut
+   * from one a link shut under them. It is deliberately not written during
+   * render: a navigation renders inside a transition, which React is free
+   * to throw away and retry, and a ref set on a discarded attempt does not
+   * survive. Only the effect writes it, and effects run once per commit.
+   */
+  const reactedPath = useRef(pathname);
+
   // Close the panel whenever the route changes. Adjusting state during render
   // (rather than in an effect) is React's documented pattern for resetting
   // state when a value changes: it happens before paint, so the panel never
@@ -123,12 +133,44 @@ export function SiteHeader() {
    * `MENU_MS` after the close begins, and it is translated down the screen
    * the whole time — hand the scrollbar back any earlier and the page grows
    * a second one for a second and jumps.
+   *
+   * `data-menu-snap` is the one exception to any of it. When a *link* is
+   * what closed the panel, the thing under the sheet is no longer the page
+   * that was pushed away — it is a new one, mounting, which has never been
+   * anywhere but square. Easing it "back" therefore returns it from a
+   * position it was never in: the wrong gesture, however smoothly it runs.
+   * So on a navigation the push is dropped rather than played. Nothing is
+   * lost by it, because the sheet still covers the window at the moment it
+   * would have begun.
+   *
+   * It also takes the most expensive thing in that window off the table.
+   * Animating a `scale(1.5)` means the whole page is rastered afresh at a
+   * scale that changes every frame, on the one frame that page is also
+   * taking its first layout, paint and image decodes — and the sheet
+   * leaves on a `clip-path`, which no engine composites, so it is the
+   * first thing to stall when anything else wants the main thread. That
+   * cost is a GPU one and does not show up in layout or script timings;
+   * what does show up is the reverse, a per-frame layout pass that fixed
+   * descendants need once their transformed ancestor lets them anchor to
+   * the window again. It is about 10ms spread across the second and a
+   * quarter, which is far too little to see and worth paying for the
+   * raster it removes.
+   *
+   * The attribute is left on until the next open rather than cleared here.
+   * Clearing it would have to wait for a style flush, or the restored
+   * transition would catch the very change it was suppressing; the open
+   * branch takes it off in the same breath as it sets `data-menu`, so both
+   * land in one recalculation and the sheet opens on its curve as usual.
    */
   useEffect(() => {
     const root = document.documentElement;
     const { body } = document;
 
+    const navigated = reactedPath.current !== pathname;
+    reactedPath.current = pathname;
+
     if (!open) {
+      if (navigated) root.setAttribute("data-menu-snap", "");
       root.removeAttribute("data-menu");
       const id = window.setTimeout(() => {
         body.style.overflow = "";
@@ -137,6 +179,7 @@ export function SiteHeader() {
     }
 
     root.style.setProperty("--menu-origin-y", `${window.scrollY}px`);
+    root.removeAttribute("data-menu-snap");
     root.setAttribute("data-menu", "open");
     body.style.overflow = "hidden";
 
@@ -148,7 +191,7 @@ export function SiteHeader() {
 
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [open, close]);
+  }, [open, close, pathname]);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);

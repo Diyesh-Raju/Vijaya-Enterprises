@@ -2635,6 +2635,18 @@
   transform: translate(300px, 450px) rotate(10deg) scale(1.5);
 }
 
+/* Set when a link, rather than the reader, is what closed the panel. The
+   page under the sheet is a new one then, mounting, and easing it back from
+   a position it was never in is the wrong gesture — as well as the most
+   expensive one available, since a scale that changes every frame re-rasters
+   the whole tree on the frame it is first laid out, painted and decoding its
+   photographs. With no transition the shell simply arrives square, unseen,
+   because the sheet still covers the window at that moment.
+   `site-header.tsx` sets and clears it. */
+[data-menu-snap] .page-shell {
+  transition: none;
+}
+
 /* Nothing recedes for a reader who has asked for less movement — the sheet
    still cuts in over the top, which is all the gesture strictly needs. */
 @media (prefers-reduced-motion: reduce) {
