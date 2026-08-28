@@ -137,16 +137,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Skip to content
         </a>
         <SiteHeader />
-        {/* Everything the menu shoves out of the way when it opens: the page
-            and the footer under it, but not the bar, which is fixed and
-            would be re-anchored to the shell the moment it took a transform.
-            See `.page-shell` in `globals.css`. */}
-        <div className="page-shell">
-          <main id="main" className="min-h-dvh">
-            {children}
-          </main>
-          <SiteFooter />
-        </div>
+        <main id="main" className="min-h-dvh">
+          {children}
+        </main>
+        <SiteFooter />
         <OrganizationJsonLd />
       </body>
     </html>
