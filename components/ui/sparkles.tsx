@@ -17,10 +17,14 @@ export function Sparkles({
   color = "#6366f1",
   /** Square pixels of canvas per dot — smaller means a denser field. */
   density = 110,
+  /** Scales every dot's radius. The spread of sizes is kept, only its range
+      moves, so the field coarsens rather than turning into uniform blobs. */
+  size = 1,
 }: {
   className?: string;
   color?: string;
   density?: number;
+  size?: number;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -69,7 +73,7 @@ export function Sparkles({
       dots = Array.from({ length: count }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
-        r: 0.45 + Math.random() * 0.85,
+        r: (0.45 + Math.random() * 0.85) * size,
         base: 0.28 + Math.random() * 0.47,
         amp: Math.random() * 0.3,
         speed: 0.4 + Math.random() * 0.9,
@@ -134,7 +138,7 @@ export function Sparkles({
       observer.disconnect();
       resizer.disconnect();
     };
-  }, [color, density]);
+  }, [color, density, size]);
 
   return <canvas ref={ref} aria-hidden="true" className={className} />;
 }

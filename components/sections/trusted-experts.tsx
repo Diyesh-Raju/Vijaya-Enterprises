@@ -80,7 +80,7 @@ export function TrustedExperts() {
             heading rules were a serif and this band wanted a grotesk. They
             are that grotesk now, so it simply inherits. */}
         <h2 className="text-center text-3xl leading-tight md:text-5xl lg:text-6xl">
-          <span className="text-indigo-900">Trusted by experts.</span>
+          <span className="text-navy-700">Trusted by experts.</span>
           <br />
           <span className="text-zinc-900">Used by the leaders.</span>
         </h2>
@@ -104,22 +104,25 @@ export function TrustedExperts() {
         {/* 1. A halo rising from the bottom edge. On the site's blue, and it
                has to be: it is the widest colour in the band, so a violet one
                washes everything drawn over it lavender — blue dots and a blue
-               arc included. `--color-navy-400`, which carries about the
-               presence the reference's `#a78bfa` did at the same 40%. */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_center,#648fce,transparent_70%)] opacity-40" />
+               arc included. `--color-navy-600`, and carried at 70% rather
+               than the reference's 40% — the hue alone is a small step
+               against white at that strength, and most of the depth here
+               comes from the opacity. */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_center,#2c5296,transparent_70%)] opacity-70" />
         {/* 2. A white ellipse twice the page wide, laid over the halo's lower
                half so only a crescent of it shows. Its top border is the
                hairline arc that reads as a horizon — on the site's blue
                rather than the reference's near-black indigo, and carried at a
                weight where the line reads as blue instead of as grey. */}
-        <div className="absolute -left-1/2 top-1/2 aspect-[1/0.7] w-[200%] rounded-[100%] border-t border-navy-500/40 bg-white" />
+        <div className="absolute -left-1/2 top-1/2 aspect-[1/0.7] w-[200%] rounded-[100%] border-t border-navy-600/50 bg-white" />
         {/* 3. The dots, over both, masked to fade out at the edges. Also on
-               the site's blue: `--color-navy-500`, written out because a
-               canvas fill takes a colour, not a custom property. It sits at
-               about the lightness the reference's indigo did, so the field
-               keeps the weight it was drawn for. */}
+               the site's blue: `--color-navy-700`, written out because a
+               canvas fill takes a colour, not a custom property. Coarser than
+               the reference's field as well as darker — `size` scales each
+               dot's radius and keeps the spread of sizes, so it reads as grit
+               rather than as dust. */}
         <div className="absolute inset-x-0 bottom-0 h-full w-full [mask-image:radial-gradient(70%_70%,white,transparent_98%)]">
-          <Sparkles color="#3f6cb4" className="h-full w-full" />
+          <Sparkles color="#234179" size={1.35} className="h-full w-full" />
         </div>
       </div>
     </section>
