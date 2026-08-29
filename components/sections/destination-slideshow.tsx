@@ -64,6 +64,15 @@ export function DestinationSlideshow() {
     gl?.getExtension("WEBGL_lose_context")?.loseContext();
 
     let stage: { destroy?: () => void } | null = null;
+    // The modules arrive on their own clock, and by then this effect may
+    // already have been cleaned up — React runs every effect twice in
+    // development, and a navigation can unmount the section mid-import.
+    // Without this the second Stage builds a second `WebGLRenderer` on a
+    // canvas that already has one; they share the single context that canvas
+    // can give out, and whichever is torn down first takes it away from the
+    // other. The tiles have hidden their photographs by then, so what is left
+    // is captions over nothing.
+    let cancelled = false;
 
     // The demo's modules reach for `window` at import time, so they load in
     // the browser only. `window.APP` is the demo's own handle — its
@@ -72,7 +81,7 @@ export function DestinationSlideshow() {
       import("@/lib/gooey/Stage"),
       import("@/lib/gooey/Layout"),
     ]).then(([{ default: Stage }, { default: Layout }]) => {
-      if (!rootRef.current) return;
+      if (cancelled || !rootRef.current) return;
       const APP = { Stage: null as unknown, Layout: new Layout() };
       (window as unknown as { APP: typeof APP }).APP = APP;
       stage = new Stage(root, { webgl });
@@ -80,6 +89,7 @@ export function DestinationSlideshow() {
     });
 
     return () => {
+      cancelled = true;
       stage?.destroy?.();
     };
   }, []);
