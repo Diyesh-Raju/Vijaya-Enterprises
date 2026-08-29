@@ -303,7 +303,10 @@ const createSmokeRenderer = (
     canvas.height = Math.max(1, Math.round(canvas.clientHeight * pixelRatio));
   };
 
-  const startedAt = performance.now();
+  let startedAt = performance.now();
+  let pausedAt = 0;
+  let onScreen = false;
+
   const render = (now: number) => {
     frame = requestAnimationFrame(render);
     if (!resources) return;
@@ -340,13 +343,48 @@ const createSmokeRenderer = (
     }
   };
 
+  /**
+   * The shader never settles, so left alone it burns a frame a tick for as
+   * long as the page is open — including while the button is scrolled off,
+   * and while the tab is in the background. It runs when it can be seen.
+   *
+   * Resuming shifts the clock forward over the gap rather than letting the
+   * smoke jump to wherever it would have drifted, which reads as a glitch.
+   */
+  const setRunning = (next: boolean) => {
+    onScreen = next;
+    const shouldRun = next && !document.hidden;
+
+    if (shouldRun && !frame) {
+      if (pausedAt) startedAt += performance.now() - pausedAt;
+      pausedAt = 0;
+      frame = requestAnimationFrame(render);
+    } else if (!shouldRun && frame) {
+      cancelAnimationFrame(frame);
+      frame = 0;
+      pausedAt = performance.now();
+    }
+  };
+
+  const onVisibilityChange = () => setRunning(onScreen);
+
   canvas.addEventListener("webglcontextlost", onContextLost);
   canvas.addEventListener("webglcontextrestored", onContextRestored);
+  document.addEventListener("visibilitychange", onVisibilityChange);
 
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(canvas.parentElement ?? canvas);
   resize();
-  frame = requestAnimationFrame(render);
+
+  const visibility =
+    typeof IntersectionObserver !== "undefined"
+      ? new IntersectionObserver(
+          (entries) => setRunning(entries[0]?.isIntersecting ?? true),
+          { rootMargin: "200px" },
+        )
+      : null;
+  if (visibility) visibility.observe(canvas);
+  else setRunning(true);
 
   return {
     update(nextSettings) {
@@ -354,7 +392,10 @@ const createSmokeRenderer = (
     },
     destroy() {
       cancelAnimationFrame(frame);
+      frame = 0;
       resizeObserver.disconnect();
+      visibility?.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       canvas.removeEventListener("webglcontextlost", onContextLost);
       canvas.removeEventListener("webglcontextrestored", onContextRestored);
       if (resources) {

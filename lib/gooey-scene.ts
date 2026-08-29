@@ -74,6 +74,7 @@ class GooeyTile {
 
   private hoverTween: Tween | null = null;
   private hovering = false;
+  private covered = false;
   private clock = new THREE.Clock();
 
   constructor(
@@ -157,8 +158,26 @@ class GooeyTile {
     this.mesh.scale.set(this.sizes.x, this.sizes.y, 1);
     this.scene.mainScene.add(this.mesh);
 
-    // The plane is now standing in for the picture, so the picture steps back.
-    this.image.classList.add("is-loaded");
+    // The picture does not step back here. It steps back once a plane has
+    // actually been drawn over it — see `setCovered`.
+  }
+
+  /**
+   * Which of the pair is showing: the WebGL plane, or the photograph under it.
+   *
+   * Only ever one of them, so the moment the plane cannot be drawn the picture
+   * has to come back — otherwise the strip is five transparent images over a
+   * backdrop, which is to say nothing at all. The picture used to be dismissed
+   * the instant the plane was *built*, which is a promise made before it can
+   * be kept: a context that dies, or a scene that never gets a frame, leaves
+   * the band empty. So the scene calls this after each frame it draws, and
+   * again with `false` the moment it cannot.
+   */
+  setCovered(covered: boolean) {
+    if (covered && !this.mesh) return;
+    if (covered === this.covered) return;
+    this.covered = covered;
+    this.image.classList.toggle("is-loaded", covered);
   }
 
   private onEnter() {
@@ -291,6 +310,8 @@ export class GooeyScene {
   private readonly tiles: GooeyTile[];
   private frame = 0;
   private last = 0;
+  private onScreen = false;
+  private observer: IntersectionObserver | null = null;
 
   private readonly pointer = new THREE.Vector2(0, 0);
   private previousTrack = 0;
@@ -310,6 +331,12 @@ export class GooeyScene {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(this.box.width, this.box.height, false);
 
+    this.mainScene.add(new THREE.AmbientLight(0xffffff, 2));
+
+    this.tiles = Array.from(
+      root.querySelectorAll<HTMLElement>("[data-gooey-tile]"),
+    ).map((el, i) => new GooeyTile(el, i, this));
+
     // A WebGL context is not forever. The browser keeps a small, fixed number
     // of them alive per page and quietly takes the oldest back when something
     // else asks for one; a driver reset takes the lot. `render` used to be
@@ -328,20 +355,70 @@ export class GooeyScene {
     // canvas was left in.
     this.contextLost = this.renderer.getContext().isContextLost();
 
-    this.mainScene.add(new THREE.AmbientLight(0xffffff, 2));
-
-    this.tiles = Array.from(
-      root.querySelectorAll<HTMLElement>("[data-gooey-tile]"),
-    ).map((el, i) => new GooeyTile(el, i, this));
-
     this.onMouseMove = this.onMouseMove.bind(this);
     this.onResize = this.onResize.bind(this);
     window.addEventListener("mousemove", this.onMouseMove, { passive: true });
     window.addEventListener("resize", this.onResize);
 
-    this.last = performance.now();
     this.tick = this.tick.bind(this);
-    this.frame = requestAnimationFrame(this.tick);
+    this.onVisibilityChange = this.onVisibilityChange.bind(this);
+
+    // The band is one section of a long page, and the loop below is not
+    // cheap: five shader planes drawn and seven element boxes measured, every
+    // frame. Run unconditionally it did all of that from the moment the page
+    // loaded until the moment it was closed — 481 forced layout reads and 180
+    // draw calls a second, measured while parked at the top of the page with
+    // this section seven and a half thousand pixels away. Nothing was on
+    // screen to show for any of it, and every frame it took came out of
+    // whatever else the page was doing, which on this page is a video being
+    // scrubbed by the scroll.
+    //
+    // So it runs while it can be seen, and not otherwise. `VideoBackdrop`
+    // gates its playback the same way, for the same reason.
+    if (typeof IntersectionObserver !== "undefined") {
+      this.observer = new IntersectionObserver(
+        (entries) => this.setRunning(entries[0]?.isIntersecting ?? true),
+        // A little ahead of the viewport, so the first frame the band shows
+        // is already a drawn one rather than the photographs underneath.
+        { rootMargin: "300px" },
+      );
+      this.observer.observe(canvas);
+    } else {
+      this.setRunning(true);
+    }
+
+    // A hidden tab paints nothing; `requestAnimationFrame` is throttled there
+    // rather than stopped, and this has no business being one of the callbacks
+    // it still chooses to run.
+    document.addEventListener("visibilitychange", this.onVisibilityChange);
+  }
+
+  /**
+   * Start or stop the loop.
+   *
+   * Resuming re-seeds the two things that are differences between frames —
+   * the timestamp and the strip's last position — because the gap across a
+   * pause is not a frame and must not be read as one: `squash` is taken from
+   * how far the strip travelled since last time, and a stop-start would hand
+   * it the whole scroll and slam every plane flat.
+   */
+  private setRunning(onScreen: boolean) {
+    this.onScreen = onScreen;
+    const shouldRun = onScreen && !document.hidden;
+
+    if (shouldRun && !this.frame) {
+      this.last = performance.now();
+      this.previousTrack = this.track.getBoundingClientRect().left;
+      this.squash = 0;
+      this.frame = requestAnimationFrame(this.tick);
+    } else if (!shouldRun && this.frame) {
+      cancelAnimationFrame(this.frame);
+      this.frame = 0;
+    }
+  }
+
+  private onVisibilityChange() {
+    this.setRunning(this.onScreen);
   }
 
   private measureStage() {
@@ -379,6 +456,9 @@ export class GooeyScene {
   private onContextLost(event: Event) {
     event.preventDefault();
     this.contextLost = true;
+    // Hand the strip back to the photographs until there is something to draw
+    // on again. A blank band is worse than no effect.
+    this.tiles.forEach((tile) => tile.setCovered(false));
   }
 
   /**
@@ -388,6 +468,8 @@ export class GooeyScene {
    */
   private onContextRestored() {
     this.contextLost = false;
+    // The planes go back over the pictures on their own, after the first
+    // frame that actually draws — see `setCovered`.
   }
 
   private onResize() {
@@ -418,15 +500,23 @@ export class GooeyScene {
 
     // Nothing to draw on. The loop stays scheduled — it was re-armed at the
     // top of the frame — so the scene picks itself up again the moment the
-    // browser hands a context back, and simply idles if it never does.
+    // browser hands a context back, and simply idles if it never does. The
+    // photographs are showing in the meantime; see `onContextLost`.
     if (this.contextLost || this.renderer.getContext().isContextLost()) return;
 
     this.renderer.render(this.mainScene, this.camera);
+
+    // A plane is now genuinely on screen for each built tile, so the
+    // photographs underneath can step back. A no-op once they already have.
+    this.tiles.forEach((tile) => tile.setCovered(true));
   }
 
   destroy() {
     this.disposed = true;
     cancelAnimationFrame(this.frame);
+    this.frame = 0;
+    this.observer?.disconnect();
+    document.removeEventListener("visibilitychange", this.onVisibilityChange);
     window.removeEventListener("mousemove", this.onMouseMove);
     window.removeEventListener("resize", this.onResize);
     this.canvas.removeEventListener("webglcontextlost", this.onContextLost);

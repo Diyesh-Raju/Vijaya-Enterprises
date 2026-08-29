@@ -193,10 +193,13 @@ export const video = {
   homeScrollMobile: "/video/home-scroll-mobile.mp4",
   heroDesktop: "/video/hero.mp4",
   heroMobile: "/video/hero-mobile.mp4",
-  // Renamed when the clip was reversed into a sunrise. `/video/*` is cached
-  // for thirty days, so re-encoding a file in place leaves every browser that
-  // has already been here playing the old one — the name is the cache key.
-  legacyDesktop: "/video/legacy-sunrise.mp4",
-  legacyMobile: "/video/legacy-sunrise-mobile.mp4",
+  // The sunset clip, reversed into a sunrise and cut to loop on itself: it
+  // opens after the sun has cleared the horizon and cross-dissolves its tail
+  // back into its head, so it cycles without ever falling dark. `/video/*` is
+  // cached for thirty days and the name is the cache key, so a re-cut clip
+  // always takes a new one — editing a file in place leaves every browser
+  // that has been here playing the old one.
+  legacyDesktop: "/video/legacy-dawn.mp4",
+  legacyMobile: "/video/legacy-dawn-mobile.mp4",
   craft: "/video/craft.mp4",
 } as const;
