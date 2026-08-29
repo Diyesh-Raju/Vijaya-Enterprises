@@ -11,11 +11,13 @@ import { trustedBy, type TrustedOrg } from "@/lib/site";
  * — a violet halo rising from the bottom, a white dome laid over it so only a
  * crescent shows, and a field of fine indigo dots over the whole thing.
  *
- * Deliberately off this site's palette and type. Every colour and length in
- * here is the reference's own, read off the live page rather than guessed;
- * `#a78bfa`, `#6366f1`, `indigo-900` and `zinc-900` are all theirs. If this
- * is ever brought back onto Vijaya's navy and brass, that is the list to
- * change, and `Sparkles` takes its colour as a prop for exactly that reason.
+ * The type and the layout are still the reference's, read off the live page
+ * rather than guessed, and so are the heading and caption inks — `indigo-900`
+ * and `zinc-900` are theirs. The band underneath is not: its halo, its dots
+ * and its horizon arc have all been brought onto Vijaya's blue, which is what
+ * `Sparkles` taking its colour as a prop was for. The three move together by
+ * necessity — the halo is the widest colour of them, so it tints whatever is
+ * drawn over it, and a violet one leaves blue dots reading lavender.
  *
  * The one departure the brief asked for: their five names sit bare in a
  * five-column grid, ours are ten logos in white cards on a carousel.
@@ -99,15 +101,25 @@ export function TrustedExperts() {
 
       {/* The band: three layers, all the reference's. */}
       <div className="relative -mt-10 h-[13rem] w-full overflow-hidden [mask-image:radial-gradient(60%_60%,white,transparent)] sm:-mt-12 sm:h-[16rem]">
-        {/* 1. A violet halo rising from the bottom edge. */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_center,#a78bfa,transparent_70%)] opacity-40" />
+        {/* 1. A halo rising from the bottom edge. On the site's blue, and it
+               has to be: it is the widest colour in the band, so a violet one
+               washes everything drawn over it lavender — blue dots and a blue
+               arc included. `--color-navy-400`, which carries about the
+               presence the reference's `#a78bfa` did at the same 40%. */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_center,#648fce,transparent_70%)] opacity-40" />
         {/* 2. A white ellipse twice the page wide, laid over the halo's lower
                half so only a crescent of it shows. Its top border is the
-               hairline arc that reads as a horizon. */}
-        <div className="absolute -left-1/2 top-1/2 aspect-[1/0.7] w-[200%] rounded-[100%] border-t border-indigo-900/10 bg-white" />
-        {/* 3. The dots, over both, masked to fade out at the edges. */}
+               hairline arc that reads as a horizon — on the site's blue
+               rather than the reference's near-black indigo, and carried at a
+               weight where the line reads as blue instead of as grey. */}
+        <div className="absolute -left-1/2 top-1/2 aspect-[1/0.7] w-[200%] rounded-[100%] border-t border-navy-500/40 bg-white" />
+        {/* 3. The dots, over both, masked to fade out at the edges. Also on
+               the site's blue: `--color-navy-500`, written out because a
+               canvas fill takes a colour, not a custom property. It sits at
+               about the lightness the reference's indigo did, so the field
+               keeps the weight it was drawn for. */}
         <div className="absolute inset-x-0 bottom-0 h-full w-full [mask-image:radial-gradient(70%_70%,white,transparent_98%)]">
-          <Sparkles className="h-full w-full" />
+          <Sparkles color="#3f6cb4" className="h-full w-full" />
         </div>
       </div>
     </section>
