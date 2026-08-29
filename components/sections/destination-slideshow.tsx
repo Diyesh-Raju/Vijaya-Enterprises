@@ -1,47 +1,36 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
-import { GooeyScene } from "@/lib/gooey-scene";
-import { Container } from "@/components/ui/section";
+import { useEffect, useRef } from "react";
 
 /**
- * The Codrops "Gooey Hover" slideshow, carried over as it is.
+ * The Codrops "Gooey Hover" slideshow, pinned.
  *
- * Hovering a tile runs its own fragment shader — five tiles, five shaders —
- * over a WebGL plane laid on top of the picture. That part is the template
- * untouched; `lib/gooey-scene.ts` holds it and notes what had to move.
+ * `lib/gooey/` holds the demo's own `Stage`, `Scene`, `Tile`, `utils` and
+ * `Layout`, copied across unchanged apart from what a module boundary forces:
+ * the shaders come from `lib/gooey-shaders` (the same GLSL, already in this
+ * repo), the tint variables are scoped to this section rather than the
+ * document, and two `three` APIs the demo used have since been renamed. The
+ * detail view and the licensed `SplitText` plugin are left out — this site has
+ * no zoomed detail view for them to drive.
  *
- * The demo's colour is here too, reworked: the band stands on a photograph
- * — a brushed swirl in warm taupe — so the demo's five dark grounds have
- * become five washes over it and its five pale inks have gone deep enough
- * to read against beige. One pair to a tile, swapped on hover.
+ * The scroll is not the demo's. The demo hijacks the wheel while the pointer
+ * is over the strip and lets the page carry on regardless; here the band is
+ * pinned to the screen inside a taller track, and the page scroll through that
+ * track walks the strip — so the reader passes all four tiles on the way down
+ * and the page only moves on once the strip has run out. `lib/gooey/
+ * PinnedScroll` is that transport, in place of `smooth-scrollbar` and its
+ * horizontal plugin, and it still hands `Stage` and `Tile` the `offset` and
+ * `limit` they were reading off the scrollbar — squash included, since the
+ * strip is damped and so still has a velocity to squash by.
  *
- * THE GROUND WALKS TOO, but not from here. The backdrop drifts sideways
- * across the same scroll that walks the strip, so the band reads as one
- * thing moving rather than pictures on a still wall — and it is a CSS
- * scroll-driven animation that does it, sampled from the scroll in step
- * with the sticky stage instead of a frame behind it. What is below is
- * only the fallback for a browser that has no such thing.
- *
- * THE STRIP IS WALKED BY THE PAGE. The section is a tall track with a pinned
- * stage inside it: while the stage is pinned, scrolling down draws the strip
- * left, and the page only carries on to the next section once the last tile
- * has arrived. Scrolling back up runs the same thing in reverse. That is
- * nearer the demo than the arrows that used to be here were — it drove the
- * strip from a horizontal scroll too, through `smooth-scrollbar`, which this
- * does not need. The scene picks it up for free: it takes its squash from how
- * fast the strip is travelling, whatever is doing the travelling.
- *
- * Not everywhere, though. Pinning is for a wide window and only when motion
- * is welcome — everywhere else the strip is an ordinary horizontal scroller
- * you swipe, which is also what is left if JavaScript never arrives, since
- * the pinning is switched on by an attribute this component sets.
- *
- * ⚠️ The tiles are still the demo's own travel photography, kept as-is on
+ * ⚠️ The tiles are still the demo's travel photography, kept as-is on
  * request, now standing under "Our Accolades". On a construction company's
  * home page that is somebody else's content. Replace the pairs in
  * `public/gooey/` — a base and a hover frame each, 1024×1024 — and the copy
- * below, and everything else keeps working.
+ * below, and everything else keeps working: the track measures the strip it is
+ * given, so adding or dropping a tile changes how far the pin holds and
+ * nothing else. Each tile also wants a `--color-text`/`--color-bg` pair in
+ * `globals.css`, numbered by its position.
  */
 
 type Slide = {
@@ -56,304 +45,85 @@ const slides: readonly Slide[] = [
   { key: "rocks", lead: "Rocks &", offset: "Mountains", alt: "Rocks & Mountains" },
   { key: "cities", lead: "Cities &", offset: "Skylines", alt: "Cities & Skylines" },
   { key: "deserts", lead: "Sand &", offset: "Deserts", alt: "Sand & Deserts" },
-  { key: "snow", lead: "Snow &", offset: "Mountains", alt: "Snow & Mountains" },
 ];
 
-const COUNT = slides.length;
-
-/**
- * Where the strip is walked by the page rather than swiped.
- *
- * Both halves of the switch read this one string: the effect asks it whether
- * to drive anything, and the attribute it sets is what turns the CSS on. A
- * breakpoint written twice is a breakpoint that will disagree with itself.
- */
-const PINNED = "(min-width: 64rem) and (prefers-reduced-motion: no-preference)";
-
-/** The bar starts one tile in, so it reads as "one of five" rather than none. */
-const BAR_START = 1 / COUNT;
-const barTransform = (progress: number) =>
-  `translateX(${-100 + (BAR_START + progress * (1 - BAR_START)) * 100}%)`;
-
-/**
- * How far the ground walks, each way, as a share of its own width.
- *
- * It has 14% of slack either side (`.gooey__backdrop::before` is inset
- * negatively), and the walk is taken out of that, so this has to stay under
- * it or the photograph's edge comes into view at one end of the section.
- *
- * ⚠️ The `gooey-drift` keyframes hold the same number. Both ends of the walk
- * are written twice because only one of them ever runs, and the pair has to
- * agree about where the ground starts and stops.
- */
-const DRIFT = 10;
-const driftOffset = (progress: number) => `${DRIFT - progress * DRIFT * 2}%`;
-
-/**
- * Whether the browser can walk the ground by itself.
- *
- * Where it can, the CSS animation is the whole story and this file leaves
- * the backdrop alone: a transform written per frame from here arrives after
- * the sticky stage has already moved, which is a judder, and writing it as
- * a custom property costs a style recalculation of the subtree on top.
- */
-const scrollDriven = () =>
-  typeof CSS !== "undefined" &&
-  CSS.supports?.("animation-timeline", "view()") === true;
-
 export function DestinationSlideshow() {
-  const sectionRef = useRef<HTMLElement | null>(null);
-  const stageRef = useRef<HTMLDivElement | null>(null);
-  const rootRef = useRef<HTMLDivElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const viewportRef = useRef<HTMLDivElement | null>(null);
-  const trackRef = useRef<HTMLUListElement | null>(null);
-  const barRef = useRef<HTMLSpanElement | null>(null);
-  const backdropRef = useRef<HTMLDivElement | null>(null);
+  const rootRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
     const root = rootRef.current;
-    const track = trackRef.current;
-    if (!canvas || !root || !track) return;
+    if (!root) return;
 
-    // No WebGL, no scene — the pictures underneath are the fallback, and they
-    // only step back once a plane is actually covering them.
+    // No WebGL, no scene — the photographs underneath are the fallback, and
+    // they only step back once a plane is actually covering them. The pin and
+    // the strip are set up either way: without them the tiles past the first
+    // could not be reached at all.
     const probe = document.createElement("canvas");
-    const supported = Boolean(
-      probe.getContext("webgl2") ?? probe.getContext("webgl"),
-    );
-    if (!supported) return;
+    const gl = probe.getContext("webgl2") ?? probe.getContext("webgl");
+    const webgl = gl !== null;
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
 
-    const scene = new GooeyScene(canvas, root, track);
-    return () => scene.destroy();
-  }, []);
+    let stage: { destroy?: () => void } | null = null;
 
-  /**
-   * The strip, driven by whatever is doing the scrolling.
-   *
-   * Two modes, one writer. Pinned, the page's own scroll through the section's
-   * runway is the input and the strip is moved by a transform; loose, the
-   * viewport is a real scroller and there is nothing to move — the bar just
-   * reports where it has been dragged to.
-   *
-   * Everything is written straight to the nodes rather than through state: the
-   * value changes every frame, and re-rendering five tiles to move one number
-   * is work with nothing to show for it.
-   */
-  useEffect(() => {
-    const section = sectionRef.current;
-    const stage = stageRef.current;
-    const viewport = viewportRef.current;
-    const track = trackRef.current;
-    if (!section || !stage || !viewport || !track) return;
-
-    const media = window.matchMedia(PINNED);
-    let travel = 0;
-    let frame = 0;
-
-    const clamp = (n: number) => Math.min(Math.max(n, 0), 1);
-
-    const paintBar = (progress: number) => {
-      if (barRef.current) barRef.current.style.transform = barTransform(progress);
-    };
-
-    /** The ground — a no-op wherever CSS is already walking it. */
-    const paintDrift = scrollDriven()
-      ? () => {}
-      : (progress: number) => {
-          backdropRef.current?.style.setProperty(
-            "--gooey-drift",
-            driftOffset(progress),
-          );
-        };
-
-    /** Pinned: how far through the runway the page is, 0 → 1. */
-    const writePinned = () => {
-      frame = 0;
-      const runway = section.offsetHeight - stage.offsetHeight;
-      const scrolled = -section.getBoundingClientRect().top;
-      const progress = runway > 0 ? clamp(scrolled / runway) : 0;
-
-      track.style.transform = `translate3d(${-(progress * travel)}px, 0, 0)`;
-      paintBar(progress);
-      paintDrift(progress);
-    };
-
-    /**
-     * Loose: the viewport is the scroller, so the strip needs nothing done to
-     * it and the bar just reports where it has been dragged to. The ground
-     * has no runway to read here, so it takes its walk from the section's own
-     * passage through the window — which is the scroll you can see.
-     */
-    const writeLoose = () => {
-      frame = 0;
-      const reach = viewport.scrollWidth - viewport.clientWidth;
-      paintBar(reach > 0 ? viewport.scrollLeft / reach : 0);
-
-      const rect = section.getBoundingClientRect();
-      const window_ = window.innerHeight;
-      paintDrift(clamp((window_ - rect.top) / (window_ + rect.height)));
-    };
-
-    let write = writePinned;
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(() => write());
-    };
-
-    /**
-     * How much strip there is to walk, and therefore how tall the section has
-     * to be: one window to stand the stage in, plus a pixel of runway for
-     * every pixel the strip has to travel. One-to-one, so the tiles move at
-     * the speed the wheel is turned rather than at some multiple of it.
-     *
-     * The order matters — the stage is only a window tall once the attribute
-     * is on, so it cannot be measured before that.
-     */
-    const measure = () => {
-      if (!media.matches) {
-        delete section.dataset.pinned;
-        section.style.height = "";
-        track.style.transform = "";
-        write = writeLoose;
-        write();
-        return;
-      }
-
-      // How far there is to go, asked of the browser rather than worked out
-      // from the tiles: with the pinning off for a moment the viewport is a
-      // real scroller, and how far it *could* be scrolled is exactly the
-      // distance the strip has to travel. Measuring the strip instead gives
-      // a number that is too small — the tiles are sized in percentages of a
-      // `max-content` parent, so its box does not account for all of them.
-      //
-      // Both states are set inside one task with no paint between them, so
-      // nothing of the loose layout ever reaches the screen.
-      delete section.dataset.pinned;
-      track.style.transform = "";
-      travel = Math.max(viewport.scrollWidth - viewport.clientWidth, 0);
-
-      section.dataset.pinned = "on";
-      section.style.height = `${stage.offsetHeight + travel}px`;
-      write = writePinned;
-      write();
-    };
-
-    measure();
-
-    // The tiles are images: the strip's width is not final until they have
-    // laid out, and it changes again with the window.
-    const observer = new ResizeObserver(measure);
-    observer.observe(track);
-
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", measure);
-    viewport.addEventListener("scroll", schedule, { passive: true });
-    media.addEventListener("change", measure);
+    // The demo's modules reach for `window` at import time, so they load in
+    // the browser only. `window.APP` is the demo's own handle — its
+    // `index.js` sets exactly this, and `Tile` reads `APP.Layout.isMobile`.
+    void Promise.all([
+      import("@/lib/gooey/Stage"),
+      import("@/lib/gooey/Layout"),
+    ]).then(([{ default: Stage }, { default: Layout }]) => {
+      if (!rootRef.current) return;
+      const APP = { Stage: null as unknown, Layout: new Layout() };
+      (window as unknown as { APP: typeof APP }).APP = APP;
+      stage = new Stage(root, { webgl });
+      APP.Stage = stage;
+    });
 
     return () => {
-      cancelAnimationFrame(frame);
-      observer.disconnect();
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", measure);
-      viewport.removeEventListener("scroll", schedule);
-      media.removeEventListener("change", measure);
-      delete section.dataset.pinned;
-      section.style.height = "";
-      track.style.transform = "";
-      backdropRef.current?.style.removeProperty("--gooey-drift");
+      stage?.destroy?.();
     };
-  }, []);
-
-  /**
-   * The ground and the running ink swap to the pair belonging to the tile
-   * under the pointer. They stay there once it leaves — the demo never puts
-   * them back either, so the band holds the colour of whatever was looked at
-   * last. Set on the section rather than on `document.documentElement`, which
-   * is where the demo puts it, because here it is one band on a longer page.
-   */
-  const tint = useCallback((index: number) => {
-    const section = sectionRef.current;
-    if (!section) return;
-    const n = index + 1;
-    section.style.setProperty("--gooey-bg", `var(--gooey-bg${n})`);
-    section.style.setProperty("--gooey-text", `var(--gooey-text${n})`);
   }, []);
 
   return (
-    // `overflow-x: clip` rather than `hidden`: hidden would make this a scroll
-    // container, and a sticky child sticks to its nearest scrollport — which
-    // would be this box, which never scrolls, so the stage would simply sit
-    // there. Clip crops without any of that.
-    <section ref={sectionRef} className="gooey relative isolate overflow-x-clip">
-      <div ref={stageRef} className="gooey__stage">
-        {/* The ground. It sits behind everything in the stage rather than on
-            the section, so while the stage is pinned it is exactly the window
-            it has to fill, and it walks with the scroll from there. */}
-        <div ref={backdropRef} aria-hidden="true" className="gooey__backdrop" />
+    // The track is the band's scroll distance: one screen to hold the pin,
+    // plus however far the strip has left to run. `PinnedScroll` measures the
+    // strip and writes that second part back as `--gooey-travel`.
+    <div className="gooey-track">
+      <section ref={rootRef} className="gooey-demo">
+        <h1 className="page-title | title">
+          Our <span className="slideshow__title__offset | title__offset">Accolades</span>
+        </h1>
 
-        <Container>
-          <h2 className="gooey__title">
-            Our <span className="gooey__title-offset">Accolades</span>
-          </h2>
-        </Container>
+        <canvas className="js-scene" aria-hidden="true" />
 
-        <div ref={rootRef} className="relative mt-10 sm:mt-12">
-          {/* One canvas across the whole strip, *under* the tiles — the demo
-              stacks it the same way (scene at z-index 3, content at 5). The
-              planes stand in for the photographs, which are transparent by
-              then; the titles and links stay in the DOM on top of them, which
-              is the only reason they are still selectable and clickable. */}
-          <canvas
-            ref={canvasRef}
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 z-0 h-full w-full"
-          />
-
-          <div
-            ref={viewportRef}
-            className="gooey__viewport hide-scrollbar relative z-10"
-          >
-            <ul ref={trackRef} className="gooey__track">
-              {slides.map((slide, i) => (
-                <li
-                  key={slide.key}
-                  // Every other tile rides high, which is the demo's rhythm.
-                  data-lift={i % 2 === 0 ? "up" : "down"}
-                  data-tint={i + 1}
-                  className="gooey__slide"
-                >
-                  <article data-gooey-tile className="gooey__tile">
-                    <a
-                      href="#what-we-build"
-                      className="block"
-                      onMouseEnter={() => tint(i)}
-                    >
-                      <figure className="gooey__fig">
-                        {/* A plain <img>, deliberately. It is the layout box
-                            the WebGL plane measures itself against, and
-                            `three` loads the same file by URL as a texture —
-                            an optimised, srcset-driven <Image> would hand the
-                            loader a different file than the one on screen. */}
+        <section className="slideshow-ctn">
+          <div className="slideshow">
+            <ul className="slideshow-list">
+              {slides.map((slide) => (
+                <li key={slide.key} className="slideshow-list__el">
+                  <article className="tile | js-tile">
+                    <a href="#what-we-build">
+                      <figure className="tile__fig">
+                        {/* A plain <img>, deliberately: it is the layout box the
+                            WebGL plane measures itself against, and `three`
+                            loads the same file by URL as a texture. */}
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={`/gooey/${slide.key}-base.jpg`}
                           data-hover={`/gooey/${slide.key}-hover.jpg`}
                           alt={slide.alt}
-                          className="gooey__img"
-                          loading="eager"
-                          decoding="async"
+                          className="tile__img"
                         />
                       </figure>
-                      <div className="gooey__content">
-                        <h3 className="gooey__tile-title">
+                      <div className="tile__content">
+                        <h2 className="tile__title | title title--medium">
                           {slide.lead}{" "}
-                          <span className="gooey__title-offset gooey__title-offset--medium">
+                          <span className="title__offset title__offset--medium">
                             {slide.offset}
                           </span>
-                        </h3>
-                        <div className="gooey__cta">
-                          <span className="gooey__btn-inline">See more</span>
+                        </h2>
+                        <div className="tile__cta">
+                          <span className="btn-inline">See more</span>
                         </div>
                       </div>
                     </a>
@@ -362,20 +132,12 @@ export function DestinationSlideshow() {
               ))}
             </ul>
           </div>
-        </div>
 
-        {/* All that is left of the controls: how far through the strip you
-            are. It is read, not pressed — the scroll is the control now. */}
-        <Container className="relative z-20 mt-10 sm:mt-12">
-          <div className="gooey__progress-ctn" role="presentation">
-            <span
-              ref={barRef}
-              className="gooey__progress"
-              style={{ transform: barTransform(0) }}
-            />
+          <div className="slideshow__progress-ctn">
+            <span className="slideshow__progress" />
           </div>
-        </Container>
-      </div>
-    </section>
+        </section>
+      </section>
+    </div>
   );
 }

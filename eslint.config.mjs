@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The Codrops "Gooey Hover" demo, vendored close to as it ships. Its own
+    // style is not this project's, and it is kept that way on purpose so it
+    // can still be diffed against the upstream template — so it is not
+    // linted.
+    "lib/gooey/**",
   ]),
 ]);
 
