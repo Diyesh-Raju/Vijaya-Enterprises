@@ -101,6 +101,35 @@ const scrollDriven = () =>
   typeof CSS !== "undefined" &&
   CSS.supports?.("animation-timeline", "view()") === true;
 
+/**
+ * Whether this browser will give us a WebGL context — asked once, and the
+ * context it costs to ask is handed straight back.
+ *
+ * A probe context is a real one. The browser keeps a small, fixed number of
+ * them alive per page — Chrome's default is sixteen — and when a new one
+ * pushes past that it kills the *oldest* without a word. This used to leave
+ * its probe behind on every mount, and React mounts twice in development and
+ * again on every Fast Refresh, so a session's worth of editing spent them a
+ * handful at a time. The oldest context on the page is the slideshow's own,
+ * so what died was the scene, and three's next frame compiled a shader
+ * against nothing.
+ *
+ * `WEBGL_lose_context` gives it back immediately rather than waiting for the
+ * detached canvas to be collected, and the answer is cached so no one after
+ * the first caller spends a context at all.
+ */
+let webglSupport: boolean | null = null;
+
+const supportsWebGL = () => {
+  if (webglSupport !== null) return webglSupport;
+
+  const probe = document.createElement("canvas");
+  const gl = probe.getContext("webgl2") ?? probe.getContext("webgl");
+  webglSupport = gl !== null;
+  gl?.getExtension("WEBGL_lose_context")?.loseContext();
+  return webglSupport;
+};
+
 export function DestinationSlideshow() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -119,13 +148,22 @@ export function DestinationSlideshow() {
 
     // No WebGL, no scene — the pictures underneath are the fallback, and they
     // only step back once a plane is actually covering them.
-    const probe = document.createElement("canvas");
-    const supported = Boolean(
-      probe.getContext("webgl2") ?? probe.getContext("webgl"),
-    );
-    if (!supported) return;
+    if (!supportsWebGL()) return;
 
-    const scene = new GooeyScene(canvas, root, track);
+    // Building a renderer is not guaranteed to work even where WebGL exists.
+    // If this canvas is holding a context the browser has already taken back —
+    // which is what a remount onto a reclaimed context looks like — three
+    // throws while reading the context's capabilities, before there is a scene
+    // to guard. There is a good fallback one line below this component, so
+    // take it rather than the whole page down with us.
+    let scene: GooeyScene;
+    try {
+      scene = new GooeyScene(canvas, root, track);
+    } catch (error) {
+      console.error("Unable to start the slideshow's WebGL scene.", error);
+      return;
+    }
+
     return () => scene.destroy();
   }, []);
 

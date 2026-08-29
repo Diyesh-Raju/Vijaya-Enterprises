@@ -283,6 +283,9 @@ export class GooeyScene {
   box = { left: 0, top: 0, width: 0, height: 0 };
   disposed = false;
 
+  /** See `onContextLost`. Nothing is drawn while this is true. */
+  private contextLost = false;
+
   private readonly renderer: THREE.WebGLRenderer;
   private camera: THREE.PerspectiveCamera;
   private readonly tiles: GooeyTile[];
@@ -306,6 +309,24 @@ export class GooeyScene {
     this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(this.box.width, this.box.height, false);
+
+    // A WebGL context is not forever. The browser keeps a small, fixed number
+    // of them alive per page and quietly takes the oldest back when something
+    // else asks for one; a driver reset takes the lot. `render` used to be
+    // called regardless of whether there was still anything to draw on, and
+    // three only skips a frame once it has been *told* the context has gone —
+    // which arrives as an event, a frame or more later. The frame in between
+    // asked three to compile a shader against a dead context, three handed
+    // `createShader`'s null straight to `shaderSource`, and the page came
+    // down with `shader must be an instance of WebGLShader`.
+    this.onContextLost = this.onContextLost.bind(this);
+    this.onContextRestored = this.onContextRestored.bind(this);
+    canvas.addEventListener("webglcontextlost", this.onContextLost);
+    canvas.addEventListener("webglcontextrestored", this.onContextRestored);
+    // It can already be gone before the first frame: React mounts this twice
+    // in development, and the second scene is handed back whatever state the
+    // canvas was left in.
+    this.contextLost = this.renderer.getContext().isContextLost();
 
     this.mainScene.add(new THREE.AmbientLight(0xffffff, 2));
 
@@ -348,6 +369,27 @@ export class GooeyScene {
     this.pointer.set(event.clientX - this.box.left, event.clientY - this.box.top);
   }
 
+  /**
+   * `preventDefault` is what makes the loss recoverable: without it the
+   * browser never bothers to fire `webglcontextrestored`. three registers a
+   * handler of its own that does the same — but it removes that handler again
+   * on `dispose()`, so the scene keeps its own rather than borrowing one with
+   * a shorter life than itself.
+   */
+  private onContextLost(event: Event) {
+    event.preventDefault();
+    this.contextLost = true;
+  }
+
+  /**
+   * three rebuilds its GL state from the same event, and re-uploads every
+   * texture and program on the next frame it draws. All this has to do is let
+   * that frame happen.
+   */
+  private onContextRestored() {
+    this.contextLost = false;
+  }
+
   private onResize() {
     this.measureStage();
     this.updateCamera();
@@ -373,6 +415,12 @@ export class GooeyScene {
     this.previousTrack = trackX;
 
     this.tiles.forEach((tile) => tile.update(delta, this.squash));
+
+    // Nothing to draw on. The loop stays scheduled — it was re-armed at the
+    // top of the frame — so the scene picks itself up again the moment the
+    // browser hands a context back, and simply idles if it never does.
+    if (this.contextLost || this.renderer.getContext().isContextLost()) return;
+
     this.renderer.render(this.mainScene, this.camera);
   }
 
@@ -381,6 +429,8 @@ export class GooeyScene {
     cancelAnimationFrame(this.frame);
     window.removeEventListener("mousemove", this.onMouseMove);
     window.removeEventListener("resize", this.onResize);
+    this.canvas.removeEventListener("webglcontextlost", this.onContextLost);
+    this.canvas.removeEventListener("webglcontextrestored", this.onContextRestored);
     this.tiles.forEach((tile) => tile.destroy());
     this.textures.forEach((texture) => texture.dispose());
     this.textures.clear();

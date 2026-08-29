@@ -236,17 +236,24 @@ const hexToRgb = (hex: string): RgbColor => {
   ];
 };
 
-const createSmokeRenderer = (
-  canvas: HTMLCanvasElement,
-  initialSettings: SmokeSettings,
-): SmokeRenderer => {
-  const gl = canvas.getContext("webgl", {
-    alpha: true,
-    antialias: false,
-    premultipliedAlpha: true,
-  });
-  if (!gl) throw new Error("WebGL is not available in this browser.");
+/**
+ * Everything on the GPU side, which is everything that does not survive a
+ * lost context: the program, its buffer, and the locations that only mean
+ * anything to that particular program.
+ */
+type SmokeResources = {
+  program: WebGLProgram;
+  buffer: WebGLBuffer;
+  position: number;
+  resolution: WebGLUniformLocation;
+  time: WebGLUniformLocation;
+  speed: WebGLUniformLocation;
+  primary: WebGLUniformLocation;
+  secondary: WebGLUniformLocation;
+  shadow: WebGLUniformLocation;
+};
 
+const createResources = (gl: WebGLRenderingContext): SmokeResources => {
   const program = createProgram(gl);
   const buffer = gl.createBuffer();
   if (!buffer) throw new Error("Unable to create WebGL buffer.");
@@ -258,13 +265,35 @@ const createSmokeRenderer = (
     gl.STATIC_DRAW,
   );
 
-  const position = gl.getAttribLocation(program, "aPosition");
-  const resolution = getUniform(gl, program, "uResolution");
-  const time = getUniform(gl, program, "uTime");
-  const speed = getUniform(gl, program, "uSpeed");
-  const primary = getUniform(gl, program, "uPrimary");
-  const secondary = getUniform(gl, program, "uSecondary");
-  const shadow = getUniform(gl, program, "uShadow");
+  return {
+    program,
+    buffer,
+    position: gl.getAttribLocation(program, "aPosition"),
+    resolution: getUniform(gl, program, "uResolution"),
+    time: getUniform(gl, program, "uTime"),
+    speed: getUniform(gl, program, "uSpeed"),
+    primary: getUniform(gl, program, "uPrimary"),
+    secondary: getUniform(gl, program, "uSecondary"),
+    shadow: getUniform(gl, program, "uShadow"),
+  };
+};
+
+const createSmokeRenderer = (
+  canvas: HTMLCanvasElement,
+  initialSettings: SmokeSettings,
+): SmokeRenderer => {
+  const gl = canvas.getContext("webgl", {
+    alpha: true,
+    antialias: false,
+    premultipliedAlpha: true,
+  });
+  if (!gl) throw new Error("WebGL is not available in this browser.");
+
+  // Null while the context is gone. A lost context does not throw — every
+  // call on it is quietly ignored — so without this the button would spend a
+  // frame a tick forever, drawing nothing, and would never come back once the
+  // browser handed it a context again.
+  let resources: SmokeResources | null = createResources(gl);
   let settings = initialSettings;
   let frame = 0;
 
@@ -276,20 +305,43 @@ const createSmokeRenderer = (
 
   const startedAt = performance.now();
   const render = (now: number) => {
+    frame = requestAnimationFrame(render);
+    if (!resources) return;
+
+    const { program, buffer, position } = resources;
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.useProgram(program);
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.enableVertexAttribArray(position);
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-    gl.uniform2f(resolution, canvas.width, canvas.height);
-    gl.uniform1f(time, (now - startedAt) / 1000);
-    gl.uniform1f(speed, settings.speed);
-    gl.uniform3f(primary, ...settings.colors[0]);
-    gl.uniform3f(secondary, ...settings.colors[1]);
-    gl.uniform3f(shadow, ...settings.colors[2]);
+    gl.uniform2f(resources.resolution, canvas.width, canvas.height);
+    gl.uniform1f(resources.time, (now - startedAt) / 1000);
+    gl.uniform1f(resources.speed, settings.speed);
+    gl.uniform3f(resources.primary, ...settings.colors[0]);
+    gl.uniform3f(resources.secondary, ...settings.colors[1]);
+    gl.uniform3f(resources.shadow, ...settings.colors[2]);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
-    frame = requestAnimationFrame(render);
   };
+
+  /** Without `preventDefault` the browser never offers the context back. */
+  const onContextLost = (event: Event) => {
+    event.preventDefault();
+    resources = null;
+  };
+
+  const onContextRestored = () => {
+    try {
+      resources = createResources(gl);
+      resize();
+    } catch (error) {
+      // The button's own background is a perfectly good face. Say so once
+      // rather than throwing from an event handler nothing is awaiting.
+      console.error("Unable to restart smoky button renderer.", error);
+    }
+  };
+
+  canvas.addEventListener("webglcontextlost", onContextLost);
+  canvas.addEventListener("webglcontextrestored", onContextRestored);
 
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(canvas.parentElement ?? canvas);
@@ -303,8 +355,13 @@ const createSmokeRenderer = (
     destroy() {
       cancelAnimationFrame(frame);
       resizeObserver.disconnect();
-      gl.deleteBuffer(buffer);
-      gl.deleteProgram(program);
+      canvas.removeEventListener("webglcontextlost", onContextLost);
+      canvas.removeEventListener("webglcontextrestored", onContextRestored);
+      if (resources) {
+        gl.deleteBuffer(resources.buffer);
+        gl.deleteProgram(resources.program);
+        resources = null;
+      }
     },
   };
 };
