@@ -100,6 +100,13 @@ export function DestinationSlideshow() {
     // strip and writes that second part back as `--gooey-travel`.
     <div className="gooey-track">
       <section ref={rootRef} className="gooey-demo">
+        {/* The ground: the brushed swirl, laid under the whole band and walked
+            sideways by the same scroll that walks the strip, so the band reads
+            as one moving thing rather than tiles sliding over a still colour.
+            Laid wider than the band it sits in, and the walk is taken out of
+            that slack, so its own edge never comes into view. */}
+        <div className="gooey-backdrop" aria-hidden="true" />
+
         <h1 className="page-title | title">
           Our <span className="slideshow__title__offset | title__offset">Accolades</span>
         </h1>

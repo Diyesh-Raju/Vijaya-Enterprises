@@ -482,13 +482,52 @@
    `z-index: -1`. Here the band carries its own, so the colour goes on a
    layer of its own underneath the title rather than on the section itself —
    otherwise the section's background paints over the title and the word
-   never appears. */
+   never appears. It sits under the backdrop and is only seen through it,
+   or in its place if the photograph never loads. */
 .gooey-demo::before {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: -2;
+  z-index: -3;
   background-color: var(--color-bg);
+  transition: background-color 0.5s;
+}
+
+/* The ground proper: a brushed swirl walked sideways by the same scroll that
+   walks the strip, under everything the band draws and over its flat colour.
+
+   The photograph is laid 14% wider than the band on each side and drifts by
+   at most 10% of its own width — 12.8% of the band's — so the walk is taken
+   out of the slack and its edge is never pulled into view.
+
+   The tint over it is what keeps the demo's colour change: hovering a tile
+   still swings the ground through that tile's `--color-bg`, only now the
+   swirl is showing through it rather than a flat field. Heavy enough that
+   the band stays dark and every pale caption on it keeps its contrast. */
+.gooey-demo .gooey-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.gooey-demo .gooey-backdrop::before,
+.gooey-demo .gooey-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0 -14%;
+}
+
+.gooey-demo .gooey-backdrop::before {
+  background: url("/gooey/backdrop.jpg") center / cover no-repeat;
+  transform: translate3d(var(--gooey-drift, 0%), 0, 0);
+  will-change: transform;
+}
+
+.gooey-demo .gooey-backdrop::after {
+  background-color: var(--color-bg);
+  opacity: 0.68;
   transition: background-color 0.5s;
 }
 
