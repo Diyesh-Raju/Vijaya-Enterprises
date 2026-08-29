@@ -166,7 +166,7 @@ export const alt = {
   institutionHospital: "Hospital building entrance and approach road",
   interiorFamily: "Family living room with a dog resting by the sofa",
   interiorLiving: "Open-plan living and dining space in a completed apartment",
-  legacyPoster: "A building frame and tower crane silhouetted against the sunrise",
+  legacyPoster: "A building frame and tower crane silhouetted against the sunset",
   meetingHands: "A project discussion in progress across a meeting table",
   menuInterior:
     "A balcony shrine at dusk, warmly lit, with a marble platform, brass lamps and bamboo either side, open to the city skyline",
@@ -193,13 +193,7 @@ export const video = {
   homeScrollMobile: "/video/home-scroll-mobile.mp4",
   heroDesktop: "/video/hero.mp4",
   heroMobile: "/video/hero-mobile.mp4",
-  // The sunset clip, reversed into a sunrise and cut to loop on itself: it
-  // opens after the sun has cleared the horizon and cross-dissolves its tail
-  // back into its head, so it cycles without ever falling dark. `/video/*` is
-  // cached for thirty days and the name is the cache key, so a re-cut clip
-  // always takes a new one — editing a file in place leaves every browser
-  // that has been here playing the old one.
-  legacyDesktop: "/video/legacy-dawn.mp4",
-  legacyMobile: "/video/legacy-dawn-mobile.mp4",
+  legacyDesktop: "/video/legacy.mp4",
+  legacyMobile: "/video/legacy-mobile.mp4",
   craft: "/video/craft.mp4",
 } as const;

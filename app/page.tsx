@@ -212,21 +212,19 @@ export default function HomePage() {
           srcMobile={video.legacyMobile}
           kenBurns={false}
         />
-        {/* Shade, not colour. Navy over a sunrise reads as a blue cast laid on
-            the picture rather than as shadow, so this one grades in neutral
-            black — the same call the residential hero makes over its warm
-            skies. Enough at the edges to seat the section, light across the
-            middle so the sun is allowed to be the sun. */}
+        {/* Navy, as it always was — but the grade the home hero uses over its
+            own footage rather than the near-solid one that was here, which
+            left the clip behind it invisible. Same colour, same character,
+            with the sunrise actually coming through it. */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.62)_0%,rgba(0,0,0,0.48)_46%,rgba(0,0,0,0.68)_100%)]"
+          className="absolute inset-0 bg-gradient-to-b from-navy-950/80 via-navy-950/62 to-navy-950/92"
         />
-        {/* The copy runs down the left half top to bottom, and the sun climbs
-            into roughly that same third of the frame. Weight follows the type
-            across, and lets the right side open out. */}
+        {/* And a pool of it under the copy, which runs down the left. The hero
+            does the same for its lockup. */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.60)_0%,rgba(0,0,0,0.46)_42%,rgba(0,0,0,0.14)_72%,rgba(0,0,0,0)_88%)]"
+          className="absolute inset-0 bg-[radial-gradient(80%_75%_at_16%_50%,rgba(6,20,49,0.82),transparent_72%)]"
         />
 
         <Container className="relative py-24 sm:py-32 lg:py-40">

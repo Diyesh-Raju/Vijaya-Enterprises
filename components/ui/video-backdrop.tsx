@@ -64,6 +64,8 @@ export function VideoBackdrop({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
+  // Set once this backdrop has actually been asked to play. See `preload`.
+  const [engaged, setEngaged] = useState(false);
 
   // Which file (if any) this device should load. Derived from live browser
   // state, so it re-evaluates if the viewport or motion preference changes.
@@ -101,6 +103,7 @@ export function VideoBackdrop({
     const sync = () => {
       const shouldPlay = onScreen && !document.hidden;
       if (shouldPlay) {
+        setEngaged(true);
         // Autoplay can be refused; the poster remains in that case.
         void video.play().catch(() => {});
       } else {
@@ -131,6 +134,14 @@ export function VideoBackdrop({
 
   return (
     <div ref={containerRef} className={cn("absolute inset-0 overflow-hidden", className)}>
+      {/* The poster stays, underneath, for as long as the backdrop lives.
+          It used to fade to nothing once the video could play, which left the
+          section with nothing to show any moment the video had no frame to
+          give — and a looping video has such moments: it seeks back to the
+          start each time round, and `readyState` drops with it. What you saw
+          was a frame, then bare colour. A painting video covers this
+          completely, so it costs nothing to leave it there, and the moment
+          the video has nothing, this does. */}
       <Image
         src={poster}
         alt={posterAlt}
@@ -139,8 +150,7 @@ export function VideoBackdrop({
         sizes="100vw"
         placeholder="blur"
         className={cn(
-          "object-cover transition-opacity duration-1000",
-          ready ? "opacity-0" : "opacity-100",
+          "object-cover",
           kenBurns && !ready && "animate-ken-burns motion-reduce:animate-none",
         )}
       />
@@ -148,10 +158,14 @@ export function VideoBackdrop({
       {src && (
         <video
           ref={videoRef}
-          className={cn(
-            "absolute inset-0 h-full w-full object-cover transition-opacity duration-1000",
-            ready ? "opacity-100" : "opacity-0",
-          )}
+          // Always visible, never waiting on a state flag. A video with no
+          // frame yet paints nothing at all, so the poster behind it simply
+          // shows through until there is something to draw — which is the
+          // same thing the opacity was trying to arrange, without depending
+          // on catching a `canplay` that fires exactly once. Miss that event
+          // and the old code left the clip invisible for good, which is a
+          // still photograph where a moving one belongs.
+          className="absolute inset-0 h-full w-full object-cover"
           // `muted` + `playsInline` are what make autoplay legal on iOS.
           muted
           loop
@@ -161,12 +175,19 @@ export function VideoBackdrop({
           // whole file on load. Only the hero — the one already on screen —
           // earns that. The rest fetch when `play()` first reaches them, and
           // the poster covers the gap.
-          preload={priority ? "auto" : "none"}
+          //
+          // Once one *has* been reached, though, it keeps its buffer. On
+          // `none` the browser holds no more than it needs, so every time a
+          // looping clip wraps to the start it stalls re-fetching what it
+          // just played. That costs nothing at load — this only ever turns on
+          // for a backdrop already on screen and playing.
+          preload={priority || engaged ? "auto" : "none"}
           // Decorative: the poster carries the alternative text.
           aria-hidden="true"
           tabIndex={-1}
           disablePictureInPicture
           onCanPlay={() => setReady(true)}
+          onLoadedData={() => setReady(true)}
           onError={() => setFailed(true)}
         >
           <source src={src} type="video/mp4" />
