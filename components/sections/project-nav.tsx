@@ -25,7 +25,7 @@ export function ProjectNav({ slug }: { slug: string }) {
   const base = `/residential/${slug}`;
 
   return (
-    <div className="sticky top-20 z-30 border-y border-line bg-white/85 backdrop-blur-md sm:top-24">
+    <div className="sticky top-[var(--header-h)] z-30 border-y border-line bg-white/85 backdrop-blur-md">
       <div className="container-page">
         {/* Three columns from `sm` up so the tabs stay centred on the page
             rather than being pushed along by the back link beside them. */}

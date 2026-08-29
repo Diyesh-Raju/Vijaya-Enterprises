@@ -133,8 +133,13 @@ export function SiteHeader() {
   return (
     <>
       <header
+        // `backdrop-filter` is deliberately not in the transition list. An
+        // animated blur re-blurs the whole strip behind the bar every frame
+        // for half a second, which is the most expensive thing a fixed header
+        // can ask of a GPU — and it is invisible, because the background
+        // colour is fading in over the same half second.
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,box-shadow,backdrop-filter] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
           solid && !open
             ? "glass border-line shadow-soft"
             : "border-transparent bg-transparent",

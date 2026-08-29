@@ -58,7 +58,7 @@ export function IconCards({
             >
               <div className="flip-card-inner">
                 {/* Front */}
-                <div className="flex h-full flex-col items-center rounded-[1.375rem] border-2 border-navy-600 bg-white/90 p-6 text-center backdrop-blur-sm sm:rounded-[1.625rem] sm:p-7">
+                <div className="flex h-full flex-col items-center rounded-[1.375rem] border-2 border-navy-600 bg-white/90 p-6 text-center sm:rounded-[1.625rem] sm:p-7">
                   {/* The emblem stands on its own — no frame, no medallion.
                       Drawn a little larger than it was inside one, so losing
                       the ring does not cost it its presence on the card. */}

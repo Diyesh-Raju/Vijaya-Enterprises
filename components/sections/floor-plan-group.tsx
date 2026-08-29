@@ -192,7 +192,7 @@ export function FloorPlanGroup({ group }: { group: Group }) {
               />
               <span
                 aria-hidden="true"
-                className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-navy-950/70 px-3 py-1.5 text-[0.6875rem] font-medium text-white opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover/plan:opacity-100"
+                className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-navy-950/75 px-3 py-1.5 text-[0.6875rem] font-medium text-white opacity-0 transition-opacity duration-300 group-hover/plan:opacity-100"
               >
                 <ExpandIcon className="h-3.5 w-3.5" />
                 Enlarge

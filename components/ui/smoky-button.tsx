@@ -298,7 +298,10 @@ const createSmokeRenderer = (
   let frame = 0;
 
   const resize = () => {
-    const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+    // Capped at 1.5 rather than the usual 2: the shader is seven octaves of
+    // noise per fragment, and smoke has no edge a higher density would
+    // sharpen. On a 2× screen that is 44% fewer fragments for the same look.
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
     canvas.width = Math.max(1, Math.round(canvas.clientWidth * pixelRatio));
     canvas.height = Math.max(1, Math.round(canvas.clientHeight * pixelRatio));
   };

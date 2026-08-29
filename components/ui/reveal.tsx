@@ -23,9 +23,9 @@ type RevealProps = {
  * The visible state is written straight to the element's `data-reveal`
  * attribute rather than held in React state. Revealing is a switch on an
  * external system (the DOM), so a re-render buys nothing — and this way a
- * page with a hundred reveals does zero extra React work. Only `opacity`,
- * `transform` and `filter` animate, so every reveal stays on the compositor
- * and never triggers layout.
+ * page with a hundred reveals does zero extra React work. Only `opacity` and
+ * `transform` animate, so every reveal stays on the compositor and never
+ * triggers layout.
  *
  * By default the animation replays: the element re-arms once it is *fully*
  * off screen, so scrolling back up and down plays it again. Re-arming only

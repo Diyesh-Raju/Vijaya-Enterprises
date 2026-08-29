@@ -1,5 +1,6 @@
 "use client";
 
+import Image, { type StaticImageData } from "next/image";
 import * as React from "react";
 import { cn } from "@/lib/cn";
 
@@ -33,7 +34,10 @@ const navButton =
   "active:scale-95";
 
 export interface CoverflowSlide {
-  src: string;
+  /** A static import, so the deck goes through the optimiser like every
+      other photograph on the site — AVIF at the card's own width, with a
+      blur placeholder while it lands. */
+  src: StaticImageData;
   alt: string;
 }
 
@@ -51,6 +55,8 @@ export interface CoverflowCarouselProps {
   fade?: number;
   /** Any CSS length. Everything else is derived from it, so the rake scales. */
   cardWidth?: string;
+  /** What to tell the browser a card measures, for `next/image`'s `sizes`. */
+  sizes?: string;
   /** Space between cards, as a fraction of card width. */
   gap?: number;
   loop?: boolean;
@@ -70,6 +76,7 @@ export function CoverflowCarousel({
   falloff = 0.56,
   fade = 0.1,
   cardWidth = "clamp(148px, 22vw, 260px)",
+  sizes = "(max-width: 640px) 45vw, 22vw",
   gap = 0.05,
   loop = true,
   showPagination = false,
@@ -315,12 +322,14 @@ export function CoverflowCarousel({
                 )}
                 style={{ width: "var(--cf-card)" }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={slide.src}
                   alt={slide.alt}
+                  fill
+                  sizes={sizes}
+                  placeholder="blur"
                   draggable={false}
-                  className="h-full w-full select-none object-cover"
+                  className="select-none object-cover"
                 />
               </div>
             ))}

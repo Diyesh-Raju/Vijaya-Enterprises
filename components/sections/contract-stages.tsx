@@ -66,7 +66,7 @@ export function ContractStages({
                 src={item.image}
                 alt={item.imageAlt}
                 fill
-                quality={82}
+                quality={85}
                 sizes="100vw"
                 placeholder="blur"
                 className="object-cover"

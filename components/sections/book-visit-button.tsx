@@ -1,16 +1,23 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { SmokyButton } from "@/components/ui/smoky-button";
 
 /**
  * The page's main call to action.
  *
- * ⚠️ INERT ON PURPOSE — what this should do has not been decided yet, so it is
- * rendered complete but wired to nothing. Give it an `onClick` (or swap it for
- * a link) before the site goes live: as it stands, someone who wants a visit
- * will press it and nothing will happen. The Contact Us link below is the only
- * working path from here.
+ * It goes to the enquiry form. There is no booking flow of its own yet — the
+ * form is where a visit is actually arranged — and a button that did nothing
+ * is what stood here until then. `SmokyButton` is a `<button>` rather than a
+ * link, so the navigation is by the router; if a dedicated booking page ever
+ * arrives, this is the one place to point at it.
  */
 export function BookVisitButton() {
-  return <SmokyButton>Book a Site Visit</SmokyButton>;
+  const router = useRouter();
+
+  return (
+    <SmokyButton onClick={() => router.push("/contact#enquiry")}>
+      Book a Site Visit
+    </SmokyButton>
+  );
 }

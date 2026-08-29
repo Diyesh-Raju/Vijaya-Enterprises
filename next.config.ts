@@ -28,11 +28,9 @@ const csp = [
   "form-action 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  // The home-page coverflow deck runs on the stock images its template
-  // ships with, served from these two hosts. Both come out again once
-  // Vijaya's own photography replaces them — see
-  // `components/sections/residence-carousel.tsx`.
-  "img-src 'self' data: blob: https://pub-940ccf6255b54fa799a9b01050e6c227.r2.dev https://images.unsplash.com",
+  // Every image is served from this origin: the photographs are static
+  // imports through the optimiser, and the client logos are in `public/`.
+  "img-src 'self' data: blob:",
   "media-src 'self'",
   "font-src 'self' data:",
   `connect-src 'self'${isDev ? " ws: wss: http://localhost:* http://127.0.0.1:*" : ""}`,

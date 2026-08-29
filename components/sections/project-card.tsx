@@ -104,7 +104,7 @@ export function ProjectCard({ project }: { project: Project }) {
 
         {/* Locality, read straight off the same field the filter uses. Both
             card shapes carry it, so the grid reads as one set of cards. */}
-        <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-navy-950/70 py-1.5 pl-2.5 pr-3.5 text-[0.6875rem] font-medium text-white backdrop-blur-sm">
+        <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-navy-950/75 py-1.5 pl-2.5 pr-3.5 text-[0.6875rem] font-medium text-white">
           <MapPinIcon className="h-3.5 w-3.5" />
           {project.locality}
         </span>

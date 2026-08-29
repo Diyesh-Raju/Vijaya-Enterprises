@@ -133,6 +133,13 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     scroll-behavior: smooth;
+    /* The menu and the drawing preview lock the page with `overflow:
+       hidden` while they are open. On a browser with a classic scrollbar
+       — Windows, most of all — that takes the bar away and the whole page
+       jumps 17px to the right, then back on close. Reserving the gutter
+       whether or not the bar is drawn is what stops it. Overlay
+       scrollbars (macOS, phones) never had a gutter and are unaffected. */
+    scrollbar-gutter: stable;
     /* Header height + breathing room for in-page anchors */
     scroll-padding-top: 6.5rem;
     background-color: var(--color-navy-deep);
@@ -286,31 +293,27 @@
 
 /* Scroll reveal: hidden until the observer marks it visible. Uses
    data attributes so a JS failure can never leave content invisible
-   (the no-js / no-observer path sets data-reveal="on" immediately). */
+   (the no-js / no-observer path sets data-reveal="on" immediately).
+
+   Opacity and transform only, and no `will-change`. It used to arrive out
+   of a 6px blur as well, and every block still waiting its turn held a
+   standing `will-change` — so a page carried forty-odd composited layers
+   at rest, and each arrival ran a full-size blur filter over a photograph
+   for most of a second. Both were the biggest single cost on every page:
+   the layers are GPU memory a phone does not have, and an animated blur is
+   the one thing here that could drop a frame on integrated graphics.
+   Every engine promotes an element for the length of an opacity or
+   transform transition on its own, so nothing is lost by not asking. */
 @utility reveal {
   opacity: 0;
   transform: translate3d(0, 26px, 0);
   transition:
     opacity 0.9s var(--ease-out-soft),
-    transform 0.9s var(--ease-out-soft),
-    filter 0.9s var(--ease-out-soft);
-  filter: blur(6px);
-
-  /* The hint is for the arrival, and only for the arrival. Left on
-     permanently it keeps every revealed block on its own composited layer
-     for the life of the page — and, the reason it actually had to come
-     off, an element promising `opacity` or `transform` is a *backdrop
-     root*, so nothing inside it can blur what sits behind it. Every field
-     on the enquiry panel is inside one of these, which is why their
-     dropdowns came out as flat glass over a sharp background. */
-  &:not([data-reveal="on"]) {
-    will-change: opacity, transform;
-  }
+    transform 0.9s var(--ease-out-soft);
 
   &[data-reveal="on"] {
     opacity: 1;
     transform: none;
-    filter: none;
   }
 }
 
@@ -474,6 +477,14 @@
   height: 100vh;
   height: 100svh;
   isolation: isolate;
+  /* The strip and the nowrap title both run past the edges of the window
+     on purpose. Clipped here, at the band, rather than left to `body`:
+     with only the body's clip the document itself was still twice the
+     window wide, and iOS Safari does not honour overflow on `body`
+     reliably enough to keep a phone from dragging the page sideways. The
+     canvas is `fixed`, which an ancestor's overflow does not reach, so the
+     scene is untouched. */
+  overflow-x: clip;
   color: var(--color-text);
   transition: color 0.5s;
 }
@@ -630,8 +641,8 @@
 
 /* The strip itself, which is what `PinnedScroll` moves. It overflows the
    band on both sides on purpose — the tiles run off the edges of the
-   window rather than stopping at the padding — and `body`'s `overflow-x:
-   clip` is what stops that scrolling the page sideways. */
+   window rather than stopping at the padding — and the band's own
+   `overflow-x: clip` is what keeps that off the page's width. */
 .gooey-demo .slideshow-list {
   display: flex;
   align-items: center;
@@ -838,7 +849,11 @@
   animation: reshero-blind var(--reshero-blind-open) var(--reshero-blind-ease)
     both;
   animation-delay: calc(var(--i) * var(--reshero-blind-step));
-  will-change: clip-path;
+  /* No `will-change`: thirty of these are mounted and unmounted every
+     cycle, and each one holds a full-screen copy of the photograph. Asking
+     for a layer up front had a phone allocating thirty screens of texture
+     every 2.6 seconds; an animating `clip-path` is promoted for the length
+     of the animation regardless. */
 }
 
 /* The slice. Sized to the whole stage and pulled up by the band's index,
