@@ -1,5 +1,4 @@
 import { Marquee } from "@/components/ui/marquee";
-import { Sparkles } from "@/components/ui/sparkles";
 import { trustedBy, type TrustedOrg } from "@/lib/site";
 
 /**
@@ -8,16 +7,18 @@ import { trustedBy, type TrustedOrg } from "@/lib/site";
  * A replica of the "Trusted by experts / Used by the leaders" band on
  * obsidian-blade.vercel.app/commercial, asked for line by line: the two-tone
  * heading in Arial at 500, the indigo/violet ground, and the band beneath it
- * — a violet halo rising from the bottom, a white dome laid over it so only a
- * crescent shows, and a field of fine indigo dots over the whole thing.
+ * — a halo rising from the bottom and a white dome laid over it, so only a
+ * crescent and the hairline arc between them show.
  *
  * The type and the layout are still the reference's, read off the live page
  * rather than guessed, and so are the heading and caption inks — `indigo-900`
- * and `zinc-900` are theirs. The band underneath is not: its halo, its dots
- * and its horizon arc have all been brought onto Vijaya's blue, which is what
- * `Sparkles` taking its colour as a prop was for. The three move together by
- * necessity — the halo is the widest colour of them, so it tints whatever is
- * drawn over it, and a violet one leaves blue dots reading lavender.
+ * and `zinc-900` are theirs. The band underneath is not. The reference's field
+ * of fine indigo dots over the whole thing is gone, and what is left is the
+ * arc, carrying a gradient of its own: the site's blue the whole way, deepest
+ * at the flanks and lit to an electric blue at the apex. The glow beneath runs
+ * the same ramp, so the colour reads as light coming off the line rather than
+ * as a wash behind it — see `.trusted-arc` in `globals.css` for how a border
+ * holds a gradient at all.
  *
  * The one departure the brief asked for: their five names sit bare in a
  * five-column grid, ours are ten logos in white cards on a carousel.
@@ -99,31 +100,20 @@ export function TrustedExperts() {
         </Marquee>
       </div>
 
-      {/* The band: three layers, all the reference's. */}
-      <div className="relative -mt-10 h-[13rem] w-full overflow-hidden [mask-image:radial-gradient(60%_60%,white,transparent)] sm:-mt-12 sm:h-[16rem]">
-        {/* 1. A halo rising from the bottom edge. On the site's blue, and it
-               has to be: it is the widest colour in the band, so a violet one
-               washes everything drawn over it lavender — blue dots and a blue
-               arc included. `--color-navy-600`, and carried at 70% rather
-               than the reference's 40% — the hue alone is a small step
-               against white at that strength, and most of the depth here
-               comes from the opacity. */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_center,#2c5296,transparent_70%)] opacity-70" />
-        {/* 2. A white ellipse twice the page wide, laid over the halo's lower
+      {/* The band: two layers, the glow and the horizon laid over it. */}
+      <div
+        aria-hidden="true"
+        className="relative -mt-10 h-[13rem] w-full overflow-hidden [mask-image:radial-gradient(60%_60%,white,transparent)] sm:-mt-12 sm:h-[16rem]"
+      >
+        {/* 1. The glow, rising from the bottom edge in the arc's own colours
+               and faded out with it. */}
+        <div className="trusted-arc-glow absolute inset-0" />
+        {/* 2. A white ellipse twice the page wide, laid over the glow's lower
                half so only a crescent of it shows. Its top border is the
-               hairline arc that reads as a horizon — on the site's blue
-               rather than the reference's near-black indigo, and carried at a
-               weight where the line reads as blue instead of as grey. */}
-        <div className="absolute -left-1/2 top-1/2 aspect-[1/0.7] w-[200%] rounded-[100%] border-t border-navy-600/50 bg-white" />
-        {/* 3. The dots, over both, masked to fade out at the edges. Also on
-               the site's blue: `--color-navy-700`, written out because a
-               canvas fill takes a colour, not a custom property. Coarser than
-               the reference's field as well as darker — `size` scales each
-               dot's radius and keeps the spread of sizes, so it reads as grit
-               rather than as dust. */}
-        <div className="absolute inset-x-0 bottom-0 h-full w-full [mask-image:radial-gradient(70%_70%,white,transparent_98%)]">
-          <Sparkles color="#234179" size={1.35} className="h-full w-full" />
-        </div>
+               hairline arc that reads as a horizon, and it is the gradient —
+               it has to be a background rather than a `border-color`, so it
+               lives in `globals.css`. */}
+        <div className="trusted-arc absolute -left-1/2 top-1/2 aspect-[1/0.7] w-[200%] rounded-[100%]" />
       </div>
     </section>
   );
