@@ -974,8 +974,15 @@
     color: var(--color-navy-900);
   }
 
+  /* Held in the half of the column that hangs outside the frame, and ranged
+     right so it sits just short of the picture's edge. Centred with the
+     name above it, half the button was over the photograph and the half
+     that was over it could not be read — a name can lose a little of itself
+     to a dark stage, a control cannot. */
   .gooey-demo .tile__cta {
     margin-top: 1.1rem;
+    width: calc(var(--accolade-hang) - 0.6rem);
+    text-align: right;
   }
 
   /* About half the name's size, which is the demo's proportion: a label at
