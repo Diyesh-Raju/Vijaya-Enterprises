@@ -24,7 +24,9 @@ export type CardStat = {
  *
  * A single unlabelled stat is set as one large figure — the title has already
  * named it. Two or more are set as rows, since each then needs saying what it
- * counts.
+ * counts. Those rows lead with the figure and let the label follow it, so the
+ * numbers read down one column at the left edge; the figure column is held to
+ * a fixed width to keep the labels aligned with each other.
  */
 export function GradientCard({
   icon: Icon,
@@ -74,14 +76,14 @@ export function GradientCard({
               {stats.map((stat) => (
                 <div
                   key={stat.label ?? stat.value}
-                  className="flex items-baseline justify-between gap-5 py-2.5"
+                  className="flex items-baseline gap-4 py-2.5"
                 >
-                  <dt className="text-[0.9375rem] leading-[1.5] text-white/65">
-                    {stat.label}
-                  </dt>
-                  <dd className="font-display text-[1.375rem] leading-none text-white sm:text-[1.5rem]">
+                  <dd className="order-first w-[4.25rem] shrink-0 font-display text-[1.375rem] leading-none text-white sm:w-[4.75rem] sm:text-[1.5rem]">
                     {stat.value}
                   </dd>
+                  <dt className="min-w-0 text-[0.9375rem] leading-[1.5] text-white/65">
+                    {stat.label}
+                  </dt>
                 </div>
               ))}
             </dl>

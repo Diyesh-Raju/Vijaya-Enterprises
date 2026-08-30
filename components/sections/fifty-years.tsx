@@ -35,8 +35,8 @@ const points: {
     icon: BuildingIcon,
     title: "Residential Portfolio Scale",
     stats: [
-      { label: "Apartment projects", value: "30" },
-      { label: "No. of flats constructed", value: "1,200" },
+      { label: "Apartment projects", value: "30+" },
+      { label: "No. of flats constructed", value: "1200+" },
     ],
   },
   {
