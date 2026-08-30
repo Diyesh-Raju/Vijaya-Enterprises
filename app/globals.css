@@ -429,23 +429,96 @@
   .trusted-tile-row { --logo-scale: 0.56; }
 }
 
+/* ---- The horizon under that band ---------------------------------
+
+   A white ellipse twice the page wide, laid over the glow so only a crescent
+   of it shows; its top border is the arc. The field of dots that used to sit
+   over both is gone — the arc carries the band on its own now, so it is the
+   thing given the colour.
+
+   A `border-color` cannot hold a gradient, so this is the same two-background
+   trick as `border-rosegold` above: white clipped to the padding box, the
+   gradient clipped to the border box, leaving the gradient showing in the
+   1.5px top border and nowhere else.
+
+   The ellipse is twice the container wide and pulled half a width left, so
+   only its middle half is ever on screen — every stop below sits inside that
+   25%–75% window, and the ends fade to nothing rather than being cut off.
+   One hue the whole way, lit from the middle: the deepest navy at the flanks,
+   climbing through the site's blues to an electric one at the apex, which is
+   where the arc peaks and the eye lands. */
+.trusted-arc {
+  border-top: 2px solid transparent;
+  background-image:
+    linear-gradient(#ffffff, #ffffff),
+    linear-gradient(
+      90deg,
+      rgb(10 31 68 / 0) 25%,
+      #0a1f44 31%,
+      #234179 38%,
+      #2f7fd4 44.5%,
+      #3aa0ea 50%,
+      #2f7fd4 55.5%,
+      #234179 62%,
+      #0a1f44 69%,
+      rgb(10 31 68 / 0) 75%
+    );
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+/* The light the arc throws, in the arc's own colours: the same sweep left to
+   right, so it reads as glow coming off the line rather than as a band of its
+   own. This layer runs the width of the container, not the ellipse's, hence
+   the wider stops.
+
+   The mask is what aims it. Only the crescent above the arc is ever visible —
+   the white ellipse covers the rest — so the light is peaked just under the
+   apex at 57% and faded out well before the top edge, rather than at the
+   bottom of the band where none of it would show. */
+.trusted-arc-glow {
+  background-image: linear-gradient(
+    90deg,
+    #0a1f44 6%,
+    #234179 24%,
+    #2f7fd4 39%,
+    #3aa0ea 50%,
+    #2f7fd4 61%,
+    #234179 76%,
+    #0a1f44 94%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 58% 42% at 50% 57%,
+    #fff,
+    transparent
+  );
+  mask-image: radial-gradient(ellipse 58% 42% at 50% 57%, #fff, transparent);
+  opacity: 0.8;
+}
+
 /* ------------------------------------------------------------------
-   Gooey slideshow — the Codrops "Gooey Hover" demo, pinned.
+   Our Accolades — the Codrops "Gooey Hover" demo's layout, pinned.
 
    The demo's own SCSS, compiled by hand and scoped under `.gooey-demo`
    rather than the document: the template assumes it owns the page, and
    here it is one band on a longer one. Its `html` is set to 62.5% so a
    rem there is 10px; every length below is divided by ten to mean the
-   same thing against this site's 16px root. The colour pairs, the
-   stagger and the fixed full-window canvas are the demo's.
+   same thing against this site's 16px root. The colour pairs and the
+   stagger are the demo's.
 
-   What is not the demo's is the scroll. The band is pinned to the
-   screen inside a taller track and the page scroll through that track
-   walks the strip sideways, so a reader passes all four tiles on the
-   way down. That costs the band its freedom to be as tall as it likes:
-   a sticky box taller than the screen it sticks to can only ever show
-   its top, so the tile has to be sized to leave room for its stagger
-   and the padding above and below it. See `.slideshow-list__el`.
+   Its gooey is not. The demo drew every photograph again as a WebGL
+   plane so that hovering one could pull it about; the effect is not
+   wanted on these pictures, so the planes are gone and what is left is
+   the photographs themselves. The colour the band swings through as the
+   pointer passes a tile survives, in CSS — see the `:has` rules below.
+
+   Nor is the scroll. The band is pinned to the screen inside a taller
+   track and the page scroll through that track walks the strip
+   sideways, so a reader passes all four tiles on the way down. That
+   costs the band its freedom to be as tall as it likes: a sticky box
+   taller than the screen it sticks to can only ever show its top, so
+   the tile has to be sized to leave room for its stagger and the
+   padding above and below it. See `.slideshow-list__el`.
 ------------------------------------------------------------------- */
 
 /* One screen to hold the pin, plus however far the strip has left to
@@ -471,22 +544,61 @@
   --color-text: var(--color-text1);
   --color-bg: var(--color-bg1);
 
+  /* The band's vertical budget, spent from the top down: the heading's
+     line box and the gap under it, then whatever the caption takes out of
+     the same column, then the stagger the tiles are thrown off centre by
+     (the demo's, halved — the room it costs is now the caption's). What
+     `--accolade-img-h` leaves is the tallest photograph that still fits
+     the one screen the band is pinned to; the tile widths are that solved
+     for each frame's shape.
+
+     `--accolade-cap` is what the caption costs the photograph, and it is
+     the whole difference between the two layouts below. Stacked, the
+     caption is under the picture and takes a slot out of its height.
+     Beside it — which is what a screen wide enough gets — it costs the
+     photograph nothing, so the term goes to zero and the picture takes
+     the band. */
+  --accolade-head: clamp(2.75rem, 2.6vw + 1.05rem, 4rem);
+  --accolade-cap: 14rem;
+  --accolade-label: 16rem;
+  --accolade-gutter: 1.75rem;
+  --accolade-stagger: 0vh;
+  --accolade-img-h: calc(
+    100vh - var(--header-h) - var(--accolade-head) - var(--accolade-cap) -
+      4.25rem - 2 * var(--accolade-stagger)
+  );
+
   position: sticky;
   top: 0;
   display: block;
   height: 100vh;
   height: 100svh;
   isolation: isolate;
-  /* The strip and the nowrap title both run past the edges of the window
-     on purpose. Clipped here, at the band, rather than left to `body`:
-     with only the body's clip the document itself was still twice the
-     window wide, and iOS Safari does not honour overflow on `body`
-     reliably enough to keep a phone from dragging the page sideways. The
-     canvas is `fixed`, which an ancestor's overflow does not reach, so the
-     scene is untouched. */
+  /* The strip runs past both edges of the window on purpose — the tiles
+     leave the screen rather than stopping at the padding, and the heading
+     is tracked out wide enough to reach the right one on a narrow phone.
+     Clipped here, at the band, rather than left to `body`: with only the
+     body's clip the document itself was still twice the window wide, and
+     iOS Safari does not honour overflow on `body` reliably enough to keep
+     a phone from dragging the page sideways. */
   overflow-x: clip;
   color: var(--color-text);
   transition: color 0.5s;
+}
+
+/* The same budget against the small viewport, which is the height the band
+   is actually pinned to. Written as an override rather than as a second
+   declaration beside the first: a custom property takes whatever it is
+   given, so a browser without `svh` would not discard it here — it would
+   carry the broken length down into the widths that read it and leave them
+   invalid. `@supports` is the only place the question can be asked. */
+@supports (height: 100svh) {
+  .gooey-demo {
+    --accolade-img-h: calc(
+      100svh - var(--header-h) - var(--accolade-head) - var(--accolade-cap) -
+        4.25rem - 2 * var(--accolade-stagger)
+    );
+  }
 }
 
 /* The demo hangs its ground on `body`, with the page title behind it at
@@ -542,67 +654,88 @@
   transition: background-color 0.5s;
 }
 
-/* The demo's `#scene`: one canvas over the window, drawn through. */
-.gooey-demo .js-scene {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 3;
-  width: 100%;
-  height: 100vh;
-  pointer-events: none;
-}
-
-/* The band is one screen: the strip takes what the title above it and
-   the progress bar below it leave, and the tiles are centred in that. */
+/* The band is one screen, and everything on it is measured out of that
+   one screen: the heading holds the top, the progress bar the bottom, and
+   between them stand the photographs with their labels. The padding here
+   is the top and bottom of that subtraction; `--accolade-img-h` on the
+   band is the rest of it. */
 .gooey-demo .slideshow-ctn {
   position: relative;
   z-index: 5;
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: calc(var(--header-h) + 1.5rem) 5vw 3rem;
+  padding: calc(var(--header-h) + 1rem + var(--accolade-head)) 5vw 2rem;
 }
 
+/* The heading. The demo set this as a watermark — a window-wide word at a
+   tenth opacity, behind the tiles, there as texture. This band is named on
+   a company's home page and the name has to be read, so it is brought up
+   to the top of the section at a readable size and full strength, and the
+   strip is padded down to clear it. */
 .gooey-demo .page-title {
   position: absolute;
-  top: calc(var(--header-h) + 1.5rem);
+  top: calc(var(--header-h) + 1rem);
   left: 5vw;
-  z-index: -1;
+  right: 5vw;
+  z-index: 6;
   margin: 0;
-  white-space: nowrap;
   font-family: var(--font-display);
   font-weight: 600;
   text-transform: uppercase;
-  font-size: calc(4vw + 8rem);
-  line-height: 0.975;
+  font-size: clamp(1.65rem, 2.9vw, 2.6rem);
+  line-height: 1.1;
+  letter-spacing: 0.08em;
   color: var(--color-text);
-  opacity: 0.1;
+  text-shadow: 0 2px 28px rgb(4 13 32 / 0.55);
+  transition: color 0.5s;
 }
 
+/* The demo dropped the second word onto its own indented line, which is a
+   watermark's habit. Read as a heading, the two words are one line. */
 .gooey-demo .title__offset {
-  display: block;
-  margin-left: 15%;
+  display: inline;
+  margin-left: 0;
 }
 
+/* `color: inherit` is load-bearing: the site sets a navy on every `h1`-`h4`,
+   and an award's name is an `h3` sitting on a dark band. Without it the tint
+   its tile hands down never reaches the one line that most needs it. */
 .gooey-demo .title--medium {
   font-family: var(--font-display);
   font-weight: 600;
+  color: inherit;
   text-transform: uppercase;
-  font-size: calc(1vw + 1.6rem);
-  line-height: 0.975;
+  font-size: clamp(0.9rem, 0.3vw + 0.82rem, 1.1rem);
+  letter-spacing: 0.03em;
+  line-height: 1.2;
   margin: 0;
-}
-
-.gooey-demo .title__offset--medium {
-  display: block;
-  margin-left: 15%;
+  text-wrap: balance;
 }
 
 .gooey-demo .btn-inline {
   display: inline-block;
-  line-height: 1.5;
-  border-bottom: 0.1rem solid;
+  padding: 0;
+  border: 0;
+  border-bottom: 0.0625rem solid;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8125rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  line-height: 1.6;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.gooey-demo .btn-inline:hover {
+  opacity: 0.7;
+}
+
+.gooey-demo .btn-inline:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
 }
 
 /* Slideshow
@@ -653,24 +786,38 @@
   will-change: transform;
 }
 
-/* The demo's tile width — 40vmin, and never under 25rem — held down to
-   what fits the one screen the band is pinned to, on both axes.
+/* The photograph's width — the demo's 40vmin, and never under 20rem —
+   held down to what fits the one screen the band is pinned to, on both
+   axes.
 
-   Down the screen: a tile is 1.36 times as tall as it is wide and sits
-   8vh off centre, so its height and its stagger together may take 84vh
-   less the padding, and the last term is that solved for the width.
+   Down the screen: the last term is `--accolade-img-h` solved for the
+   frame's own shape, divided by the portrait's 1.3636 or the landscape's
+   0.75, so no photograph is ever taller than the room the heading and
+   the caption leave it.
 
-   Across it: the strip now stops in a fixed place rather than wherever
-   a wheel left it, and the frame it stops on has to hold. 72vw leaves
-   the last tile resting about where the first one started — its 10vw
-   run-off and its gutter both still on screen — instead of jammed into
-   the left edge with its caption cut off. Only phones are narrow
-   enough for it to bite. */
+   Across it: the strip now stops in a fixed place rather than wherever a
+   wheel left it, and the frame it stops on has to hold. 76vw leaves the
+   last tile resting about where the first one started — its 10vw run-off
+   and its gutter both still on screen — instead of jammed into the left
+   edge with its caption cut off. Only phones are narrow enough for it to
+   bite. */
 .gooey-demo .slideshow-list__el {
+  --accolade-base: min(max(20rem, 40vmin), 76vw, calc(var(--accolade-img-h) / 1.3636));
+  --accolade-w: var(--accolade-base);
   flex: 0 0 auto;
-  width: min(max(25rem, 40vmin), 72vw, calc(58vh - 130px));
-  width: min(max(25rem, 40vmin), 72vw, calc(58svh - 130px));
-  margin-left: 15vw;
+  width: var(--accolade-w);
+  margin-left: 10vw;
+}
+
+/* The two older awards are landscape photographs, and are given landscape
+   frames: wider than the portraits by a third, and shorter, so the pair
+   carries about the weight of one portrait beside it. */
+.gooey-demo .slideshow-list__el--wide {
+  --accolade-w: min(
+    calc(var(--accolade-base) * 1.34),
+    86vw,
+    calc(var(--accolade-img-h) / 0.75)
+  );
 }
 
 .gooey-demo .slideshow-list__el:last-child {
@@ -683,21 +830,65 @@
 .gooey-demo .slideshow-list__el:nth-child(3) .tile__content { color: var(--color-text3); }
 .gooey-demo .slideshow-list__el:nth-child(4) .tile__content { color: var(--color-text4); }
 
-@media (min-width: 768px) {
-  .gooey-demo .slideshow-list__el:nth-child(1) { transform: translateY(8vh); }
-  .gooey-demo .slideshow-list__el:nth-child(2) { transform: translateY(-8vh); }
-  .gooey-demo .slideshow-list__el:nth-child(3) { transform: translateY(8vh); }
-  .gooey-demo .slideshow-list__el:nth-child(4) { transform: translateY(-8vh); }
+/* The demo's colour swing, which used to be JavaScript hanging off the plane
+   it drew: entering a tile wrote that tile's pair onto the section, and the
+   ground and the heading followed. The planes are gone and the swing is not —
+   the band can ask which of its photographs is under the pointer.
+
+   Asked of the photograph rather than the whole tile, so a reader stopped on a
+   citation is not also holding the band's colour; and gated on a real pointer,
+   because on a touch screen `:hover` sticks to whatever was last tapped. The
+   demo skipped the swing on mobile for that same reason. */
+@media (hover: hover) {
+  .gooey-demo:has(.slideshow-list__el:nth-child(1) .tile__link:hover) {
+    --color-bg: var(--color-bg1);
+    --color-text: var(--color-text1);
+  }
+
+  .gooey-demo:has(.slideshow-list__el:nth-child(2) .tile__link:hover) {
+    --color-bg: var(--color-bg2);
+    --color-text: var(--color-text2);
+  }
+
+  .gooey-demo:has(.slideshow-list__el:nth-child(3) .tile__link:hover) {
+    --color-bg: var(--color-bg3);
+    --color-text: var(--color-text3);
+  }
+
+  .gooey-demo:has(.slideshow-list__el:nth-child(4) .tile__link:hover) {
+    --color-bg: var(--color-bg4);
+    --color-text: var(--color-text4);
+  }
 }
 
+@media (min-width: 768px) {
+  .gooey-demo { --accolade-stagger: 2.5vh; }
+
+  .gooey-demo .slideshow-list__el:nth-child(1) { transform: translateY(var(--accolade-stagger)); }
+  .gooey-demo .slideshow-list__el:nth-child(2) { transform: translateY(calc(-1 * var(--accolade-stagger))); }
+  .gooey-demo .slideshow-list__el:nth-child(3) { transform: translateY(var(--accolade-stagger)); }
+  .gooey-demo .slideshow-list__el:nth-child(4) { transform: translateY(calc(-1 * var(--accolade-stagger))); }
+}
+
+/* The demo's gutter was 20vw, and the tiles it separated were a photograph
+   wide. These carry a label as well, so the air is already inside the tile —
+   another fifth of the window between them only made the band longer to
+   scroll and left one tile alone on the screen at a time. */
 @media (min-width: 640px) {
-  .gooey-demo .slideshow-list__el { margin-left: 20vw; }
+  .gooey-demo .slideshow-list__el { margin-left: 12vw; }
 }
 
 /* Tile
 --------------------------------------------------------- */
 
 .gooey-demo .tile {
+  position: relative;
+}
+
+/* The photograph's box, and the band's hover target: what the colour swing
+   above asks about. */
+.gooey-demo .tile__link {
+  display: block;
   position: relative;
 }
 
@@ -713,6 +904,10 @@
   padding-top: 136.36%;
 }
 
+.gooey-demo .slideshow-list__el--wide .tile__fig::before {
+  padding-top: 75%;
+}
+
 .gooey-demo .tile__img {
   display: block;
   position: absolute;
@@ -722,44 +917,94 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  transition: opacity 0.3s;
 }
 
-.gooey-demo .tile__img.is-loaded {
-  opacity: 0;
-}
+/* The caption, off the photograph rather than across it. The demo hung
+   two-word place names over the left edge of the picture; an award's name
+   is a sentence and its citation a paragraph, and neither can be read over
+   a photograph.
 
+   Under it, on a narrow screen, the slot is held open at `--accolade-cap`
+   whether or not a citation is showing — so `See more` reveals text into
+   room the tile already has, and the photographs on either side of it hold
+   still. */
 .gooey-demo .tile__content {
-  position: absolute;
-  bottom: 3.6rem;
-  left: 0;
-  width: 100%;
-  font-size: 1.4rem;
+  position: relative;
+  margin-top: 1rem;
+  min-height: var(--accolade-cap);
+  font-size: 1rem;
   transition: color 0.3s;
+}
+
+/* Wide enough for a label beside the picture, which is where a wall of
+   awards puts one. It costs the photograph none of its height — the tile
+   is as tall as its picture, and the label grows down its own column into
+   room already there — so the band's whole height goes to the picture and
+   the reserved slot is given back. It is what keeps a short laptop screen
+   from showing four postage stamps. */
+@media (min-width: 900px) {
+  .gooey-demo { --accolade-cap: 0rem; }
+
+  .gooey-demo .slideshow-list__el {
+    width: calc(var(--accolade-w) + var(--accolade-gutter) + var(--accolade-label));
+  }
+
+  .gooey-demo .tile {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--accolade-gutter);
+  }
+
+  .gooey-demo .tile__link {
+    flex: 0 0 var(--accolade-w);
+    width: var(--accolade-w);
+  }
+
+  .gooey-demo .tile__content {
+    flex: 1 1 auto;
+    margin-top: 0;
+    padding-top: 0.3rem;
+  }
 }
 
 .gooey-demo .tile:hover .tile__content {
   color: #fff;
 }
 
-.gooey-demo .tile__title {
-  margin-left: -10%;
-  white-space: nowrap;
-}
-
-@media (min-width: 640px) {
-  .gooey-demo .tile__title { margin-left: -45%; }
-}
-
 .gooey-demo .tile__cta {
   display: block;
-  margin-top: 2rem;
-  margin-left: 6.4%;
-  line-height: 1.5;
+  margin-top: 0.8rem;
 }
 
-@media (min-width: 640px) {
-  .gooey-demo .tile__cta { margin-left: -11%; }
+/* Kept in the flow and hidden in place, rather than mounted on click: the
+   space it takes is the space the tile is already holding for it, and
+   `visibility` is what takes it out of the reading order while it is
+   closed. */
+.gooey-demo .tile__desc {
+  margin: 0.8rem 0 0;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgb(255 255 255 / 0.18);
+  color: rgb(255 255 255 / 0.82);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  letter-spacing: 0.005em;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-0.35rem);
+  transition: opacity 0.35s var(--ease-out-soft),
+    transform 0.35s var(--ease-out-soft), visibility 0s linear 0.35s;
+}
+
+.gooey-demo .tile__desc[data-open] {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.35s var(--ease-out-soft),
+    transform 0.35s var(--ease-out-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gooey-demo .tile__desc { transition-duration: 0s; }
 }
 
 /* ------------------------------------------------------------------

@@ -1,91 +1,105 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
- * The Codrops "Gooey Hover" slideshow, pinned.
+ * "Our Accolades" — a pinned strip of the company's awards.
  *
- * `lib/gooey/` holds the demo's own `Stage`, `Scene`, `Tile`, `utils` and
- * `Layout`, copied across unchanged apart from what a module boundary forces:
- * the shaders come from `lib/gooey-shaders` (the same GLSL, already in this
- * repo), the tint variables are scoped to this section rather than the
- * document, and two `three` APIs the demo used have since been renamed. The
- * detail view and the licensed `SplitText` plugin are left out — this site has
- * no zoomed detail view for them to drive.
+ * The band came from the Codrops "Gooey Hover" demo, and what is left of it is
+ * the layout and the pin. The demo's own draw — a WebGL plane over every
+ * photograph, so that hovering one could pull it about under a blob — has been
+ * taken out: the effect is not wanted on these pictures, and without it the
+ * planes were redrawing photographs the browser had already drawn, at the cost
+ * of `three`, a full-window canvas and a render loop. The photographs are now
+ * plain `<img>`, which is what the demo fell back to on a machine with no
+ * WebGL anyway. The colour the band swings through as the pointer passes a
+ * tile is the demo's, and it survives — see the `:has` rules in `globals.css`,
+ * which ask the same question the plane's `mouseenter` used to.
  *
- * The scroll is not the demo's. The demo hijacks the wheel while the pointer
- * is over the strip and lets the page carry on regardless; here the band is
- * pinned to the screen inside a taller track, and the page scroll through that
- * track walks the strip — so the reader passes all four tiles on the way down
- * and the page only moves on once the strip has run out. `lib/gooey/
- * PinnedScroll` is that transport, in place of `smooth-scrollbar` and its
- * horizontal plugin, and it still hands `Stage` and `Tile` the `offset` and
- * `limit` they were reading off the scrollbar — squash included, since the
- * strip is damped and so still has a velocity to squash by.
+ * The scroll is not the demo's either. The demo hijacks the wheel while the
+ * pointer is over the strip and lets the page carry on regardless; here the
+ * band is pinned to the screen inside a taller track, and the page scroll
+ * through that track walks the strip — so the reader passes all four tiles on
+ * the way down and the page only moves on once the strip has run out.
+ * `lib/gooey/PinnedScroll` is that transport, in place of `smooth-scrollbar`
+ * and its horizontal plugin, and `lib/gooey/Stage` hangs the progress bar, the
+ * heading's drift and the ground's on it.
  *
- * ⚠️ The tiles are still the demo's travel photography, kept as-is on
- * request, now standing under "Our Accolades". On a construction company's
- * home page that is somebody else's content. Replace the pairs in
- * `public/gooey/` — a base and a hover frame each, 1024×1024 — and the copy
- * below, and everything else keeps working: the track measures the strip it is
- * given, so adding or dropping a tile changes how far the pin holds and
- * nothing else. Each tile also wants a `--color-text`/`--color-bg` pair in
- * `globals.css`, numbered by its position.
+ * Each award wants a photograph in `public/accolades/` and a
+ * `--color-text`/`--color-bg` pair in `globals.css`, numbered by position. The
+ * track measures the strip it is given, so adding or dropping an award changes
+ * how far the pin holds and nothing else.
+ *
+ * The caption sits under its photograph rather than across it (the demo's own
+ * arrangement): an award's name is a sentence, not a two-word place name, and
+ * it has to be read. `See more` opens the citation underneath it.
  */
 
-type Slide = {
+type Accolade = {
   key: string;
-  lead: string;
-  offset: string;
+  /** The award, as it should be read. Set in caps by the stylesheet. */
+  title: string;
+  /** The citation under `See more`. Empty means no button and no panel. */
+  description: string;
   alt: string;
+  /** Landscape frame rather than the portrait default. */
+  wide?: boolean;
 };
 
-const slides: readonly Slide[] = [
-  { key: "woods", lead: "Woods &", offset: "Forests", alt: "Woods & Forests" },
-  { key: "rocks", lead: "Rocks &", offset: "Mountains", alt: "Rocks & Mountains" },
-  { key: "cities", lead: "Cities &", offset: "Skylines", alt: "Cities & Skylines" },
-  { key: "deserts", lead: "Sand &", offset: "Deserts", alt: "Sand & Deserts" },
+const accolades: readonly Accolade[] = [
+  {
+    key: "times",
+    title: "The Most Trusted & Preferred Developers 2024",
+    description:
+      "Vijaya Enterprises received the Times Business Award 2024 from Anupam Kher, Padma Shri (2004) and Padma Bhushan (2016) awardee and renowned Indian film actor.",
+    alt: "Vijaya Enterprises receiving the Times Business Award 2024 in Bengaluru",
+  },
+  {
+    key: "vijayavani",
+    title: "Vijayavani International Award 2025",
+    description:
+      "Mahantesh B. Nelavagi received the prestigious Vijayavani International Award 2025. The honour was presented by Mr. B. N. Reddy, High Commissioner of India to Malaysia, and Dr. Anand Sankeshwar, MD of VRL Groups.",
+    alt: "Mahantesh B. Nelavagi receiving the Vijayavani International Award 2025",
+  },
+  // The last two are awaiting their copy. The name and the citation are the
+  // only things missing — drop the words in and the button, the panel and the
+  // space they open into are already here.
+  {
+    key: "legacy-one",
+    title: "Old Prize",
+    description: "",
+    alt: "An early Vijaya Enterprises award being presented",
+    wide: true,
+  },
+  {
+    key: "legacy-two",
+    title: "Old Prize",
+    description: "",
+    alt: "An early Vijaya Enterprises award being presented",
+    wide: true,
+  },
 ];
 
 export function DestinationSlideshow() {
   const rootRef = useRef<HTMLElement | null>(null);
+  const [opened, setOpened] = useState<readonly string[]>([]);
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
 
-    // No WebGL, no scene — the photographs underneath are the fallback, and
-    // they only step back once a plane is actually covering them. The pin and
-    // the strip are set up either way: without them the tiles past the first
-    // could not be reached at all.
-    const probe = document.createElement("canvas");
-    const gl = probe.getContext("webgl2") ?? probe.getContext("webgl");
-    const webgl = gl !== null;
-    gl?.getExtension("WEBGL_lose_context")?.loseContext();
-
     let stage: { destroy?: () => void } | null = null;
-    // The modules arrive on their own clock, and by then this effect may
-    // already have been cleaned up — React runs every effect twice in
-    // development, and a navigation can unmount the section mid-import.
-    // Without this the second Stage builds a second `WebGLRenderer` on a
-    // canvas that already has one; they share the single context that canvas
-    // can give out, and whichever is torn down first takes it away from the
-    // other. The tiles have hidden their photographs by then, so what is left
-    // is captions over nothing.
+    // The module arrives on its own clock, and by then this effect may already
+    // have been cleaned up — React runs every effect twice in development, and
+    // a navigation can unmount the section mid-import. A second Stage would
+    // leave a second scroll listening on a strip nobody is showing.
     let cancelled = false;
 
-    // The demo's modules reach for `window` at import time, so they load in
-    // the browser only. `window.APP` is the demo's own handle — its
-    // `index.js` sets exactly this, and `Tile` reads `APP.Layout.isMobile`.
-    void Promise.all([
-      import("@/lib/gooey/Stage"),
-      import("@/lib/gooey/Layout"),
-    ]).then(([{ default: Stage }, { default: Layout }]) => {
+    // `Stage` reaches for `window` at import time, so it loads in the browser
+    // only.
+    void import("@/lib/gooey/Stage").then(({ default: Stage }) => {
       if (cancelled || !rootRef.current) return;
-      const APP = { Stage: null as unknown, Layout: new Layout() };
-      (window as unknown as { APP: typeof APP }).APP = APP;
-      stage = new Stage(root, { webgl });
-      APP.Stage = stage;
+      stage = new Stage(root);
     });
 
     return () => {
@@ -94,12 +108,18 @@ export function DestinationSlideshow() {
     };
   }, []);
 
+  const toggle = (key: string) => {
+    setOpened((open) =>
+      open.includes(key) ? open.filter((k) => k !== key) : [...open, key],
+    );
+  };
+
   return (
     // The track is the band's scroll distance: one screen to hold the pin,
     // plus however far the strip has left to run. `PinnedScroll` measures the
     // strip and writes that second part back as `--gooey-travel`.
     <div className="gooey-track">
-      <section ref={rootRef} className="gooey-demo">
+      <section ref={rootRef} className="gooey-demo" aria-labelledby="accolades-title">
         {/* The ground: the brushed swirl, laid under the whole band and walked
             sideways by the same scroll that walks the strip, so the band reads
             as one moving thing rather than tiles sliding over a still colour.
@@ -107,46 +127,74 @@ export function DestinationSlideshow() {
             that slack, so its own edge never comes into view. */}
         <div className="gooey-backdrop" aria-hidden="true" />
 
-        <h1 className="page-title | title">
+        <h2 id="accolades-title" className="page-title | title">
           Our <span className="slideshow__title__offset | title__offset">Accolades</span>
-        </h1>
-
-        <canvas className="js-scene" aria-hidden="true" />
+        </h2>
 
         <section className="slideshow-ctn">
           <div className="slideshow">
             <ul className="slideshow-list">
-              {slides.map((slide) => (
-                <li key={slide.key} className="slideshow-list__el">
-                  <article className="tile | js-tile">
-                    <a href="#what-we-build">
-                      <figure className="tile__fig">
-                        {/* A plain <img>, deliberately: it is the layout box the
-                            WebGL plane measures itself against, and `three`
-                            loads the same file by URL as a texture. */}
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={`/gooey/${slide.key}-base.jpg`}
-                          data-hover={`/gooey/${slide.key}-hover.jpg`}
-                          alt={slide.alt}
-                          className="tile__img"
-                        />
-                      </figure>
-                      <div className="tile__content">
-                        <h2 className="tile__title | title title--medium">
-                          {slide.lead}{" "}
-                          <span className="title__offset title__offset--medium">
-                            {slide.offset}
-                          </span>
-                        </h2>
-                        <div className="tile__cta">
-                          <span className="btn-inline">See more</span>
-                        </div>
+              {accolades.map((award) => {
+                const isOpen = opened.includes(award.key);
+
+                return (
+                  <li
+                    key={award.key}
+                    className={`slideshow-list__el${
+                      award.wide ? " slideshow-list__el--wide" : ""
+                    }`}
+                  >
+                    <article className="tile | js-tile">
+                      {/* The photograph, and the box the band's colour swing
+                          asks about — the caption below is deliberately
+                          outside it, so reading the citation does not hold the
+                          band on that award's colour. */}
+                      <div className="tile__link">
+                        <figure className="tile__fig">
+                          {/* A plain <img>: the strip is transformed as a
+                              whole, and `next/image` would only add a wrapper
+                              between the frame and the picture it sizes. */}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={`/accolades/${award.key}.jpg`}
+                            alt={award.alt}
+                            className="tile__img"
+                          />
+                        </figure>
                       </div>
-                    </a>
-                  </article>
-                </li>
-              ))}
+
+                      <div className="tile__content">
+                        <h3 className="tile__title | title title--medium">
+                          {award.title}
+                        </h3>
+
+                        {award.description ? (
+                          <>
+                            <div className="tile__cta">
+                              <button
+                                type="button"
+                                className="btn-inline"
+                                aria-expanded={isOpen}
+                                aria-controls={`accolade-${award.key}`}
+                                onClick={() => toggle(award.key)}
+                              >
+                                {isOpen ? "See less" : "See more"}
+                              </button>
+                            </div>
+                            <p
+                              id={`accolade-${award.key}`}
+                              className="tile__desc"
+                              data-open={isOpen ? "" : undefined}
+                            >
+                              {award.description}
+                            </p>
+                          </>
+                        ) : null}
+                      </div>
+                    </article>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
