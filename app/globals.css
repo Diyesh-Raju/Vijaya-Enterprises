@@ -719,7 +719,7 @@
    and the line is left to wrap. */
 @media (min-width: 900px) {
   .gooey-demo .title--medium {
-    font-size: min(calc(0.9rem + 2.1vw), 3rem);
+    font-size: min(calc(0.7rem + 1.5vw), 2.25rem);
     letter-spacing: 0.005em;
     line-height: 1.12;
   }
@@ -960,32 +960,18 @@
     transition: bottom 0.35s var(--ease-out-soft);
   }
 
-  /* Cream here, where the same line is navy everywhere else on the band.
+  /* Navy, the same ink as everything else on the band, and bare — no halo
+     behind it.
 
-     Half of it crosses a photograph, and these photographs are awards on
-     dark stages under spotlights: navy over that is a line nobody reads,
-     and there is no ink that reads over both a champagne ground and a
-     black one on its own. So the letters are cream and carry their own
-     dark: four blurs of the band's navy stacked behind them, tight to
-     loose, which over the photograph is invisible and over the ground is
-     the shadow the light half needs to hold its shape. A wash broad enough
-     to do the same job the other way round fogs half the picture — that
-     was tried first.
-
-     In `em`, so the button's halo is the button's size without being told.
-     Delete these two rules and the arrangement is unchanged; only the
-     reading of it is. */
+     That is a decision, not an oversight: half of every name crosses an
+     award being handed over on a dark stage, and navy on that is a hard
+     read. It was set in cream for a while, and then in navy with a
+     champagne halo holding the letters' edges; both were asked off. What
+     is left reads cleanly over the ground and poorly over the picture, and
+     only two things change that — a light ink, or moving the name off the
+     photograph. Either is a line of CSS when it is wanted. */
   .gooey-demo .tile__content {
-    color: #f7edd9;
-  }
-
-  .gooey-demo .tile__title,
-  .gooey-demo .tile__cta {
-    text-shadow:
-      0 0 0.045em rgb(6 20 49 / 0.96),
-      0 0 0.12em rgb(6 20 49 / 0.92),
-      0 0 0.3em rgb(6 20 49 / 0.72),
-      0 0 0.7em rgb(6 20 49 / 0.45);
+    color: var(--color-navy-900);
   }
 
   .gooey-demo .tile__cta {
@@ -995,7 +981,7 @@
   /* About half the name's size, which is the demo's proportion: a label at
      small-print size under a line that big reads as a footnote to it. */
   .gooey-demo .btn-inline {
-    font-size: min(calc(0.55rem + 0.75vw), 1.15rem);
+    font-size: min(calc(0.48rem + 0.58vw), 1rem);
     letter-spacing: 0.06em;
   }
 
