@@ -12,9 +12,9 @@ import { useEffect, useRef, useState } from "react";
  * planes were redrawing photographs the browser had already drawn, at the cost
  * of `three`, a full-window canvas and a render loop. The photographs are now
  * plain `<img>`, which is what the demo fell back to on a machine with no
- * WebGL anyway. The colour the band swings through as the pointer passes a
- * tile is the demo's, and it survives — see the `:has` rules in `globals.css`,
- * which ask the same question the plane's `mouseenter` used to.
+ * WebGL anyway. The colour the band swung through as the pointer passed a
+ * tile has gone with them: the ground is one graded photograph that holds its
+ * colour, and the band one ink on it.
  *
  * The scroll is not the demo's either. The demo hijacks the wheel while the
  * pointer is over the strip and lets the page carry on regardless; here the
@@ -25,14 +25,17 @@ import { useEffect, useRef, useState } from "react";
  * and its horizontal plugin, and `lib/gooey/Stage` hangs the progress bar, the
  * heading's drift and the ground's on it.
  *
- * Each award wants a photograph in `public/accolades/` and a
- * `--color-text`/`--color-bg` pair in `globals.css`, numbered by position. The
+ * Each award wants a photograph in `public/accolades/`, named by its key. The
  * track measures the strip it is given, so adding or dropping an award changes
  * how far the pin holds and nothing else.
  *
- * The caption sits under its photograph rather than across it (the demo's own
- * arrangement): an award's name is a sentence, not a two-word place name, and
- * it has to be read. `See more` opens the citation underneath it.
+ * The caption is hung across the picture's lower left, which is the demo's own
+ * arrangement: the name centred on the frame's edge, half of it outside and
+ * half over the photograph, `See more` under it. It is set in cream there
+ * rather than the band's navy — half of every line is over an award being
+ * handed over on a dark stage, and no one ink reads over both that and a
+ * champagne ground. On a narrow screen there is no room beside the picture for
+ * any of it, and the caption goes back under the photograph in navy.
  */
 
 type Accolade = {

@@ -506,11 +506,14 @@
    same thing against this site's 16px root. The colour pairs and the
    stagger are the demo's.
 
-   Its gooey is not. The demo drew every photograph again as a WebGL
-   plane so that hovering one could pull it about; the effect is not
-   wanted on these pictures, so the planes are gone and what is left is
-   the photographs themselves. The colour the band swings through as the
-   pointer passes a tile survives, in CSS — see the `:has` rules below.
+   Its gooey is not, and neither is its colour. The demo drew every
+   photograph again as a WebGL plane so that hovering one could pull it
+   about, and swung the whole band through that tile's colour pair as the
+   pointer passed. Both are gone: the planes because the effect is not
+   wanted on these pictures, and the swing because a page's ground has no
+   business changing colour under the reader's pointer. What is left is
+   one ground that never moves — the brushed swirl, graded warm — and one
+   ink on it.
 
    Nor is the scroll. The band is pinned to the screen inside a taller
    track and the page scroll through that track walks the strip
@@ -533,16 +536,20 @@
 }
 
 .gooey-demo {
-  --color-text1: #deedcf;
-  --color-text2: #ffcbcc;
-  --color-text3: #b9e6e3;
-  --color-text4: #e1d0a1;
-  --color-bg1: #3f4849;
-  --color-bg2: #493f46;
-  --color-bg3: #2b3242;
-  --color-bg4: #3b3232;
-  --color-text: var(--color-text1);
-  --color-bg: var(--color-bg1);
+  /* One ink and one ground, where the demo had four pairs and swung
+     between them. The ground is the swirl's own average, so the moment
+     before the photograph decodes is the same champagne rather than a
+     flash of white; the ink is the site's navy, which is what every other
+     band on the page sets its type in.
+
+     ⚠️ The pairing is measured against the photograph, not assumed. Over
+     the graded swirl in `public/gooey/backdrop.jpg`, navy-900 clears
+     5.2:1 on the darkest striation in the frame and 8.7:1 on the median —
+     so the smallest type on the band (the citation, and `See more`) holds
+     AA wherever the ground's drift happens to put it. Regrade or replace
+     that photograph and the floor moves with it. */
+  --color-bg: #d2b98e;
+  --color-text: var(--color-navy-900);
 
   /* The band's vertical budget, spent from the top down: the heading's
      line box and the gap under it, then whatever the caption takes out of
@@ -560,8 +567,6 @@
      the band. */
   --accolade-head: clamp(2.75rem, 2.6vw + 1.05rem, 4rem);
   --accolade-cap: 14rem;
-  --accolade-label: 16rem;
-  --accolade-gutter: 1.75rem;
   --accolade-stagger: 0vh;
   --accolade-img-h: calc(
     100vh - var(--header-h) - var(--accolade-head) - var(--accolade-cap) -
@@ -583,7 +588,6 @@
      a phone from dragging the page sideways. */
   overflow-x: clip;
   color: var(--color-text);
-  transition: color 0.5s;
 }
 
 /* The same budget against the small viewport, which is the height the band
@@ -605,15 +609,15 @@
    `z-index: -1`. Here the band carries its own, so the colour goes on a
    layer of its own underneath the title rather than on the section itself —
    otherwise the section's background paints over the title and the word
-   never appears. It sits under the backdrop and is only seen through it,
-   or in its place if the photograph never loads. */
+   never appears. It is only ever seen in the photograph's place, before it
+   decodes or if it never arrives, which is why it is the photograph's own
+   average rather than a colour of its own. */
 .gooey-demo::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -3;
   background-color: var(--color-bg);
-  transition: background-color 0.5s;
 }
 
 /* The ground proper: a brushed swirl walked sideways by the same scroll that
@@ -623,10 +627,14 @@
    at most 10% of its own width — 12.8% of the band's — so the walk is taken
    out of the slack and its edge is never pulled into view.
 
-   The tint over it is what keeps the demo's colour change: hovering a tile
-   still swings the ground through that tile's `--color-bg`, only now the
-   swirl is showing through it rather than a flat field. Heavy enough that
-   the band stays dark and every pale caption on it keeps its contrast. */
+   Nothing is laid over it. It carried a two-thirds tint for a while, in the
+   colour of whichever tile the pointer was on, and that is what the band is
+   rid of: the swirl now shows at its own colour and holds it. What the tint
+   was doing for legibility the photograph does for itself — it is graded, in
+   the file, to a range navy type holds over (see `--color-text` above). The
+   grade is `eq=contrast=0.65:brightness=0.18:saturation=1.3` with a little
+   warmth in the shadows, and the ungraded original is kept beside it at
+   `assets/gooey/backdrop-raw.jpg` to regrade from. */
 .gooey-demo .gooey-backdrop {
   position: absolute;
   inset: 0;
@@ -635,23 +643,13 @@
   pointer-events: none;
 }
 
-.gooey-demo .gooey-backdrop::before,
-.gooey-demo .gooey-backdrop::after {
+.gooey-demo .gooey-backdrop::before {
   content: "";
   position: absolute;
   inset: 0 -14%;
-}
-
-.gooey-demo .gooey-backdrop::before {
   background: url("/gooey/backdrop.jpg") center / cover no-repeat;
   transform: translate3d(var(--gooey-drift, 0%), 0, 0);
   will-change: transform;
-}
-
-.gooey-demo .gooey-backdrop::after {
-  background-color: var(--color-bg);
-  opacity: 0.68;
-  transition: background-color 0.5s;
 }
 
 /* The band is one screen, and everything on it is measured out of that
@@ -672,7 +670,9 @@
    tenth opacity, behind the tiles, there as texture. This band is named on
    a company's home page and the name has to be read, so it is brought up
    to the top of the section at a readable size and full strength, and the
-   strip is padded down to clear it. */
+   strip is padded down to clear it. No shadow under it: that was there to
+   hold a pale word off a dark band, and the ink and the ground have both
+   changed sides since. */
 .gooey-demo .page-title {
   position: absolute;
   top: calc(var(--header-h) + 1rem);
@@ -687,8 +687,6 @@
   line-height: 1.1;
   letter-spacing: 0.08em;
   color: var(--color-text);
-  text-shadow: 0 2px 28px rgb(4 13 32 / 0.55);
-  transition: color 0.5s;
 }
 
 /* The demo dropped the second word onto its own indented line, which is a
@@ -698,9 +696,9 @@
   margin-left: 0;
 }
 
-/* `color: inherit` is load-bearing: the site sets a navy on every `h1`-`h4`,
-   and an award's name is an `h3` sitting on a dark band. Without it the tint
-   its tile hands down never reaches the one line that most needs it. */
+/* The site's own navy on `h1`-`h4` would land here anyway; `inherit` keeps
+   the whole tile — name, button, citation — reading from one ink instead of
+   two that have to be kept in step. */
 .gooey-demo .title--medium {
   font-family: var(--font-display);
   font-weight: 600;
@@ -711,6 +709,20 @@
   line-height: 1.2;
   margin: 0;
   text-wrap: balance;
+}
+
+/* Set at the demo's scale wherever the caption hangs off the picture: this
+   is the line the band is read by, and at label size beside a photograph
+   the size of a door it read as a footnote. The demo's own `2rem + 2.5vw`
+   is written for two-word place names on one `nowrap` line; an award's name
+   is a sentence of six or seven words, so the ramp is gentler and capped,
+   and the line is left to wrap. */
+@media (min-width: 900px) {
+  .gooey-demo .title--medium {
+    font-size: min(calc(0.9rem + 2.1vw), 3rem);
+    letter-spacing: 0.005em;
+    line-height: 1.12;
+  }
 }
 
 .gooey-demo .btn-inline {
@@ -755,7 +767,7 @@
   left: calc(50% - 6.5rem);
   width: 13rem;
   height: 0.4rem;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgb(10 31 68 / 0.18);
   border-radius: 0.4rem;
   will-change: transform;
 }
@@ -767,7 +779,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #fff;
+  background-color: var(--color-navy-900);
   border-radius: 0.4rem;
   transform: translateX(-100%);
 }
@@ -804,6 +816,19 @@
 .gooey-demo .slideshow-list__el {
   --accolade-base: min(max(20rem, 40vmin), 76vw, calc(var(--accolade-img-h) / 1.3636));
   --accolade-w: var(--accolade-base);
+  /* The caption's own column, once it is hung off the picture rather than
+     stacked under it. It is measured off the photograph — a quarter wider
+     than the picture, hung by exactly half its own width — so the block
+     straddles the picture's left edge: half of every line outside the
+     frame, half of it across the photograph, which is the demo's own
+     arrangement and what this band is asked for.
+
+     Declared here rather than up on the band with the rest of the budget,
+     because this is where `--accolade-w` exists: a custom property is
+     resolved against the element it is written on, and one reaching for a
+     property that element has not got is thrown away without a word. */
+  --accolade-label: calc(var(--accolade-w) * 1.25);
+  --accolade-hang: calc(var(--accolade-label) / 2);
   flex: 0 0 auto;
   width: var(--accolade-w);
   margin-left: 10vw;
@@ -825,41 +850,12 @@
   box-sizing: content-box;
 }
 
-.gooey-demo .slideshow-list__el:nth-child(1) .tile__content { color: var(--color-text1); }
-.gooey-demo .slideshow-list__el:nth-child(2) .tile__content { color: var(--color-text2); }
-.gooey-demo .slideshow-list__el:nth-child(3) .tile__content { color: var(--color-text3); }
-.gooey-demo .slideshow-list__el:nth-child(4) .tile__content { color: var(--color-text4); }
-
-/* The demo's colour swing, which used to be JavaScript hanging off the plane
-   it drew: entering a tile wrote that tile's pair onto the section, and the
-   ground and the heading followed. The planes are gone and the swing is not —
-   the band can ask which of its photographs is under the pointer.
-
-   Asked of the photograph rather than the whole tile, so a reader stopped on a
-   citation is not also holding the band's colour; and gated on a real pointer,
-   because on a touch screen `:hover` sticks to whatever was last tapped. The
-   demo skipped the swing on mobile for that same reason. */
-@media (hover: hover) {
-  .gooey-demo:has(.slideshow-list__el:nth-child(1) .tile__link:hover) {
-    --color-bg: var(--color-bg1);
-    --color-text: var(--color-text1);
-  }
-
-  .gooey-demo:has(.slideshow-list__el:nth-child(2) .tile__link:hover) {
-    --color-bg: var(--color-bg2);
-    --color-text: var(--color-text2);
-  }
-
-  .gooey-demo:has(.slideshow-list__el:nth-child(3) .tile__link:hover) {
-    --color-bg: var(--color-bg3);
-    --color-text: var(--color-text3);
-  }
-
-  .gooey-demo:has(.slideshow-list__el:nth-child(4) .tile__link:hover) {
-    --color-bg: var(--color-bg4);
-    --color-text: var(--color-text4);
-  }
-}
+/* The demo gave each tile an ink of its own and swung the whole band —
+   ground, heading and all — onto that pair as the pointer entered the
+   photograph. Both halves are gone. Four awards on one wall are one set of
+   work and read as one, and a ground that changes colour under the pointer
+   is a distraction on a page whose job is to be trusted. The band keeps one
+   ink and one ground, and hovering an award changes neither. */
 
 @media (min-width: 768px) {
   .gooey-demo { --accolade-stagger: 2.5vh; }
@@ -885,11 +881,13 @@
   position: relative;
 }
 
-/* The photograph's box, and the band's hover target: what the colour swing
-   above asks about. */
+/* The photograph's box. On a light ground a photograph with no edge to it
+   reads as a hole rather than as a print on a wall, so it carries a shadow
+   — warm, in the swirl's own family, rather than a grey one. */
 .gooey-demo .tile__link {
   display: block;
   position: relative;
+  box-shadow: 0 1.25rem 2.5rem -0.9rem rgb(46 30 12 / 0.42);
 }
 
 .gooey-demo .tile__fig {
@@ -919,57 +917,120 @@
   object-position: center;
 }
 
-/* The caption, off the photograph rather than across it. The demo hung
-   two-word place names over the left edge of the picture; an award's name
-   is a sentence and its citation a paragraph, and neither can be read over
-   a photograph.
-
-   Under it, on a narrow screen, the slot is held open at `--accolade-cap`
-   whether or not a citation is showing — so `See more` reveals text into
-   room the tile already has, and the photographs on either side of it hold
-   still. */
+/* The caption. On a narrow screen it is under the photograph, and the slot
+   is held open at `--accolade-cap` whether or not a citation is showing —
+   so `See more` reveals text into room the tile already has, and the
+   photographs on either side of it hold still. */
 .gooey-demo .tile__content {
   position: relative;
   margin-top: 1rem;
   min-height: var(--accolade-cap);
   font-size: 1rem;
-  transition: color 0.3s;
 }
 
-/* Wide enough for a label beside the picture, which is where a wall of
-   awards puts one. It costs the photograph none of its height — the tile
-   is as tall as its picture, and the label grows down its own column into
-   room already there — so the band's whole height goes to the picture and
-   the reserved slot is given back. It is what keeps a short laptop screen
-   from showing four postage stamps. */
+/* Wide enough to hang the caption off the picture, which is the demo's own
+   arrangement and the one this band is asked for: the name low across the
+   photograph's left edge, half of every line outside the frame and half of
+   it over the picture, `See more` under it.
+
+   It costs the photograph none of its height — the caption is out of the
+   flow, so the tile is exactly as tall as its picture and the whole band
+   goes to the photographs. What it costs instead is width beside the tile,
+   which is why the gutter is the demo's 20vw again, and never less than
+   what hangs outside the frame plus air. */
 @media (min-width: 900px) {
   .gooey-demo { --accolade-cap: 0rem; }
 
   .gooey-demo .slideshow-list__el {
-    width: calc(var(--accolade-w) + var(--accolade-gutter) + var(--accolade-label));
-  }
-
-  .gooey-demo .tile {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--accolade-gutter);
-  }
-
-  .gooey-demo .tile__link {
-    flex: 0 0 var(--accolade-w);
-    width: var(--accolade-w);
+    margin-left: max(20vw, calc(var(--accolade-hang) + 3rem));
   }
 
   .gooey-demo .tile__content {
-    flex: 1 1 auto;
+    position: absolute;
+    bottom: 16%;
+    left: calc(-1 * var(--accolade-hang));
+    width: var(--accolade-label);
     margin-top: 0;
-    padding-top: 0.3rem;
+    /* Centred, so every name straddles the edge whatever its length: a
+       six-word one and a two-word one cross the frame by the same half.
+       Ranged left, a short label would sit entirely outside the picture and
+       break the arrangement the moment the copy for the last two awards
+       arrives. */
+    text-align: center;
+    transition: bottom 0.35s var(--ease-out-soft);
+  }
+
+  /* Cream here, where the same line is navy everywhere else on the band.
+
+     Half of it crosses a photograph, and these photographs are awards on
+     dark stages under spotlights: navy over that is a line nobody reads,
+     and there is no ink that reads over both a champagne ground and a
+     black one on its own. So the letters are cream and carry their own
+     dark: four blurs of the band's navy stacked behind them, tight to
+     loose, which over the photograph is invisible and over the ground is
+     the shadow the light half needs to hold its shape. A wash broad enough
+     to do the same job the other way round fogs half the picture — that
+     was tried first.
+
+     In `em`, so the button's halo is the button's size without being told.
+     Delete these two rules and the arrangement is unchanged; only the
+     reading of it is. */
+  .gooey-demo .tile__content {
+    color: #f7edd9;
+  }
+
+  .gooey-demo .tile__title,
+  .gooey-demo .tile__cta {
+    text-shadow:
+      0 0 0.045em rgb(6 20 49 / 0.96),
+      0 0 0.12em rgb(6 20 49 / 0.92),
+      0 0 0.3em rgb(6 20 49 / 0.72),
+      0 0 0.7em rgb(6 20 49 / 0.45);
+  }
+
+  .gooey-demo .tile__cta {
+    margin-top: 1.1rem;
+  }
+
+  /* About half the name's size, which is the demo's proportion: a label at
+     small-print size under a line that big reads as a footnote to it. */
+  .gooey-demo .btn-inline {
+    font-size: min(calc(0.55rem + 0.75vw), 1.15rem);
+    letter-spacing: 0.06em;
+  }
+
+  /* The citation opens downward, out of the flow of the two lines above it,
+     so opening one does not walk them up the picture — and out of the flow
+     of the tile as well, so the photographs either side of it hold still.
+
+     What it does need is a column of picture under it to open into. A tall
+     screen has that at 16%; a short one does not, and the last lines would
+     be cut off at the foot of the band, which is pinned to the window and
+     has nothing below it. So a tile with its citation open — and only one
+     with it open — lifts its caption by however much of the 11rem is
+     missing, and by nothing at all where the room is already there. */
+  .gooey-demo .tile:has(.tile__desc[data-open]) .tile__content {
+    bottom: max(16%, 11rem);
+  }
+
+  /* The citation itself stays west of the picture's edge, in the half of
+     the column that is over the ground, and stays navy with it: a name can
+     cross a photograph because it is a display line carrying its own dark,
+     and a paragraph at reading size cannot. So it is held to what hangs
+     outside the frame, and ranged left, where the name above it is
+     centred. */
+  .gooey-demo .tile__desc {
+    position: absolute;
+    top: calc(100% + 0.9rem);
+    left: 0;
+    width: calc(var(--accolade-hang) - 1rem);
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    text-align: left;
   }
 }
 
-.gooey-demo .tile:hover .tile__content {
-  color: #fff;
-}
 
 .gooey-demo .tile__cta {
   display: block;
@@ -983,8 +1044,8 @@
 .gooey-demo .tile__desc {
   margin: 0.8rem 0 0;
   padding-top: 0.7rem;
-  border-top: 1px solid rgb(255 255 255 / 0.18);
-  color: rgb(255 255 255 / 0.82);
+  border-top: 1px solid rgb(10 31 68 / 0.2);
+  color: var(--color-navy-900);
   font-size: 0.8rem;
   line-height: 1.5;
   letter-spacing: 0.005em;
@@ -1004,7 +1065,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .gooey-demo .tile__desc { transition-duration: 0s; }
+  .gooey-demo .tile__desc,
+  .gooey-demo .tile__content { transition-duration: 0s; }
 }
 
 /* ------------------------------------------------------------------
