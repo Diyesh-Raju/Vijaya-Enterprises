@@ -79,8 +79,8 @@ export default function HomePage() {
             <div className="order-2 lg:order-1 lg:col-span-6">
               <Reveal>
                 <Frame
-                  src={img.interiorFamily}
-                  alt={alt.interiorFamily}
+                  src={img.residentialLivingDusk}
+                  alt={alt.residentialLivingDusk}
                   ratio="wide"
                   sizes="(max-width: 1024px) 100vw, 45vw"
                   rounded="rounded-[2rem] sm:rounded-[3rem]"

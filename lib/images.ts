@@ -71,6 +71,7 @@ import officeInterior from "@/assets/images/office-interior.jpg";
 import plotWalkover from "@/assets/images/plot-walkover.jpg";
 import rebarWorkers from "@/assets/images/rebar-workers.jpg";
 import residentialInterior from "@/assets/images/residential-interior.jpg";
+import residentialLivingDusk from "@/assets/images/residential-living-dusk.jpg";
 import siteTeam from "@/assets/images/site-team.jpg";
 import slabDusk from "@/assets/images/slab-dusk.jpg";
 import steelRebar from "@/assets/images/steel-rebar.jpg";
@@ -116,6 +117,7 @@ export const img = {
   plotWalkover,
   rebarWorkers,
   residentialInterior,
+  residentialLivingDusk,
   siteTeam,
   slabDusk,
   steelRebar,
@@ -181,6 +183,8 @@ export const alt = {
   rebarWorkers: "Site team tying reinforcement steel on a column cage",
   residentialInterior:
     "Warmly lit living and dining room in a completed Vijaya home, with a sofa, armchair and planting",
+  residentialLivingDusk:
+    "A warmly lit living room at dusk, floor-to-ceiling glass open to the city lights, with a Ganesha idol, marigolds and embroidered cushions",
   siteTeam: "Site engineers and workers walking a large concrete deck",
   slabDusk:
     "Workers silhouetted at dusk against a pink sky, on the reinforcement cage of a floor going up",
