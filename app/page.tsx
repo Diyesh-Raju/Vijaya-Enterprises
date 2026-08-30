@@ -4,7 +4,6 @@ import { FindResidences } from "@/components/sections/find-residences";
 import { FiftyYears } from "@/components/sections/fifty-years";
 import { DestinationSlideshow } from "@/components/sections/destination-slideshow";
 import { Testimonial } from "@/components/sections/testimonial";
-import { ResidenceCarousel } from "@/components/sections/residence-carousel";
 import { TrustedBy } from "@/components/sections/trusted-by";
 import { ServiceGrid, type Service } from "@/components/ui/service-grid";
 import {
@@ -123,9 +122,6 @@ export default function HomePage() {
           </div>
         </Container>
       </Section>
-
-      {/* -------------------------------------------------- Residence deck */}
-      <ResidenceCarousel />
 
       {/* ---------------------------------------------------------- Trusted by */}
       <TrustedBy />
