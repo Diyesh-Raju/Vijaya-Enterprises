@@ -17,11 +17,15 @@ import agreementSigning from "@/assets/images/agreement-signing.jpg";
 import bankReception from "@/assets/images/bank-reception.jpg";
 import backdropFabric from "@/assets/images/backdrop-fabric.jpg";
 /**
- * The footer's backdrop. Two are kept on disk and one is imported: swapping
- * the footer means changing which file this line names, and nothing else.
+ * The footer's backdrop. Several are kept on disk and one is imported:
+ * swapping the footer means changing which file this line names, and nothing
+ * else.
  *
+ * - `backdrop-footer-room.jpg`      — a living room open to a planted
+ *                                     courtyard, a Krishna pichwai above the
+ *                                     sofa (in use)
  * - `backdrop-footer-living.jpg`    — a living and dining room open to a
- *                                     planted balcony (in use)
+ *                                     planted balcony
  * - `backdrop-interior.jpg`         — a lit apartment looking out over the
  *                                     city at dusk (the Reviews section is
  *                                     set on it)
@@ -30,11 +34,12 @@ import backdropFabric from "@/assets/images/backdrop-fabric.jpg";
  * - `backdrop-footer-terrace.jpg`   — a roof terrace at dusk
  * - `backdrop-footer-interior.jpg`  — a warmly lit apartment at night
  *
- * The footer lays its copy straight over whichever is chosen, with no scrim
- * of any kind, so a brighter picture is a less readable footer. See the
- * warning in `site-footer.tsx`.
+ * The footer now carries a scrim, so a bright picture no longer breaks it
+ * outright — but the scrim is tuned to this photograph's range, and a much
+ * darker or much brighter one will want it re-tuned. See the note in
+ * `site-footer.tsx`.
  */
-import backdropFooter from "@/assets/images/backdrop-footer-living.jpg";
+import backdropFooter from "@/assets/images/backdrop-footer-room.jpg";
 import backdropHibiscus from "@/assets/images/backdrop-hibiscus.jpg";
 import backdropInterior from "@/assets/images/backdrop-interior.jpg";
 import balconyFamily from "@/assets/images/balcony-family.jpg";
@@ -128,7 +133,7 @@ export const alt = {
   backdropFabric:
     "Soft folds of cream fabric, lit from one side",
   backdropFooter:
-    "A living and dining room opening onto a planted balcony through sliding glass",
+    "A living room open to a planted courtyard through full-height glass, a large Krishna pichwai hung above the sofa",
   backdropHibiscus:
     "Red hibiscus blooms against a soft cream ground",
   backdropInterior:

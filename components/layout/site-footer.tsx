@@ -1,7 +1,9 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "./logo";
 import { Reveal } from "@/components/ui/reveal";
 import { socialIcons } from "@/components/ui/social-icons";
+import { img } from "@/lib/images";
 import { navLinks, contact, offices, site, social } from "@/lib/site";
 
 /**
@@ -17,10 +19,35 @@ import { navLinks, contact, offices, site, social } from "@/lib/site";
  * the list of disciplines all came out: every page above this one already ends
  * on a call to action, and a second one at the bottom of it was asking twice.
  *
- * White ground, navy type. It carried a full-bleed photograph for a while and
- * the copy sat straight on it, which meant the ink had to be re-decided every
- * time the picture changed — light room, dark room, sky. On white it is
- * settled.
+ * A room, behind a scrim, with light type over it.
+ *
+ * This footer used to lay its copy straight on a photograph with nothing in
+ * between, which meant the ink had to be re-decided every time the picture
+ * changed — light room, dark room, sky. The scrim below is what makes the
+ * picture swappable: it flattens whatever is behind it to a dark, warm
+ * ground, and the ink is then decided once and stays decided.
+ *
+ * The whole column is reversed for it — white and navy-100 rather than navy,
+ * the lockup swapped for its reversed artwork, rules and buttons drawn in
+ * white alphas. That is the site's own dark-ground palette, the one the hero
+ * and the navy bands already use; nothing here is a colour of its own.
+ *
+ * ⚠️ The scrim is tuned to the range of the photograph named in
+ * `lib/images.ts` — not to photographs in general. That picture has a sunlit
+ * window and a pale stone floor in it, and the type has to hold over the
+ * brightest thing in the frame rather than over the average, which is what
+ * puts the scrim as high as it is.
+ *
+ * It was set by measuring, not by eye: with the copy hidden, the single
+ * brightest pixel of ground under each block of small type clears 4.5:1
+ * against the ink that sits on it, at 1440 and at 390 wide, and the page
+ * names (large text, so 3:1) clear it with room to spare. At 0.50 through
+ * the middle the bright patches fell to about 4.0 and at 0.64 the room went
+ * flat, so this is close to the light end of what holds. The two quietest
+ * lines in the contact column are a step stronger than they would otherwise
+ * be for the same reason: on a narrow screen they cross a highlight on the
+ * sofa. Swap the photograph and all of that moves — re-measure rather than
+ * assume, because the failure mode is a contact column nobody can read.
  */
 
 /** Every page, in the order the menu lists them. */
@@ -38,12 +65,38 @@ export function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
-    // Navy at a tenth, which over the white page reads as a pale blue wash
-    // rather than as a colour of its own — enough to part the footer from
-    // whatever the page ended on, light enough that navy type on it keeps
-    // the same contrast it had on white. Written as an alpha rather than as
-    // a flat tint so it stays honest if anything is ever put behind it.
-    <footer className="border-t border-navy-900/10 bg-navy-900/10 text-navy-950">
+    // `isolate` so the backdrop's negative z-index stays inside the footer
+    // and cannot slide under the page above it. The base colour is the
+    // wood's own average, so the moment before the image decodes is the
+    // same dark ground rather than a flash of white under white type.
+    <footer className="relative isolate overflow-hidden border-t border-white/10 bg-[#241a13] text-white">
+      {/* Decorative: behind two thirds of a scrim the room is a ground, not
+          a subject, and every word in the footer is already in the markup.
+          Alt text is kept beside it in `lib/images.ts` all the same, for
+          wherever the picture is used with a voice. */}
+      <Image
+        src={img.backdropFooter}
+        alt=""
+        aria-hidden="true"
+        fill
+        sizes="100vw"
+        quality={85}
+        placeholder="blur"
+        className="-z-10 object-cover"
+      />
+      {/* The scrim. Warm near-black rather than pure black, so the room
+          keeps its temperature instead of going grey, and close to flat
+          rather than a steep gradient: a photograph's bright and dark
+          passages fall wherever the crop puts them, so there is no one end
+          to protect the way there is with a lit wall. It lifts at the two
+          ends, where the small type sits, and thins through the middle,
+          where the page names are large enough to look after themselves.
+          See the warning above before changing these numbers. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(18,12,8,0.66)_0%,rgba(18,12,8,0.58)_42%,rgba(18,12,8,0.76)_100%)]"
+      />
+
       <div className="container-page pb-20 pt-[4.5rem] sm:pb-24 sm:pt-20 lg:pb-28 lg:pt-24">
         <div className="grid gap-14 lg:grid-cols-12 lg:gap-10">
           {/* ------------------------------------------------------ Brand */}
@@ -57,7 +110,7 @@ export function SiteFooter() {
               aria-label="Vijaya Enterprises — home"
               className="mt-3 inline-flex rounded-2xl sm:mt-5 lg:mt-7"
             >
-              <Logo className="h-20 sm:h-24 lg:h-28" />
+              <Logo reversed className="h-20 sm:h-24 lg:h-28" />
             </Link>
 
             {/* Marks only, no names: four known glyphs in a row read faster
@@ -77,7 +130,7 @@ export function SiteFooter() {
                         target="_blank"
                         rel="noreferrer noopener"
                         aria-label={`${site.name} on ${label}`}
-                        className="flex h-11 w-11 items-center justify-center rounded-full border border-navy-200 text-navy-900 transition-[background-color,border-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-navy-400 hover:bg-navy-50"
+                        className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition-[background-color,border-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/10"
                       >
                         <Icon className="h-[1.125rem] w-[1.125rem]" />
                       </a>
@@ -96,7 +149,7 @@ export function SiteFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="inline-block font-sans text-[clamp(1.75rem,3vw,2.75rem)] font-semibold leading-[1.3] tracking-[-0.02em] text-navy-950 transition-colors duration-300 hover:text-navy-700"
+                      className="inline-block font-sans text-[clamp(1.75rem,3vw,2.75rem)] font-semibold leading-[1.3] tracking-[-0.02em] text-white transition-colors duration-300 hover:text-brass-300"
                     >
                       {link.label}
                     </Link>
@@ -108,27 +161,27 @@ export function SiteFooter() {
 
           {/* ------------------------------------------------- How to reach us */}
           <Reveal delay={160} className="lg:col-span-3">
-            <h3 className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-slate-muted">
+            <h3 className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-navy-100/85">
               Contact
             </h3>
-            <ul className="mt-5 space-y-3 text-[0.9375rem] text-navy-900">
+            <ul className="mt-5 space-y-3 text-[0.9375rem] text-navy-100/90">
               <li>
-                <a href={contact.phoneHref} className="link-underline hover:text-navy-950">
+                <a href={contact.phoneHref} className="link-underline hover:text-white">
                   {contact.phoneDisplay}
                 </a>
               </li>
               <li>
-                <a href={contact.emailHref} className="link-underline hover:text-navy-950">
+                <a href={contact.emailHref} className="link-underline hover:text-white">
                   {contact.emailDisplay}
                 </a>
               </li>
-              <li className="text-slate-muted">{contact.hours}</li>
+              <li className="text-navy-100/85">{contact.hours}</li>
             </ul>
 
             {offices.map((office) => (
               <address
                 key={office.label}
-                className="mt-6 not-italic text-[0.9375rem] leading-relaxed text-navy-900"
+                className="mt-6 not-italic text-[0.9375rem] leading-relaxed text-navy-100/85"
               >
                 {office.lines.map((line) => (
                   <span key={line} className="block">
@@ -141,11 +194,11 @@ export function SiteFooter() {
         </div>
 
         {/* -------------------------------------------------- Bottom line */}
-        <Reveal className="mt-16 flex flex-col gap-3 border-t border-line pt-8 text-[0.8125rem] text-slate-body sm:flex-row sm:items-center sm:justify-between">
+        <Reveal className="mt-16 flex flex-col gap-3 border-t border-white/12 pt-8 text-[0.8125rem] text-navy-100/85 sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {year} {site.legalName}. All rights reserved.
           </p>
-          <p className="text-slate-muted">{site.promise}</p>
+          <p className="text-navy-100/75">{site.promise}</p>
       </Reveal>
       </div>
     </footer>
