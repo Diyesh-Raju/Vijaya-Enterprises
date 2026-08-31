@@ -112,7 +112,7 @@ export function FindResidences() {
   const active = tabs[tab];
 
   return (
-    <Section tone="mist" size="sm" className="overflow-hidden">
+    <Section tone="mist" size="sm" className="overflow-hidden snap-start">
       {/* Cloth, not colour. The controls on this panel are all transparent
           now, so what they are cut out of has to be worth looking at — and a
           soft, evenly lit drape gives them something to sit on without

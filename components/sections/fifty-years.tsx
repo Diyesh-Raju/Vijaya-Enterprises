@@ -17,9 +17,10 @@ import {
  * column on its own, so it is set very large and given nothing to compete
  * with.
  *
- * From `lg` up the band pins and the enquiry panel rides up over it — see
- * `pin` in `components/ui/section.tsx` for how that works and what it asks of
- * the section that follows.
+ * The band is flat — no pin, nothing rides up over it. `snap-start` (paired
+ * with the same class on `FindResidences` and `scroll-snap-type` on `html`
+ * in `globals.css`) instead carries the scroll straight through to the next
+ * section once the visitor starts leaving this one.
  */
 const points: {
   icon: (props: { className?: string }) => ReactElement;
@@ -48,7 +49,7 @@ const points: {
 
 export function FiftyYears() {
   return (
-    <Section tone="white" size="md" pin>
+    <Section tone="white" size="md" className="snap-start">
       <Container>
         <div className="grid gap-14 lg:grid-cols-12 lg:items-center lg:gap-16">
           <div className="lg:col-span-5">
