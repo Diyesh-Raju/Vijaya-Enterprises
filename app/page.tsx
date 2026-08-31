@@ -129,6 +129,69 @@ export default function HomePage() {
       {/* ------------------------------------------------------- Testimonial */}
       <Testimonial />
 
+      {/* ---------------------------------------------------------- Since 1973 */}
+      <section className="relative isolate overflow-hidden bg-navy-950">
+        <VideoBackdrop
+          poster={img.legacyPoster}
+          posterAlt={alt.legacyPoster}
+          srcDesktop={video.legacyDesktop}
+          srcMobile={video.legacyMobile}
+          kenBurns={false}
+        />
+        {/* Navy, as it always was — but the grade the home hero uses over its
+            own footage rather than the near-solid one that was here, which
+            left the clip behind it invisible. Same colour, same character,
+            with the sunrise actually coming through it. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-b from-navy-950/80 via-navy-950/62 to-navy-950/92"
+        />
+        {/* And a pool of it under the copy, which runs down the left. The hero
+            does the same for its lockup. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-[radial-gradient(80%_75%_at_16%_50%,rgba(6,20,49,0.82),transparent_72%)]"
+        />
+
+        <Container className="relative py-24 sm:py-32 lg:py-40">
+          <div className="max-w-3xl">
+            <Reveal>
+              <Eyebrow onNavy>Since 1973</Eyebrow>
+            </Reveal>
+            <Reveal delay={80}>
+              <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.5rem)] leading-[1.08] text-white">
+                Five decades. Thousands of stories. One name to trust.
+              </h2>
+            </Reveal>
+            <Reveal delay={160}>
+              <div className="mt-7 space-y-5 text-[1.0625rem] leading-[1.8] text-navy-100/80">
+                <p>
+                  Vijaya Enterprises began its journey in 1973. Over the decades,
+                  the construction industry has changed dramatically. Materials
+                  have evolved. Technology has changed. Customer expectations have
+                  changed.
+                </p>
+                <p className="font-display text-[1.375rem] leading-snug text-white sm:text-[1.625rem]">
+                  But one thing has remained constant: our commitment to building
+                  with integrity.
+                </p>
+                <p>
+                  Today, we bring that experience to a new generation of customers
+                  while retaining the values on which Vijaya Enterprises was built.
+                </p>
+              </div>
+            </Reveal>
+            <Reveal delay={240}>
+              <div className="mt-10">
+                <Button href="/our-legacy" variant="light" size="lg" withArrow>
+                  Read Our Legacy
+                </Button>
+              </div>
+            </Reveal>
+          </div>
+        </Container>
+      </section>
+
       {/* ---------------------------------------- Contract + JV, side by side */}
       {/* The page's two closing offers sit next to each other rather than
           stacked, as one matched pair: same radius, same padding, buttons
@@ -197,69 +260,6 @@ export default function HomePage() {
           </div>
         </Container>
       </Section>
-
-      {/* ---------------------------------------------------------- Since 1973 */}
-      <section className="relative isolate overflow-hidden bg-navy-950">
-        <VideoBackdrop
-          poster={img.legacyPoster}
-          posterAlt={alt.legacyPoster}
-          srcDesktop={video.legacyDesktop}
-          srcMobile={video.legacyMobile}
-          kenBurns={false}
-        />
-        {/* Navy, as it always was — but the grade the home hero uses over its
-            own footage rather than the near-solid one that was here, which
-            left the clip behind it invisible. Same colour, same character,
-            with the sunrise actually coming through it. */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-b from-navy-950/80 via-navy-950/62 to-navy-950/92"
-        />
-        {/* And a pool of it under the copy, which runs down the left. The hero
-            does the same for its lockup. */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-[radial-gradient(80%_75%_at_16%_50%,rgba(6,20,49,0.82),transparent_72%)]"
-        />
-
-        <Container className="relative py-24 sm:py-32 lg:py-40">
-          <div className="max-w-3xl">
-            <Reveal>
-              <Eyebrow onNavy>Since 1973</Eyebrow>
-            </Reveal>
-            <Reveal delay={80}>
-              <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.5rem)] leading-[1.08] text-white">
-                Five decades. Thousands of stories. One name to trust.
-              </h2>
-            </Reveal>
-            <Reveal delay={160}>
-              <div className="mt-7 space-y-5 text-[1.0625rem] leading-[1.8] text-navy-100/80">
-                <p>
-                  Vijaya Enterprises began its journey in 1973. Over the decades,
-                  the construction industry has changed dramatically. Materials
-                  have evolved. Technology has changed. Customer expectations have
-                  changed.
-                </p>
-                <p className="font-display text-[1.375rem] leading-snug text-white sm:text-[1.625rem]">
-                  But one thing has remained constant: our commitment to building
-                  with integrity.
-                </p>
-                <p>
-                  Today, we bring that experience to a new generation of customers
-                  while retaining the values on which Vijaya Enterprises was built.
-                </p>
-              </div>
-            </Reveal>
-            <Reveal delay={240}>
-              <div className="mt-10">
-                <Button href="/our-legacy" variant="light" size="lg" withArrow>
-                  Read Our Legacy
-                </Button>
-              </div>
-            </Reveal>
-          </div>
-        </Container>
-      </section>
     </>
   );
 }
