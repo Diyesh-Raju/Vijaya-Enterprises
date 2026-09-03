@@ -50,6 +50,13 @@ import cityNight from "@/assets/images/city-night.jpg";
 import citySunset from "@/assets/images/city-sunset.jpg";
 import cranesSkyline from "@/assets/images/cranes-skyline.jpg";
 import drawingBoard from "@/assets/images/drawing-board.jpg";
+/* The four steps of a joint venture, for the band on the Joint Ventures
+   page: the conversation, the study, the agreement on paper, and the work
+   itself. See `ProcessReveal`. */
+import familyConversation from "@/assets/images/family-conversation.jpg";
+import officeDocumentReview from "@/assets/images/office-document-review.jpg";
+import planAndAgreement from "@/assets/images/plan-and-agreement.jpg";
+import slabPour from "@/assets/images/slab-pour.jpg";
 import heroPoster from "@/assets/images/hero-poster.jpg";
 import haraVijayaConcept from "@/assets/images/hara-vijaya-concept.jpg";
 import haraVijayaHeights from "@/assets/images/hara-vijaya-heights.jpg";
@@ -68,8 +75,26 @@ import legacyPoster from "@/assets/images/legacy-poster.jpg";
 import meetingHands from "@/assets/images/meeting-hands.jpg";
 import menuInterior from "@/assets/images/menu-interior.jpg";
 import officeInterior from "@/assets/images/office-interior.jpg";
+/* The four kinds of partner, for the band on the Joint Ventures page: the
+   land, the family that holds it, the property already standing on it, and
+   the people who build. See `PartnerPanels`. */
+import partnerBungalow from "@/assets/images/partner-bungalow.jpg";
+import partnerLandHolding from "@/assets/images/partner-land-holding.jpg";
+import partnerPlansSite from "@/assets/images/partner-plans-site.jpg";
+/* The six reasons to partner, for the accordion further down the same page:
+   the decades of building, the crew that does it, what has been built, the
+   city it was built in, a building settled into it, and the family living in
+   one. Each is read both as a narrow slat and as a full panel, so all six are
+   compositions that survive a hard vertical crop. See `ReasonPanels`. */
+import scaffoldWorker from "@/assets/images/scaffold-worker.jpg";
+import masonBrickwork from "@/assets/images/mason-brickwork.jpg";
+import residentialTowers from "@/assets/images/residential-towers.jpg";
+import bengaluruMarket from "@/assets/images/bengaluru-market.jpg";
+import bengaluruDusk from "@/assets/images/bengaluru-dusk.jpg";
+import familyLivingRoom from "@/assets/images/family-living-room.jpg";
 import plotWalkover from "@/assets/images/plot-walkover.jpg";
 import rebarWorkers from "@/assets/images/rebar-workers.jpg";
+import residenceBlueHour from "@/assets/images/residence-blue-hour.jpg";
 import residentialInterior from "@/assets/images/residential-interior.jpg";
 import residentialLivingDusk from "@/assets/images/residential-living-dusk.jpg";
 import siteTeam from "@/assets/images/site-team.jpg";
@@ -96,6 +121,10 @@ export const img = {
   citySunset,
   cranesSkyline,
   drawingBoard,
+  familyConversation,
+  officeDocumentReview,
+  planAndAgreement,
+  slabPour,
   heroPoster,
   haraVijayaConcept,
   haraVijayaHeights,
@@ -114,8 +143,18 @@ export const img = {
   meetingHands,
   menuInterior,
   officeInterior,
+  partnerBungalow,
+  partnerLandHolding,
+  scaffoldWorker,
+  masonBrickwork,
+  residentialTowers,
+  bengaluruMarket,
+  bengaluruDusk,
+  familyLivingRoom,
+  partnerPlansSite,
   plotWalkover,
   rebarWorkers,
+  residenceBlueHour,
   residentialInterior,
   residentialLivingDusk,
   siteTeam,
@@ -147,6 +186,14 @@ export const alt = {
   cranesSkyline: "Tower cranes rising over buildings under construction",
   drawingBoard:
     "A floor plan on a drawing board, with a scale rule, drafting pens and a drawing tube laid across it",
+  familyConversation:
+    "A family talking together in their living room, the father in the foreground and his son and wife listening across from him",
+  officeDocumentReview:
+    "Four colleagues standing over an open file together, reading the same page",
+  planAndAgreement:
+    "A hard hat, a rolled floor plan and a signed agreement laid out on a table in raking sunlight",
+  slabPour:
+    "A site crew spreading and levelling fresh concrete across a floor slab, the city behind them",
   heroPoster: "Tower cranes working above a city skyline under construction",
   homeScrollEnd:
     "The entrance foyer of a completed home, softly out of focus",
@@ -178,9 +225,29 @@ export const alt = {
   menuInterior:
     "A balcony shrine at dusk, warmly lit, with a marble platform, brass lamps and bamboo either side, open to the city skyline",
   officeInterior: "Completed commercial office interior with glazed partitions",
+  partnerBungalow:
+    "A long tiled-roof bungalow at the head of its own paved walk, planting either side and rain trees overhead",
+  partnerLandHolding:
+    "A single old tree standing in open land at sunset, the field boundaries running away from it to the horizon",
+  partnerPlansSite:
+    "Two men reading a layout drawing spread across a car bonnet, brickwork going up on the plot behind them",
+  scaffoldWorker:
+    "A worker standing on bamboo scaffolding against a deep blue sky, steadying the edge of a freshly cast slab",
+  masonBrickwork:
+    "A mason's hands bedding a brick down onto fresh mortar against the line, trowel still in the other hand",
+  residentialTowers:
+    "Residential towers in Bengaluru seen from the foot of the block, their balconies stepping away up the elevation",
+  bengaluruMarket:
+    "A Bengaluru street market in full swing, a fruit seller at her cart and shoppers passing under the trees",
+  bengaluruDusk:
+    "A Bengaluru building at dusk, its upper floors lit gold against a deepening sky",
+  familyLivingRoom:
+    "A family sitting together on the sofa in their living room, a printed hanging on the wall behind them and sweets on the table",
   plotWalkover:
     "Three men standing together on a cleared plot, two of them in hard hats, an excavator tipping earth behind them",
   rebarWorkers: "Site team tying reinforcement steel on a column cage",
+  residenceBlueHour:
+    "A completed residence at blue hour, its stone portico and teak entrance lit warmly above a lawn and wet paving",
   residentialInterior:
     "Warmly lit living and dining room in a completed Vijaya home, with a sofa, armchair and planting",
   residentialLivingDusk:

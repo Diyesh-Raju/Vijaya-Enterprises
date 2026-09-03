@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type CSSProperties } from "react";
+import { onScroll, prefersReducedMotion } from "@/lib/scroll";
 import { cn } from "@/lib/cn";
 
 type ScrollLitProps = {
@@ -53,36 +54,25 @@ export function ScrollLit({
     const el = ref.current;
     if (!el) return;
 
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    if (prefersReducedMotion()) return;
 
     el.dataset.lit = "on";
 
-    let frame = 0;
-
-    const tick = () => {
-      frame = 0;
+    // One measurement of the window for the whole site, handed in — see
+    // `lib/scroll.ts`. Reading `innerHeight` here instead would be a layout
+    // read per paragraph per frame for a number every one of them shares.
+    const stop = onScroll(({ height }) => {
       const box = el.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const start = vh * from;
+      const start = height * from;
       // The whole paragraph has to clear the finish mark, not just its top
       // edge, so its own height is part of the distance to be travelled.
-      const run = start - vh * to + box.height;
+      const run = start - height * to + box.height;
       const progress = run > 0 ? (start - box.top) / run : 1;
       el.style.setProperty("--lit", `${Math.min(Math.max(progress, 0), 1)}`);
-    };
-
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(tick);
-    };
-
-    tick();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
+    });
 
     return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
+      stop();
       delete el.dataset.lit;
     };
   }, [from, to]);

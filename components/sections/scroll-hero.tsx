@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { onScroll } from "@/lib/scroll";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/cn";
 import { img, alt, video } from "@/lib/images";
@@ -182,9 +183,12 @@ export function ScrollHero() {
     let seekTo = 0;
     let recoveredAt = 0;
 
+    /** Cached by the shared loop and refreshed on resize — see `lib/scroll.ts`. */
+    let viewportHeight = window.innerHeight;
+
     const readProgress = () => {
       const rect = track.getBoundingClientRect();
-      const distance = rect.height - window.innerHeight;
+      const distance = rect.height - viewportHeight;
       if (distance <= 0) return 0;
       return clamp01(-rect.top / distance);
     };
@@ -295,7 +299,7 @@ export function ScrollHero() {
 
     const onScreen = () => {
       const rect = track.getBoundingClientRect();
-      return rect.bottom > 0 && rect.top < window.innerHeight;
+      return rect.bottom > 0 && rect.top < viewportHeight;
     };
 
     const sync = () => {
@@ -329,15 +333,49 @@ export function ScrollHero() {
         ? new IntersectionObserver(sync, { threshold: 0 })
         : null;
 
+    /**
+     * Take the clip out of the compositor once the hero is well behind us.
+     *
+     * A `<video>` holds a layer and a full-size texture for as long as it is
+     * painted, and this one is 1920 wide and pinned inside a track several
+     * screens tall. Being paused and off screen did not help: the layer was
+     * still in the frame the compositor built for every scroll position on
+     * the page, and it cost about a frame in eight for the *whole* home page
+     * — the one page on the site that scrolled measurably worse than the
+     * rest. Nothing was running; there was simply too much to composite.
+     *
+     * `visibility` rather than `display`, so the element keeps its box and
+     * the layout above and below it cannot shift. And a full screen of slack
+     * either side, so the clip is always painted long before it could be
+     * seen: an observer is delivered at the end of a frame, and a decision
+     * taken exactly at the edge could be a frame late, which on the way back
+     * up would be a black panel where the film should be.
+     */
+    const cull =
+      el && typeof IntersectionObserver !== "undefined"
+        ? new IntersectionObserver(
+            ([entry]) => {
+              el.style.visibility = entry.isIntersecting ? "" : "hidden";
+            },
+            { threshold: 0, rootMargin: "100% 0px 100% 0px" },
+          )
+        : null;
+
     if (observer) observer.observe(track);
+    cull?.observe(track);
     document.addEventListener("visibilitychange", wake);
     // `focus` covers switching back from another app, which does not change
     // visibility; `pageshow` covers a restore from the back/forward cache,
     // where this effect is never re-run.
     window.addEventListener("focus", wake);
     window.addEventListener("pageshow", wake);
-    window.addEventListener("resize", sync);
-    window.addEventListener("orientationchange", sync);
+    // The shared loop is what tells this one the window has changed size;
+    // the hero's own loop then re-reads the track against it.
+    const stopShared = onScroll(({ height }) => {
+      if (height === viewportHeight) return;
+      viewportHeight = height;
+      sync();
+    });
     // Anything the element itself reports as a break in service.
     el?.addEventListener("stalled", wake);
     el?.addEventListener("emptied", wake);
@@ -348,11 +386,12 @@ export function ScrollHero() {
     return () => {
       stop();
       observer?.disconnect();
+      cull?.disconnect();
+      if (el) el.style.visibility = "";
       document.removeEventListener("visibilitychange", wake);
       window.removeEventListener("focus", wake);
       window.removeEventListener("pageshow", wake);
-      window.removeEventListener("resize", sync);
-      window.removeEventListener("orientationchange", sync);
+      stopShared();
       el?.removeEventListener("stalled", wake);
       el?.removeEventListener("emptied", wake);
       for (const node of [media, soft, veil, mark, tag]) {

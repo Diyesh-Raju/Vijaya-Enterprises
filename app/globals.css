@@ -74,6 +74,11 @@
   /* Motion ------------------------------------------------------ */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+  /* The one arrivals are eased on. Gentler than `--ease-out-soft`, which
+     spends almost all of its travel in the first fifth and then creeps: over
+     a second that reads as a snap followed by a wait. This lands without
+     ever appearing to stop, which is what makes a long reveal watchable. */
+  --ease-reveal: cubic-bezier(0.22, 0.61, 0.36, 1);
 
   /* The default pace. A row that needs another one sets `animation-duration`
      on the animating element (see `Marquee`'s `speed`) — a custom property
@@ -142,12 +147,15 @@
     scrollbar-gutter: stable;
     /* Header height + breathing room for in-page anchors */
     scroll-padding-top: 6.5rem;
-    /* `proximity`, not `mandatory`: only the home page's `snap-start` pair
-       (the 50-years band and the enquiry panel right after it) opt in, so
-       this only carries a visitor the rest of the way once they are already
-       leaving one for the other. Everywhere else on the page — and on every
-       other page — nothing has `snap-start`, so scrolling is untouched. */
-    scroll-snap-type: y proximity;
+    /* No `scroll-snap-type` here, deliberately. The home page's 50-years band
+       and the enquiry panel under it used to opt in with `snap-start`, and
+       `proximity` on the root was what carried the page between them. It also
+       made every gesture on every page a negotiation: the browser re-resolves
+       snap positions at the end of each one, and on a trackpad — where a
+       gesture is a long series of small ones — that reads as the page
+       catching and being tugged rather than gliding. It was the single
+       biggest reason the scrolling did not feel smooth. The two sections are
+       ordinary sections now. */
     background-color: var(--color-navy-deep);
 
     /* The fixed bar's height, its hairline included. This is the *source* of
@@ -180,6 +188,12 @@
     -moz-osx-font-smoothing: grayscale;
     /* Never allow a stray wide child to scroll the whole page sideways */
     overflow-x: clip;
+    /* No rubber-band past either end, and no accidental hand-off to the
+       browser's own overscroll gestures. A bounce at the top of the page is
+       the one moment where a scroll-driven section has nothing sensible to
+       be scrubbed to, and stopping it dead is what keeps the hero from
+       jittering when a gesture overshoots. */
+    overscroll-behavior-y: none;
   }
 
   /* Headings default to the display face. Set in the same grotesk as the
@@ -312,15 +326,106 @@
    transform transition on its own, so nothing is lost by not asking. */
 @utility reveal {
   opacity: 0;
-  transform: translate3d(0, 26px, 0);
+  transform: translate3d(0, 38px, 0);
+  /* The transform runs a touch longer than the fade, so a block is up to
+     full strength while it is still coming to rest. That overlap is most of
+     what separates something arriving from something switching on. */
   transition:
-    opacity 0.9s var(--ease-out-soft),
-    transform 0.9s var(--ease-out-soft);
+    opacity 0.9s var(--ease-reveal),
+    transform 1s var(--ease-reveal);
+  transition-delay: var(--reveal-delay, 0ms);
 
   &[data-reveal="on"] {
     opacity: 1;
     transform: none;
   }
+}
+
+/* Four other ways in, for blocks that should not all rise. The default —
+   no attribute — is the rise above.
+
+   Every one of these is qualified with `[data-reveal="off"]` rather than
+   written bare. A bare `.reveal[data-reveal-variant="left"]` is exactly as
+   specific as the `.reveal[data-reveal="on"]` above and sits after it, so it
+   would win in *both* states and the block would never arrive — it would sit
+   46px to the left of where it belongs for the life of the page. Naming the
+   state each variant describes means the two rules can never both apply. */
+.reveal[data-reveal="off"][data-reveal-variant="fade"] { transform: none; }
+.reveal[data-reveal="off"][data-reveal-variant="left"] { transform: translate3d(-46px, 0, 0); }
+.reveal[data-reveal="off"][data-reveal-variant="right"] { transform: translate3d(46px, 0, 0); }
+.reveal[data-reveal="off"][data-reveal-variant="scale"] { transform: scale(0.94); }
+
+/* Sideways arrivals only read as sideways when there is width to arrive
+   across. On a phone there is not, and a block sliding in from off the right
+   edge only widens the page, so they rise like everything else. */
+@media (max-width: 900px) {
+  .reveal[data-reveal="off"][data-reveal-variant="left"],
+  .reveal[data-reveal="off"][data-reveal-variant="right"] {
+    transform: translate3d(0, 28px, 0);
+  }
+}
+
+/* ------------------------------------------------------------------
+   Uncovered photographs — see `components/ui/image-reveal.tsx`
+------------------------------------------------------------------- */
+
+/* The wrapper is the picture's box exactly: it sits inside a `Frame`, whose
+   `<Image fill>` is absolutely positioned against it.
+
+   `isolation` is what keeps the panel over the *picture* and nothing else.
+   Without it the panel's `z-index: 2` is resolved against whatever stacking
+   context the frame happens to sit in, and it would paint over the caption,
+   the scrim and the copy that a band lays on top of its photograph — so a
+   whole call-to-action would go brass for a second rather than its picture
+   being uncovered behind the words. */
+.img-reveal {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* For a picture with an intrinsic size rather than a `fill` one: the wrapper
+   takes its height from the picture instead of from the box around it. */
+.img-reveal--block {
+  position: relative;
+  inset: auto;
+  display: block;
+}
+
+/* Everything below applies only once the component has said so, so a reader
+   with no JavaScript or with reduced motion gets the plain photograph rather
+   than one left behind a brass panel. */
+.img-reveal[data-img] > :is(img, picture, video) {
+  transform: scale(1.2);
+  transition: transform 1.5s var(--ease-reveal);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.img-reveal[data-img="on"] > :is(img, picture, video) {
+  transform: scale(1);
+}
+
+/* The panel that wipes off the picture. Brass, which is the site's one
+   accent, and it leaves upwards — so the photograph is uncovered from the
+   bottom, in the same direction the page is travelling. */
+.img-reveal[data-img]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-color: var(--color-brass-500);
+  transform: scaleY(1);
+  transform-origin: bottom;
+  /* Shorter than the settle behind it, so the picture is still easing out of
+     its crop for a good half second after the panel has gone. */
+  transition: transform 1.05s var(--ease-reveal);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.img-reveal[data-img="on"]::after {
+  transform: scaleY(0);
 }
 
 @utility text-balance-head {
@@ -518,12 +623,12 @@
    pointer passed. Both are gone: the planes because the effect is not
    wanted on these pictures, and the swing because a page's ground has no
    business changing colour under the reader's pointer. What is left is
-   one ground that never moves — the brushed swirl, graded warm — and one
-   ink on it.
+   one ground that never moves — a night frame of a lit house, graded
+   down — and one light ink on it.
 
    Nor is the scroll. The band is pinned to the screen inside a taller
    track and the page scroll through that track walks the strip
-   sideways, so a reader passes all four tiles on the way down. That
+   sideways, so a reader passes all five tiles on the way down. That
    costs the band its freedom to be as tall as it likes: a sticky box
    taller than the screen it sticks to can only ever show its top, so
    the tile has to be sized to leave room for its stagger and the
@@ -543,19 +648,48 @@
 
 .gooey-demo {
   /* One ink and one ground, where the demo had four pairs and swung
-     between them. The ground is the swirl's own average, so the moment
-     before the photograph decodes is the same champagne rather than a
-     flash of white; the ink is the site's navy, which is what every other
-     band on the page sets its type in.
+     between them. The ground is the photograph's own average, so the
+     moment before it decodes is the same dark rather than a flash of
+     white; the ink is the site's light neutral, which is what every band
+     on this site that stands on a photograph sets its type in.
 
-     ⚠️ The pairing is measured against the photograph, not assumed. Over
-     the graded swirl in `public/gooey/backdrop.jpg`, navy-900 clears
-     5.2:1 on the darkest striation in the frame and 8.7:1 on the median —
-     so the smallest type on the band (the citation, and `See more`) holds
-     AA wherever the ground's drift happens to put it. Regrade or replace
-     that photograph and the floor moves with it. */
-  --color-bg: #d2b98e;
-  --color-text: var(--color-navy-900);
+     The band used to run the other way round — navy on a brushed
+     champagne swirl. The ground is now a night frame of a lit house, and
+     an ink cannot stay put through that: navy on this photograph is
+     unreadable at every size. So the pair is flipped whole, ink and
+     ground together, rather than the ground swapped and the ink left to
+     cope.
+
+     ⚠️ The pairing is measured against the photograph as the band actually
+     renders it, not against the file and not by eye — and measured only in
+     the strips of the window the type is in, which is the whole trick. The
+     ground is still now, so those strips do not move: the heading's, and
+     the caption's between 63% and 87% down. Scanning every horizontal
+     position a tile can take, the worst patch the size of a line of small
+     type gives mist 5.3:1, and the worst under the heading 4.4:1 against a
+     large-text floor of 3. Bare, the same caption strip gives 2.0 across a
+     quarter of the width — the two lit gate walls — which is what the
+     gradient on `.gooey-demo::before` is there to fix.
+
+     Re-measure if any of three things move: the photograph, the caption's
+     height on the band, or the ground's stillness. The last one especially
+     — put the drift back and this measurement is void, because then any
+     part of the frame can end up under any word. */
+  --color-bg: #493f3d;
+  --color-text: var(--color-mist);
+
+  /* The scrim over the ground, held here because it is written twice below
+     — once beside the plain `url()` and once beside the `image-set()` that
+     overrides it — and two copies of a gradient are two chances to change
+     one and not the other. What it is for is in the comment on
+     `.gooey-demo::before`. */
+  --gooey-scrim: linear-gradient(
+    to bottom,
+    rgb(4 8 16 / 0) 48%,
+    rgb(4 8 16 / 0.4) 64%,
+    rgb(4 8 16 / 0.6) 78%,
+    rgb(4 8 16 / 0.64) 100%
+  );
 
   /* The band's vertical budget, spent from the top down: the heading's
      line box and the gap under it, then whatever the caption takes out of
@@ -611,51 +745,80 @@
   }
 }
 
-/* The demo hangs its ground on `body`, with the page title behind it at
-   `z-index: -1`. Here the band carries its own, so the colour goes on a
-   layer of its own underneath the title rather than on the section itself —
-   otherwise the section's background paints over the title and the word
-   never appears. It is only ever seen in the photograph's place, before it
-   decodes or if it never arrives, which is why it is the photograph's own
-   average rather than a colour of its own. */
+/* The ground. The demo hangs its own on `body`, with the page title behind
+   it at `z-index: -1`. Here the band carries it, on a layer underneath the
+   title rather than on the section itself — otherwise the section's
+   background paints over the title and the word never appears.
+
+   One still photograph. It was three layers and a scroll handler not long
+   ago: a flat colour, then a photograph laid 14% wider than the band on each
+   side, walked sideways against the strip and clipped so its own edge never
+   came into view — and before that a two-thirds tint in the colour of
+   whichever tile the pointer was on. All of it is gone. The ground does not
+   move under the reader: the tiles do, and the ground is what they move
+   across. So the photograph goes straight onto this one layer, over the flat
+   colour, which is now only ever seen in the photograph's place before it
+   decodes.
+
+   The photograph is used exactly as it was given: the file is the file, at
+   its own brightness, and the sky, the sunset and the lit house are all at
+   full strength. What is laid over it is one gradient across the bottom
+   half.
+
+   That gradient is not decoration. The band's small type — `See more` and
+   the citation — sits in a fixed strip of the window, and across about a
+   quarter of the width that strip lands on the two lit gate walls, where
+   white on limestone measures 2.0:1. Every other fix costs the whole
+   photograph: a grade or a full scrim dims the sky to save two walls, and a
+   panel behind the words is the halo that was asked off twice. Darkening
+   only the strip the words are in costs the picture its foreground apron,
+   which is already the darkest thing in the frame.
+
+   It can be aimed like this only because the ground stopped moving. While
+   it drifted, any part of the photograph could end up under any word and
+   the whole frame had to be safe; still, the type's band is the same band
+   every time. The stops are in percentages of the *section*, not of the
+   photograph, because it is the type they are cut to and the type is placed
+   against the section. See `--color-text` above for the measured floor.
+
+   TWO FILES, BY DENSITY. The ground is full-bleed, so it is the largest
+   thing the page paints and the one that shows a shortage of pixels first.
+   A laptop at 1440 with a 2× screen wants about 3060 device pixels across
+   it; the frame as it was given is 1600, and the browser was stretching
+   that by 1.9 with whatever filter the GPU had to hand — which is what
+   `so so bad` was. Both files here are resampled from
+   `assets/gooey/backdrop-estate.png`, which is the original, with
+   `spline` and a light `unsharp`+`cas` to put back the micro-contrast a
+   resample costs; the 2× is 3400 across, so a screen that wants 3060 is
+   scaling *down* and every other one is close to native.
+
+   `image-set()` is what keeps that off a 1× screen, which would download
+   twice the picture to throw half of it away — so the plain `url()` above
+   it is both the old-browser fallback and the 1× file, and the `-webkit-`
+   line between them is Safari before 17, which had the feature under the
+   prefix only. Quality is q3 rather than q4 for one reason: the sky is a
+   wide smooth gradient, and a gradient is where a JPEG shows its blocks
+   first. */
 .gooey-demo::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -3;
   background-color: var(--color-bg);
-}
-
-/* The ground proper: a brushed swirl walked sideways by the same scroll that
-   walks the strip, under everything the band draws and over its flat colour.
-
-   The photograph is laid 14% wider than the band on each side and drifts by
-   at most 10% of its own width — 12.8% of the band's — so the walk is taken
-   out of the slack and its edge is never pulled into view.
-
-   Nothing is laid over it. It carried a two-thirds tint for a while, in the
-   colour of whichever tile the pointer was on, and that is what the band is
-   rid of: the swirl now shows at its own colour and holds it. What the tint
-   was doing for legibility the photograph does for itself — it is graded, in
-   the file, to a range navy type holds over (see `--color-text` above). The
-   grade is `eq=contrast=0.65:brightness=0.18:saturation=1.3` with a little
-   warmth in the shadows, and the ungraded original is kept beside it at
-   `assets/gooey/backdrop-raw.jpg` to regrade from. */
-.gooey-demo .gooey-backdrop {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.gooey-demo .gooey-backdrop::before {
-  content: "";
-  position: absolute;
-  inset: 0 -14%;
-  background: url("/gooey/backdrop.jpg") center / cover no-repeat;
-  transform: translate3d(var(--gooey-drift, 0%), 0, 0);
-  will-change: transform;
+  background-image: var(--gooey-scrim), url("/gooey/backdrop.jpg");
+  background-image: var(--gooey-scrim),
+    -webkit-image-set(
+      url("/gooey/backdrop.jpg") 1x,
+      url("/gooey/backdrop-2x.jpg") 2x
+    );
+  background-image: var(--gooey-scrim),
+    image-set(
+      url("/gooey/backdrop.jpg") 1x,
+      url("/gooey/backdrop-2x.jpg") 2x
+    );
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 /* The band is one screen, and everything on it is measured out of that
@@ -773,7 +936,9 @@
   left: calc(50% - 6.5rem);
   width: 13rem;
   height: 0.4rem;
-  background-color: rgb(10 31 68 / 0.18);
+  /* Track and fill are both the band's ink now, at two strengths — a navy
+     track on a night ground was a bar nobody could find. */
+  background-color: rgb(246 248 252 / 0.22);
   border-radius: 0.4rem;
   will-change: transform;
 }
@@ -785,7 +950,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: var(--color-navy-900);
+  background-color: var(--color-text);
   border-radius: 0.4rem;
   transform: translateX(-100%);
 }
@@ -858,18 +1023,25 @@
 
 /* The demo gave each tile an ink of its own and swung the whole band —
    ground, heading and all — onto that pair as the pointer entered the
-   photograph. Both halves are gone. Four awards on one wall are one set of
+   photograph. Both halves are gone. Five awards on one wall are one set of
    work and read as one, and a ground that changes colour under the pointer
    is a distraction on a page whose job is to be trusted. The band keeps one
    ink and one ground, and hovering an award changes neither. */
 
+/* Alternating, so the strip reads as a hung wall rather than a shelf.
+   Written as odd/even rather than tile by tile: the list is still being
+   added to, and a numbered rule would have to be extended every time — the
+   fifth award arrived to find `nth-child(4)` the last line here and sat
+   flat on the row. */
 @media (min-width: 768px) {
   .gooey-demo { --accolade-stagger: 2.5vh; }
 
-  .gooey-demo .slideshow-list__el:nth-child(1) { transform: translateY(var(--accolade-stagger)); }
-  .gooey-demo .slideshow-list__el:nth-child(2) { transform: translateY(calc(-1 * var(--accolade-stagger))); }
-  .gooey-demo .slideshow-list__el:nth-child(3) { transform: translateY(var(--accolade-stagger)); }
-  .gooey-demo .slideshow-list__el:nth-child(4) { transform: translateY(calc(-1 * var(--accolade-stagger))); }
+  .gooey-demo .slideshow-list__el:nth-child(odd) {
+    transform: translateY(var(--accolade-stagger));
+  }
+  .gooey-demo .slideshow-list__el:nth-child(even) {
+    transform: translateY(calc(-1 * var(--accolade-stagger)));
+  }
 }
 
 /* The demo's gutter was 20vw, and the tiles it separated were a photograph
@@ -887,13 +1059,18 @@
   position: relative;
 }
 
-/* The photograph's box. On a light ground a photograph with no edge to it
-   reads as a hole rather than as a print on a wall, so it carries a shadow
-   — warm, in the swirl's own family, rather than a grey one. */
+/* The photograph's box. A shadow is what held these prints off the old
+   champagne ground; on a night one it does nothing — a dark smudge under a
+   dark frame — and what separates a print from the wall instead is its
+   edge catching the light. So the lift is a hairline in the band's own
+   ink, and the shadow is kept behind it, deeper and wider, for the weight
+   rather than the outline. */
 .gooey-demo .tile__link {
   display: block;
   position: relative;
-  box-shadow: 0 1.25rem 2.5rem -0.9rem rgb(46 30 12 / 0.42);
+  box-shadow:
+    0 0 0 1px rgb(246 248 252 / 0.16),
+    0 1.75rem 3.5rem -1rem rgb(0 0 0 / 0.6);
 }
 
 .gooey-demo .tile__fig {
@@ -910,6 +1087,25 @@
 
 .gooey-demo .slideshow-list__el--wide .tile__fig::before {
   padding-top: 75%;
+}
+
+/* A certificate is not a photograph: it is read, not looked at, and the
+   4:3 the scan came in at is the shape it has to keep. So the frame is cut
+   to the file's own ratio rather than the strip's, and the fill below is
+   `contain` — a photograph can lose a hand to the crop, a citation cannot
+   lose its last line. The frame is a shade off black so the letterbox that
+   a scan a pixel out of true would leave reads as the certificate's own
+   border rather than as a gap. */
+.gooey-demo .slideshow-list__el--doc .tile__fig::before {
+  padding-top: 133.33%;
+}
+
+.gooey-demo .slideshow-list__el--doc .tile__link {
+  background-color: #0d0d0d;
+}
+
+.gooey-demo .slideshow-list__el--doc .tile__img {
+  object-fit: contain;
 }
 
 .gooey-demo .tile__img {
@@ -966,18 +1162,86 @@
     transition: bottom 0.35s var(--ease-out-soft);
   }
 
-  /* Navy, the same ink as everything else on the band, and bare — no halo
-     behind it.
+  /* The band's own ink, and bare — no halo behind it.
 
-     That is a decision, not an oversight: half of every name crosses an
-     award being handed over on a dark stage, and navy on that is a hard
-     read. It was set in cream for a while, and then in navy with a
-     champagne halo holding the letters' edges; both were asked off. What
-     is left reads cleanly over the ground and poorly over the picture, and
-     only two things change that — a light ink, or moving the name off the
-     photograph. Either is a line of CSS when it is wanted. */
+     This is where the ground's change is paid for. The name is hung half
+     over the photograph, so it has to hold over two different things at
+     once, and no single ink ever managed it: navy read over the old
+     champagne ground and vanished into the dark stages in the pictures,
+     which is what it was left doing. Now the ground is a night frame and
+     that ink is impossible, so the name is light — and light fails the
+     other way, on the one award photographed against a white banner and a
+     pale kurta.
+
+     A halo would fix it and was asked off, twice. So the fix is under the
+     picture instead of behind the letters: see `.tile__link::after`, which
+     darkens the corner every name crosses. With that there, one light ink
+     holds over all five photographs and over the ground, and the type
+     itself stays bare. */
   .gooey-demo .tile__content {
-    color: var(--color-navy-900);
+    color: var(--color-text);
+  }
+
+  /* The corner the name crosses, darkened into the photograph.
+     Bottom-left, because that is where the caption is hung, and reaching
+     about two thirds across and a third up — the name's own footprint,
+     which is `--accolade-label` centred on the frame's left edge.
+
+     Sized off the worst case rather than the average: the palest of the
+     five awards runs to 0.71 relative luminance under its name, and at
+     0.8 black over it that comes down far enough for the ink to clear
+     large-text contrast. Over the four dark ones the same gradient is
+     barely visible — they were already darker than it. That is the point
+     of doing it per picture: it costs nothing where nothing is needed,
+     and it holds for whatever award is added next. */
+  .gooey-demo .tile__link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      118% 80% at -8% 108%,
+      rgb(0 0 0 / 0.8) 0%,
+      rgb(0 0 0 / 0.52) 40%,
+      rgb(0 0 0 / 0) 74%
+    );
+  }
+
+  /* The certificate is the one tile whose caption does not cross it, and
+     the reason is not contrast — it is that the certificate is already
+     titled. Hung the usual way, the band's name for the award lands square
+     on the award's own name, printed in gold two inches below it, and the
+     tile reads as a misprint. So the whole caption steps west of the frame
+     and ranges right against it, the way a card is set beside a hung
+     document rather than over it. The column narrows to make the room: it
+     is entirely outside the picture now, so it has to fit the gutter, and
+     the gutter is widened to that column wherever 20vw would not have been
+     enough. Nothing crosses the picture afterwards, so the corner scrim
+     comes off with it. */
+  .gooey-demo .slideshow-list__el--doc {
+    --accolade-label: calc(var(--accolade-w) * 0.72);
+    margin-left: max(20vw, calc(var(--accolade-label) + 3rem));
+  }
+
+  .gooey-demo .slideshow-list__el--doc .tile__content {
+    left: auto;
+    right: calc(100% + 1.25rem);
+    text-align: right;
+  }
+
+  .gooey-demo .slideshow-list__el--doc .tile__cta,
+  .gooey-demo .slideshow-list__el--doc .tile__desc {
+    width: 100%;
+    text-align: right;
+  }
+
+  .gooey-demo .slideshow-list__el--doc .tile__desc {
+    left: auto;
+    right: 0;
+  }
+
+  .gooey-demo .slideshow-list__el--doc .tile__link::after {
+    display: none;
   }
 
   /* Held in the half of the column that hangs outside the frame, and ranged
@@ -1013,9 +1277,9 @@
   }
 
   /* The citation itself stays west of the picture's edge, in the half of
-     the column that is over the ground, and stays navy with it: a name can
-     cross a photograph because it is a display line carrying its own dark,
-     and a paragraph at reading size cannot. So it is held to what hangs
+     the column that is over the ground: a name can cross a photograph
+     because it is a display line and carries a scrim under it, and a
+     paragraph at reading size can do neither. So it is held to what hangs
      outside the frame, and ranged left, where the name above it is
      centred. */
   .gooey-demo .tile__desc {
@@ -1043,8 +1307,8 @@
 .gooey-demo .tile__desc {
   margin: 0.8rem 0 0;
   padding-top: 0.7rem;
-  border-top: 1px solid rgb(10 31 68 / 0.2);
-  color: var(--color-navy-900);
+  border-top: 1px solid rgb(246 248 252 / 0.28);
+  color: var(--color-text);
   font-size: 0.8rem;
   line-height: 1.5;
   letter-spacing: 0.005em;
@@ -2606,6 +2870,89 @@
 }
 
 /* ------------------------------------------------------------------
+   Scroll-settled photograph — see `components/ui/scroll-zoom.tsx`
+------------------------------------------------------------------- */
+
+/* The scale is only ever applied under a `ScrollZoom` that has started
+   writing, so no JavaScript and reduced motion both get the photograph at
+   its true size rather than one parked mid-zoom. `--settle` runs 0 → 1, so
+   the picture starts `--zoom-in` too large and lands at exactly 1.
+
+   A frame that settles this way owns the `scale` property outright, which
+   is why it is given `zoom={false}` and gives up its hover zoom. Tailwind's
+   `scale-*` is that same property rather than a transform, so the two
+   cannot both hold it — and the hover's 1.4s easing would smear a value
+   being rewritten every frame anyway, leaving the picture trailing the page
+   by most of a second. One photograph, one piece of motion. */
+[data-zoom="on"] .scroll-zoom {
+  scale: calc(1 + var(--zoom-in, 0.14) * (1 - var(--settle, 0)));
+}
+
+/* ------------------------------------------------------------------
+   The mark opened out — see `components/sections/handshake-reveal.tsx`
+
+   Everything below is the *finished* frame: the photograph full-bleed,
+   one screen tall, with the copy already on it. That is what a reader
+   with no JavaScript or with reduced motion asked for gets, and it is
+   also what the markup means without a stylesheet. The band only
+   becomes three screens of scrolling, and the white is only painted
+   over the photograph at all, under `data-keyhole="on"` — which the
+   component sets once its own effect is running.
+
+   The four layers the scrub drives are parked at their end values here
+   and then written straight onto the nodes every frame, so the rules
+   below are only ever the starting point.
+------------------------------------------------------------------- */
+
+.keyhole__veil,
+.keyhole__tint,
+.keyhole__cuffs {
+  opacity: 0;
+}
+
+[data-keyhole="on"] .keyhole__veil {
+  opacity: 1;
+}
+
+[data-keyhole="on"].keyhole-track {
+  height: calc(var(--track-screens, 1) * 100vh);
+  height: calc(var(--track-screens, 1) * 100svh);
+}
+
+/* Weighted to the side the copy sits on, so the photograph keeps most of
+   its own light and only the ground under the words is taken down. The
+   second wash is for the foot of the frame, where this photograph puts its
+   brightest thing — a floodlit lawn — directly under the last line. */
+.keyhole__scrim {
+  background:
+    linear-gradient(
+      100deg,
+      rgb(10 31 68 / 0.94) 0%,
+      rgb(10 31 68 / 0.84) 34%,
+      rgb(10 31 68 / 0.46) 62%,
+      rgb(10 31 68 / 0.1) 88%,
+      rgb(10 31 68 / 0) 100%
+    ),
+    linear-gradient(to top, rgb(10 31 68 / 0.34) 0%, rgb(10 31 68 / 0) 46%);
+}
+
+/* Narrow enough and the copy runs the full width, so there is no side for
+   the shade to favour and it becomes a wash instead — and a heavier one,
+   because a portrait crop of a landscape photograph puts the lit face of
+   the building straight behind the paragraphs with nowhere else to put
+   them. The sky at the top of the frame is left alone. */
+@media (max-width: 767px) {
+  .keyhole__scrim {
+    background: linear-gradient(
+      to bottom,
+      rgb(10 31 68 / 0.5) 0%,
+      rgb(10 31 68 / 0.84) 32%,
+      rgb(10 31 68 / 0.88) 100%
+    );
+  }
+}
+
+/* ------------------------------------------------------------------
    How a contract runs — the five stages on /commercial-contracts.
 
    One photograph per stage, one screen each, with the copy along the
@@ -2789,11 +3136,55 @@
 }
 
 /* ------------------------------------------------------------------
+   Partner panels — see `components/sections/partner-panels.tsx`
+------------------------------------------------------------------- */
+
+/* The description under each panel's title.
+
+   The default is the open state, because that is what a device with no
+   hover has to land on: a phone would otherwise never see the copy at all.
+   Only where a pointer can actually hover is the description folded away
+   and given back on hover — and on focus too, so tabbing through the row
+   opens each panel in turn.
+
+   `grid-template-rows` is what animates rather than a height: the copy is
+   two or three lines depending on the panel and on how wide the window is,
+   and `1fr` measures that per panel instead of every panel sharing one
+   guessed maximum. The inner element carries the `overflow: hidden` — the
+   grid row cannot clip its own content — and the padding that separates the
+   description from the rule above it lives inside that element, so a folded
+   panel is a true zero rather than a gap. */
+.partner-blurb {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows 0.7s var(--ease-out-soft),
+    opacity 0.5s var(--ease-out-soft);
+}
+
+.partner-blurb > * {
+  overflow: hidden;
+}
+
+@media (hover: hover) {
+  .partner-blurb {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+
+  .group:hover .partner-blurb,
+  .group:focus-within .partner-blurb {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------
    Motion preferences — one global opt-out
 ------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; scroll-snap-type: none; }
+  html { scroll-behavior: auto; }
 
   *,
   *::before,
@@ -2809,11 +3200,20 @@
     transform: none !important;
     filter: none !important;
   }
+
+  /* The panel never paints and the picture is never cropped. Belt and
+     braces — `ImageReveal` already declines to set `data-img` at all under
+     this preference — but it also covers the reader who turns the setting on
+     while the page is open. */
+  .img-reveal > :is(img, picture, video) { transform: none !important; }
+  .img-reveal::after { display: none !important; }
 }
 
 /* Print: keep it legible, drop the decoration */
 @media print {
   .reveal { opacity: 1 !important; transform: none !important; filter: none !important; }
+  .img-reveal > :is(img, picture, video) { transform: none !important; }
+  .img-reveal::after { display: none !important; }
   video { display: none !important; }
 }
 
@@ -2875,5 +3275,575 @@
 
   .pin-pane .flip-card-inner > div {
     padding: clamp(1.125rem, 2.6vh, 1.75rem);
+  }
+}
+
+/* ------------------------------------------------------------------
+   How it works — the four steps on /joint-ventures.
+   See `components/sections/process-reveal.tsx`.
+
+   A step is one screen. Its two title halves start in the middle of that
+   screen and are pulled apart as it scrolls — up above the photograph and
+   down below it — while the photograph itself is cut out of the page and
+   opened until it fills its frame.
+
+   Everything below is the *settled* step: the words where they end up, the
+   frame open, one screen tall. That is what a reader with no JavaScript or
+   with reduced motion gets, and it is also what the markup means without a
+   stylesheet. The travel is written straight onto the words and the cut-out
+   every frame, so nothing here describes the middle of it. The one thing
+   the effect changes in the stylesheet is the shape of the step: under
+   `data-process="on"` — set by the component once it is running — each step
+   becomes a track nearly two screens tall with its screen pinned inside it,
+   so the reveal has that much scroll to open in rather than the third of a
+   screen a step that simply slid past would have.
+
+   Three things carry the whole arrangement:
+
+     • `.process-panel` is the track, and `.process-panel__screen` the one
+       screen inside it. The screen is a single grid cell with two children
+       in it. The first holds a hidden copy of the pair, which is what the
+       panel is measured against; the second is the finished layout. They
+       are the same screen, which is why the words appear to leave one for
+       the other.
+
+     • The hold — how much further the track runs than its screen — is set
+       here (`--process-hold`) and only read back by the component, which
+       measures the track against its screen rather than carrying a copy of
+       the number.
+
+     • Every word is sized off the longest half of its own title
+       (`--chars`, set on the panel), so a step called "Feasibility and
+       planning" comes down to fit the column it has instead of running out
+       of the page — and both halves of a title stay the same size as each
+       other.
+------------------------------------------------------------------- */
+
+.process-band {
+  /* The words are set to the width they have; a long one at a narrow
+     window would otherwise be able to widen the document. */
+  overflow-x: clip;
+}
+
+/* The track. Without the effect it is exactly its screen: one window tall,
+   holding the finished step. */
+.process-panel {
+  position: relative;
+  /* Screens of scroll the screen is held for, past the one it is read on.
+     Most of the reveal happens across this, so it is the length of the
+     whole thing: shorter and the photograph rushes, longer and the reader
+     is scrolling against a picture that has stopped changing. */
+  --process-hold: 0.9;
+}
+
+.process-panel:not(:last-child) {
+  margin-bottom: 10vmax;
+}
+
+.process-panel__screen {
+  display: grid;
+  grid-template-areas: "step";
+  /* One column, and one that cannot be widened by what is in it: the hidden
+     pair is set at display size and is wider than a phone, and an `auto`
+     track would take its width and push the layout off the side of the
+     page. It overflows the track instead, where it is neither seen nor
+     scrolled to — see `.process-band`. */
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  /* The one row is the layout's height, centred in the screen; the stage
+     is stretched to that same row below, so the pair it holds is centred
+     on the same middle. A floor rather than a height, so a layout that will
+     not fit a short window pushes the screen taller instead of overflowing
+     it. */
+  align-content: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  /* The bar is fixed over the top of the page, so a step centred on the
+     window would put its first word under it. Held down by the height of
+     the bar, the screen is still one window and its content is centred in
+     the part of that window anyone can see. */
+  padding-top: var(--header-h);
+}
+
+.process-panel__screen > * {
+  grid-area: step;
+}
+
+/* Never seen — `visibility` rather than `display`, because the whole point
+   of it is to be laid out and measured. */
+.process-panel__stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Between the two halves as they stand at the start. Not `em`: the gap
+     would be measured against the container's own type rather than the
+     words', which are twenty times the size. */
+  gap: clamp(0.75rem, 2vw, 2rem);
+  align-self: stretch;
+  justify-self: stretch;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ---- Under the effect ---------------------------------------------- */
+
+/* The track is made tall and the screen pinned to the top of the window
+   for the length of it. The gap between steps goes: the hold is the gap
+   now, in scroll rather than in page. */
+[data-process="on"] .process-panel {
+  height: calc((1 + var(--process-hold)) * 100vh);
+  height: calc((1 + var(--process-hold)) * 100svh);
+  margin-bottom: 0;
+}
+
+[data-process="on"] .process-panel__screen {
+  position: sticky;
+  top: 0;
+}
+
+/* A window this short — a phone on its side — cannot seat a step at all,
+   and a screen pinned taller than the window would show its top and nothing
+   else for the length of the hold. So there is no hold: the steps are the
+   plain stacked band, and the component, finding no hold to measure, runs
+   each cut over the screen's own approach instead. */
+@media (max-height: 30rem) {
+  [data-process="on"] .process-panel {
+    height: auto;
+  }
+
+  [data-process="on"] .process-panel__screen {
+    position: static;
+  }
+}
+
+/* The words get a layer of their own for exactly as long as they are in
+   flight — `data-live` is set by the component while a panel's cut is
+   between shut and open — so the frames that move them are compositor
+   frames, and nothing is held for a panel that is standing still. */
+.process-panel[data-live] .process-word {
+  will-change: transform;
+}
+
+.process-panel[data-live] .process-panel__text {
+  will-change: transform, opacity;
+}
+
+.process-panel__layout {
+  display: grid;
+  width: 100%;
+  max-width: 88rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  justify-items: center;
+  align-content: center;
+  row-gap: 1.25rem;
+  grid-template-areas:
+    "word-up"
+    "frame"
+    "word-down"
+    "text";
+}
+
+@media (min-width: 640px) {
+  .process-panel__layout { padding-inline: 2rem; }
+}
+
+@media (min-width: 1024px) {
+  .process-panel__layout { padding-inline: 3rem; }
+}
+
+/* ---- The words --------------------------------------------------- */
+
+.process-word {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  /* Room per character, so the pair is as large as its longest half can be
+     without leaving the column. The middle term is the whole of the sizing;
+     the ends are only a floor and a ceiling. */
+  font-size: clamp(
+    1.5rem,
+    calc(var(--word-room, 76) * 1vw / var(--chars, 12)),
+    5.5rem
+  );
+}
+
+.process-word--up {
+  grid-area: word-up;
+  font-weight: 300;
+  color: var(--color-navy-700);
+}
+
+.process-word--down {
+  grid-area: word-down;
+  font-weight: 700;
+  color: var(--color-navy-900);
+}
+
+/* ---- The frame --------------------------------------------------- */
+
+.process-frame {
+  grid-area: frame;
+  display: block;
+  width: 100%;
+  height: auto;
+  justify-self: center;
+}
+
+/* Grown about its own middle behind the cut-out, not about the corner an
+   SVG would otherwise use. */
+.process-frame image {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+/* ---- The step and its description -------------------------------- */
+
+.process-panel__text {
+  grid-area: text;
+  max-width: 34ch;
+}
+
+.process-panel__step {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-navy-500);
+}
+
+.process-panel__text p {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--color-navy-700);
+}
+
+/* ---- Stacked, up to `lg` ----------------------------------------- */
+
+/* One column, everything centred on the middle the words came from. There
+   is a whole window's width to use here, so the words are given a much
+   larger share of it than they get beside a photograph. */
+@media (max-width: 1023px) {
+  .process-panel {
+    --word-room: 150;
+  }
+
+  /* Stacked, as the layout is: at this width the pair is a good deal wider
+     than the window when it is set in a row, and the title would start the
+     panel cut off at both ends. */
+  .process-panel__stage {
+    flex-direction: column;
+    gap: 0.15em;
+  }
+
+  .process-panel__text {
+    text-align: center;
+  }
+}
+
+/* ---- Four arrangements, from `lg` -------------------------------- */
+
+/* No two steps are laid out the same way: the reader is being walked
+   through four of them, and four identical screens would read as one screen
+   repeated. Each frame is also held off the height of the window, so a
+   panel always composes inside the screen it is on rather than growing
+   taller than it on a laptop. */
+@media (min-width: 1024px) {
+  .process-panel {
+    /* The height a step has to compose in: the window below the bar. Three
+       of the frames below are capped against it, less what their own words
+       and copy take, so that on a short window — a laptop with the
+       browser's own bars open — the step still fits the screen it is pinned
+       to instead of running off the bottom of it for the length of the
+       hold. On a window of ordinary height the caps never bind: the `svh`
+       terms beside them are the smaller. */
+    --process-room: calc(100svh - var(--header-h));
+  }
+
+  /* 01 — the photograph across the middle, the title opening away from it
+     at opposite corners. */
+  .process-panel--1 .process-panel__layout {
+    grid-template-areas:
+      "word-up   ."
+      "frame     frame"
+      "text      word-down";
+    grid-template-columns: 1fr 1fr;
+    column-gap: 3vw;
+    row-gap: 2.5vh;
+  }
+
+  .process-panel--1 .process-frame {
+    width: min(
+      64%,
+      calc(56svh * 1.5),
+      calc((var(--process-room) - 15.5rem) * 1.5)
+    );
+  }
+
+  .process-panel--1 .process-panel__layout > .process-word--up {
+    justify-self: start;
+    align-self: end;
+  }
+
+  .process-panel--1 .process-panel__layout > .process-word--down {
+    justify-self: end;
+    align-self: start;
+  }
+
+  .process-panel--1 .process-panel__text {
+    justify-self: start;
+    align-self: start;
+  }
+
+  /* 02 — the title stacked down the left, the photograph held to the right
+     of it. */
+  .process-panel--2 .process-panel__layout {
+    grid-template-areas:
+      "word-up   frame"
+      "word-down frame"
+      "text      frame";
+    grid-template-columns: 1fr 50%;
+    column-gap: 3vw;
+    row-gap: 2.5vh;
+  }
+
+  .process-panel--2 .process-frame {
+    width: 100%;
+    max-width: calc(62svh * 1.333);
+    align-self: center;
+  }
+
+  .process-panel--2 .process-panel__layout > .process-word--up,
+  .process-panel--2 .process-panel__layout > .process-word--down {
+    justify-self: end;
+  }
+
+  .process-panel--2 .process-panel__layout > .process-word--up {
+    align-self: end;
+  }
+
+  .process-panel--2 .process-panel__text {
+    justify-self: end;
+    align-self: start;
+    margin-top: 1.5vh;
+    text-align: right;
+  }
+
+  /* 03 — the photograph laid across the top and the title read beneath it,
+     which is also the one panel whose cut opens sideways. */
+  .process-panel--3 .process-panel__layout {
+    grid-template-areas:
+      "frame frame"
+      "text  word-up"
+      "text  word-down";
+    grid-template-columns: 1fr 1fr;
+    column-gap: 3vw;
+    row-gap: 1vh;
+  }
+
+  .process-panel--3 .process-frame {
+    width: min(
+      84%,
+      calc(54svh * 1.75),
+      calc((var(--process-room) - 13.5rem) * 1.75)
+    );
+    margin-bottom: 3vh;
+  }
+
+  .process-panel--3 .process-panel__layout > .process-word--up,
+  .process-panel--3 .process-panel__layout > .process-word--down {
+    justify-self: start;
+  }
+
+  .process-panel--3 .process-panel__layout > .process-word--up {
+    align-self: end;
+  }
+
+  .process-panel--3 .process-panel__text {
+    justify-self: end;
+    align-self: start;
+    text-align: right;
+  }
+
+  /* 04 — the last one dead centre, the title above and below it. Nothing
+     off to the side: the sequence closes where it started. */
+  .process-panel--4 .process-panel__layout {
+    grid-template-areas:
+      "word-up"
+      "frame"
+      "word-down"
+      "text";
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 1.5vh;
+  }
+
+  .process-panel--4 .process-frame {
+    width: min(
+      66%,
+      calc(46svh * 1.556),
+      calc((var(--process-room) - 21rem) * 1.556)
+    );
+  }
+
+  .process-panel--4 .process-panel__text {
+    margin-top: 1.5vh;
+    text-align: center;
+  }
+}
+
+/* ------------------------------------------------------------------
+   404 — the drawing that isn't in the set. See `app/not-found.tsx`.
+
+   The page is dressed as a drawing sheet, which is the one visual
+   language a builder owns outright: a drafting grid over the site's
+   deepest navy, the numerals drawn the way a numeral gets drafted —
+   outline first, then a wash of tone once the line work is done — a
+   dimension line measured out beneath them, and a title block in the
+   corner recording the sheet that could not be issued.
+
+   Everything animates from CSS alone. `not-found.tsx` stays a server
+   component, the choreography runs with scripting off, and the whole
+   sequence is cancelled in one block under reduced motion below.
+------------------------------------------------------------------- */
+
+/* The drafting grid: a fine line every cell, a heavier one every fifth,
+   faded off radially so the sheet reads as lit from where the work is.
+   It eases in ahead of the line work rather than being there at paint —
+   the sheet is laid down, then drawn on. */
+.nf-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(to right, rgb(255 255 255 / 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.08) 1px, transparent 1px);
+  background-size:
+    2.75rem 2.75rem,
+    2.75rem 2.75rem,
+    13.75rem 13.75rem,
+    13.75rem 13.75rem;
+  mask-image: radial-gradient(120% 90% at 50% 38%, black 35%, transparent 98%);
+  animation: fade-in 1.6s var(--ease-out-soft) both;
+}
+
+/* A breath of brass behind the numerals, so the middle of the sheet has
+   somewhere to hold your eye before the line work arrives. */
+.nf-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    38rem 22rem at 50% 34%,
+    rgb(201 169 110 / 0.1),
+    transparent 70%
+  );
+  animation: fade-in 2s var(--ease-out-soft) both;
+}
+
+/* The numerals. Stroke-drawn SVG text: the dash window slides open along
+   each glyph's outline, so the figures appear as line work in progress
+   rather than switching on. The dash is sized past the longest contour
+   (the 4s' outlines); the 0's two shorter contours simply finish a beat
+   earlier, which is what a hand on a drawing would do too. */
+.nf-numerals {
+  display: block;
+  width: min(100%, 40rem);
+  margin-inline: auto;
+  overflow: visible;
+}
+
+.nf-numerals text {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  fill: rgb(230 211 168 / 0);
+  stroke: var(--color-brass-400);
+  stroke-width: 1.5;
+  stroke-dasharray: 1700;
+  stroke-dashoffset: 1700;
+  animation:
+    nf-draw 2.6s var(--ease-in-out-soft) 0.25s forwards,
+    nf-wash 1.4s var(--ease-out-soft) 1.7s forwards;
+}
+
+@keyframes nf-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* The wash: a faint brass tone flooded inside the finished outline. */
+@keyframes nf-wash {
+  to { fill: rgb(230 211 168 / 0.07); }
+}
+
+/* The dimension line: two runs extending outward from the label once the
+   numerals are mostly up, each closed with the 45° tick architectural
+   drawings use rather than an arrowhead. */
+.nf-dim {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.nf-dim__line {
+  position: relative;
+  height: 1px;
+  flex: 1;
+  max-width: 11rem;
+  background-color: rgb(255 255 255 / 0.28);
+  animation: nf-extend 1.1s var(--ease-out-soft) 1.5s both;
+}
+
+.nf-dim__line--start { transform-origin: right center; }
+.nf-dim__line--end { transform-origin: left center; }
+
+.nf-dim__line::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 1px;
+  height: 0.75rem;
+  background-color: rgb(255 255 255 / 0.45);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.nf-dim__line--start::after { left: 0; }
+.nf-dim__line--end::after { right: 0; }
+
+@keyframes nf-extend {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Late arrivals — the label between the runs, and the title block. */
+.nf-late {
+  animation: fade-in 1.2s var(--ease-out-soft) 1.9s both;
+}
+
+/* The written matter rises on the site's usual arrival, staggered per
+   block from the markup. It starts while the numerals are still being
+   drawn — overlap is what makes it one sequence rather than a queue. */
+.nf-rise {
+  animation: rise 1.1s var(--ease-reveal) both;
+  animation-delay: var(--nf-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nf-grid,
+  .nf-glow,
+  .nf-numerals text,
+  .nf-dim__line,
+  .nf-late,
+  .nf-rise {
+    animation: none;
+  }
+
+  /* Animations carried the end states; restate them. */
+  .nf-numerals text {
+    stroke-dashoffset: 0;
+    fill: rgb(230 211 168 / 0.07);
   }
 }

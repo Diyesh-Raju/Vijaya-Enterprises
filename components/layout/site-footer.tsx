@@ -50,7 +50,12 @@ import { navLinks, contact, offices, site, social } from "@/lib/site";
  * assume, because the failure mode is a contact column nobody can read.
  */
 
-/** Every page, in the order the menu lists them. */
+/**
+ * Every page, in the order the menu lists them — except the privacy policy,
+ * which sits in the bottom line instead. Set at this scale beside Home and
+ * Residential it would claim a weight it has not earned; small print belongs
+ * with the small print, which is also where everyone looks for it.
+ */
 const pageLinks = [
   { href: "/", label: "Home" },
   ...navLinks.map(({ href, label }) => ({ href, label })),
@@ -197,6 +202,24 @@ export function SiteFooter() {
         <Reveal className="mt-16 flex flex-col gap-3 border-t border-white/12 pt-8 text-[0.8125rem] text-navy-100/85 sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {year} {site.legalName}. All rights reserved.
+            <span aria-hidden="true" className="mx-2.5 text-navy-100/40">
+              &bull;
+            </span>
+            <Link
+              href="/privacy-policy"
+              className="link-underline whitespace-nowrap transition-colors hover:text-white"
+            >
+              Privacy Policy
+            </Link>
+            <span aria-hidden="true" className="mx-2.5 text-navy-100/40">
+              &bull;
+            </span>
+            <Link
+              href="/cookie-policy"
+              className="link-underline whitespace-nowrap transition-colors hover:text-white"
+            >
+              Cookie Policy
+            </Link>
           </p>
           <p className="text-navy-100/75">{site.promise}</p>
       </Reveal>

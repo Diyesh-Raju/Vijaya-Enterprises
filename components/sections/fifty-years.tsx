@@ -17,10 +17,11 @@ import {
  * column on its own, so it is set very large and given nothing to compete
  * with.
  *
- * The band is flat — no pin, nothing rides up over it. `snap-start` (paired
- * with the same class on `FindResidences` and `scroll-snap-type` on `html`
- * in `globals.css`) instead carries the scroll straight through to the next
- * section once the visitor starts leaving this one.
+ * The band is flat — no pin, nothing rides up over it, and no snap. It used
+ * to carry `snap-start`, paired with the same class on `FindResidences` and
+ * `scroll-snap-type` on `html`; that handed the scroll from this band to the
+ * next section, and made every gesture on every page of the site a snap
+ * negotiation to pay for it. See the note in `globals.css`.
  */
 const points: {
   icon: (props: { className?: string }) => ReactElement;
@@ -49,7 +50,7 @@ const points: {
 
 export function FiftyYears() {
   return (
-    <Section tone="white" size="md" className="snap-start">
+    <Section tone="white" size="md">
       <Container>
         <div className="grid gap-14 lg:grid-cols-12 lg:items-center lg:gap-16">
           <div className="lg:col-span-5">

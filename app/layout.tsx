@@ -125,7 +125,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <noscript
           dangerouslySetInnerHTML={{
             __html:
-              "<style>.reveal{opacity:1!important;transform:none!important;filter:none!important}</style>",
+              "<style>.reveal{opacity:1!important;transform:none!important;filter:none!important}" +
+              ".img-reveal>img{transform:none!important}.img-reveal::after{display:none!important}</style>",
           }}
         />
       </head>

@@ -7,6 +7,7 @@ import {
   type ElementType,
   type ReactNode,
 } from "react";
+import { onScroll, prefersReducedMotion } from "@/lib/scroll";
 
 type ScrollScrubProps = {
   children: ReactNode;
@@ -75,18 +76,17 @@ export function ScrollScrub({
     const track = ref.current;
     if (!track) return;
 
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    if (prefersReducedMotion()) return;
 
-    let frame = 0;
     // When the last frame ran, and the value actually on the node — which
     // is only the same as `read()` once the tail has caught up.
     let last = 0;
     let written: number | null = null;
 
     /** Where the page is: how far the track has been scrolled through. */
-    const read = () => {
+    const read = (viewportHeight: number) => {
       // How far the track can travel before its last frame is on screen.
-      const distance = track.offsetHeight - window.innerHeight;
+      const distance = track.offsetHeight - viewportHeight;
       const scrolled = -track.getBoundingClientRect().top;
       return distance > 0 ? Math.min(Math.max(scrolled / distance, 0), 1) : 1;
     };
@@ -95,9 +95,12 @@ export function ScrollScrub({
       track.style.setProperty(variable, `${progress * spanMs}ms`);
     };
 
-    const tick = (now: number) => {
-      frame = 0;
-      const target = read();
+    // Returning `true` asks the shared loop for another frame — which is how
+    // the tail keeps gliding after the page itself has stopped. Once it has
+    // caught up we return nothing, and the loop goes quiet until the next
+    // time the page actually moves.
+    const stop = onScroll(({ height }, now) => {
+      const target = read(height);
       // Capped, so a frame dropped or a tab left in the background does
       // not arrive as one enormous step.
       const elapsed = last ? Math.min((now - last) / 1000, 0.05) : 0;
@@ -120,28 +123,14 @@ export function ScrollScrub({
       // Keep going while there is still ground to make up. A twentieth of
       // a percent is under half a scrub unit on the longest sequence here,
       // which is less than one frame of it.
-      if (Math.abs(target - written) > 0.0002) {
-        frame = requestAnimationFrame(tick);
-      } else {
-        written = target;
-        put(written);
-        last = 0;
-      }
-    };
+      if (Math.abs(target - written) > 0.0002) return true;
 
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(tick);
-    };
+      written = target;
+      put(written);
+      last = 0;
+    });
 
-    tick(0);
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-    };
+    return stop;
   }, [spanMs, variable, ease]);
 
   return (

@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useRef, type ElementType, type ReactNode } from "react";
+import { useEffect, useRef, type CSSProperties, type ElementType, type ReactNode } from "react";
+import { observeReveal, prefersReducedMotion } from "@/lib/scroll";
+
+/** How the block arrives. `up` is the default: it rises into place. */
+export type RevealVariant = "up" | "fade" | "left" | "right" | "scale";
 
 type RevealProps = {
   children: ReactNode;
@@ -8,17 +12,23 @@ type RevealProps = {
   delay?: number;
   className?: string;
   as?: ElementType;
-  /** How much of the element must be visible before it animates in. */
-  amount?: number;
+  variant?: RevealVariant;
   /** Set false to animate once and stay put. */
   replay?: boolean;
 };
 
 /**
- * Scroll-in animation using a single IntersectionObserver per element.
+ * Scroll-in animation, driven by the site's one shared observer.
  *
- * Deliberately not a motion library: this is ~60 lines, adds nothing to the
- * bundle worth measuring, and cannot break on a React upgrade.
+ * This used to build an `IntersectionObserver` per element. On the longer
+ * pages that is a hundred of them, each with its own callback and its own
+ * threshold list, all watching the same scroll — and every one of them a
+ * separate piece of bookkeeping for the browser to carry on every frame.
+ * They are all one observer now (`lib/scroll.ts`), which is what the
+ * reference layout does and the single biggest reason its scrolling stays
+ * smooth with the same number of reveals on the page. Where the fold is, and
+ * how much of a block has to have crossed it, are decided there — so every
+ * reveal on the site fires on the same rule.
  *
  * The visible state is written straight to the element's `data-reveal`
  * attribute rather than held in React state. Revealing is a switch on an
@@ -28,15 +38,14 @@ type RevealProps = {
  * triggers layout.
  *
  * By default the animation replays: the element re-arms once it is *fully*
- * off screen, so scrolling back up and down plays it again. Re-arming only
- * at ratio 0 is what stops it flickering while it sits half on screen.
+ * off screen, so scrolling back up and down plays it again.
  */
 export function Reveal({
   children,
   delay = 0,
   className = "",
   as: Tag = "div",
-  amount = 0.15,
+  variant = "up",
   replay = true,
 }: RevealProps) {
   const ref = useRef<HTMLElement | null>(null);
@@ -49,46 +58,32 @@ export function Reveal({
       el.dataset.reveal = "on";
     };
 
-    // No observer (or the user prefers reduced motion): show immediately.
-    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reduced || typeof IntersectionObserver === "undefined") {
+    // Reduced motion: show immediately, and never move.
+    if (prefersReducedMotion()) {
       show();
       return;
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          // A block taller than the viewport can never reach `amount` of
-          // itself on screen, so treat "any of it is showing" as enough.
-          const viewportHeight =
-            entry.rootBounds?.height ?? window.innerHeight ?? 0;
-          const tallerThanViewport =
-            entry.boundingClientRect.height >= viewportHeight * 0.75;
+    const stop = observeReveal(el, (visible) => {
+      if (visible) show();
+      else if (replay) el.dataset.reveal = "off";
+    });
 
-          if (
-            entry.isIntersecting &&
-            (entry.intersectionRatio >= amount || tallerThanViewport)
-          ) {
-            show();
-          } else if (replay && entry.intersectionRatio === 0) {
-            el.dataset.reveal = "off";
-          }
-        }
-      },
-      { threshold: [0, amount], rootMargin: "0px 0px -8% 0px" },
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [amount, replay]);
+    // No observer at all: content is never worth hiding for an effect.
+    if (!stop) {
+      show();
+      return;
+    }
+    return stop;
+  }, [replay]);
 
   return (
     <Tag
       ref={ref}
       className={`reveal ${className}`}
       data-reveal="off"
-      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
+      data-reveal-variant={variant === "up" ? undefined : variant}
+      style={delay ? ({ "--reveal-delay": `${delay}ms` } as CSSProperties) : undefined}
     >
       {children}
     </Tag>

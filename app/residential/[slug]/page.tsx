@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { ImageReveal } from "@/components/ui/image-reveal";
 import { notFound } from "next/navigation";
 import { Container, Section } from "@/components/ui/section";
 import { PanelHeading } from "@/components/ui/panel-heading";
@@ -41,12 +42,16 @@ export default async function ProjectAboutPage({
           <div className="mt-12 grid items-center gap-10 lg:mt-14 lg:grid-cols-[1.2fr_0.8fr] lg:gap-20">
             <Reveal>
               <div className="border-rosegold overflow-hidden rounded-[1.75rem] sm:rounded-[2rem]">
-                <Image
-                  src={img.haraVijayaConcept}
-                  alt={alt.haraVijayaConcept}
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="h-auto w-full"
-                />
+                {/* The picture carries its own height here rather than
+                    filling a frame, so the wrapper has to as well. */}
+                <ImageReveal fill={false}>
+                  <Image
+                    src={img.haraVijayaConcept}
+                    alt={alt.haraVijayaConcept}
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="h-auto w-full"
+                  />
+                </ImageReveal>
               </div>
             </Reveal>
 

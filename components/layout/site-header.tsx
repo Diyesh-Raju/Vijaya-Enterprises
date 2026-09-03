@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Logo } from "./logo";
 import { SiteMenu } from "./site-menu";
+import { onScroll } from "@/lib/scroll";
 import { cn } from "@/lib/cn";
 
 const SCROLL_THRESHOLD = 24;
@@ -21,15 +22,16 @@ const SCROLL_THRESHOLD = 24;
  * the bar rather than running behind it: there is white paper up there, not
  * film, so a transparent bar would leave the lockup on nothing.
  */
-const LIGHT_FROM_TOP = ["/", "/faq"];
+const LIGHT_FROM_TOP = ["/", "/faq", "/privacy-policy", "/cookie-policy"];
 
+/**
+ * Through the site's shared scroll loop rather than a listener of its own,
+ * so the bar's state is settled in the same frame as everything else that
+ * moves with the page — and, more to the point, off the same single
+ * measurement. See `lib/scroll.ts`.
+ */
 function subscribeToScroll(onChange: () => void) {
-  window.addEventListener("scroll", onChange, { passive: true });
-  window.addEventListener("resize", onChange);
-  return () => {
-    window.removeEventListener("scroll", onChange);
-    window.removeEventListener("resize", onChange);
-  };
+  return onScroll(onChange);
 }
 
 const isScrolled = () => window.scrollY > SCROLL_THRESHOLD;

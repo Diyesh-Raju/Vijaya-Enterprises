@@ -4,6 +4,31 @@ import { img } from "@/lib/images";
 import { reviews, type Review } from "@/lib/reviews";
 import { cn } from "@/lib/cn";
 
+function Stars({ rating }: { rating: NonNullable<Review["rating"]> }) {
+  return (
+    <span
+      role="img"
+      aria-label={`${rating} out of 5`}
+      className="flex shrink-0 gap-0.5 text-brass-400"
+    >
+      {Array.from({ length: rating }, (_, star) => (
+        <svg
+          key={star}
+          viewBox="0 0 20 20"
+          aria-hidden="true"
+          fill="currentColor"
+          // 12px, not 14: at 14 the five stars plus the longest name on the
+          // strip ("Yoganarasimhan G N", 146px) overrun the 230px name row and
+          // the stars drop to their own line. Measured, not guessed.
+          className="h-3 w-3"
+        >
+          <path d="M10 1.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L10 14.9l-5.3 2.7 1-5.8L1.5 7.7l5.9-.9z" />
+        </svg>
+      ))}
+    </span>
+  );
+}
+
 function ReviewCard({ review }: { review: Review }) {
   return (
     <li
@@ -34,33 +59,22 @@ function ReviewCard({ review }: { review: Review }) {
           {review.name.trim().charAt(0).toUpperCase()}
         </span>
         <span className="flex min-w-0 flex-col leading-tight">
-          <span className="truncate text-[0.9375rem] font-semibold text-white">
-            {review.name}
+          {/* Name and stars share a line, and it wraps rather than shrinks:
+              a name too long to sit beside its stars pushes them to the line
+              below instead of getting cut short — nobody's name gets clipped
+              to make room for the rating. `max-w-full` keeps even an extreme
+              name inside the card. */}
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="max-w-full shrink-0 truncate text-[0.9375rem] font-semibold text-white">
+              {review.name}
+            </span>
+            {review.rating && <Stars rating={review.rating} />}
           </span>
           <span className="mt-1 text-[0.75rem] text-white/65">
             {review.when}
           </span>
         </span>
       </div>
-
-      {review.rating && (
-        <span
-          className="mt-4 flex gap-1 text-brass-400"
-          aria-label={`${review.rating} out of 5`}
-        >
-          {Array.from({ length: review.rating }, (_, star) => (
-            <svg
-              key={star}
-              viewBox="0 0 20 20"
-              aria-hidden="true"
-              fill="currentColor"
-              className="h-3.5 w-3.5"
-            >
-              <path d="M10 1.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L10 14.9l-5.3 2.7 1-5.8L1.5 7.7l5.9-.9z" />
-            </svg>
-          ))}
-        </span>
-      )}
 
       <p className="mt-5 text-[0.9375rem] leading-relaxed text-white/85">
         {review.quote}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageHero } from "@/components/sections/page-hero";
 import { ContactForm } from "./contact-form";
+import { CookieNotice } from "@/components/ui/cookie-notice";
 import { Container, Section, SectionHeading, Eyebrow } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { Frame } from "@/components/ui/media";
@@ -207,6 +208,11 @@ export default function ContactPage() {
           </div>
         </Container>
       </Section>
+
+      {/* The cookie notice lives here and only here — the one page where a
+          visitor hands us anything. It says there is nothing to accept; see
+          the note on the component. */}
+      <CookieNotice />
     </>
   );
 }

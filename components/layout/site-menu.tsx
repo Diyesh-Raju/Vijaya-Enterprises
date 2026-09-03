@@ -31,6 +31,7 @@ const MENU_LINKS = [
   ...navLinks.map(({ href, label }) => ({ href, label })),
   { href: "/contact", label: "Contact Us" },
   { href: "/faq", label: "FAQ" },
+  { href: "/privacy-policy", label: "Privacy Policy" },
 ];
 
 /** Slow enough to watch. The blind is the whole gesture, so it gets the time. */
@@ -220,14 +221,16 @@ export function SiteMenu({
                         // size on a normal screen, and height takes over only
                         // when there is not enough of it. Both terms grew when
                         // the contact block came out from under the list and
-                        // handed its room back.
+                        // handed its room back; the vh term then gave a
+                        // share of it up again (4.8 → 4.2, i.e. ×7/8) when
+                        // Privacy Policy made the list eight rows.
                         //
                         // The air between the lines is leading rather than
                         // padding, so it stays in proportion as the type
                         // resizes — padding would read as generous at 3rem and
                         // cramped at 1.75rem.
                         "font-sans font-medium tracking-[-0.015em]",
-                        "text-[clamp(1.75rem,min(3.3vw,4.8vh),3.1rem)] leading-[1.4]",
+                        "text-[clamp(1.75rem,min(3.3vw,4.2vh),3.1rem)] leading-[1.4]",
                         // Lights the instant the cursor lands and trails off
                         // after it leaves: `duration-0` under `hover` is the
                         // arriving state, the 260ms on the base is the leaving

@@ -47,3 +47,15 @@ next-env.d.ts
 # Hero source clips — the originals behind public/video/home-scroll*.mp4.
 # 60 MB of render that nothing serves; kept locally, out of the history.
 /assets/video-source/*.mp4
+
+# Downloaded reference demos — the scroll/gooey experiments the site's own
+# effects were built from. Read locally, never imported; they also carry every
+# lint error in the tree.
+/files/
+/files\ 2/
+/files\ 3/
+/files3.1/
+/files4/
+/files5/
+/Scroll-Transition-main/
+/gooey-hover-codrops-master/

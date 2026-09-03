@@ -75,8 +75,12 @@ export default function HomePage() {
       <Section tone="white" size="lg">
         <Container>
           <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
+            {/* The two halves come in from their own sides rather than both
+                rising, which is what stops a split reading as one block that
+                happened to be cut down the middle. Below 900px the variants
+                fall back to the rise — see `globals.css`. */}
             <div className="order-2 lg:order-1 lg:col-span-6">
-              <Reveal>
+              <Reveal variant="left">
                 <Frame
                   src={img.residentialLivingDusk}
                   alt={alt.residentialLivingDusk}
@@ -88,10 +92,10 @@ export default function HomePage() {
             </div>
 
             <div className="order-1 lg:order-2 lg:col-span-6">
-              <Reveal>
+              <Reveal variant="right">
                 <Eyebrow>Residential</Eyebrow>
               </Reveal>
-              <Reveal delay={80}>
+              <Reveal variant="right" delay={80}>
                 <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
                   Homes that feel like home.
                 </h2>

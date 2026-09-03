@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { ImageReveal } from "@/components/ui/image-reveal";
 import { useState } from "react";
 import { ImagePreview } from "@/components/ui/image-preview";
 import { ExpandIcon } from "@/components/ui/line-icons";
@@ -89,6 +90,21 @@ function Tile({
   contain?: boolean;
   onOpen: () => void;
 }) {
+  const picture = (
+    <Image
+      src={item.image}
+      alt={item.alt}
+      fill
+      sizes={sizes}
+      className={cn(
+        "transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        contain
+          ? "object-contain p-1 group-hover/tile:scale-[1.02]"
+          : "object-cover group-hover/tile:scale-[1.04]",
+      )}
+    />
+  );
+
   return (
     <button
       type="button"
@@ -103,18 +119,20 @@ function Tile({
         className,
       )}
     >
-      <Image
-        src={item.image}
-        alt={item.alt}
-        fill
-        sizes={sizes}
-        className={cn(
-          "transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          contain
-            ? "object-contain p-1 group-hover/tile:scale-[1.02]"
-            : "object-cover group-hover/tile:scale-[1.04]",
-        )}
-      />
+      {/* Each tile uncovers on its own as the grid comes up the page, which
+          is what stops a nine-up grid arriving as one block.
+
+          A drawing is left bare. The reveal holds its picture a fifth too
+          close and settles it back, which is right for a photograph that is
+          being cropped anyway and wrong for a plan that is fitted whole:
+          there the over-scale is the only thing that would ever crop it, and
+          it would spend the first second of the animation with its own
+          edges cut off. */}
+      {contain ? (
+        picture
+      ) : (
+        <ImageReveal>{picture}</ImageReveal>
+      )}
       <span
         aria-hidden="true"
         className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-navy-950/75 px-3 py-1.5 text-[0.6875rem] font-medium text-white opacity-0 transition-opacity duration-300 group-hover/tile:opacity-100"

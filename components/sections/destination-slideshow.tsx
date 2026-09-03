@@ -19,23 +19,25 @@ import { useEffect, useRef, useState } from "react";
  * The scroll is not the demo's either. The demo hijacks the wheel while the
  * pointer is over the strip and lets the page carry on regardless; here the
  * band is pinned to the screen inside a taller track, and the page scroll
- * through that track walks the strip — so the reader passes all four tiles on
+ * through that track walks the strip — so the reader passes every tile on
  * the way down and the page only moves on once the strip has run out.
  * `lib/gooey/PinnedScroll` is that transport, in place of `smooth-scrollbar`
  * and its horizontal plugin, and `lib/gooey/Stage` hangs the progress bar, the
  * heading's drift and the ground's on it.
  *
- * Each award wants a photograph in `public/accolades/`, named by its key. The
+ * Each award wants a picture in `public/accolades/`, named by its key. The
  * track measures the strip it is given, so adding or dropping an award changes
  * how far the pin holds and nothing else.
  *
  * The caption is hung across the picture's lower left, which is the demo's own
  * arrangement: the name centred on the frame's edge, half of it outside and
- * half over the photograph, `See more` under it. It is set in cream there
- * rather than the band's navy — half of every line is over an award being
- * handed over on a dark stage, and no one ink reads over both that and a
- * champagne ground. On a narrow screen there is no room beside the picture for
- * any of it, and the caption goes back under the photograph in navy.
+ * half over the photograph, `See more` under it. Both are set in the band's
+ * one light ink. The name is the only part that crosses the picture, and the
+ * corner it crosses is darkened under it — see `.tile__link::after` in
+ * `globals.css`, which is what lets one ink hold over the night ground and
+ * over five photographs that agree on nothing. On a narrow screen there is no
+ * room beside the picture for any of it, and the caption goes back under the
+ * photograph, where it is over the ground and needs none of that.
  */
 
 type Accolade = {
@@ -47,6 +49,8 @@ type Accolade = {
   alt: string;
   /** Landscape frame rather than the portrait default. */
   wide?: boolean;
+  /** A certificate rather than a photograph: shown whole, never cropped. */
+  doc?: boolean;
 };
 
 const accolades: readonly Accolade[] = [
@@ -64,22 +68,38 @@ const accolades: readonly Accolade[] = [
       "Mahantesh B. Nelavagi received the prestigious Vijayavani International Award 2025. The honour was presented by Mr. B. N. Reddy, High Commissioner of India to Malaysia, and Dr. Anand Sankeshwar, MD of VRL Groups.",
     alt: "Mahantesh B. Nelavagi receiving the Vijayavani International Award 2025",
   },
-  // The last two are awaiting their copy. The name and the citation are the
-  // only things missing — drop the words in and the button, the panel and the
-  // space they open into are already here.
+  // Two honours from the same occasion, which is why they carry the same
+  // name: the society gave both at the opening ceremonies for its new school
+  // building, and only the citations tell them apart.
   {
     key: "legacy-one",
-    title: "Old Prize",
-    description: "",
-    alt: "An early Vijaya Enterprises award being presented",
+    title: "Swami Vivekananda Rural Education Society",
+    description:
+      "Presented to Vijaya Enterprises at the opening ceremonies for the society's new school building.",
+    alt: "Vijaya Enterprises being honoured at the opening of the Swami Vivekananda Rural Education Society's new school building",
     wide: true,
   },
   {
     key: "legacy-two",
-    title: "Old Prize",
-    description: "",
-    alt: "An early Vijaya Enterprises award being presented",
+    title: "Swami Vivekananda Rural Education Society",
+    description:
+      "A second honour from the same opening ceremonies for the society's new school building, presented by the Governor.",
+    alt: "The Governor presenting Vijaya Enterprises with an award at the opening of the Swami Vivekananda Rural Education Society's new school building",
     wide: true,
+  },
+  // The name below is read off the certificate itself, and shortened to fit
+  // the band: the award is given in full there as "IIB Best Builders, Land
+  // Developers & Engineering Excellence Award – 2022", which sets nine words
+  // across the picture and buries the certificate under its own title. The
+  // long form belongs in the citation, which is awaiting its copy — drop the
+  // words in and the button, the panel and the space they open into are
+  // already here.
+  {
+    key: "iib-2022",
+    title: "IIB Engineering Excellence Award 2022",
+    description: "",
+    alt: "The Icons of Indian Business certificate of appreciation presented to Mahantesh B. Nelavagi, Managing Director of Vijaya Enterprises, at the 2022 Engineer's Day awards in Bengaluru",
+    doc: true,
   },
 ];
 
@@ -123,12 +143,10 @@ export function DestinationSlideshow() {
     // strip and writes that second part back as `--gooey-travel`.
     <div className="gooey-track">
       <section ref={rootRef} className="gooey-demo" aria-labelledby="accolades-title">
-        {/* The ground: the brushed swirl, laid under the whole band and walked
-            sideways by the same scroll that walks the strip, so the band reads
-            as one moving thing rather than tiles sliding over a still colour.
-            Laid wider than the band it sits in, and the walk is taken out of
-            that slack, so its own edge never comes into view. */}
-        <div className="gooey-backdrop" aria-hidden="true" />
+        {/* The ground is a still photograph on the section's own backdrop
+            layer — see `.gooey-demo::before` in `globals.css`. It had an
+            element of its own while it was being walked sideways against the
+            strip; it does not move any more, so it does not need one. */}
 
         <h2 id="accolades-title" className="page-title | title">
           Our <span className="slideshow__title__offset | title__offset">Accolades</span>
@@ -145,7 +163,7 @@ export function DestinationSlideshow() {
                     key={award.key}
                     className={`slideshow-list__el${
                       award.wide ? " slideshow-list__el--wide" : ""
-                    }`}
+                    }${award.doc ? " slideshow-list__el--doc" : ""}`}
                   >
                     <article className="tile | js-tile">
                       {/* The photograph, and the box the band's colour swing

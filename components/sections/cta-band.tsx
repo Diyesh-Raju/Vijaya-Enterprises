@@ -1,4 +1,5 @@
 import Image, { type StaticImageData } from "next/image";
+import { ImageReveal } from "@/components/ui/image-reveal";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
@@ -34,14 +35,16 @@ export function CtaBand({
     <section className="relative isolate bg-white py-16 sm:py-20 lg:py-24">
       <Container>
         <div className="relative isolate overflow-hidden rounded-[2rem] bg-navy-950 sm:rounded-[3rem]">
-          <Image
-            src={image}
-            alt={imageAlt}
-            fill
-            sizes="(max-width: 1440px) 100vw, 1440px"
-            placeholder="blur"
-            className="object-cover"
-          />
+          <ImageReveal>
+            <Image
+              src={image}
+              alt={imageAlt}
+              fill
+              sizes="(max-width: 1440px) 100vw, 1440px"
+              placeholder="blur"
+              className="object-cover"
+            />
+          </ImageReveal>
           {/* Two layers: a flat base so busy photographs never eat the copy,
               plus a directional grade that keeps the image readable at right. */}
           <div aria-hidden="true" className="absolute inset-0 bg-navy-950/45" />
