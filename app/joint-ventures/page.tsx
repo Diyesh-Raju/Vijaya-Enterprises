@@ -125,8 +125,8 @@ const steps: ProcessStep[] = [
     step: "02",
     title: ["Feasibility", "and planning"],
     body: "We look at what the site can realistically support — approvals, planning, cost and demand — and share what we find.",
-    image: img.officeDocumentReview,
-    imageAlt: alt.officeDocumentReview,
+    image: img.designReviewMeeting,
+    imageAlt: alt.designReviewMeeting,
   },
   {
     step: "03",
@@ -165,8 +165,8 @@ export default function JointVenturesPage() {
       <HandshakeReveal
         eyebrow="Build More Together"
         title="Land is only the beginning."
-        image={img.residenceBlueHour}
-        imageAlt={alt.residenceBlueHour}
+        image={img.scaleModelHands}
+        imageAlt={alt.scaleModelHands}
       >
         <p>
           Vijaya Enterprises brings more than five decades of construction and

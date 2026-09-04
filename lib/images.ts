@@ -54,6 +54,7 @@ import drawingBoard from "@/assets/images/drawing-board.jpg";
    page: the conversation, the study, the agreement on paper, and the work
    itself. See `ProcessReveal`. */
 import familyConversation from "@/assets/images/family-conversation.jpg";
+import designReviewMeeting from "@/assets/images/design-review-meeting.jpg";
 import officeDocumentReview from "@/assets/images/office-document-review.jpg";
 import planAndAgreement from "@/assets/images/plan-and-agreement.jpg";
 import slabPour from "@/assets/images/slab-pour.jpg";
@@ -95,6 +96,7 @@ import familyLivingRoom from "@/assets/images/family-living-room.jpg";
 import plotWalkover from "@/assets/images/plot-walkover.jpg";
 import rebarWorkers from "@/assets/images/rebar-workers.jpg";
 import residenceBlueHour from "@/assets/images/residence-blue-hour.jpg";
+import scaleModelHands from "@/assets/images/scale-model-hands.jpg";
 import residentialInterior from "@/assets/images/residential-interior.jpg";
 import residentialLivingDusk from "@/assets/images/residential-living-dusk.jpg";
 import siteTeam from "@/assets/images/site-team.jpg";
@@ -122,6 +124,7 @@ export const img = {
   cranesSkyline,
   drawingBoard,
   familyConversation,
+  designReviewMeeting,
   officeDocumentReview,
   planAndAgreement,
   slabPour,
@@ -155,6 +158,7 @@ export const img = {
   plotWalkover,
   rebarWorkers,
   residenceBlueHour,
+  scaleModelHands,
   residentialInterior,
   residentialLivingDusk,
   siteTeam,
@@ -188,6 +192,8 @@ export const alt = {
     "A floor plan on a drawing board, with a scale rule, drafting pens and a drawing tube laid across it",
   familyConversation:
     "A family talking together in their living room, the father in the foreground and his son and wife listening across from him",
+  designReviewMeeting:
+    "Three colleagues around a table reading a floor plan together, a structural model of the building on the screen beside them and the site itself under construction through the window",
   officeDocumentReview:
     "Four colleagues standing over an open file together, reading the same page",
   planAndAgreement:
@@ -248,6 +254,8 @@ export const alt = {
   rebarWorkers: "Site team tying reinforcement steel on a column cage",
   residenceBlueHour:
     "A completed residence at blue hour, its stone portico and teak entrance lit warmly above a lawn and wet paving",
+  scaleModelHands:
+    "Two hands lowering a lit scale model of a low-rise building onto a site plan, the city skyline behind it at sunset",
   residentialInterior:
     "Warmly lit living and dining room in a completed Vijaya home, with a sofa, armchair and planting",
   residentialLivingDusk:
