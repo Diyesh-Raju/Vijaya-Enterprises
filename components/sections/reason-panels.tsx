@@ -10,12 +10,19 @@ export type ReasonPanel = {
   image: StaticImageData;
   imageAlt: string;
   /**
-   * Where to hold the photograph while the panel is a narrow slat. Closed, a
-   * panel is about a seventh of its open width, so a landscape original loses
-   * nearly all of it and `object-position` decides which part survives.
-   * Unset, the crop is centred.
+   * Where to hold the photograph. Closed, a panel is about a fifth of its open
+   * width, so a landscape original loses nearly all of it and `object-position`
+   * decides which part survives. Unset, the crop is centred.
    */
   focus?: string;
+  /**
+   * Where to hold it while the panel is a slat, when the open hold will not do.
+   * A photograph rarely needs this — any crop of one is still a photograph. A
+   * picture carrying type does: the hold that frames a lockup in the open panel
+   * saws it in half at a fifth of the width, and the slat wants aiming at a
+   * clear part of the ground instead. Unset, the slat keeps `focus`.
+   */
+  focusClosed?: string;
 };
 
 /**
@@ -44,6 +51,10 @@ export type ReasonPanel = {
  * be empty, so the two never cross-fade through each other. CSS gives this
  * for free — a transition is read off the state being moved *to*, so the
  * open and closed class sets can each carry their own duration and delay.
+ *
+ * A panel carrying `focusClosed` pans between its two holds instead of cutting
+ * between them, on the panel's own 900ms and curve, so the crop travels with
+ * the width rather than jumping at the moment the class changes.
  *
  * The copy block is set to a fixed width rather than to the panel's. A block
  * sized to the panel re-wraps on every frame as the panel narrows, and the
@@ -97,8 +108,17 @@ export function ReasonPanels({ items }: { items: readonly ReasonPanel[] }) {
                  mid-movement — the one thing that would show. */
               sizes="(max-width: 1024px) 100vw, 60vw"
               placeholder="blur"
-              style={item.focus ? { objectPosition: item.focus } : undefined}
-              className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04] motion-reduce:group-hover:scale-100"
+              style={{
+                objectPosition:
+                  (isOpen ? item.focus : (item.focusClosed ?? item.focus)) ||
+                  undefined,
+              }}
+              className={cn(
+                "object-cover group-hover:scale-[1.04] motion-reduce:group-hover:scale-100",
+                "transition-[transform,object-position] duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                // The pan has to finish with the panel, not 300ms after it.
+                item.focusClosed && "duration-[900ms]",
+              )}
             />
 
             {/* Closed: a flat wash, deep enough to carry the name over any

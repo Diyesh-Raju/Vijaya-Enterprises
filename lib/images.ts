@@ -82,15 +82,14 @@ import officeInterior from "@/assets/images/office-interior.jpg";
 import partnerBungalow from "@/assets/images/partner-bungalow.jpg";
 import partnerLandHolding from "@/assets/images/partner-land-holding.jpg";
 import partnerPlansSite from "@/assets/images/partner-plans-site.jpg";
-/* The six reasons to partner, for the accordion further down the same page:
-   the decades of building, the crew that does it, what has been built, the
-   city it was built in, a building settled into it, and the family living in
-   one. Each is read both as a narrow slat and as a full panel, so all six are
-   compositions that survive a hard vertical crop. See `ReasonPanels`. */
-import scaffoldWorker from "@/assets/images/scaffold-worker.jpg";
+/* The five reasons to partner, for the accordion further down the same page:
+   the fifty years, the crew that built them, what has been built, a building
+   settled into the city, and the family living in one. Each is read both as a
+   narrow slat and as a full panel, so all five are compositions that survive a
+   hard vertical crop. See `ReasonPanels`. */
+import fiftyYearsLegacy from "@/assets/images/fifty-years-legacy.jpg";
 import masonBrickwork from "@/assets/images/mason-brickwork.jpg";
 import residentialTowers from "@/assets/images/residential-towers.jpg";
-import bengaluruMarket from "@/assets/images/bengaluru-market.jpg";
 import bengaluruDusk from "@/assets/images/bengaluru-dusk.jpg";
 import familyLivingRoom from "@/assets/images/family-living-room.jpg";
 import plotWalkover from "@/assets/images/plot-walkover.jpg";
@@ -148,10 +147,9 @@ export const img = {
   officeInterior,
   partnerBungalow,
   partnerLandHolding,
-  scaffoldWorker,
+  fiftyYearsLegacy,
   masonBrickwork,
   residentialTowers,
-  bengaluruMarket,
   bengaluruDusk,
   familyLivingRoom,
   partnerPlansSite,
@@ -237,14 +235,12 @@ export const alt = {
     "A single old tree standing in open land at sunset, the field boundaries running away from it to the horizon",
   partnerPlansSite:
     "Two men reading a layout drawing spread across a car bonnet, brickwork going up on the plot behind them",
-  scaffoldWorker:
-    "A worker standing on bamboo scaffolding against a deep blue sky, steadying the edge of a freshly cast slab",
+  fiftyYearsLegacy:
+    "Vijaya Enterprises' fifty-year mark: a gold '50 Years' set on cream, the digits cut out over rooms and a valley view, above the company logo and 'Since 1973'",
   masonBrickwork:
     "A mason's hands bedding a brick down onto fresh mortar against the line, trowel still in the other hand",
   residentialTowers:
     "Residential towers in Bengaluru seen from the foot of the block, their balconies stepping away up the elevation",
-  bengaluruMarket:
-    "A Bengaluru street market in full swing, a fruit seller at her cart and shoppers passing under the trees",
   bengaluruDusk:
     "A Bengaluru building at dusk, its upper floors lit gold against a deepening sky",
   familyLivingRoom:

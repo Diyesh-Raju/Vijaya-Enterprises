@@ -57,19 +57,27 @@ const idealPartners = [
   },
 ];
 
-/* Six reasons, each on a photograph of the thing it claims. See
-   `ReasonPanels` — closed, a panel is a slat about a seventh of its open
+/* Five reasons, each on a picture of the thing it claims. See
+   `ReasonPanels` — closed, a panel is a slat about a fifth of its open
    width, so every `focus` below is chosen for that crop rather than the
    open one. */
 const whyPartner: ReasonPanel[] = [
   {
     title: "50+ Years of Construction Experience",
     body: "Since 1973, across residential, commercial, industrial and institutional projects.",
-    image: img.scaffoldWorker,
-    imageAlt: alt.scaffoldWorker,
-    // Centres him in the slat, and open leaves the brickwork on the left for
-    // the copy to sit on rather than his legs.
-    focus: "46% 50%",
+    image: img.fiftyYearsLegacy,
+    imageAlt: alt.fiftyYearsLegacy,
+    // The one panel carrying a picture with type in it rather than a
+    // photograph, so both holds are chosen against the lockup. Open, this
+    // frames the whole of "50 Years" and the logo under it into the right of
+    // the panel and leaves the banner's blank cream under the copy; the 80%
+    // only bites below `lg`, where the panel is wider than the banner and the
+    // crop turns vertical, and it keeps "Since 1973" rather than the top of
+    // the 5. Closed, the slat is a fifth of that width and the same hold saws
+    // the wordmark in half, so it swings to the outer edge of the 0 — a gold
+    // arc on clear cream, with no type in it to cut.
+    focus: "85% 80%",
+    focusClosed: "100% 50%",
   },
   {
     title: "In-House Construction Capability",
@@ -86,12 +94,6 @@ const whyPartner: ReasonPanel[] = [
     // an empty rectangle. Held here it takes the near tower's elevation
     // running up the frame.
     focus: "25% 50%",
-  },
-  {
-    title: "Strong Local Understanding",
-    body: "Five decades of building in Karnataka, and of knowing what each locality asks for.",
-    image: img.bengaluruMarket,
-    imageAlt: alt.bengaluruMarket,
   },
   {
     title: "Long-Term Approach",
