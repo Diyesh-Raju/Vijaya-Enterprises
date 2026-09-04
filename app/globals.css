@@ -2922,7 +2922,9 @@
 /* Weighted to the side the copy sits on, so the photograph keeps most of
    its own light and only the ground under the words is taken down. The
    second wash is for the foot of the frame, where this photograph puts its
-   brightest thing — a floodlit lawn — directly under the last line. */
+   palest thing — the site plan the model stands on — directly under the
+   last line. Measured: the brightest line-sized patch under the copy is
+   L 0.062, so the body at white/85% clears 7.3:1. */
 .keyhole__scrim {
   background:
     linear-gradient(
@@ -3516,10 +3518,18 @@
   color: var(--color-navy-500);
 }
 
+/* A step's description is the only prose on its screen and it is read at
+   arm's length against a photograph several times its size, so it is set a
+   good deal larger and at the heading's own weight — enough ink to hold
+   its own beside the title rather than reading as a caption. Its column is
+   set by the grid, not by the `ch` measure above, so the size costs a line
+   on 01 and 02 and two on 03; the frame reserves below are widened to
+   match, or the steps run off the bottom of a laptop window. */
 .process-panel__text p {
-  font-size: 1.0625rem;
-  line-height: 1.75;
-  color: var(--color-navy-700);
+  font-size: 1.3125rem;
+  font-weight: 600;
+  line-height: 1.65;
+  color: var(--color-navy-800);
 }
 
 /* ---- Stacked, up to `lg` ----------------------------------------- */
@@ -3580,7 +3590,7 @@
     width: min(
       64%,
       calc(56svh * 1.5),
-      calc((var(--process-room) - 15.5rem) * 1.5)
+      calc((var(--process-room) - 19rem) * 1.5)
     );
   }
 
@@ -3645,11 +3655,14 @@
     row-gap: 1vh;
   }
 
+  /* The `svh` term is the one that binds here, not the reserve beside it:
+     03 stacks the frame over the words, so on a short window the photograph
+     has to give up the height the five lines of description now want. */
   .process-panel--3 .process-frame {
     width: min(
       84%,
-      calc(54svh * 1.75),
-      calc((var(--process-room) - 13.5rem) * 1.75)
+      calc(52svh * 1.75),
+      calc((var(--process-room) - 14rem) * 1.75)
     );
     margin-bottom: 3vh;
   }
@@ -3669,29 +3682,37 @@
     text-align: right;
   }
 
-  /* 04 — the last one dead centre, the title above and below it. Nothing
-     off to the side: the sequence closes where it started. */
+  /* 04 — the last one dead centre, the title above and below it. The
+     description used to sit on a row of its own under the title, which cost
+     the photograph the whole height of it; it is tucked in beside the lower
+     title word instead, where the frame's own width leaves a clear column
+     going spare. The frame and both title words stay centred, so the
+     sequence still closes where it started — the closing step is simply
+     seen at the size it deserves. */
   .process-panel--4 .process-panel__layout {
     grid-template-areas:
-      "word-up"
-      "frame"
-      "word-down"
-      "text";
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 1.5vh;
+      "word-up   word-up   word-up"
+      "frame     frame     frame"
+      ".         word-down text";
+    /* The middle column takes the width of the title word in it, so the two
+       side columns are whatever the centred word leaves — which is where the
+       description goes. */
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    column-gap: 2rem;
+    row-gap: 0.9vh;
   }
 
   .process-panel--4 .process-frame {
     width: min(
-      66%,
-      calc(46svh * 1.556),
-      calc((var(--process-room) - 21rem) * 1.556)
+      90%,
+      calc(60svh * 1.556),
+      calc((var(--process-room) - 16rem) * 1.556)
     );
   }
 
   .process-panel--4 .process-panel__text {
-    margin-top: 1.5vh;
-    text-align: center;
+    align-self: center;
+    justify-self: start;
   }
 }
 
