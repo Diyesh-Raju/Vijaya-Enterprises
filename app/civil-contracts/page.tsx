@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { HomeHero } from "@/components/sections/home-hero";
 import { TrustedExperts } from "@/components/sections/trusted-experts";
@@ -156,7 +157,17 @@ export default function CivilContractsPage() {
           up the screen by it. It asks only that what follows be opaque and
           later in the DOM, which the track below is — see `pin` in
           `components/ui/section.tsx`. */}
-      <Section tone="white" size="lg" pin>
+      {/* A shallower hold than the default full screen. Centred in the whole
+          window, this section's copy sat about 240px below the band above it,
+          and with the band's arc reaching almost to its own bottom edge that
+          read as a long empty white drop between the curve and the heading.
+          The hold is cut to the copy plus air instead. */}
+      <Section
+        tone="white"
+        size="lg"
+        pin
+        style={{ "--pin-h": "34rem" } as CSSProperties}
+      >
         <Container>
           <div className="grid gap-14 lg:grid-cols-12 lg:gap-20">
             <div className="lg:col-span-7">

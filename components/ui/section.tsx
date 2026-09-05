@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import { Reveal } from "./reveal";
 
@@ -50,8 +50,17 @@ const paddingLg: Record<"sm" | "md" | "lg", string> = {
  * than a screen, and a sticky band taller than the screen it sticks to can
  * only ever show its top.
  */
+/**
+ * The screen a pinned section holds, and the one knob on it. It defaults to
+ * the whole window under the header, which is what a pin is usually for; a
+ * caller that wants a shallower hold sets `--pin-h` on the section and gets
+ * one, without a second class competing with this one for the same property.
+ * A plain `className` override could not do that job — `cn` joins rather than
+ * merges, so both min-heights would land and the stylesheet's own order, not
+ * the caller's, would decide which won.
+ */
 const pinned =
-  "lg:sticky lg:top-[var(--header-h)] lg:flex lg:min-h-[calc(100svh-var(--header-h))] lg:items-center lg:py-16";
+  "lg:sticky lg:top-[var(--header-h)] lg:flex lg:min-h-[var(--pin-h,calc(100svh-var(--header-h)))] lg:items-center lg:py-16";
 
 export function Section({
   children,
@@ -60,6 +69,7 @@ export function Section({
   id,
   size = "md",
   pin = false,
+  style,
 }: {
   children: ReactNode;
   tone?: Tone;
@@ -67,10 +77,13 @@ export function Section({
   id?: string;
   size?: "sm" | "md" | "lg";
   pin?: boolean;
+  /** Custom properties the section reads — `--pin-h`. See `pinned` above. */
+  style?: CSSProperties;
 }) {
   return (
     <section
       id={id}
+      style={style}
       // `isolate` keeps decorative absolutely-positioned children from
       // escaping their section and overlapping the next one.
       className={cn(
