@@ -374,7 +374,7 @@ export default function OurLegacyPage() {
 
       <CtaBand
         eyebrow="Since 1973"
-        title="Fifty years of trust, and counting."
+        title="50+ years of trust, and counting."
         body={
           <p>
             If customers remember one thing about Vijaya Enterprises, we would like

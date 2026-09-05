@@ -261,8 +261,8 @@ export function ResidentialHero() {
             className="animate-rise mt-7 max-w-2xl text-[1.0625rem] leading-[1.75] text-navy-100/85 sm:text-[1.125rem]"
             style={{ animationDelay: "340ms" }}
           >
-            Thoughtfully planned homes backed by more than 50 years of
-            construction experience.
+            Thoughtfully planned homes backed by 50+ years of construction
+            experience.
           </p>
 
           <div className="animate-rise mt-10" style={{ animationDelay: "460ms" }}>

@@ -84,7 +84,7 @@ export function PlannedForLiving() {
 
             <Reveal delay={80}>
               <p className="mt-6 max-w-[34rem] text-[1.0625rem] leading-[1.75] text-navy-100/85 lg:mt-[clamp(1rem,2.6vh,1.5rem)]">
-                Fifty years of building for families in Karnataka decides how a
+                50+ years of building for families in Karnataka decides how a
                 Vijaya home is planned — where the light falls, where the
                 storage goes, and what still looks right long after the keys
                 have changed hands.

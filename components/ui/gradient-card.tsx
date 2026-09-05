@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 import { cn } from "@/lib/cn";
 
 export type CardStat = {
-  /** The figure itself, already formatted — "+5,00,000", "1,200". */
+  /** The figure itself, already formatted — "+10,00,000", "1,200". */
   value: string;
   /** What the figure counts. Omit on a single stat the title already names. */
   label?: string;

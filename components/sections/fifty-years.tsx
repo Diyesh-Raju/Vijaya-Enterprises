@@ -31,7 +31,7 @@ const points: {
   {
     icon: AreaIcon,
     title: "Sq. Ft. Delivered",
-    stats: [{ value: "+5,00,000" }],
+    stats: [{ value: "+10,00,000" }],
   },
   {
     icon: BuildingIcon,
@@ -57,7 +57,7 @@ export function FiftyYears() {
             <Reveal>
               <h2 className="text-navy-900">
                 <span className="block font-display text-[clamp(5rem,14vw,11rem)] leading-[0.8]">
-                  50
+                  50+
                 </span>
                 <span
                   aria-hidden="true"

@@ -24,7 +24,7 @@ import { img, alt } from "@/lib/images";
 export const metadata: Metadata = {
   title: "Residential Development",
   description:
-    "Homes built on trust. Thoughtfully planned apartments, villas and residential developments backed by more than 50 years of construction experience in Karnataka.",
+    "Homes built on trust. Thoughtfully planned apartments, villas and residential developments backed by 50+ years of construction experience in Karnataka.",
   alternates: { canonical: "/residential" },
 };
 
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
  * is to support every claim with proof.
  */
 const milestones = [
-  { value: 50, suffix: "", label: "Years of excellence" },
+  { value: 50, suffix: "+", label: "Years of excellence" },
   { value: 100, suffix: "+", label: "Projects completed" },
   { value: 500, suffix: "+", label: "Happy families" },
 ];
