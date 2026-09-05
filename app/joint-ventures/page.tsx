@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { PageHero } from "@/components/sections/page-hero";
-import { CtaBand } from "@/components/sections/cta-band";
 import { HandshakeReveal } from "@/components/sections/handshake-reveal";
 import { PartnerPanels } from "@/components/sections/partner-panels";
 import {
@@ -270,22 +269,6 @@ export default function JointVenturesPage() {
           </div>
         </Container>
       </Section>
-
-      <CtaBand
-        eyebrow="Joint Ventures"
-        title="Build more together."
-        body={
-          <p>
-            If you own land and want to understand what it could become, start with
-            a conversation. We will tell you what we think is realistic — including
-            when we think the answer is no.
-          </p>
-        }
-        image={img.cranesSkyline}
-        imageAlt={alt.cranesSkyline}
-        primary={{ href: "/contact", label: "Discuss A Joint Venture" }}
-        secondary={{ href: "/our-legacy", label: "Our Legacy" }}
-      />
     </>
   );
 }

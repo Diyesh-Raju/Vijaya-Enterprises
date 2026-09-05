@@ -2,7 +2,6 @@ import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { HomeHero } from "@/components/sections/home-hero";
 import { TrustedExperts } from "@/components/sections/trusted-experts";
-import { CtaBand } from "@/components/sections/cta-band";
 import {
   Undertakings,
   type Undertaking,
@@ -307,23 +306,6 @@ export default function CivilContractsPage() {
             immediately above, which is read a second before it. */}
         <ContractStages items={stages} badge="Contract stage" />
       </section>
-
-      <CtaBand
-        eyebrow="Have A Project To Build?"
-        title="Tell us what you want to build."
-        body={
-          <p>
-            Whether you are planning a private residence, commercial building,
-            office, industrial facility, warehouse, institutional building,
-            renovation or extension — we will help you understand what it takes to
-            build it.
-          </p>
-        }
-        image={img.steelRebar}
-        imageAlt={alt.steelRebar}
-        primary={{ href: "/contact", label: "Discuss Your Construction Project" }}
-        secondary={{ href: "/joint-ventures", label: "Joint Ventures" }}
-      />
     </>
   );
 }
