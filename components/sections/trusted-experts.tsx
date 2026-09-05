@@ -2,7 +2,7 @@ import { Marquee } from "@/components/ui/marquee";
 import { trustedBy, type TrustedOrg } from "@/lib/site";
 
 /**
- * The client band that opens the Commercial Contracts page, under the hero.
+ * The client band that opens the Civil Contracts page, under the hero.
  *
  * A replica of the "Trusted by experts / Used by the leaders" band on
  * obsidian-blade.vercel.app/commercial, asked for line by line: the two-tone

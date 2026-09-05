@@ -83,7 +83,7 @@ app/
   layout.tsx              root layout, fonts, metadata, JSON-LD
   page.tsx                home
   residential/            Residential Development
-  commercial-contracts/   Private contract construction (all four sectors)
+  civil-contracts/        Private contract construction (all four sectors)
   joint-ventures/         Joint development
   our-legacy/             The company story since 1973
   contact/                Enquiry form + server action

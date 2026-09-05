@@ -80,6 +80,25 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 365,
   },
 
+  /**
+   * The page that undertakes private contract work was at
+   * `/commercial-contracts` until it was renamed Civil Contracts. The old
+   * path is permanent rather than temporary because the new one is where the
+   * page now lives for good: a 308 is what moves a search engine's index and
+   * anyone's bookmark across, where a 307 asks them both to keep checking.
+   * The fragment (`#industrial`, from the home page's Warehouses card) is
+   * carried over by the browser, which never sends it to the server.
+   */
+  async redirects() {
+    return [
+      {
+        source: "/commercial-contracts",
+        destination: "/civil-contracts",
+        permanent: true,
+      },
+    ];
+  },
+
   async headers() {
     return [
       {

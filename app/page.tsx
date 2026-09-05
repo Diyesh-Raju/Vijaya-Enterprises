@@ -38,12 +38,12 @@ const buildTypes: readonly Service[] = [
   {
     name: "Commercial Buildings",
     icon: CommercialBuildingIcon,
-    href: "/commercial-contracts",
+    href: "/civil-contracts",
   },
   {
     name: "Warehouses",
     icon: WarehouseIcon,
-    href: "/commercial-contracts#industrial",
+    href: "/civil-contracts#industrial",
   },
   { name: "Joint Ventures", icon: JointVentureIcon, href: "/joint-ventures" },
 ];
@@ -229,7 +229,7 @@ export default function HomePage() {
                   <Button href="/contact" variant="light" size="lg" withArrow>
                     Discuss Your Project
                   </Button>
-                  <Button href="/commercial-contracts" variant="ghost" size="lg">
+                  <Button href="/civil-contracts" variant="ghost" size="lg">
                     What We Undertake
                   </Button>
                 </div>

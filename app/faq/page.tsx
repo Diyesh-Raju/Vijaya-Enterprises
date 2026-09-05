@@ -18,7 +18,7 @@ export const metadata: Metadata = {
  *
  * That constraint is the point of this page rather than a limitation of it: an
  * FAQ is where a claim gets made casually and then has to be lived up to, so
- * every answer here is a restatement of copy from Residential, Commercial
+ * every answer here is a restatement of copy from Residential, Civil
  * Contracts, Joint Ventures, Our Legacy or Contact — with nothing added.
  *
  * ⚠️ Two answers depend on facts that are still placeholders elsewhere: the

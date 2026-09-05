@@ -525,7 +525,7 @@
   .trusted-row { --logo-scale: 1; }
 }
 
-/* The Commercial Contracts page runs the same roster as cards rather than a
+/* The Civil Contracts page runs the same roster as cards rather than a
    bare row, so every mark has to leave its card some padding: the same wells
    and the same per-entry heights, pulled down about a third. */
 .trusted-tile-row {
@@ -2238,7 +2238,7 @@
 
 /* ------------------------------------------------------------------
    What we undertake — the five kinds of work, one screen at a time, on
-   /commercial-contracts.
+   /civil-contracts.
 
    A tall track with a pinned screen inside it and five panels stacked in
    the screen. A panel is three layers: the photograph across the whole
@@ -2955,7 +2955,7 @@
 }
 
 /* ------------------------------------------------------------------
-   How a contract runs — the five stages on /commercial-contracts.
+   How a contract runs — the five stages on /civil-contracts.
 
    One photograph per stage, one screen each, with the copy along the
    bottom edge. The layout is here; what makes it a section rather than

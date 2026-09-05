@@ -75,8 +75,8 @@ export const navLinks: NavLink[] = [
     hint: "Homes built on trust",
   },
   {
-    href: "/commercial-contracts",
-    label: "Commercial Contracts",
+    href: "/civil-contracts",
+    label: "Civil Contracts",
     hint: "Build with experience you can trust",
   },
   {
@@ -145,7 +145,7 @@ export const associatedOrganisations = [
  * asking the organisation first.
  *
  * `associatedOrganisations` above is the shorter, plainer list the
- * Commercial Contracts page tickers — the two overlap and should be
+ * Civil Contracts page tickers — the two overlap and should be
  * reconciled once the client roster is confirmed.
  */
 export type TrustedOrg = {

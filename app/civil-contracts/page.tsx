@@ -17,10 +17,10 @@ import { Button } from "@/components/ui/button";
 import { img, alt } from "@/lib/images";
 
 export const metadata: Metadata = {
-  title: "Commercial Contracts & Private Contract Construction",
+  title: "Civil Contracts & Private Contract Construction",
   description:
     "Residential, commercial, industrial and institutional construction contracts undertaken by Vijaya Enterprises, with more than five decades of in-house construction experience.",
-  alternates: { canonical: "/commercial-contracts" },
+  alternates: { canonical: "/civil-contracts" },
 };
 
 const undertakings: Undertaking[] = [
@@ -142,7 +142,7 @@ const stages: ContractStage[] = [
   },
 ];
 
-export default function CommercialContractsPage() {
+export default function CivilContractsPage() {
   return (
     <>
       <HomeHero />
