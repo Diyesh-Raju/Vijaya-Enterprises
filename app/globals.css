@@ -3030,13 +3030,22 @@
    palest thing — the site plan the model stands on — directly under the
    last line. Measured: the brightest line-sized patch under the copy is
    L 0.062, so the body at white/85% clears 7.3:1. */
+/* The shade the copy stands on, weighted to the side it sits on.
+   ⚠️ The middle of this ramp is cut to the copy's column, not chosen by eye.
+   The paragraphs run to about 44% of the window, and the old ramp had
+   already fallen to 0.70 by the time it got there — which let the lit face
+   of the building through behind the last third of every line, and dropped
+   that copy to 5.0:1 while the heading above it held 10.8:1. The stop at
+   48% holds the shade across the column and then falls away as before, so
+   the photograph keeps its light on the side the copy is not on. */
 .keyhole__scrim {
   background:
     linear-gradient(
       100deg,
-      rgb(10 31 68 / 0.94) 0%,
-      rgb(10 31 68 / 0.84) 34%,
-      rgb(10 31 68 / 0.46) 62%,
+      rgb(10 31 68 / 0.95) 0%,
+      rgb(10 31 68 / 0.9) 34%,
+      rgb(10 31 68 / 0.74) 48%,
+      rgb(10 31 68 / 0.42) 66%,
       rgb(10 31 68 / 0.1) 88%,
       rgb(10 31 68 / 0) 100%
     ),

@@ -20,14 +20,30 @@ const TRACK_SCREENS = 4;
  * The band's three moments, in fractions of the track.
  *
  * The mark opens for the first two thirds, holds the photograph clear for a
- * beat, and the copy arrives on the last of the scroll. Nothing overlaps: the
- * reader is doing one thing at a time.
+ * beat, and the copy arrives after it. Nothing overlaps: the reader is doing
+ * one thing at a time.
+ *
+ * ⚠️ THE COPY HAS TO FINISH ARRIVING WITH SCROLL LEFT TO SPARE. Its whole
+ * block — heading and paragraphs together — is faded in on `arrival`, so
+ * until that reaches 1 every colour inside it is being multiplied down. At
+ * 0.74→0.95 it was fully opaque for the last 189px of a 2700px track and
+ * above 95% for the last 324px, which is nowhere near where a reader stops:
+ * for practically the whole band the copy was showing at some fraction of
+ * itself. It read as dim type, and it could not be fixed by making the type
+ * brighter — the ink was never the thing holding it back. Ending at 0.80
+ * leaves the last fifth of the track, about 540px of scrolling, with the
+ * copy at full strength.
+ *
+ * If these move again, keep `COPY_FROM` at or after `OPEN_END` — the copy
+ * should not start arriving while the photograph is still opening — and keep
+ * `COPY_TO` far enough below 1 that the reader gets a stretch of the band
+ * with the words at full strength.
  */
 const OPEN_END = 0.64;
 const CUFF_END = 0.2;
 const TINT_END = 0.34;
-const COPY_FROM = 0.74;
-const COPY_TO = 0.95;
+const COPY_FROM = 0.66;
+const COPY_TO = 0.8;
 
 /** How wide the mark stands at rest — a share of the panel, held between. */
 const MARK_SHARE = 0.46;
@@ -285,7 +301,25 @@ export function HandshakeReveal({
               <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08] text-white">
                 {title}
               </h2>
-              <div className="mt-7 space-y-5 text-[1.0625rem] leading-[1.8] text-white/85">
+              {/* ⚠️ `[&_p]:text-inherit` is not decoration — without it the
+                  ink on this block never reaches the words. The paragraphs
+                  come from the page as bare `<p>`, and `globals.css` sets
+                  `p { color: var(--color-slate-body) }` on the base layer for
+                  the whole site. A rule on the element beats a colour
+                  inherited from its parent, so `text-white` here landed on
+                  the `<div>` and stopped: the copy rendered at the page's
+                  body slate — `rgb(77 95 122)`, a mid slate meant for white
+                  paper — over a night photograph. That is why it read as
+                  barely-there grey, and why changing this block's colour did
+                  nothing at all until now. Inheriting is the fix rather than
+                  a second `text-white`, so the paragraphs follow whatever ink
+                  the block is given from here on.
+
+                  This band is the only place on the site where the pattern
+                  bites: everywhere else that sets a light ink over a
+                  photograph either puts it on the `<p>` itself or wraps type
+                  that is not a paragraph. */}
+              <div className="mt-7 space-y-5 text-[1.0625rem] leading-[1.8] text-white [&_p]:text-inherit">
                 {children}
               </div>
             </div>
