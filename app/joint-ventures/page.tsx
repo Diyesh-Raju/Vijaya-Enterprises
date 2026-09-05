@@ -56,8 +56,8 @@ const idealPartners = [
   },
 ];
 
-/* Five reasons, each on a picture of the thing it claims. See
-   `ReasonPanels` — closed, a panel is a slat about a fifth of its open
+/* Six reasons, each on a picture of the thing it claims. See
+   `ReasonPanels` — closed, a panel is a slat about a sixth of its open
    width, so every `focus` below is chosen for that crop rather than the
    open one. */
 const whyPartner: ReasonPanel[] = [
@@ -96,6 +96,12 @@ const whyPartner: ReasonPanel[] = [
     // an empty rectangle. Held here it takes the near tower's elevation
     // running up the frame.
     focus: "25% 50%",
+  },
+  {
+    title: "Strong Local Understanding",
+    body: "Five decades of building in Karnataka, and of knowing what each locality asks for.",
+    image: img.bengaluruMarket,
+    imageAlt: alt.bengaluruMarket,
   },
   {
     title: "Long-Term Approach",

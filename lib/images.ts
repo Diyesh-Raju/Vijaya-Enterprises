@@ -82,15 +82,16 @@ import officeInterior from "@/assets/images/office-interior.jpg";
 import partnerBungalow from "@/assets/images/partner-bungalow.jpg";
 import partnerLandHolding from "@/assets/images/partner-land-holding.jpg";
 import partnerPlansSite from "@/assets/images/partner-plans-site.jpg";
-/* The five reasons to partner, for the accordion further down the same page:
-   the fifty years, the crew that built them, what has been built, a building
-   settled into the city, and the family living in one. Each is read both as a
-   narrow slat and as a full panel, so all five are compositions that survive a
-   hard vertical crop. See `ReasonPanels`. */
+/* The six reasons to partner, for the accordion further down the same page:
+   the fifty years, the crew that built them, what has been built, the city it
+   was built in, a building settled into it, and the family living in one. Each
+   is read both as a narrow slat and as a full panel, so all six are
+   compositions that survive a hard vertical crop. See `ReasonPanels`. */
 import fiftyYearsLegacy from "@/assets/images/fifty-years-legacy.jpg";
 import fiftyYearsLegacySlat from "@/assets/images/fifty-years-legacy-slat.jpg";
 import masonBrickwork from "@/assets/images/mason-brickwork.jpg";
 import residentialTowers from "@/assets/images/residential-towers.jpg";
+import bengaluruMarket from "@/assets/images/bengaluru-market.jpg";
 import bengaluruDusk from "@/assets/images/bengaluru-dusk.jpg";
 import familyLivingRoom from "@/assets/images/family-living-room.jpg";
 import plotWalkover from "@/assets/images/plot-walkover.jpg";
@@ -152,6 +153,7 @@ export const img = {
   fiftyYearsLegacySlat,
   masonBrickwork,
   residentialTowers,
+  bengaluruMarket,
   bengaluruDusk,
   familyLivingRoom,
   partnerPlansSite,
@@ -243,6 +245,8 @@ export const alt = {
     "A mason's hands bedding a brick down onto fresh mortar against the line, trowel still in the other hand",
   residentialTowers:
     "Residential towers in Bengaluru seen from the foot of the block, their balconies stepping away up the elevation",
+  bengaluruMarket:
+    "A Bengaluru street market in full swing, a fruit seller at her cart and shoppers passing under the trees",
   bengaluruDusk:
     "A Bengaluru building at dusk, its upper floors lit gold against a deepening sky",
   familyLivingRoom:
