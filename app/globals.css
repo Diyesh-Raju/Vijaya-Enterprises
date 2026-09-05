@@ -626,25 +626,15 @@
    one ground that never moves — a night frame of a lit house, graded
    down — and one light ink on it.
 
-   Nor is the scroll. The band is pinned to the screen inside a taller
-   track and the page scroll through that track walks the strip
-   sideways, so a reader passes all five tiles on the way down. That
-   costs the band its freedom to be as tall as it likes: a sticky box
-   taller than the screen it sticks to can only ever show its top, so
-   the tile has to be sized to leave room for its stagger and the
-   padding above and below it. See `.slideshow-list__el`.
+   Nor is the scroll — there is none. The band was pinned inside a
+   taller track for a while, so the page scroll walked the strip and
+   nobody could pass the section without passing every award. It is now
+   one screen in ordinary flow, and the strip is stepped by the two
+   arrows at its lower left. The band is still exactly one screen tall,
+   which is what sizes the tiles: the photograph has to leave room for
+   its stagger and for the padding above and below it. See
+   `.slideshow-list__el`.
 ------------------------------------------------------------------- */
-
-/* One screen to hold the pin, plus however far the strip has left to
-   run — written here by `PinnedScroll`, which is the only thing that
-   knows how long the strip is. The fallback is zero rather than a
-   guess: where the script never runs there is nothing to scroll
-   through, and dead space under the band would be all it bought. */
-.gooey-track {
-  position: relative;
-  height: calc(100vh + var(--gooey-travel, 0px));
-  height: calc(100svh + var(--gooey-travel, 0px));
-}
 
 .gooey-demo {
   /* One ink and one ground, where the demo had four pairs and swung
@@ -708,13 +698,17 @@
   --accolade-head: clamp(2.75rem, 2.6vw + 1.05rem, 4rem);
   --accolade-cap: 14rem;
   --accolade-stagger: 0vh;
+  /* The controls' line, which is in the flow now. It used to be hung off the
+     section's floor and cost the photographs nothing — and disappeared under
+     the fold for it. Held here so the photograph is sized to leave room for
+     it rather than to be walked over by it. */
+  --accolade-controls: 4.25rem;
   --accolade-img-h: calc(
     100vh - var(--header-h) - var(--accolade-head) - var(--accolade-cap) -
-      4.25rem - 2 * var(--accolade-stagger)
+      var(--accolade-controls) - 4.25rem - 2 * var(--accolade-stagger)
   );
 
-  position: sticky;
-  top: 0;
+  position: relative;
   display: block;
   height: 100vh;
   height: 100svh;
@@ -731,7 +725,7 @@
 }
 
 /* The same budget against the small viewport, which is the height the band
-   is actually pinned to. Written as an override rather than as a second
+   actually stands in. Written as an override rather than as a second
    declaration beside the first: a custom property takes whatever it is
    given, so a browser without `svh` would not discard it here — it would
    carry the broken length down into the widths that read it and leave them
@@ -740,7 +734,7 @@
   .gooey-demo {
     --accolade-img-h: calc(
       100svh - var(--header-h) - var(--accolade-head) - var(--accolade-cap) -
-        4.25rem - 2 * var(--accolade-stagger)
+        var(--accolade-controls) - 4.25rem - 2 * var(--accolade-stagger)
     );
   }
 }
@@ -929,12 +923,35 @@
   width: 100%;
 }
 
+/* The controls' line: the arrows at its left, the bar across its middle.
+
+   Sticky, and that is the whole point of it. The band stands in ordinary
+   flow and is exactly one screen tall, so there is one scroll position
+   where all of it is showing and every other one cuts an edge off — and
+   the edge it cut was this one, with the only controls the section has on
+   it. Held a little above the window's bottom for as long as the band's
+   own floor is below it, the line is reachable wherever the reader has
+   stopped, and it settles onto that floor as the floor arrives.
+
+   Nothing above it is a scroll container — `.gooey-demo` clips on x with
+   `overflow-x: clip`, which is the one overflow value that does not make
+   one — so the window is what this sticks to. */
+.gooey-demo .slideshow__controls {
+  position: sticky;
+  bottom: 1.75rem;
+  z-index: 6;
+  flex: 0 0 auto;
+  height: 3rem;
+  margin-top: 1.25rem;
+}
+
 .gooey-demo .slideshow__progress-ctn {
   overflow: hidden;
   position: absolute;
-  bottom: 5%;
+  top: calc(50% - 0.2rem);
   left: calc(50% - 6.5rem);
   width: 13rem;
+  max-width: 40vw;
   height: 0.4rem;
   /* Track and fill are both the band's ink now, at two strengths — a navy
      track on a night ground was a bar nobody could find. */
@@ -952,7 +969,93 @@
   height: 100%;
   background-color: var(--color-text);
   border-radius: 0.4rem;
-  transform: translateX(-100%);
+  /* The resting place, for the render before the component has written one.
+     It fills to the award being shown from React, and walks there on the
+     strip's own clock so the bar and the photographs arrive together. */
+  transform: translateX(-95%);
+  transition: transform 0.9s var(--ease-out-soft);
+}
+
+/* The two arrows, at the left of that line. This is the whole of the
+   section's navigation now, so it is put where a reader looks for it and
+   given the size of a control rather than of a hint. */
+.gooey-demo .slideshow__nav {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  gap: 0.85rem;
+}
+
+.gooey-demo .slideshow__arrow {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border: 1px solid rgb(246 248 252 / 0.45);
+  border-radius: 50%;
+  /* Dark rather than clear: the circles stand on the same night photograph
+     the type does, and over the lit gate walls a hairline on its own
+     disappears. No blur behind them — a backdrop filter over a full-bleed
+     photograph is paid for on every frame the band is on screen, and two
+     circles are not worth that. */
+  background-color: rgb(4 8 16 / 0.32);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background-color 0.3s var(--ease-out-soft),
+    border-color 0.3s var(--ease-out-soft), opacity 0.3s var(--ease-out-soft);
+}
+
+.gooey-demo .slideshow__arrow svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.gooey-demo .slideshow__arrow:hover:not(:disabled) {
+  background-color: rgb(246 248 252 / 0.16);
+  border-color: var(--color-text);
+}
+
+.gooey-demo .slideshow__arrow:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+/* The ends of the wall. Dimmed rather than hidden, so the pair keeps its
+   shape and the reader can see which way there is still to go. */
+.gooey-demo .slideshow__arrow:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+
+/* On a phone the arrows and the centred bar are laid over each other, so
+   the bar goes to the other end of the same line. */
+@media (max-width: 767px) {
+  .gooey-demo { --accolade-controls: 3.85rem; }
+
+  .gooey-demo .slideshow__controls { height: 2.6rem; }
+
+  .gooey-demo .slideshow__arrow {
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+
+  .gooey-demo .slideshow__progress-ctn {
+    left: auto;
+    right: 5vw;
+    width: 7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gooey-demo .slideshow-list,
+  .gooey-demo .slideshow__progress { transition-duration: 0s; }
 }
 
 /* The strip itself, which is what `PinnedScroll` moves. It overflows the
@@ -967,6 +1070,13 @@
   padding: 0;
   list-style: none;
   will-change: transform;
+  /* The whole of the strip's motion. The position is written once per press
+     and the browser walks to it — where an eased scroll had to write a
+     transform on every frame the page moved, and trailed it by however long
+     its tail was. Slow on purpose: the tiles are photographs the width of a
+     door, and a step that lands in a third of a second reads as a flicker
+     between two of them rather than as a wall being walked along. */
+  transition: transform 0.9s var(--ease-out-soft);
 }
 
 /* The photograph's width — the demo's 40vmin, and never under 20rem —
@@ -1014,11 +1124,6 @@
     86vw,
     calc(var(--accolade-img-h) / 0.75)
   );
-}
-
-.gooey-demo .slideshow-list__el:last-child {
-  padding-right: 10vw;
-  box-sizing: content-box;
 }
 
 /* The demo gave each tile an ink of its own and swung the whole band —
