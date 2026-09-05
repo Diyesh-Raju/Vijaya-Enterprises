@@ -67,17 +67,20 @@ const whyPartner: ReasonPanel[] = [
     body: "Since 1973, across residential, commercial, industrial and institutional projects.",
     image: img.fiftyYearsLegacy,
     imageAlt: alt.fiftyYearsLegacy,
+    imageClosed: img.fiftyYearsLegacySlat,
     // The one panel carrying a picture with type in it rather than a
-    // photograph, so both holds are chosen against the lockup. Open, this
-    // frames the whole of "50 Years" and the logo under it into the right of
-    // the panel and leaves the banner's blank cream under the copy; the 80%
-    // only bites below `lg`, where the panel is wider than the banner and the
-    // crop turns vertical, and it keeps "Since 1973" rather than the top of
-    // the 5. Closed, the slat is a fifth of that width and the same hold saws
-    // the wordmark in half, so it swings to the outer edge of the 0 — a gold
-    // arc on clear cream, with no type in it to cut.
-    focus: "85% 80%",
-    focusClosed: "100% 50%",
+    // photograph, and every line of that type has to survive — the banner is
+    // 2.23:1 and the panel is nearer square, so no crop of the banner alone
+    // could hold both the "50 Years" lockup and the tagline beside it. The
+    // asset is therefore the banner already sitting on its own cream, sized
+    // and placed so the crop only ever eats that cream: the picture is held
+    // to the top, the lockup clears the copy at every width, and the copy
+    // reads on the empty cream below it rather than across the logo.
+    focus: "50% 0%",
+    // From `lg` the slat carries `imageClosed` and this hold is under it. It
+    // is for the bar below `lg`, where holding the top would put a band of
+    // sliced lettering across it: centred, the bar is the plate's own cream.
+    focusClosed: "50% 50%",
   },
   {
     title: "In-House Construction Capability",

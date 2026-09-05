@@ -10,17 +10,26 @@ export type ReasonPanel = {
   image: StaticImageData;
   imageAlt: string;
   /**
+   * A second picture for the slat, when no crop of the first one will do. The
+   * accordion asks one picture to be both a wide panel and a slat a fifth as
+   * wide, and a photograph obliges. A banner does not: showing it whole needs
+   * it sitting small on its own ground, and a slat of that is a strip of empty
+   * ground. Given this, the slat carries its own crop instead and the two
+   * cross-fade. Decorative — the panel is already named.
+   */
+  imageClosed?: StaticImageData;
+  /**
    * Where to hold the photograph. Closed, a panel is about a fifth of its open
    * width, so a landscape original loses nearly all of it and `object-position`
    * decides which part survives. Unset, the crop is centred.
    */
   focus?: string;
   /**
-   * Where to hold it while the panel is a slat, when the open hold will not do.
+   * Where to hold it while the panel is closed, when the open hold will not do.
    * A photograph rarely needs this — any crop of one is still a photograph. A
-   * picture carrying type does: the hold that frames a lockup in the open panel
-   * saws it in half at a fifth of the width, and the slat wants aiming at a
-   * clear part of the ground instead. Unset, the slat keeps `focus`.
+   * picture carrying type does: the hold that frames it open will saw it in
+   * half closed, and the closed state wants aiming at clear ground instead.
+   * Unset, the closed panel keeps `focus`.
    */
   focusClosed?: string;
 };
@@ -54,7 +63,10 @@ export type ReasonPanel = {
  *
  * A panel carrying `focusClosed` pans between its two holds instead of cutting
  * between them, on the panel's own 900ms and curve, so the crop travels with
- * the width rather than jumping at the moment the class changes.
+ * the width rather than jumping at the moment the class changes. One carrying
+ * `imageClosed` cross-fades to a second picture over that pan, and only from
+ * `lg`: below it a closed panel is a wide bar rather than a slat, which is the
+ * one shape that second picture — cut tall and narrow — cannot fill.
  *
  * The copy block is set to a fixed width rather than to the panel's. A block
  * sized to the panel re-wraps on every frame as the panel narrows, and the
@@ -120,6 +132,21 @@ export function ReasonPanels({ items }: { items: readonly ReasonPanel[] }) {
                 item.focusClosed && "duration-[900ms]",
               )}
             />
+
+            {item.imageClosed && (
+              <Image
+                src={item.imageClosed}
+                alt=""
+                aria-hidden="true"
+                fill
+                sizes="15vw"
+                placeholder="blur"
+                className={cn(
+                  "hidden object-cover transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] lg:block",
+                  isOpen ? "opacity-0" : "opacity-100",
+                )}
+              />
+            )}
 
             {/* Closed: a flat wash, deep enough to carry the name over any
                 part of any photograph, lifting a little under the pointer so
