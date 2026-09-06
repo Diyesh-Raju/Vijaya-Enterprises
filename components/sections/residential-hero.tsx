@@ -129,9 +129,13 @@ export function ResidentialHero() {
    * height of the stage and pulled up into place, so every band but the
    * first hangs over the edge until its own window cuts it back.
    *
-   * PINNED. `sticky top-0` holds the hero against the top of the window
-   * while the page below rises over it — the photograph never moves, the
-   * rest of the page arrives on top of it. The rest of the arrangement
+   * PINNED, on a laptop. `desk:sticky top-0` holds the hero against the
+   * top of the window while the page below rises over it — the photograph
+   * never moves, the rest of the page arrives on top of it. On a phone it
+   * is `relative` and nothing is pinned: the hero scrolls away like any
+   * other section and the page reads flat, which is what a thumb expects.
+   * The sheet below keeps its `z-10` and its opaque ground either way;
+   * with nothing pinned underneath, both are simply inert. The rest of the arrangement
    * lives in `app/residential/page.tsx`: everything after the hero is
    * wrapped in one element, that element is given a higher `z-index`, and
    * it is given an opaque background. Without the background you would read
@@ -145,7 +149,7 @@ export function ResidentialHero() {
    * where nobody can reach it.
    */
   return (
-    <section className="reshero sticky top-0 z-0 isolate h-svh overflow-hidden bg-[#0b0c0f]">
+    <section className="reshero relative desk:sticky top-0 z-0 isolate h-svh overflow-hidden bg-[#0b0c0f]">
       {FRAMES.map((photo, index) => {
         const isSettled = index === frame.settled;
         const isRising = index === frame.rising;
@@ -265,7 +269,15 @@ export function ResidentialHero() {
             experience.
           </p>
 
-          <div className="animate-rise mt-10" style={{ animationDelay: "460ms" }}>
+          {/* Laptop only. On a phone the projects are three sections down
+              rather than most of the way through the page, so the jump link
+              saves nobody anything — and the hero reads better as one
+              photograph with a name on it than as a photograph with a
+              button parked over the family. */}
+          <div
+            className="animate-rise mt-10 hidden desk:block"
+            style={{ animationDelay: "460ms" }}
+          >
             <Button href="#residential-projects" variant="light" size="lg" withArrow>
               Explore Our Residential Work
             </Button>

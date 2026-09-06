@@ -118,6 +118,14 @@ const accolades: readonly Accolade[] = [
   },
 ];
 
+/**
+ * Where the band is a walked strip rather than a grid. The same pair of
+ * dimensions as the `desk:` variant in `globals.css` and as the two heroes'
+ * `WIDE_QUERY` — a phone on its side is wider than any width alone can rule
+ * out, so the height is what actually decides it.
+ */
+const DESK_QUERY = "(min-width: 48rem) and (min-height: 500px)";
+
 const last = accolades.length - 1;
 
 export function DestinationSlideshow() {
@@ -133,6 +141,18 @@ export function DestinationSlideshow() {
     const place = () => {
       const strip = stripRef.current;
       if (!strip) return;
+
+      // On a phone there is no strip to place. The band is a two-up grid
+      // there (see the closing block of the accolades CSS in `globals.css`),
+      // and an inline transform left over from a wider window would slide
+      // the whole grid sideways off the screen — inline styles outrank the
+      // stylesheet, so the CSS cannot undo this one. Clearing it is the
+      // component's job, and it has to happen on resize as well as on
+      // mount, which is what this being inside `place` gets.
+      if (!window.matchMedia(DESK_QUERY).matches) {
+        strip.style.transform = "";
+        return;
+      }
 
       const tile = strip.children[current] as HTMLElement | undefined;
       const first = strip.children[0] as HTMLElement | undefined;
@@ -233,13 +253,32 @@ export function DestinationSlideshow() {
                               {isOpen ? "See less" : "See more"}
                             </button>
                           </div>
-                          <p
-                            id={`accolade-${award.key}`}
-                            className="tile__desc"
+                          {/* The citation, inside a wrapper that exists
+                              only to have a height worth animating. On a
+                              phone the tile is in a grid and the paragraph
+                              is in the flow, so opening one moves every
+                              award below it; the wrapper is what makes that
+                              a movement rather than a jump. See
+                              `.tile__reveal` in `globals.css`.
+
+                              It carries the open flag as well as the
+                              paragraph, so the stylesheet can size the
+                              wrapper without `:has()`. Off a phone the
+                              wrapper is a plain block with one absolutely
+                              positioned child, which is to say nothing at
+                              all. */}
+                          <div
+                            className="tile__reveal"
                             data-open={isOpen ? "" : undefined}
                           >
-                            {award.description}
-                          </p>
+                            <p
+                              id={`accolade-${award.key}`}
+                              className="tile__desc"
+                              data-open={isOpen ? "" : undefined}
+                            >
+                              {award.description}
+                            </p>
+                          </div>
                         </>
                       ) : null}
                     </div>

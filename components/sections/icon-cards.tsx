@@ -1,4 +1,6 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useState, type ReactNode } from "react";
 import { Reveal } from "@/components/ui/reveal";
 import { cn } from "@/lib/cn";
 
@@ -17,11 +19,17 @@ export type IconCardItem = {
  * Cards that turn over: an emblem, a title and a line on the front; the
  * fuller answer on the navy back.
  *
- * The flip mechanics live in `globals.css` under `.flip-card`, including the
- * part that matters most — on a device that cannot hover, the two faces stop
- * sharing a cell and stack instead, so nothing is hidden. Each card carries
- * `tabIndex` so a keyboard can turn it too; that is what `:focus-within` in
- * the stylesheet is for.
+ * The flip mechanics live in `globals.css` under `.flip-card`, and the part
+ * worth knowing before touching this file is that what *turns* a card is not
+ * the same on every device. A mouse turns it by hovering and a keyboard by
+ * focusing it, both of which the stylesheet handles on its own with no help
+ * from here. A touch screen can do neither, so there a tap turns it — which
+ * is the only reason this is a client component, and the only thing the
+ * state below is for.
+ *
+ * The class it toggles is inert on a laptop: the stylesheet only honours
+ * `is-flipped` where there is no hover to be had. So a mouse click still
+ * does nothing but focus the card, exactly as it did before any of this.
  *
  * Written as a list rather than the definition list this used to be: a `dl`
  * may only nest one `div` between itself and its `dt`, and a flip needs two —
@@ -39,63 +47,116 @@ export function IconCards({
   return (
     <ul
       className={cn(
-        "grid gap-4 sm:gap-5",
+        // Two to a row at every width. It used to be one below `sm`, back
+        // when a phone card carried both faces stacked and a pair of those
+        // side by side would have been unreadable. The card turns now, so it
+        // is only ever as wide as one face needs — and the six read as a set
+        // rather than as six screens of scrolling. Everything below `sm` is
+        // sized down to match; from `sm` up the card is what it always was.
+        "grid grid-cols-2 gap-3 sm:gap-5",
         columns === 3 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2",
         className,
       )}
     >
-      {items.map((item, index) => {
-        const flips = Boolean(item.detail);
-
-        return (
-          <Reveal key={item.title} as="li" delay={(index % 3) * 70}>
-            <div
-              className={cn(
-                "h-full rounded-[1.375rem] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brass-500 sm:rounded-[1.625rem]",
-                flips && "flip-card",
-              )}
-              tabIndex={flips ? 0 : undefined}
-            >
-              <div className="flip-card-inner">
-                {/* Front */}
-                <div className="flex h-full flex-col items-center rounded-[1.375rem] border-2 border-navy-600 bg-white/90 p-6 text-center sm:rounded-[1.625rem] sm:p-7">
-                  {/* The emblem stands on its own — no frame, no medallion.
-                      Drawn a little larger than it was inside one, so losing
-                      the ring does not cost it its presence on the card. */}
-                  <span className="shrink-0 text-navy-800 [&>svg]:h-14 [&>svg]:w-14">
-                    {item.icon}
-                  </span>
-
-                  <h3 className="mt-5 font-display text-[1.0625rem] leading-snug text-navy-900 sm:text-[1.1875rem]">
-                    {item.title}
-                  </h3>
-                  {item.body && (
-                    <p className="mt-2.5 text-[0.875rem] leading-relaxed text-slate-body">
-                      {item.body}
-                    </p>
-                  )}
-                </div>
-
-                {/* Back */}
-                {item.detail && (
-                  <div className="flip-card-back flex h-full flex-col items-center justify-center rounded-[1.375rem] border-2 border-navy-900 bg-navy-900 p-6 text-center sm:rounded-[1.625rem] sm:p-7">
-                    <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.24em] text-brass-400">
-                      {item.title}
-                    </p>
-                    <span
-                      aria-hidden="true"
-                      className="mt-4 block h-px w-10 bg-brass-500/70"
-                    />
-                    <p className="mt-4 text-[0.875rem] leading-relaxed text-navy-100/85">
-                      {item.detail}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </Reveal>
-        );
-      })}
+      {items.map((item, index) => (
+        <IconCard key={item.title} item={item} index={index} />
+      ))}
     </ul>
+  );
+}
+
+/**
+ * One card. Its own component purely so each keeps its own turned/not-turned
+ * state — held in the parent it would have to be a set of indices, which is
+ * more bookkeeping than a boolean per card.
+ */
+function IconCard({ item, index }: { item: IconCardItem; index: number }) {
+  const flips = Boolean(item.detail);
+  const [flipped, setFlipped] = useState(false);
+
+  return (
+    <Reveal as="li" delay={(index % 3) * 70}>
+      <div
+        className={cn(
+          "h-full rounded-[1.125rem] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brass-500 sm:rounded-[1.625rem]",
+          flips && "flip-card",
+          flipped && "is-flipped",
+        )}
+        tabIndex={flips ? 0 : undefined}
+        // No `role` and no `aria-pressed`, deliberately. Both faces are in
+        // the accessibility tree whichever way the card is facing —
+        // `backface-visibility` hides a face from the eye and not from a
+        // screen reader — so there is nothing here for a reader to operate
+        // and nothing behind the turn for them to miss. Announcing a button
+        // that reveals text already being read would be the worse of the
+        // two.
+        onClick={flips ? () => setFlipped((turned) => !turned) : undefined}
+      >
+        <div className="flip-card-inner">
+          {/* Front */}
+          <div className="relative flex h-full flex-col items-center rounded-[1.125rem] border-2 border-navy-600 bg-white/90 p-4 text-center touch:pb-7 sm:rounded-[1.625rem] sm:p-7 sm:touch:pb-8">
+            {/* The emblem stands on its own — no frame, no medallion.
+                Drawn a little larger than it was inside one, so losing
+                the ring does not cost it its presence on the card. */}
+            <span className="shrink-0 text-navy-800 [&>svg]:h-10 [&>svg]:w-10 sm:[&>svg]:h-14 sm:[&>svg]:w-14">
+              {item.icon}
+            </span>
+
+            <h3 className="mt-3 font-display text-[0.9375rem] leading-snug text-navy-900 sm:mt-5 sm:text-[1.1875rem]">
+              {item.title}
+            </h3>
+            {item.body && (
+              <p className="mt-2 text-[0.75rem] leading-relaxed text-slate-body sm:mt-2.5 sm:text-[0.875rem]">
+                {item.body}
+              </p>
+            )}
+
+            {flips && <FlipHint className="text-navy-600" />}
+          </div>
+
+          {/* Back */}
+          {item.detail && (
+            <div className="flip-card-back relative flex h-full flex-col items-center justify-center rounded-[1.125rem] border-2 border-navy-900 bg-navy-900 p-4 text-center touch:pb-7 sm:rounded-[1.625rem] sm:p-7 sm:touch:pb-8">
+              <p className="text-[0.5625rem] font-semibold uppercase tracking-[0.12em] text-brass-400 sm:text-[0.6875rem] sm:tracking-[0.24em]">
+                {item.title}
+              </p>
+              <span
+                aria-hidden="true"
+                className="mt-3 block h-px w-8 bg-brass-500/70 sm:mt-4 sm:w-10"
+              />
+              <p className="mt-3 text-[0.75rem] leading-relaxed text-navy-100/85 sm:mt-4 sm:text-[0.875rem]">
+                {item.detail}
+              </p>
+
+              {/* On this face too: it is what says the card can be sent back,
+                  and without it the way out of the detail is a guess. */}
+              <FlipHint className="text-brass-400/80" />
+            </div>
+          )}
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
+/**
+ * The word in the corner that says the card can be tapped.
+ *
+ * `touch:` only — a laptop turns the card by being pointed at, so the
+ * instruction there would be both wrong and an unasked-for change to a page
+ * that is finished. It is `aria-hidden` because it describes a gesture, not
+ * content, and because a screen reader is already being read both faces.
+ */
+function FlipHint({ className }: { className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "pointer-events-none absolute bottom-2 right-2.5 hidden text-[0.5625rem] font-semibold uppercase tracking-[0.12em] touch:block sm:bottom-2.5 sm:right-3.5 sm:text-[0.625rem] sm:tracking-[0.16em]",
+        className,
+      )}
+    >
+      Click
+    </span>
   );
 }

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { CurtainPhoto } from "@/components/sections/curtain-photo";
 import { DisclosureList, type DisclosureItem } from "@/components/ui/disclosure-list";
 import { Reveal } from "@/components/ui/reveal";
 import { ScrollScrub } from "@/components/ui/scroll-scrub";
@@ -118,20 +118,34 @@ export function PlannedForLiving() {
               little over-size, so the part of the picture standing in the
               opening moves against the sweep instead of sitting there. */}
           <div className="curtain__photo-inner absolute inset-0">
-            <Image
-              src={img.haraVijayaConcept}
-              alt={alt.haraVijayaConcept}
-              fill
-              sizes="100vw"
-              quality={85}
-              placeholder="blur"
-              // Hung right of centre. It does almost nothing on a desktop
-              // window, where a 16:9 photograph in a taller frame is trimmed
-              // top and bottom rather than at the sides — but on a phone,
-              // where the frame is close to square, it is what keeps the
-              // towers in the crop instead of the lawn beside them.
-              style={{ objectPosition: "62% 50%" }}
-              className="object-cover"
+            {/* Two photographs, one per shape of screen, and only ever one of
+                them fetched — the picking is in `curtain-photo.tsx`, along
+                with why it cannot be done in CSS. */}
+            <CurtainPhoto
+              wide={{
+                src: img.haraVijayaConcept,
+                alt: alt.haraVijayaConcept,
+                // Hung right of centre. A 16:9 photograph in a taller frame
+                // is trimmed top and bottom rather than at the sides, so on
+                // a laptop this does almost nothing; it is here because the
+                // stage is wider than the source at the far end of the
+                // sweep, and the towers should stay in the opening.
+                position: "62% 50%",
+              }}
+              phone={{
+                src: img.vijayAquaGreen,
+                alt: alt.vijayAquaGreen,
+                // The phone frame is close to square and the photograph is
+                // landscape, so the bite comes out of the width. Centred, it
+                // throws away the left-hand block — the one carrying the
+                // development's name — and leaves an anonymous row of
+                // balconies. At 20% the name is comfortably in, the entrance
+                // canopy lands near the middle, and the run of the building
+                // sweeps off to the right under the sunset. Same anchor, and
+                // the same reasoning, as this photograph's frame in the
+                // phone hero on the home page.
+                position: "20% 50%",
+              }}
             />
           </div>
         </div>

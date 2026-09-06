@@ -94,15 +94,21 @@ export function StepRange({
   // Transparent, like every other control on the panel: the hairline is the
   // field, and what shows through it is whatever the panel is set on.
   return (
-    <div className="rounded-full border border-navy-900/20 px-5 py-3">
-      <div className="mb-3 flex items-center justify-between">
-        <span className="text-[0.75rem] font-semibold text-navy-900">
+    <div className="rounded-full border border-navy-900/20 px-3.5 py-2 desk:px-5 desk:py-3">
+      {/* The two ends and the dash between them. Smaller below `md`, where
+          the area and the budget sit beside each other in a phone's width
+          and each has half of it to state a range in; back to the laptop's
+          size from `md` up. The rail and its handles are deliberately not
+          shrunk with it — a 16px handle is already the smallest thing here
+          a thumb has to catch. */}
+      <div className="mb-2 flex items-center justify-between desk:mb-3">
+        <span className="text-[0.6875rem] font-semibold text-navy-900 desk:text-[0.75rem]">
           {format(stops[low])}
         </span>
         <span aria-hidden="true" className="text-[0.625rem] text-slate-muted">
           —
         </span>
-        <span className="text-[0.75rem] font-semibold text-navy-900">
+        <span className="text-[0.6875rem] font-semibold text-navy-900 desk:text-[0.75rem]">
           {format(stops[high])}
         </span>
       </div>

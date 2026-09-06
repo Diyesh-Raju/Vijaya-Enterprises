@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ScrollHero } from "@/components/sections/scroll-hero";
+import { HomeHeroPhone } from "@/components/sections/home-hero-phone";
 import { FindResidences } from "@/components/sections/find-residences";
 import { FiftyYears } from "@/components/sections/fifty-years";
 import { DestinationSlideshow } from "@/components/sections/destination-slideshow";
@@ -51,13 +52,38 @@ const buildTypes: readonly Service[] = [
 export default function HomePage() {
   return (
     <>
+      {/* One hero, two shapes. The scroll-scrubbed walkthrough from 768px up;
+          below it, a short band of photographs cycling under the bar. Each
+          component hides itself at the other's widths and unmounts once the
+          width is settled, so only one of them is ever really on the page. */}
       <ScrollHero />
+      <HomeHeroPhone />
 
-      {/* ------------------------------------------------------ 50 years of */}
-      <FiftyYears />
+      {/* ----------------------------- 50 years of / Find a residence, and
+          on a phone the other way round.
 
-      {/* ------------------------------------------------- Find a residence */}
-      <FindResidences />
+          The walkthrough leads with the fifty years and then offers the
+          search. The phone hero is four photographs and no words, so
+          leading with the fifty years there means the first thing under an
+          unlabelled picture is a number; the search panel says what the
+          site is for, and it goes first.
+
+          `flex-col-reverse` rather than two orderings, so neither section
+          is mounted twice — `FindResidences` carries state and would come
+          up as two independent panels. Below `md` the wrapper is a reversed
+          column and the pair swaps; from `md` up it is `display: block`,
+          which is what a bare wrapper around two sections already was, and
+          `flex-col-reverse` is inert inside it.
+
+          The one cost is that this reverses the *picture*, not the markup:
+          on a phone a screen reader still meets the fifty years first,
+          because that is where it sits in the DOM. Two adjacent sections
+          either way round both make sense read aloud, so this is the
+          cheaper trade than duplicating the panel. */}
+      <div className="flex flex-col-reverse desk:block">
+        <FiftyYears />
+        <FindResidences />
+      </div>
 
       {/* ------------------------------------------------------- What we build */}
       <ServiceGrid
@@ -74,12 +100,44 @@ export default function HomePage() {
       {/* ------------------------------------------------------- Residential */}
       <Section tone="white" size="lg">
         <Container>
-          <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
+          {/* Three blocks — the name, the picture, the argument — rather
+              than a picture beside a column of copy.
+
+              On a phone the picture goes between the heading and the text:
+              the heading names the subject, the photograph shows it, and the
+              paragraph follows. Stacked with the picture at the foot, as it
+              was, the reader met two screens of type before seeing a single
+              home.
+
+              Everything wider is exactly as it was, and the spacing is what
+              proves it. No row gap anywhere: the vertical rhythm is margins
+              on the blocks themselves, so each width can have its own
+              without a gap adding to it. From `lg` the three are placed by
+              line — copy in columns 7-12 across two rows, the picture
+              spanning both in 1-6 — which is the two-column split. Between
+              `desk` and `lg` the page is still one column and `desk-stacked:order-*`
+              puts the picture back at the foot, where that band has always
+              had it. */}
+          <div className="grid items-center lg:grid-cols-12 lg:gap-x-20">
             {/* The two halves come in from their own sides rather than both
                 rising, which is what stops a split reading as one block that
                 happened to be cut down the middle. Below 900px the variants
                 fall back to the rise — see `globals.css`. */}
-            <div className="order-2 lg:order-1 lg:col-span-6">
+            <div className="desk-stacked:order-1 lg:col-span-6 lg:col-start-7 lg:row-start-1">
+              <Reveal className="reveal-still" variant="right">
+                <Eyebrow>Residential</Eyebrow>
+              </Reveal>
+              <Reveal className="reveal-still" variant="right" delay={80}>
+                <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
+                  Homes that feel like home.
+                </h2>
+              </Reveal>
+            </div>
+
+            {/* `mt-8` under the heading on a phone; the old `gap-14` again
+                where it goes back to the foot; nothing at `lg`, where it
+                moves into a column of its own. */}
+            <div className="mt-8 desk-stacked:order-3 desk-stacked:mt-14 lg:col-span-6 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:mt-0 lg:self-center">
               <Reveal variant="left">
                 <Frame
                   src={img.residentialLivingDusk}
@@ -91,31 +149,40 @@ export default function HomePage() {
               </Reveal>
             </div>
 
-            <div className="order-1 lg:order-2 lg:col-span-6">
-              <Reveal variant="right">
-                <Eyebrow>Residential</Eyebrow>
-              </Reveal>
-              <Reveal variant="right" delay={80}>
-                <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
-                  Homes that feel like home.
-                </h2>
-              </Reveal>
-              <Reveal delay={160}>
-                <div className="mt-7 space-y-5 text-[1.0625rem] leading-[1.8] text-slate-body">
-                  <p>
+            <div className="desk-stacked:order-2 lg:col-span-6 lg:col-start-7 lg:row-start-2">
+              <Reveal className="reveal-still" delay={160}>
+                <div className="mt-7 text-[1.0625rem] leading-[1.8] text-slate-body">
+                  {/* Two versions of the same argument, and only ever one of
+                      them rendered. A phone gets it in a sentence and a half;
+                      anything with room beside a photograph gets it in full.
+
+                      The long pair is wrapped rather than sitting as two
+                      siblings of the short one, because `space-y-5` is a
+                      `> * + *` rule: a hidden first child would still hand
+                      the first *visible* paragraph a top margin it does not
+                      have today, and the wrapper keeps that arithmetic off
+                      the wider layout entirely. */}
+                  <div className="hidden space-y-5 desk:block">
+                    <p>
+                      Buying a home is one of the biggest decisions a family makes.
+                      That is why our residential developments focus on what matters
+                      beyond the walls — quality, location, functionality, value and
+                      peace of mind.
+                    </p>
+                    <p>
+                      From thoughtfully planned apartments to larger residential
+                      developments, we aim to create homes where families can live
+                      comfortably and confidently.
+                    </p>
+                  </div>
+                  <p className="desk:hidden">
                     Buying a home is one of the biggest decisions a family makes.
-                    That is why our residential developments focus on what matters
-                    beyond the walls — quality, location, functionality, value and
-                    peace of mind.
-                  </p>
-                  <p>
-                    From thoughtfully planned apartments to larger residential
-                    developments, we aim to create homes where families can live
-                    comfortably and confidently.
+                    Ours are planned around what matters beyond the walls — quality,
+                    location, value and peace of mind.
                   </p>
                 </div>
               </Reveal>
-              <Reveal delay={240}>
+              <Reveal className="reveal-still" delay={240}>
                 <div className="mt-9">
                   <Button href="/residential" withArrow>
                     Explore Residential Projects

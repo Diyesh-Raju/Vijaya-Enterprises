@@ -66,6 +66,21 @@ const nextConfig: NextConfig = {
   // Don't advertise the framework.
   poweredByHeader: false,
 
+  /**
+   * Who may pull `/_next/*` off the dev server.
+   *
+   * `next dev` answers only to `localhost` by default and 403s its own
+   * chunks to anything else, so opening the machine's LAN address on a
+   * phone gets unstyled HTML and no JavaScript. These three patterns are
+   * the private ranges a home or office router hands out, which is what
+   * that phone is on.
+   *
+   * Development only — `next build` never reads this, so nothing here
+   * reaches the deployed site. It is still deliberately not `*`: it admits
+   * other devices on the same network and nothing beyond it.
+   */
+  allowedDevOrigins: ["192.168.*.*", "10.*.*.*", "172.16.*.*"],
+
   images: {
     // Every photograph is a local static import, so no remote patterns are
     // needed — which also means no remote host can be proxied through the

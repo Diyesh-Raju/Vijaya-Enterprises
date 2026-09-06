@@ -58,7 +58,22 @@ export function ServiceGrid({
               <Reveal
                 key={service.name}
                 delay={index * 100}
-                className="flex justify-center"
+                // An odd number of tiles leaves the last one alone on its
+                // final row, and in a two-up grid it sits off in the left
+                // column looking like a mistake rather than like the end of
+                // the set. Given the whole row it centres under the pairs
+                // above it — the tile is already `w-full` and centres its
+                // own contents, so the span is the entire fix.
+                //
+                // Conditional on the tile actually being orphaned, not on
+                // it being last: `:last-child:nth-child(odd)` is only true
+                // when the count is odd, so an even set is untouched. And
+                // scoped with `max-sm:` rather than reset at a larger
+                // breakpoint, so the rule exists only where the grid is two
+                // columns wide — from `sm` up it is three and then five,
+                // where the last tile is not the one left over, and the CSS
+                // there is exactly what it was.
+                className="flex justify-center max-sm:last:odd:col-span-2"
               >
                 <Link
                   href={service.href}

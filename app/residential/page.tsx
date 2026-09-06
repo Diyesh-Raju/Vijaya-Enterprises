@@ -4,6 +4,7 @@ import { ResidentialHero } from "@/components/sections/residential-hero";
 import { ApartmentProjects } from "@/components/sections/apartment-projects";
 import { PlannedForLiving } from "@/components/sections/planned-for-living";
 import { ApertureCta } from "@/components/sections/aperture-cta";
+import { ResidentialCtaPhone } from "@/components/sections/residential-cta-phone";
 import { IconCards } from "@/components/sections/icon-cards";
 import { Reviews } from "@/components/sections/reviews";
 import { Container, Section, SectionHeading, Eyebrow } from "@/components/ui/section";
@@ -150,124 +151,158 @@ export default function ResidentialPage() {
         gaps between sections — without it the effect shows its working.
       */}
       <div className="relative z-10 bg-white">
-        {/* ------------------------------------------------- Built for families */}
-        <Section tone="white" size="lg">
-          <Container>
-            <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
-              {/* Box 1 — the room itself. From lg up it drops its 4:5 ratio and
-                  stretches to the full row height, so its bottom edge lands level
-                  with the award box opposite. The height has to be handed down
-                  the whole chain: a percentage height against an auto-height
-                  parent resolves to nothing, and the ratio would win again. */}
-              <div className="h-full lg:col-span-5">
-                <Reveal className="h-full">
-                  <Frame
-                    src={img.residentialInterior}
-                    alt={alt.residentialInterior}
-                    ratio="tall"
-                    sizes="(max-width: 1024px) 100vw, 40vw"
-                    rounded="rounded-[2rem] sm:rounded-[2.5rem]"
-                    className="border-rosegold lg:aspect-auto lg:h-full"
-                  />
-                </Reveal>
-              </div>
+        {/* ---------------- The three sections that make the case, and the
+            order they make it in — which is not the same order on a phone.
 
-              <div className="flex flex-col lg:col-span-7">
-                {/* The three counts, each running up from zero when scrolled to */}
-                <dl className="grid grid-cols-3 gap-5 sm:gap-8">
-                  {milestones.map((milestone, index) => (
-                    <Reveal key={milestone.label} delay={index * 90}>
-                      <dt className="sr-only">{milestone.label}</dt>
-                      <dd>
-                        <span className="block font-display text-[clamp(2.25rem,5vw,3.5rem)] leading-none text-navy-900">
-                          {/* Slower than the site default (1800ms) so the
-                              figures read as they climb. */}
-                          <Counter
-                            to={milestone.value}
-                            suffix={milestone.suffix}
-                            durationMs={3200}
-                          />
-                        </span>
-                        <span className="mt-3 block text-[0.6875rem] uppercase tracking-[0.18em] text-slate-muted sm:text-[0.75rem] sm:tracking-[0.2em]">
-                          {milestone.label}
-                        </span>
-                      </dd>
-                    </Reveal>
-                  ))}
-                </dl>
+            On a laptop it reads as an argument: who we are, how we plan, and
+            then the projects as the evidence. That works when each of these
+            is about a screen and the next one is a scroll wheel away.
 
-                <Reveal delay={120}>
-                  <div className="mt-6 h-px w-full bg-line" />
-                </Reveal>
+            On a phone each is several screens, and the hero has no jump link
+            any more, so the same order buries the projects behind two
+            screens of counters and awards and a full-height navy panel.
+            There the projects come first — the thing a visitor came to look
+            at, one swipe under the hero — and the case for them follows:
+            "we build homes" as the argument, then the planning as the reason
+            the projects look the way they do.
 
-                <div className="mt-7">
-                  <Reveal>
-                    <Eyebrow>Built For Generations</Eyebrow>
-                  </Reveal>
-                  <Reveal delay={80}>
-                    <h2 className="text-balance-head mt-6 text-[clamp(1.75rem,3.4vw,2.5rem)] leading-[1.1]">
-                      We don&rsquo;t construct buildings. We build homes.
-                    </h2>
-                  </Reveal>
-                  <Reveal delay={160}>
-                    <div className="mt-6 space-y-5 text-[1.0625rem] leading-[1.8] text-slate-body">
-                      <p>
-                        A house is finished in months. A home is lived in for
-                        generations. That difference is what we have spent five
-                        decades learning — how a family actually uses a room, which
-                        materials still look right after twenty years, and where the
-                        shortcuts show up later.
-                      </p>
-                      <p>
-                        So we build for the long stay: sound structure, honest
-                        materials and layouts planned around real life. What we hand
-                        over is not a unit. It is where your family grows up.
-                      </p>
-                    </div>
+            One flex column with `order` on each child, rather than two sets
+            of these sections: a three-way reordering is past what
+            `flex-col-reverse` can express, and mounting `ApartmentProjects`
+            twice would give the page two independent filter panels.
+
+            The DOM order below is the laptop order, so that is what a screen
+            reader meets and what the markup reads as. From `desk` up the
+            wrapper is `display: block` — which is what a bare div around
+            three sections already was — so every `order` goes inert, and the
+            two `desk:contents` wrappers stop generating boxes at all. The
+            laptop box tree is then exactly the one that was there before any
+            of this, which matters for `PlannedForLiving`: it pins itself
+            from `lg`, and a sticky element is particular about what it hangs
+            from. */}
+        <div className="flex flex-col desk:block">
+          {/* ------------------------------------------------- Built for families */}
+          <Section tone="white" size="lg" className="order-2">
+            <Container>
+              <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+                {/* Box 1 — the room itself. From lg up it drops its 4:5 ratio and
+                    stretches to the full row height, so its bottom edge lands level
+                    with the award box opposite. The height has to be handed down
+                    the whole chain: a percentage height against an auto-height
+                    parent resolves to nothing, and the ratio would win again. */}
+                <div className="h-full lg:col-span-5">
+                  <Reveal className="h-full">
+                    <Frame
+                      src={img.residentialInterior}
+                      alt={alt.residentialInterior}
+                      ratio="tall"
+                      sizes="(max-width: 1024px) 100vw, 40vw"
+                      rounded="rounded-[2rem] sm:rounded-[2.5rem]"
+                      className="border-rosegold lg:aspect-auto lg:h-full"
+                    />
                   </Reveal>
                 </div>
 
-                {/* The two awards the company has actually won, unframed — a box
-                    around a seal reads as a seal inside a box.
-
-                    Two per row only where a seal has room for its wreath. From
-                    `lg` this column is seven of twelve tracks, so a pair would
-                    get ~240px each and the branches would be clipped; through
-                    that band they stack and take the full width instead. Below
-                    `lg` the column is already full-bleed, so a pair fits from
-                    `md` up — at `sm` a seal gets only ~276px, which is under the
-                    lockup's width. By `xl` there is room for a pair again.
-
-                    Written as `sm:max-lg:` / `xl:` rather than `sm:` + a `lg:`
-                    override: two column-count utilities at different breakpoints
-                    carry the same specificity, so the override lost on source
-                    order and the pair never unstacked. Non-overlapping ranges
-                    cannot collide. */}
-                <Reveal delay={200} className="mt-10 lg:mt-auto lg:pt-10">
-                  <div className="grid gap-8 border-t border-line pt-10 md:max-lg:grid-cols-2 md:max-lg:gap-6 xl:grid-cols-2 xl:gap-6">
-                    {awards.map((award) => (
-                      <AwardsComponent
-                        key={award.title}
-                        accent="bare"
-                        level={award.level}
-                        badgeLabel={award.year}
-                        title={award.title}
-                        subtitle={award.subtitle}
-                        description={award.description}
-                        className="[--seal-size:11px] sm:[--seal-size:12px]"
-                      />
+                <div className="flex flex-col lg:col-span-7">
+                  {/* The three counts, each running up from zero when scrolled to */}
+                  <dl className="grid grid-cols-3 gap-5 sm:gap-8">
+                    {milestones.map((milestone, index) => (
+                      <Reveal key={milestone.label} delay={index * 90}>
+                        <dt className="sr-only">{milestone.label}</dt>
+                        <dd>
+                          <span className="block font-display text-[clamp(2.25rem,5vw,3.5rem)] leading-none text-navy-900">
+                            {/* Slower than the site default (1800ms) so the
+                                figures read as they climb. */}
+                            <Counter
+                              to={milestone.value}
+                              suffix={milestone.suffix}
+                              durationMs={3200}
+                            />
+                          </span>
+                          <span className="mt-3 block text-[0.6875rem] uppercase tracking-[0.18em] text-slate-muted sm:text-[0.75rem] sm:tracking-[0.2em]">
+                            {milestone.label}
+                          </span>
+                        </dd>
+                      </Reveal>
                     ))}
+                  </dl>
+
+                  <Reveal delay={120}>
+                    <div className="mt-6 h-px w-full bg-line" />
+                  </Reveal>
+
+                  <div className="mt-7">
+                    <Reveal>
+                      <Eyebrow>Built For Generations</Eyebrow>
+                    </Reveal>
+                    <Reveal delay={80}>
+                      <h2 className="text-balance-head mt-6 text-[clamp(1.75rem,3.4vw,2.5rem)] leading-[1.1]">
+                        We don&rsquo;t construct buildings. We build homes.
+                      </h2>
+                    </Reveal>
+                    <Reveal delay={160}>
+                      <div className="mt-6 space-y-5 text-[1.0625rem] leading-[1.8] text-slate-body">
+                        <p>
+                          A house is finished in months. A home is lived in for
+                          generations. That difference is what we have spent five
+                          decades learning — how a family actually uses a room, which
+                          materials still look right after twenty years, and where the
+                          shortcuts show up later.
+                        </p>
+                        <p>
+                          So we build for the long stay: sound structure, honest
+                          materials and layouts planned around real life. What we hand
+                          over is not a unit. It is where your family grows up.
+                        </p>
+                      </div>
+                    </Reveal>
                   </div>
-                </Reveal>
+
+                  {/* The two awards the company has actually won, unframed — a box
+                      around a seal reads as a seal inside a box.
+
+                      Two per row only where a seal has room for its wreath. From
+                      `lg` this column is seven of twelve tracks, so a pair would
+                      get ~240px each and the branches would be clipped; through
+                      that band they stack and take the full width instead. Below
+                      `lg` the column is already full-bleed, so a pair fits from
+                      `md` up — at `sm` a seal gets only ~276px, which is under the
+                      lockup's width. By `xl` there is room for a pair again.
+
+                      Written as `sm:max-lg:` / `xl:` rather than `sm:` + a `lg:`
+                      override: two column-count utilities at different breakpoints
+                      carry the same specificity, so the override lost on source
+                      order and the pair never unstacked. Non-overlapping ranges
+                      cannot collide. */}
+                  <Reveal delay={200} className="mt-10 lg:mt-auto lg:pt-10">
+                    <div className="grid gap-8 border-t border-line pt-10 md:max-lg:grid-cols-2 md:max-lg:gap-6 xl:grid-cols-2 xl:gap-6">
+                      {awards.map((award) => (
+                        <AwardsComponent
+                          key={award.title}
+                          accent="bare"
+                          level={award.level}
+                          badgeLabel={award.year}
+                          title={award.title}
+                          subtitle={award.subtitle}
+                          description={award.description}
+                          className="[--seal-size:11px] sm:[--seal-size:12px]"
+                        />
+                      ))}
+                    </div>
+                  </Reveal>
+                </div>
               </div>
-            </div>
-          </Container>
-        </Section>
+            </Container>
+          </Section>
 
+          <div className="order-3 desk:contents">
+            <PlannedForLiving />
+          </div>
 
-        <PlannedForLiving />
-
-        <ApartmentProjects />
+          <div className="order-1 desk:contents">
+            <ApartmentProjects />
+          </div>
+        </div>
 
         {/* ------------------------------------------------------------- Why us */}
         {/*
@@ -316,7 +351,12 @@ export default function ResidentialPage() {
         <div className="relative z-10 bg-white">
           <Reviews />
 
+          {/* One ending, two shapes. The scrubbed aperture from `desk:` up;
+              below it, the two buttons a project page closes on. Each hides
+              itself at the other's widths and unmounts once the width is
+              settled, so only one of them is ever really on the page. */}
           <ApertureCta />
+          <ResidentialCtaPhone />
         </div>
       </div>
     </div>

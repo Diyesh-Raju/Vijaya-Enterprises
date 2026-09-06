@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { Marquee } from "@/components/ui/marquee";
 import { Container, SectionHeading } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
@@ -26,7 +27,7 @@ function Item({ children, name }: { children: React.ReactNode; name: string }) {
       <span className="trusted-well flex items-center justify-center">
         {children}
       </span>
-      <span className="mt-4 text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-slate-muted">
+      <span className="trusted-caption mt-4 text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-slate-muted">
         {name}
       </span>
     </li>
@@ -54,10 +55,14 @@ function Logo({ org, src }: { org: TrustedOrg; src: string }) {
         loading="eager"
         fetchPriority="low"
         decoding="async"
-        // Drawn from the height, so a wide wordmark and a square crest each
-        // keep their own proportions; `--logo-scale` pulls the whole row
-        // down together on narrow screens.
-        style={{ height: `calc(${org.height}px * var(--logo-scale, 1))` }}
+        // The per-entry height, handed to the stylesheet rather than set
+        // here. Drawn from it, a wide wordmark and a square crest each keep
+        // their own proportions and `--logo-scale` pulls the row down
+        // together on narrow screens — which is what `.trusted-row img` does
+        // with it. It is a property rather than a `height` because an inline
+        // height cannot be overridden by a media query, and on a phone the
+        // mark is contained in a box instead of drawn at a fixed height.
+        style={{ "--mark-h": `${org.height}px` } as CSSProperties}
         className="w-auto max-w-none object-contain transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/mark:-translate-y-1"
       />
     </Item>

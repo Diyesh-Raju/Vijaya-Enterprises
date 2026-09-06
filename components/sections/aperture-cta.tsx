@@ -1,7 +1,27 @@
+"use client";
+
 import Image from "next/image";
+import { useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollScrub } from "@/components/ui/scroll-scrub";
 import { img, alt } from "@/lib/images";
+
+/**
+ * Where this section applies at all. Laptop-shaped rather than merely wide,
+ * since a phone on its side is past the 768 that `md:` asks for. Kept
+ * identical to the `desk:` variant in `globals.css` and to `WIDE_QUERY` in
+ * the two hero components; all of them have to agree.
+ */
+const WIDE_QUERY = "(min-width: 48rem) and (min-height: 500px)";
+
+function subscribeToWidth(onChange: () => void) {
+  const query = window.matchMedia(WIDE_QUERY);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+
+const getWidth = () =>
+  window.matchMedia(WIDE_QUERY).matches ? ("wide" as const) : ("phone" as const);
 
 /**
  * The closing invitation on /residential — the page's last screen, and the
@@ -35,8 +55,33 @@ import { img, alt } from "@/lib/images";
  * ⚠️ This is the page's one call to action, which the brief asks every
  * page to end with. If the arrangement is ever cut back, the two buttons
  * are the part that has to survive.
+ *
+ * Laptop only. Five screens of scrubbed track is an interaction that wants
+ * a wheel; on a phone it is five screens of dragging, and the reader
+ * arrives at it having already scrolled the length of the page.
+ * `ResidentialCtaPhone` closes the page there instead — the same two
+ * buttons the project pages end on, and nothing else. The two are mutually
+ * exclusive at every width: exactly one is on the page after hydration, and
+ * until then CSS keeps the other out of sight rather than letting either
+ * flash.
  */
 export function ApertureCta() {
+  // `"ssr"` until mounted. The three photographs are gated on it below, and
+  // that is not belt-and-braces: a phone unmounts this whole section the
+  // moment it knows the width, but `display: none` does not stop an `<img>`
+  // fetching in the meantime, so left in the server's markup they would be
+  // three large photographs downloaded onto a phone that never shows them.
+  const width = useSyncExternalStore(
+    subscribeToWidth,
+    getWidth,
+    () => "ssr" as const,
+  );
+
+  // Off a phone entirely once the width is known — see the note above.
+  if (width === "phone") return null;
+
+  const showPhotographs = width === "wide";
+
   return (
     <ScrollScrub
       as="section"
@@ -45,7 +90,10 @@ export function ApertureCta() {
       // percentages of it.
       spanMs={1000}
       variable="--aperture"
-      className="aperture relative bg-navy-950"
+      // `hidden desk:block` is the pre-hydration half of the split with
+      // `ResidentialCtaPhone`: the server sends both endings and CSS shows
+      // the right one, so neither is seen before the width is known.
+      className="aperture relative hidden bg-navy-950 desk:block"
     >
       <div className="aperture__stage">
         {/*
@@ -84,24 +132,28 @@ export function ApertureCta() {
               that carries the description, and three descriptions of "a
               home" in a row is noise to read out. */}
           <div className="aperture__outro-img">
-            <Image
-              src={img.interiorFamily}
-              alt=""
-              fill
-              sizes="50vw"
-              placeholder="blur"
-              className="object-cover"
-            />
+            {showPhotographs && (
+              <Image
+                src={img.interiorFamily}
+                alt=""
+                fill
+                sizes="50vw"
+                placeholder="blur"
+                className="object-cover"
+              />
+            )}
           </div>
           <div className="aperture__outro-img">
-            <Image
-              src={img.homeDusk}
-              alt=""
-              fill
-              sizes="50vw"
-              placeholder="blur"
-              className="object-cover"
-            />
+            {showPhotographs && (
+              <Image
+                src={img.homeDusk}
+                alt=""
+                fill
+                sizes="50vw"
+                placeholder="blur"
+                className="object-cover"
+              />
+            )}
           </div>
 
           <div className="aperture__outro-copy">
@@ -137,15 +189,17 @@ export function ApertureCta() {
         <div className="aperture__front">
           <div className="aperture__front-scale">
             <div className="aperture__front-clip">
-              <Image
-                src={img.homeLawn}
-                alt={alt.homeLawn}
-                fill
-                quality={85}
-                sizes="100vw"
-                placeholder="blur"
-                className="object-cover"
-              />
+              {showPhotographs && (
+                <Image
+                  src={img.homeLawn}
+                  alt={alt.homeLawn}
+                  fill
+                  quality={85}
+                  sizes="100vw"
+                  placeholder="blur"
+                  className="object-cover"
+                />
+              )}
 
               {/* Shade under the heading, always. The two scrubbed layers
                   above it are the ones that take the picture to black and

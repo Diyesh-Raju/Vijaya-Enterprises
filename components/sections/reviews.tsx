@@ -20,7 +20,12 @@ function Stars({ rating }: { rating: NonNullable<Review["rating"]> }) {
           // 12px, not 14: at 14 the five stars plus the longest name on the
           // strip ("Yoganarasimhan G N", 146px) overrun the 230px name row and
           // the stars drop to their own line. Measured, not guessed.
-          className="h-3 w-3"
+          //
+          // 10px on a phone, where the card is narrower still and the name
+          // row narrower with it. The wrap is the designed fallback either
+          // way — a name is never clipped to make room for a rating — but at
+          // this size the common names keep their stars on the same line.
+          className="h-2.5 w-2.5 sm:h-3 sm:w-3"
         >
           <path d="M10 1.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L10 14.9l-5.3 2.7 1-5.8L1.5 7.7l5.9-.9z" />
         </svg>
@@ -36,7 +41,15 @@ function ReviewCard({ review }: { review: Review }) {
         // Same box as before — width, padding and radius are untouched. Only
         // what it is made of has changed: a pane of glass over the room
         // rather than a card laid on top of it.
-        "flex w-[18.5rem] shrink-0 flex-col rounded-[1.5rem] p-7 sm:w-[22rem] sm:rounded-[1.75rem] sm:p-8",
+        // 248px on a phone against 296 before. The strip is a ticker, so
+        // a card is only ever readable while it is fully in frame, and at
+        // 296 plus its gap a 390px screen could not hold one whole card and
+        // show that the row continues — the quote was always half off one
+        // edge or the other. At 248 a card clears the screen with room for
+        // the shoulder of the next, which is what says "there are more".
+        // Everything inside it is stepped down to match; from `sm` up the
+        // card is exactly what it was.
+        "flex w-[15.5rem] shrink-0 flex-col rounded-[1.25rem] p-5 sm:w-[22rem] sm:rounded-[1.75rem] sm:p-8",
         // Two layers, and both are load-bearing. The white frost is the
         // reference's look; the navy under it is what makes the type legible,
         // because this photograph has bright windows in it and a purely light
@@ -50,11 +63,11 @@ function ReviewCard({ review }: { review: Review }) {
         "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.22)]",
       )}
     >
-      <div className="flex items-center gap-3.5">
+      <div className="flex items-center gap-2.5 sm:gap-3.5">
         {/* Initial rather than a photo: Google's avatars are not ours to host. */}
         <span
           aria-hidden="true"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/15 font-display text-[1.125rem] text-white"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/15 font-display text-[0.9375rem] text-white sm:h-11 sm:w-11 sm:text-[1.125rem]"
         >
           {review.name.trim().charAt(0).toUpperCase()}
         </span>
@@ -65,18 +78,18 @@ function ReviewCard({ review }: { review: Review }) {
               to make room for the rating. `max-w-full` keeps even an extreme
               name inside the card. */}
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="max-w-full shrink-0 truncate text-[0.9375rem] font-semibold text-white">
+            <span className="max-w-full shrink-0 truncate text-[0.8125rem] font-semibold text-white sm:text-[0.9375rem]">
               {review.name}
             </span>
             {review.rating && <Stars rating={review.rating} />}
           </span>
-          <span className="mt-1 text-[0.75rem] text-white/65">
+          <span className="mt-1 text-[0.6875rem] text-white/65 sm:text-[0.75rem]">
             {review.when}
           </span>
         </span>
       </div>
 
-      <p className="mt-5 text-[0.9375rem] leading-relaxed text-white/85">
+      <p className="mt-4 text-[0.8125rem] leading-relaxed text-white/85 sm:mt-5 sm:text-[0.9375rem]">
         {review.quote}
       </p>
     </li>
@@ -96,7 +109,7 @@ function Track({
       // `items-stretch` keeps every card the height of the tallest, so the row
       // reads as one band rather than a ragged edge.
       className={cn(
-        "flex shrink-0 items-stretch gap-5 pr-5 sm:gap-6 sm:pr-6",
+        "flex shrink-0 items-stretch gap-4 pr-4 sm:gap-6 sm:pr-6",
         className,
       )}
       aria-hidden={ariaHidden || undefined}
@@ -117,6 +130,14 @@ function Track({
  * The pause is keyed to `has-[li:hover]` rather than hovering the strip, so it
  * only stops while the pointer is actually on a card — moving through the space
  * around them leaves it running.
+ *
+ * And it is a pointer's privilege only, which is what `can-hover:` is doing in
+ * front of it. A touch screen has no hover to give but browsers hand it one
+ * anyway: a tap leaves `:hover` stuck on whatever was tapped until something
+ * else is tapped. Unqualified, this rule turned that into a strip that stopped
+ * dead on the first tap and would not start again — the pause had nothing to
+ * release it, because there was no pointer to move away. On a phone the strip
+ * now runs through a tap and a hold alike.
  *
  * With reduced motion the animation is off, the duplicate track is dropped, and
  * the strip becomes a normal horizontal scroller — otherwise `overflow-hidden`
@@ -154,7 +175,7 @@ export function Reviews() {
 
       {/* Outside the container so the cards run to both edges of the screen. */}
       <div className="fade-edges relative mt-10 overflow-hidden lg:mt-12 motion-reduce:overflow-x-auto">
-        <div className="flex w-max animate-marquee has-[li:hover]:[animation-play-state:paused] motion-reduce:animate-none">
+        <div className="flex w-max animate-marquee can-hover:has-[li:hover]:[animation-play-state:paused] motion-reduce:animate-none">
           {/* Both tracks must stay identical: the -50% translate only lands
               seamlessly if the copy is exactly as wide as the original. */}
           <Track ariaHidden={false} />

@@ -1,6 +1,62 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
+   `desk:` — the real laptop breakpoint, and the one the phone/desktop
+   split is written against.
+
+   `md:` alone is not it. A phone turned on its side is 844 or 932 CSS
+   pixels wide, comfortably past the 768 that `md:` asks for, and the site
+   was flipping to the desktop layout the moment the handset rotated — the
+   scroll-scrubbed walkthrough loading in place of the phone hero, the
+   search panel reverting to its laptop grid. Width alone cannot tell a
+   phone held sideways from a laptop.
+
+   Height can. No phone is 500 CSS pixels tall in landscape — the tallest
+   in circulation manages about 440 — and no laptop window is under it,
+   the shortest working out around 600 even after the browser's own
+   chrome. So `desk:` is both dimensions, and the gap either side of 500
+   is wide enough that neither kind of device lands near the line.
+
+   Use this rather than `md:` for anything that chooses between the phone
+   layout and the laptop one. `md:`, `lg:` and the rest are untouched and
+   still mean what they always did: they are ordinary responsive steps,
+   and content reflowing to a wider window is exactly what they are for.
+------------------------------------------------------------------- */
+@custom-variant desk (@media (min-width: 48rem) and (min-height: 500px));
+
+/* `desk-stacked:` — laptop-shaped, but not yet wide enough for a section to
+   split into columns. Between `desk` and `lg`, in other words.
+
+   It exists because `desk:` and `lg:` overlap, and a custom variant is
+   emitted after the built-in breakpoints: at 1440 a `desk:mt-14` silently
+   beat the `lg:mt-0` meant to clear it, and moved a photograph 28px. Where
+   a rule is meant for the stacked desktop band and nothing wider, say so in
+   the query rather than trusting the order two variants happen to land in.
+------------------------------------------------------------------- */
+@custom-variant desk-stacked (@media (min-width: 48rem) and (min-height: 500px) and (max-width: 63.9375rem));
+
+/* `touch:` — a screen with no pointer to hover, which in practice means a
+   phone or a tablet.
+
+   Deliberately not `desk:` inverted. The two ask different questions: `desk:`
+   is about how much room a layout has, this is about what the reader can
+   physically do. A flip card is the case in point — what decides whether it
+   can turn on hover is whether there is a hover to be had, not how wide the
+   window is — and keeping it on the pointer axis means it can never leak
+   onto a laptop, however the window is sized.
+------------------------------------------------------------------- */
+@custom-variant touch (@media (hover: none));
+
+/* `can-hover:` — the other half of the pair, and worth having by name.
+
+   Not simply "not `touch:`". This is the exact query the flip cards test
+   against, `(hover: hover) and (pointer: fine)`, so anything that keys off
+   a pointer being able to rest on something asks the same question in the
+   same words rather than a near-miss of it.
+------------------------------------------------------------------- */
+@custom-variant can-hover (@media (hover: hover) and (pointer: fine));
+
+/* ------------------------------------------------------------------
    Vijaya Enterprises — design tokens
    Navy + white, with a restrained brass accent (the brief asks that the
    heritage blue/yellow survive the repositioning). Nothing sharp: every
@@ -322,6 +378,36 @@
   height: calc(var(--track-screens, 1) * 100svh);
 }
 
+/* The phone home page's hero band. The walkthrough above is a desktop-only
+   thing — on a phone the hero is a short strip of photographs under the bar,
+   with the section below it already on screen. See `HomeHeroPhone`.
+
+   Sized against the viewport rather than given a fixed aspect, because what
+   is fixed is where the strip *ends* — around three fifths of the way down
+   the screen, with the top of the section below still showing under it —
+   not what shape the picture is. `svh` so the strip does not resize as
+   mobile Safari's URL bar collapses, with the `vh` line first for anything
+   that has never heard of it. The clamp keeps it sane at both ends.
+
+   Note what this height does to the pictures. 58svh less the bar is around
+   410px on a 390px-wide phone, so the band is very nearly square, and every
+   photograph in it is landscape — the crop therefore takes its bite out of
+   the *width*, not the height, and takes a lot of it. That is why the
+   frames in `HomeHeroPhone` carry an `objectPosition` each: raising this
+   number again will want them looked at again.
+
+   The floor is 11rem rather than anything near the portrait height, and
+   that is not slack. No phone held upright reaches down to it — the
+   smallest screen still in use works out around 250px — so what it is for
+   is a window that is short and under 768px wide: a small foldable, a
+   narrow browser window, a device this side of the breakpoint on its side.
+   At 767×400 there is only 135px left after the bar, and a floor set where
+   portrait sits would fill 96% of that window with the hero. */
+@utility h-hero-phone {
+  height: clamp(11rem, 58vh - var(--header-h), 27rem);
+  height: clamp(11rem, 58svh - var(--header-h), 27rem);
+}
+
 /* Scroll reveal: hidden until the observer marks it visible. Uses
    data attributes so a JS failure can never leave content invisible
    (the no-js / no-observer path sets data-reveal="on" immediately).
@@ -365,6 +451,30 @@
 .reveal[data-reveal="off"][data-reveal-variant="left"] { transform: translate3d(-46px, 0, 0); }
 .reveal[data-reveal="off"][data-reveal-variant="right"] { transform: translate3d(46px, 0, 0); }
 .reveal[data-reveal="off"][data-reveal-variant="scale"] { transform: scale(0.94); }
+
+/* `reveal-still` — a block that keeps its place on a phone.
+
+   Not every block wants arriving into. A phone shows one section at a time,
+   so a heading and the paragraph under it cross the fold together and the
+   stagger that reads as a sequence on a laptop reads as the page still
+   loading. Marked with this, a `Reveal` is simply *there* below the
+   breakpoint, and unchanged above it.
+
+   Three selectors because the variants are qualified twice over and would
+   otherwise outrank a single-class rule; the last of them is a class and
+   three attributes, one more than the strongest variant rule below. And
+   `transition: none` as well as the end state, so a block that is already
+   marked `off` when the query starts matching does not animate its way to
+   standing still. */
+@media (max-width: 767.98px), (max-height: 499.98px) {
+  .reveal.reveal-still,
+  .reveal.reveal-still[data-reveal],
+  .reveal.reveal-still[data-reveal][data-reveal-variant] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
 
 /* Sideways arrivals only read as sideways when there is width to arrive
    across. On a phone there is not, and a block sliding in from off the right
@@ -528,12 +638,83 @@
   height: calc(113px * var(--logo-scale, 1));
 }
 
+/* The mark's own height, from the per-entry figure the component hands over
+   in `--mark-h`. It used to be an inline `height` on the image; it is here
+   so that a media query can take it back, which an inline style would never
+   allow. Scoped to this row: the Civil Contracts carousel keeps its own. */
+.trusted-row .trusted-well img {
+  height: calc(var(--mark-h, 60px) * var(--logo-scale, 1));
+}
+
 @media (min-width: 640px) {
   .trusted-row { --logo-scale: 0.85; }
 }
 
 @media (min-width: 1024px) {
   .trusted-row { --logo-scale: 1; }
+}
+
+/* ------------------------------------------------------------------
+   The client row on a phone — the same marquee, drawn as boxes.
+
+   A logo on a phone cannot be what it is on a laptop: one lockup here is
+   most of the screen, so the strip always arrived mid-mark with a name cut
+   off at both edges. The fix is not to stop it moving — it is to make the
+   thing that moves small. Each mark goes into a 100px box of its own,
+   which is what Prestige does with its brands and what that site measures
+   at this width: 100px squares, 15px apart. Three and a bit of ours are on
+   screen at any moment, so the row reads as a row rather than as one logo
+   sliding past.
+
+   The captions come off with the change. There is no room for a line of
+   tracked capitals under a 100px box, and the marks carry their own names.
+   Each still has its `alt`, so nothing is lost to a screen reader.
+
+   Everything here is scoped to `.trusted-row`, never to `.trusted-well`
+   alone: the Civil Contracts page runs the same wells on its own carousel
+   and is not a phone layout question.
+------------------------------------------------------------------- */
+@media (max-width: 767.98px), (max-height: 499.98px) {
+  .trusted-row .trusted-well {
+    width: 6.25rem;
+    height: 6.25rem;
+    padding: 0.6875rem;
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
+    background-color: #ffffff;
+  }
+
+  /* Contained, not drawn at `--mark-h`: in a box what matters is that no
+     mark touches the sides, and only `contain` promises that for a 7.8:1
+     wordmark and a square seal at once. */
+  .trusted-row .trusted-well img {
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .trusted-row .trusted-caption {
+    display: none;
+  }
+
+  /* The gutter between boxes. The row's own `px-10` is 80px of air between
+     items, which at this size would show one box at a time; 6px a side is
+     the 12px Prestige leaves between theirs. Two classes deep, so it
+     outranks the utility without needing `!important`. */
+  .trusted-row li {
+    padding-inline: 0.375rem;
+  }
+
+  /* And the pace. The duration is written inline by `Marquee`, which no
+     amount of specificity can beat — `!important` is the only thing that
+     does. It has to move: one pass of the strip is about 2800px on a laptop
+     and 1120px here, so the 72s that reads as a drift there would be a
+     crawl, at 15px a second. 32s puts it back at roughly the speed the
+     laptop row travels. */
+  .trusted-row .animate-marquee {
+    animation-duration: 32s !important;
+  }
 }
 
 /* The Civil Contracts page runs the same roster as cards rather than a
@@ -1445,11 +1626,254 @@
 
 @media (prefers-reduced-motion: reduce) {
   .gooey-demo .tile__desc,
+  .gooey-demo .tile__reveal,
   .gooey-demo .tile__content { transition-duration: 0s; }
 }
 
 /* ------------------------------------------------------------------
-   Residential hero — horizontal blinds cutting one photograph to the next.
+   The accolades on a phone — a wall, not a strip.
+
+   Everything above this is written for a band that is one screen tall with
+   a row of door-sized photographs walked across it by two arrows. None of
+   that survives a 390px screen: one tile fills the width, so the reader
+   meets the awards one at a time and only if they find the arrows, and the
+   heading — absolutely positioned over a band sized to the window — lands
+   across the top of the first two pictures.
+
+   So on a phone the band stops being a strip. The section grows to its
+   content instead of holding a screen, the heading goes back into the flow
+   above the awards, and the five of them stand in a two-up grid: picture,
+   name, `See more`. The odd one out takes the last row on its own, held to
+   the width of one column and centred, so it reads as the end of the set
+   rather than as a gap on the right.
+
+   Placed last in the section on purpose. It has to outrank the
+   `min-width: 900px` block above, which hangs the caption off the picture
+   and is otherwise still in force on a phone turned sideways — 932px wide
+   and past that breakpoint, but nowhere near tall enough to hang anything.
+   Same specificity, later in the file, so these win.
+
+   The query is the negation of `desk:` — narrow OR short — so this and the
+   Tailwind side of the phone layout turn over together.
+------------------------------------------------------------------- */
+@media (max-width: 767.98px), (max-height: 499.98px) {
+  .gooey-demo {
+    /* Both of these are subtractions from a screen the band no longer
+       holds: no caption slot to reserve, and no controls to leave room
+       for. Zeroed rather than deleted, because `--accolade-img-h` up top
+       still reads them. */
+    --accolade-cap: 0rem;
+    --accolade-controls: 0rem;
+    height: auto;
+    /* The room the heading used to reserve by being pinned `--header-h`
+       down from the section's top. In the flow it needs the section to
+       hold it instead. */
+    padding-top: 3.5rem;
+  }
+
+  /* Out of the corner it was pinned into and back into the flow, where it
+     cannot land on a photograph.
+
+     The gutter has to be restated. Pinned, the heading took it from `left`
+     and `right`; static, both are dead properties and the word would run
+     to the very edge of the screen — it is a direct child of the band, not
+     of the padded column below it. */
+  .gooey-demo .page-title {
+    position: static;
+    padding-inline: 5vw;
+    margin: 0 0 1.5rem;
+  }
+
+  .gooey-demo .slideshow-ctn {
+    padding: 0 5vw 4.25rem;
+  }
+
+  .gooey-demo .slideshow {
+    flex: 0 0 auto;
+  }
+
+  .gooey-demo .slideshow-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.25rem 1.25rem;
+    align-items: start;
+    height: auto;
+    will-change: auto;
+    transition: none;
+    /* The component stops writing the strip's transform at these sizes and
+       clears the one it wrote. This covers the frame before it can: the
+       transform is an inline style, and nothing but `!important` outranks
+       one. */
+    transform: none !important;
+  }
+
+  .gooey-demo .slideshow-list__el {
+    width: auto;
+    margin-left: 0;
+  }
+
+  /* The award left over by an odd count. Given the whole last row, then
+     held to one column's width and centred in it — full width would make
+     the fifth picture twice the size of the four above it. The 0.625rem is
+     half the column gap. */
+  .gooey-demo .slideshow-list__el:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    width: calc(50% - 0.625rem);
+    margin-inline: auto;
+  }
+
+  /* One shape for all five. The set is two portraits, two landscapes and a
+     certificate, and side by side at this size five different frames read
+     as five mistakes rather than as five awards. The photographs fill the
+     frame and lose a little off their long side; the certificate still
+     sits inside it whole, on its own dark ground — `contain` is not
+     overridden here, and a citation may not lose its last line. */
+  .gooey-demo .tile__fig::before,
+  .gooey-demo .slideshow-list__el--wide .tile__fig::before,
+  .gooey-demo .slideshow-list__el--doc .tile__fig::before {
+    padding-top: 125%;
+  }
+
+  /* Curved, and the picture clipped to the curve — without `overflow` the
+     photograph keeps its own square corners inside the rounded box. The
+     shadow comes in with the frame: a quarter of the size wants a quarter
+     of the drop. */
+  .gooey-demo .tile__link {
+    border-radius: 1.125rem;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgb(246 248 252 / 0.16),
+      0 1rem 2rem -0.75rem rgb(0 0 0 / 0.55);
+  }
+
+  /* The corner scrim exists to hold a name that crosses the photograph.
+     Nothing crosses it here. */
+  .gooey-demo .tile__link::after {
+    display: none;
+  }
+
+  /* Caption under the picture and ranged left — undoing the hung
+     arrangement for the sideways phone that would otherwise still have
+     it. */
+  .gooey-demo .tile__content,
+  .gooey-demo .slideshow-list__el--doc .tile__content {
+    position: relative;
+    inset: auto;
+    width: auto;
+    min-height: 0;
+    margin-top: 0.85rem;
+    text-align: left;
+  }
+
+  .gooey-demo .title--medium {
+    font-size: 0.8125rem;
+    letter-spacing: 0.03em;
+    line-height: 1.3;
+  }
+
+  .gooey-demo .tile__cta,
+  .gooey-demo .slideshow-list__el--doc .tile__cta {
+    width: auto;
+    margin-top: 0.6rem;
+    text-align: left;
+  }
+
+  .gooey-demo .btn-inline {
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+  }
+
+  /* Closed citations take no room in the layout, rather than merely being
+     hidden in it. Held open, the reserved column of empty space under every
+     `See more` is most of a card — affordable on a band sized to one screen
+     and absurd on a tile a third of a phone wide.
+
+     But collapsing it must be a movement, not a cut. `display: none` is not
+     an animatable value, so toggling it dropped the whole grid row in a
+     single frame and every award below it jumped. The wrapper is what fixes
+     that: a one-row grid whose track goes from `0fr` to `1fr`, which *is*
+     animatable, with the paragraph inside it clipped to whatever the track
+     currently is. The height is real at every step, so the tiles below ride
+     it down and back up.
+
+     `0fr` rather than `height: 0` because the open end has to be `auto` —
+     the citations are different lengths and none of them should be measured
+     by hand. And the flag is read off the wrapper rather than through
+     `:has()`, so nothing here depends on that selector. */
+  .gooey-demo .tile__reveal {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.4s var(--ease-out-soft);
+  }
+
+  .gooey-demo .tile__reveal[data-open] {
+    grid-template-rows: 1fr;
+  }
+
+  .gooey-demo .tile__desc,
+  .gooey-demo .slideshow-list__el--doc .tile__desc {
+    position: relative;
+    inset: auto;
+    width: auto;
+    /* `min-height: 0` is what lets a grid item be shorter than its content;
+       without it the track collapses and the paragraph does not. */
+    min-height: 0;
+    overflow: hidden;
+    margin: 0;
+    font-size: 0.78rem;
+    text-align: left;
+    /* The rule and the gap above it close with the text rather than
+       surviving it. `min-height: 0` frees the *content* box to reach zero,
+       and padding and a border are not content — left at their open values
+       they held every closed card open by the 14.6px of themselves, with
+       the rule drawn across it. So they are part of what animates, on the
+       same clock as the track. */
+    padding-top: 0;
+    border-top-width: 0;
+    transition:
+      padding-top 0.4s var(--ease-out-soft),
+      border-top-width 0.4s var(--ease-out-soft),
+      opacity 0.35s var(--ease-out-soft),
+      visibility 0s linear 0.35s;
+  }
+
+  .gooey-demo .tile__reveal[data-open] .tile__desc {
+    padding-top: 0.85rem;
+    border-top-width: 1px;
+    transition:
+      padding-top 0.4s var(--ease-out-soft),
+      border-top-width 0.4s var(--ease-out-soft),
+      opacity 0.35s var(--ease-out-soft);
+  }
+
+  /* No strip left to step through. */
+  .gooey-demo .slideshow__controls {
+    display: none;
+  }
+}
+
+/* A phone on its side reaches this layout too, and two columns of an 844px
+   window are 370px each — tiles nearly as big as the ones a laptop gets,
+   stacked into a wall four and a half screens tall in a window 390px high.
+   The grid is capped and centred instead. Width alone must not trigger
+   this: a tablet at the same width but upright is not in this layout at
+   all, so the height is in the query as well. */
+@media (min-width: 34rem) and (max-height: 499.98px) {
+  .gooey-demo .slideshow-list {
+    max-width: 32rem;
+    margin-inline: auto;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Horizontal blinds cutting one photograph to the next.
+
+   Named for the Residential hero, which is where it was written; the phone
+   home page's hero band (`HomeHeroPhone`) is the second thing on it, and
+   drives the same classes off its own, shorter clock. Everything the two
+   differ on — how many bands, how long a band takes, how long the wave
+   takes to travel — arrives as a custom property from the component, so
+   nothing below is tied to either one.
 
    The incoming picture arrives in bands. It is cut into
    `--reshero-blinds` full-width strips; each strip opens outward from its
@@ -1580,11 +2004,25 @@
    The two faces share one grid cell, so a card is exactly as tall as its
    taller face and nobody has to guess a height.
 
-   All of the 3D is inside the hover query on purpose. On a touch screen
-   there is nothing to hover with, so the faces come out of the shared
-   cell, stack down the card and both stay readable — the detail is never
-   hidden behind a gesture the device cannot make. `focus-within` gives
-   the same reveal to a keyboard, which is why each card is focusable.
+   The card itself is the same object on every device; only what turns it
+   differs. A mouse turns it by hovering and a keyboard by focusing it,
+   and both of those are in the hover query below. A touch screen can do
+   neither, so there the card is a toggle instead: a tap puts
+   `is-flipped` on and a second tap takes it off.
+
+   That toggle is inside a `hover: none` query rather than standing on its
+   own, and the query is doing real work. Unqualified it would answer a
+   mouse click as well, and a card clicked with a mouse would stay turned
+   after the pointer had left it — turned by the class, held by nothing,
+   with no way back but another click.
+
+   The faces used to stack on a touch screen rather than turn: both
+   visible, nothing hidden behind a gesture the device could not make.
+   That was the safe answer before the card could be tapped, and it cost
+   the section twice its height on the device with the least to spare.
+   Nothing is lost by turning it now — `backface-visibility` hides a face
+   from the eye, not from the accessibility tree, so a screen reader still
+   reads both sides of every card without turning anything.
 ------------------------------------------------------------------- */
 
 .flip-card {
@@ -1593,31 +2031,42 @@
 
 .flip-card-inner {
   display: grid;
-  gap: 1.25rem;
   height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.8s var(--ease-out-soft);
+}
+
+.flip-card-inner > * {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .flip-card-inner {
-    gap: 0;
-    transform-style: preserve-3d;
-    transition: transform 0.8s var(--ease-out-soft);
-  }
-
-  .flip-card-inner > * {
-    grid-area: 1 / 1;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-
-  .flip-card-back {
-    transform: rotateY(180deg);
-  }
-
   .flip-card:hover .flip-card-inner,
   .flip-card:focus-visible .flip-card-inner,
   .flip-card:focus-within .flip-card-inner {
     transform: rotateY(180deg);
+  }
+}
+
+@media (hover: none) {
+  .flip-card.is-flipped .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+}
+
+/* The turn is the reader's own doing here, but a half-turn is still a
+   half-turn. Asked for less movement, the card changes face without the
+   journey. Scoped to the touch case so the laptop keeps the animation it
+   was signed off with. */
+@media (hover: none) and (prefers-reduced-motion: reduce) {
+  .flip-card-inner {
+    transition: none;
   }
 }
 

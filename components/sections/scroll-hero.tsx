@@ -57,7 +57,14 @@ const RECOVER_COOLDOWN_MS = 5000;
 /** `HTMLMediaElement.HAVE_CURRENT_DATA` — there is a frame to draw. */
 const HAVE_CURRENT_DATA = 2;
 
-const WIDE_QUERY = "(min-width: 768px)";
+/**
+ * When the walkthrough runs at all: a laptop-shaped window, not merely a
+ * wide one. The height is what keeps a phone turned on its side — 932
+ * pixels across and 430 down — from being handed a six-screen scrubbed
+ * video. Same string as `HomeHeroPhone` and the same pair of dimensions as
+ * the `desk:` variant in `globals.css`; all three have to agree.
+ */
+const WIDE_QUERY = "(min-width: 48rem) and (min-height: 500px)";
 
 function subscribeToWidth(onChange: () => void) {
   const query = window.matchMedia(WIDE_QUERY);
@@ -401,6 +408,22 @@ export function ScrollHero() {
     };
   }, [src]);
 
+  /*
+   * Phones do not get the walkthrough at all.
+   *
+   * This is a six-screen track pinning a 1920-wide clip and scrubbing it off
+   * the scroll position — an interaction that wants a wheel and a connection,
+   * and on a phone is a long drag through a file that had to be downloaded
+   * first. `HomeHeroPhone` opens the page there instead: a short band of
+   * photographs under the bar, no video at all.
+   *
+   * Unmounting rather than merely hiding is what stops the phone paying for
+   * this anyway — no clip, no end still, no animation frame loop. It happens
+   * the moment the width is known, and `hidden desk:block` below covers the
+   * frame before that, so nothing is ever seen to leave.
+   */
+  if (width === "phone") return null;
+
   return (
     <section
       ref={trackRef}
@@ -409,7 +432,10 @@ export function ScrollHero() {
       // paint. White rather than black: that strip is what the frosted bar
       // has behind it at the top of the page.
       className={cn(
-        "relative bg-white pt-[var(--header-h)]",
+        // `hidden desk:block` is the pre-hydration half of the split with
+        // `HomeHeroPhone`: the server sends both heroes and CSS shows the
+        // right one, so neither flashes before the width is known.
+        "relative hidden bg-white pt-[var(--header-h)] desk:block",
         mounted && "h-hero-track",
       )}
       style={
@@ -483,15 +509,24 @@ export function ScrollHero() {
 
           {/* The last frame, blurred once at build time. Cross-fading to this is
               what the close does instead of blurring live video. */}
+          {/* The plate itself waits for the width. It is lazy, and a lazy
+              image with no layout box is fetched immediately rather than
+              deferred — so on a phone, where this section is `display: none`
+              and about to be unmounted altogether, it was being downloaded
+              for nothing. Nothing is lost by waiting: it is invisible until
+              the track is seventy percent scrolled, four screens below the
+              hydration this now happens on. */}
           <div ref={softRef} className="absolute inset-0 opacity-0">
-            <Image
-              src={img.homeScrollEnd}
-              alt=""
-              aria-hidden="true"
-              fill
-              sizes="100vw"
-              className="object-cover"
-            />
+            {mounted && (
+              <Image
+                src={img.homeScrollEnd}
+                alt=""
+                aria-hidden="true"
+                fill
+                sizes="100vw"
+                className="object-cover"
+              />
+            )}
           </div>
 
         </div>

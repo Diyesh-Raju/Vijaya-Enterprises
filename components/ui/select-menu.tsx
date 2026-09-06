@@ -27,6 +27,7 @@ export function SelectMenu({
   options,
   anyLabel = "Any",
   layout = "inline",
+  className,
   onChange,
 }: {
   label: string;
@@ -34,6 +35,8 @@ export function SelectMenu({
   options: readonly string[];
   anyLabel?: string;
   layout?: "inline" | "stacked";
+  /** Lands on the field's own wrapper — grid spans, chiefly. */
+  className?: string;
   onChange: (value: string) => void;
 }) {
   const stacked = layout === "stacked";
@@ -81,9 +84,9 @@ export function SelectMenu({
   };
 
   return (
-    <div ref={wrapper} className="relative">
+    <div ref={wrapper} className={cn("relative", className)}>
       {stacked && (
-        <span className="mb-2 block text-[0.625rem] font-bold uppercase tracking-[0.18em] text-navy-800">
+        <span className="mb-1.5 block text-[0.625rem] font-bold uppercase tracking-[0.16em] text-navy-800 desk:mb-2 desk:tracking-[0.18em]">
           {label}
         </span>
       )}
@@ -107,7 +110,11 @@ export function SelectMenu({
             // panel, which is set on a photograph, and a white fill there
             // reads as a card laid over the cloth rather than a field cut
             // out of it. The hover tint is the only surface it ever takes.
-            ? "flex w-full items-center justify-between gap-2 bg-transparent px-5 py-3 hover:bg-white/20"
+            // Tighter below `md`, where two of these sit side by side in a
+            // phone's width and the padding is the difference between a
+            // value that fits and one that ellipses. The `desk:` pair puts
+            // the field back exactly as it is on a laptop.
+            ? "flex w-full items-center justify-between gap-1.5 bg-transparent px-3.5 py-2 hover:bg-white/20 desk:gap-2 desk:px-5 desk:py-3"
             : "inline-flex items-center gap-2.5 bg-white py-2.5 pl-5 pr-4 hover:-translate-y-0.5 hover:shadow-soft",
           // The rose border is a "you narrowed this" cue, which only reads on
           // the inline pills — a stacked field always carries a value.
@@ -125,15 +132,18 @@ export function SelectMenu({
         )}
         <span
           className={cn(
-            "text-[0.875rem] font-semibold text-navy-900",
-            stacked && "truncate",
+            "font-semibold text-navy-900",
+            stacked
+              ? "truncate text-[0.8125rem] desk:text-[0.875rem]"
+              : "text-[0.875rem]",
           )}
         >
           {current.text}
         </span>
         <ChevronDownIcon
           className={cn(
-            "h-4 w-4 shrink-0 text-navy-900 transition-transform duration-300",
+            "shrink-0 text-navy-900 transition-transform duration-300",
+            stacked ? "h-3.5 w-3.5 desk:h-4 desk:w-4" : "h-4 w-4",
             open && "rotate-180",
           )}
         />

@@ -138,21 +138,21 @@ export function FindResidences() {
       />
 
       <Container>
-        <div className="flex flex-col items-start gap-8 sm:gap-10 lg:flex-row lg:gap-16">
+        <div className="flex flex-col items-start gap-5 desk:gap-10 lg:flex-row lg:gap-16">
           {/* The claim, held beside the controls while they are worked through. */}
           <div className="w-full lg:sticky lg:top-32 lg:w-[46%]">
-            <Reveal>
+            <Reveal className="reveal-still">
               {/* Sentence case, not the caps this panel opened with: a
                   sentence with a full stop set in tracked capitals reads as
                   shouting rather than as an invitation. */}
-              <h2 className="text-balance-head font-sans text-[clamp(1.875rem,4vw,3rem)] font-semibold leading-[1.12] tracking-[-0.015em] text-navy-950">
+              <h2 className="text-balance-head font-sans text-[clamp(1.5rem,4vw,3rem)] font-semibold leading-[1.12] tracking-[-0.015em] text-navy-950">
                 Let&rsquo;s find the right home for your family.
               </h2>
             </Reveal>
           </div>
 
           <div className="w-full lg:w-[54%]">
-            <Reveal delay={80}>
+            <Reveal className="reveal-still" delay={80}>
               {/* Discipline tabs, drawn as one segmented pill: a rounded
                   track, hairline dividers between the choices, and the
                   selected one filled. The underline they used to carry said
@@ -163,7 +163,7 @@ export function FindResidences() {
                   there is a photograph behind it now, and the track is the
                   hairline plus whatever the cloth is doing underneath. Only
                   the selected segment takes a fill. */}
-              <div className="hide-scrollbar mb-7 -mx-1 overflow-x-auto px-1 pb-1 sm:mb-9">
+              <div className="hide-scrollbar mb-5 -mx-1 overflow-x-auto px-1 pb-1 desk:mb-9">
                 <div className="inline-flex items-center rounded-full border border-navy-900/25 bg-transparent p-1.5">
                   {tabs.map((entry, index) => {
                     const selected = index === tab;
@@ -195,7 +195,8 @@ export function FindResidences() {
                             setProjectType(firstOf(entry.projectTypes));
                           }}
                           className={cn(
-                            "flex-shrink-0 whitespace-nowrap rounded-full px-5 py-2.5 text-[0.875rem] font-medium",
+                            "flex-shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-[0.8125rem] font-medium",
+                            "desk:px-5 desk:py-2.5 desk:text-[0.875rem]",
                             "transition-[background-color,color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                             selected
                               ? "bg-navy-950 text-white"
@@ -211,9 +212,31 @@ export function FindResidences() {
               </div>
             </Reveal>
 
-            <Reveal delay={160}>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <Reveal className="reveal-still" delay={160}>
+              {/* On a phone: project type beside status, location centred under
+                  the pair, then the two ranges at full width one below the
+                  other.
+
+                  Five columns rather than two, because none of those rows
+                  wants halving. Project type has to hold "Institutional
+                  Building" and location "Elsewhere in Karnataka" — both want
+                  around 144px for the value, and half a phone's width leaves
+                  119px, so both would ellipse. Three fifths gives them 157px
+                  and clears it; status is only ever a word ("Ongoing",
+                  "Completed", "Sold Out") and is comfortable in the other
+                  two. Location takes the same three fifths, started one
+                  column in, which is what centres it under the pair.
+
+                  The ranges go the full five. They were paired at one point
+                  and the halves worked, but a rail with four stops is easier
+                  to place a thumb on across a whole screen than across half
+                  of one.
+
+                  From `md` up every span reverts and the grid is the two
+                  even columns it always was. */}
+              <div className="grid grid-cols-5 gap-x-3 gap-y-4 desk:grid-cols-2 desk:gap-5">
                 <SelectMenu
+                  className="col-span-3 desk:col-span-1"
                   layout="stacked"
                   label="Project Type"
                   value={projectType}
@@ -221,6 +244,7 @@ export function FindResidences() {
                   onChange={setProjectType}
                 />
                 <SelectMenu
+                  className="col-span-2 desk:col-span-1"
                   layout="stacked"
                   label="Status"
                   value={status}
@@ -228,6 +252,7 @@ export function FindResidences() {
                   onChange={setStatus}
                 />
                 <SelectMenu
+                  className="col-span-3 col-start-2 desk:col-span-1 desk:col-start-auto"
                   layout="stacked"
                   label="Location"
                   value={location}
@@ -235,8 +260,8 @@ export function FindResidences() {
                   onChange={setLocation}
                 />
 
-                <div>
-                  <span className="mb-2 block text-[0.625rem] font-bold uppercase tracking-[0.18em] text-navy-800">
+                <div className="col-span-5 desk:col-span-1">
+                  <span className="mb-1.5 block text-[0.625rem] font-bold uppercase tracking-[0.16em] text-navy-800 desk:mb-2 desk:tracking-[0.18em]">
                     Area (Sq.Ft)
                   </span>
                   <StepRange
@@ -249,9 +274,9 @@ export function FindResidences() {
                 </div>
 
                 {/* Budget sits on its own row, centred under the pair above. */}
-                <div className="flex justify-center sm:col-span-2">
-                  <div className="w-full sm:w-[calc(50%-0.625rem)]">
-                    <span className="mb-2 block text-[0.625rem] font-bold uppercase tracking-[0.18em] text-navy-800">
+                <div className="col-span-5 flex justify-center desk:col-span-2">
+                  <div className="w-full desk:w-[calc(50%-0.625rem)]">
+                    <span className="mb-1.5 block text-[0.625rem] font-bold uppercase tracking-[0.16em] text-navy-800 desk:mb-2 desk:tracking-[0.18em]">
                       Budget
                     </span>
                     <StepRange
@@ -266,12 +291,13 @@ export function FindResidences() {
               </div>
             </Reveal>
 
-            <Reveal delay={240}>
+            <Reveal className="reveal-still" delay={240}>
               <Link
                 href={active.href}
                 className={cn(
-                  "mt-8 block w-full rounded-full border border-white/25 py-3.5 text-center",
-                  "text-[0.75rem] font-bold uppercase tracking-[0.2em] text-white",
+                  "mt-6 block w-full rounded-full border border-white/25 py-3 text-center",
+                  "text-[0.6875rem] font-bold uppercase tracking-[0.18em] text-white",
+                  "desk:mt-8 desk:py-3.5 desk:text-[0.75rem] desk:tracking-[0.2em]",
                   "bg-[linear-gradient(135deg,rgba(22,48,95,0.94)_0%,#0a1f44_100%)]",
                   "shadow-[0_8px_24px_0_rgba(10,31,68,0.24),inset_0_1px_0_0_rgba(255,255,255,0.28)]",
                   "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 active:scale-[0.99]",

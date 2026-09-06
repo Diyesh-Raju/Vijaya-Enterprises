@@ -111,6 +111,17 @@ import towersGlass from "@/assets/images/towers-glass.jpg";
 import villaPool from "@/assets/images/villa-pool.jpg";
 import warehouseAisle from "@/assets/images/warehouse-aisle.jpg";
 
+/* The phone home page's hero cycles through these four, one per build type
+   the company is known for: the completed apartment towers, a development
+   still on the boards, a private residence, and a commercial block. Two of
+   them — Vijay Aqua Green and Vijaya Surya — are Vijaya's own, which is why
+   they carry the name on the building and why the crop below must not cut
+   the signage off. See `HomeHeroPhone`. */
+import towersLawn from "@/assets/images/towers-lawn.jpg";
+import vijayAquaGreen from "@/assets/images/vijay-aqua-green.jpg";
+import courtyardHouse from "@/assets/images/courtyard-house.jpg";
+import vijayaSurya from "@/assets/images/vijaya-surya.jpg";
+
 export const img = {
   aerialLand,
   amenitiesGarden,
@@ -174,6 +185,10 @@ export const img = {
   towersGlass,
   villaPool,
   warehouseAisle,
+  towersLawn,
+  vijayAquaGreen,
+  courtyardHouse,
+  vijayaSurya,
 } as const;
 
 /** Descriptive alt text, kept next to the images so it never drifts. */
@@ -277,6 +292,14 @@ export const alt = {
   towersGlass: "Glass office towers seen from street level",
   villaPool: "Completed villa with a swimming pool and terrace",
   warehouseAisle: "Aisle inside a completed warehouse facility",
+  towersLawn:
+    "Completed white apartment towers stepping along a tree-lined road, an open lawn in the foreground",
+  vijayAquaGreen:
+    "Vijay Aqua Green at sunset, its low blocks running back along the road behind a planted verge",
+  courtyardHouse:
+    "A narrow four-storey house with timber screens and trailing greenery over each balcony, birds crossing the sky above",
+  vijayaSurya:
+    "Vijaya Surya, a glass-fronted commercial building with a yellow entrance portal, the name above the top floor",
 } as const;
 
 /** Background video files (these do live in `public/`, served by URL). */
