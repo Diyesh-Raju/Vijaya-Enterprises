@@ -63,16 +63,16 @@ export default async function ProjectAboutPage({
                 {project.conceptStats?.map((stat) => (
                   <div
                     key={stat.label}
-                    className="flex flex-col items-center justify-center rounded-[2rem] border-2 border-navy-600 bg-white px-5 py-7 text-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-navy-900 hover:shadow-lift sm:rounded-[2.5rem] sm:px-6 sm:py-9"
+                    className="flex flex-col items-center justify-center rounded-[2rem] border-2 border-navy-900 bg-navy-900 px-5 py-7 text-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-navy-700 hover:bg-navy-800 hover:shadow-lift sm:rounded-[2.5rem] sm:px-6 sm:py-9"
                   >
-                    <dt className="whitespace-nowrap font-display text-[2.25rem] leading-none text-navy-900 sm:text-[2.75rem]">
+                    <dt className="whitespace-nowrap font-display text-[2.25rem] leading-none text-white sm:text-[2.75rem]">
                       {stat.count === undefined ? (
                         stat.value
                       ) : (
                         <Counter to={stat.count} decimals={stat.decimals} />
                       )}
                     </dt>
-                    <dd className="mt-2.5 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-slate-muted sm:text-[0.8125rem]">
+                    <dd className="mt-2.5 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-white sm:text-[0.8125rem]">
                       {stat.label}
                     </dd>
                   </div>
@@ -90,7 +90,7 @@ export default async function ProjectAboutPage({
 
           <div className="mt-12 grid items-center gap-12 lg:mt-14 lg:grid-cols-[1fr_0.9fr] lg:gap-16">
             <Reveal>
-              <p className="text-[1.1875rem] leading-relaxed text-slate-body sm:text-[1.25rem]">
+              <p className="text-[1.3125rem] font-medium leading-relaxed text-navy-800 sm:text-[1.5rem]">
                 To be South Bangalore&rsquo;s most trusted name in real estate,
                 building on five decades of integrity and on-time delivery.
                 Vijaya creates homes and spaces that blend modern design and
@@ -126,19 +126,6 @@ export default async function ProjectAboutPage({
               </div>
             </Reveal>
           </div>
-        </Container>
-      </Section>
-
-      {/* -------------------------------------------------------- Video box */}
-      <Section tone="white" size="lg">
-        <Container>
-          <Reveal>
-            <div className="border-rosegold flex aspect-video w-full items-center justify-center rounded-[2rem] bg-white sm:rounded-[3rem]">
-              <span className="font-display text-[1.5rem] text-navy-900/60 sm:text-[2rem]">
-                Video Box
-              </span>
-            </div>
-          </Reveal>
         </Container>
       </Section>
     </>

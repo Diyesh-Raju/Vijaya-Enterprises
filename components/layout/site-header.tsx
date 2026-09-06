@@ -177,14 +177,14 @@ export function SiteHeader() {
                 light ? "text-white" : "text-navy-900",
               )}
             >
-              <span className="text-[0.75rem] font-semibold uppercase tracking-[0.22em]">
+              <span className="text-[0.875rem] font-bold uppercase tracking-[0.2em] sm:text-[0.9375rem]">
                 Menu
               </span>
 
               <span
                 aria-hidden="true"
                 className={cn(
-                  "relative flex h-12 w-12 items-center justify-center rounded-full border transition-colors duration-300 sm:h-[3.25rem] sm:w-[3.25rem]",
+                  "relative flex h-[3.25rem] w-[3.25rem] items-center justify-center rounded-full border-[1.5px] transition-colors duration-300 sm:h-14 sm:w-14",
                   light
                     ? "border-white/40 group-hover:bg-white/10"
                     : "border-line-strong group-hover:bg-navy-50",
@@ -193,10 +193,10 @@ export function SiteHeader() {
                 {/* Three rules, the middle one short. On hover they even up —
                     a small tell that the control does something, without the
                     bars pretending to be an X they never become. */}
-                <span className="flex w-[1.125rem] flex-col items-start gap-[0.3125rem]">
-                  <span className="h-px w-full bg-current" />
-                  <span className="h-px w-2/3 bg-current transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:w-full" />
-                  <span className="h-px w-full bg-current" />
+                <span className="flex w-[1.375rem] flex-col items-start gap-[0.375rem]">
+                  <span className="h-[2px] w-full rounded-full bg-current" />
+                  <span className="h-[2px] w-2/3 rounded-full bg-current transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:w-full" />
+                  <span className="h-[2px] w-full rounded-full bg-current" />
                 </span>
               </span>
             </button>

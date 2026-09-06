@@ -199,7 +199,7 @@ export function SiteFooter() {
         </div>
 
         {/* -------------------------------------------------- Bottom line */}
-        <Reveal className="mt-16 flex flex-col gap-3 border-t border-white/12 pt-8 text-[0.8125rem] text-navy-100/85 sm:flex-row sm:items-center sm:justify-between">
+        <Reveal className="mt-16 flex flex-col gap-3 border-t border-white/12 pt-8 text-[0.9375rem] text-navy-100/85 sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {year} {site.legalName}. All rights reserved.
             <span aria-hidden="true" className="mx-2.5 text-navy-100/40">

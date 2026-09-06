@@ -49,11 +49,11 @@ export default async function LocationPage({
       <Container>
         <PanelHeading>Location</PanelHeading>
 
-        <div className="mt-12 grid gap-16 lg:mt-14 lg:grid-cols-2 lg:gap-14">
+        <div className="mt-12 flex flex-col gap-24 lg:mt-14 lg:gap-32">
           <Reveal>
             <LocationMap location={locations.project} />
           </Reveal>
-          <Reveal delay={90}>
+          <Reveal>
             <LocationMap location={locations.office} />
           </Reveal>
         </div>
