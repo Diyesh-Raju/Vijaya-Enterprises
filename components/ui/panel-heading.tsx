@@ -11,16 +11,22 @@ import { cn } from "@/lib/cn";
  * `align="center"` centres the whole lockup. The upright travels with the
  * words rather than staying pinned left, and the subtitle drops its indent —
  * a 20px left pad would throw a centred line off its axis.
+ *
+ * `onNavy` is for the panels set on a photograph: the words go white and the
+ * subtitle to a warm off-white, while the rose-gold upright stays as it is —
+ * it reads on either ground.
  */
 export function PanelHeading({
   children,
   subtitle,
   align = "left",
+  onNavy = false,
   className,
 }: {
   children: string;
   subtitle?: string;
   align?: "left" | "center";
+  onNavy?: boolean;
   className?: string;
 }) {
   const centred = align === "center";
@@ -29,7 +35,8 @@ export function PanelHeading({
     <div className={className}>
       <h2
         className={cn(
-          "flex items-center gap-4 font-display text-[1.75rem] leading-tight text-navy-900 sm:text-[2.125rem]",
+          "flex items-center gap-4 font-display text-[1.75rem] leading-tight sm:text-[2.125rem]",
+          onNavy ? "text-white" : "text-navy-900",
           centred && "justify-center text-center",
         )}
       >
@@ -44,7 +51,7 @@ export function PanelHeading({
         <p
           className={cn(
             "mt-2 text-[0.875rem] font-semibold uppercase tracking-[0.2em]",
-            "text-slate-muted",
+            onNavy ? "text-navy-100/85" : "text-slate-muted",
             // 20px clears the 4px upright plus its 16px gap.
             centred ? "text-center" : "pl-5",
           )}

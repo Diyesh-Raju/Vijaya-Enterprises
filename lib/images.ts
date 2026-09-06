@@ -13,6 +13,9 @@
  */
 
 import aerialLand from "@/assets/images/aerial-land.jpg";
+/* The garden the amenities page is set on: it stays put behind the tiles
+   while they scroll up over it. See the amenities page. */
+import amenitiesGarden from "@/assets/images/amenities-garden.jpg";
 import agreementSigning from "@/assets/images/agreement-signing.jpg";
 import bankReception from "@/assets/images/bank-reception.jpg";
 import backdropFabric from "@/assets/images/backdrop-fabric.jpg";
@@ -110,6 +113,7 @@ import warehouseAisle from "@/assets/images/warehouse-aisle.jpg";
 
 export const img = {
   aerialLand,
+  amenitiesGarden,
   agreementSigning,
   backdropFabric,
   backdropFooter,
@@ -175,6 +179,8 @@ export const img = {
 /** Descriptive alt text, kept next to the images so it never drifts. */
 export const alt = {
   aerialLand: "Aerial view of a residential development laid out across open land",
+  amenitiesGarden:
+    "A planted garden walk winding between mature trees and low flowering beds, a pale concrete wall behind",
   agreementSigning:
     "Two people either side of a desk, one signing an agreement while the other holds the papers steady",
   backdropFabric:

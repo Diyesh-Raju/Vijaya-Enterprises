@@ -89,7 +89,7 @@ export function ApartmentBuildingIcon({ className }: { className?: string }) {
 
       {/* The tower */}
       <rect x="24" y="6" width="24" height={GROUND - 6} className="fill-navy-900" />
-      <rect x="21.5" y="2.5" width="29" height="4" rx="1.5" className="fill-rosegold-500" />
+      <rect x="21.5" y="2.5" width="29" height="4" rx="1.5" className="fill-rosegold-icon-500" />
       <Panels
         columns={[27.5, 34, 40.5]}
         rows={[12, 19, 26, 33, 40]}
@@ -97,7 +97,7 @@ export function ApartmentBuildingIcon({ className }: { className?: string }) {
         height={4.5}
         className="fill-navy-100"
       />
-      <rect x="32" y="48" width="8" height="8" rx="1" className="fill-rosegold-400" />
+      <rect x="32" y="48" width="8" height="8" rx="1" className="fill-rosegold-icon-400" />
     </BuildIcon>
   );
 }
@@ -113,8 +113,8 @@ export function VillaIcon({ className }: { className?: string }) {
       <rect x="16" y="28" width="42" height={GROUND - 28} className="fill-navy-900" />
 
       {/* Hipped roof over a deep eave, the way a villa carries its tiles */}
-      <path d="M12 29 23 17h28l11 12Z" className="fill-rosegold-500" />
-      <rect x="11" y="27.5" width="52" height="3.5" rx="1.75" className="fill-rosegold-400" />
+      <path d="M12 29 23 17h28l11 12Z" className="fill-rosegold-icon-500" />
+      <rect x="11" y="27.5" width="52" height="3.5" rx="1.75" className="fill-rosegold-icon-400" />
 
       {/* Upper floor, one window over each arch */}
       <Panels
@@ -130,7 +130,7 @@ export function VillaIcon({ className }: { className?: string }) {
         <path
           key={centre}
           d={`M${centre - 3.5} ${GROUND}V46a3.5 3.5 0 0 1 7 0v${GROUND - 46}Z`}
-          className="fill-rosegold-200"
+          className="fill-rosegold-icon-200"
         />
       ))}
     </BuildIcon>
@@ -151,7 +151,7 @@ export function CommercialBuildingIcon({ className }: { className?: string }) {
         rows={[25, 33, 41]}
         width={48}
         height={5}
-        className="fill-rosegold-300"
+        className="fill-rosegold-icon-300"
         rx={1.5}
       />
       {/* Mullions, laid back over the glass */}
@@ -166,7 +166,7 @@ export function CommercialBuildingIcon({ className }: { className?: string }) {
 
       {/* Entrance under its canopy */}
       <rect x="22" y="48" width="20" height="2" rx="1" className="fill-navy-700" />
-      <rect x="26" y="50" width="12" height={GROUND - 50} rx="1" className="fill-rosegold-500" />
+      <rect x="26" y="50" width="12" height={GROUND - 50} rx="1" className="fill-rosegold-icon-500" />
     </BuildIcon>
   );
 }
@@ -176,7 +176,7 @@ export function WarehouseIcon({ className }: { className?: string }) {
   return (
     <BuildIcon className={className} title="Warehouses">
       <rect x="8" y="32" width="48" height={GROUND - 32} className="fill-navy-900" />
-      <path d="M3 33 32 19l29 14Z" className="fill-rosegold-500" />
+      <path d="M3 33 32 19l29 14Z" className="fill-rosegold-icon-500" />
 
       {/* Roller shutter, slats and all */}
       <rect x="20" y="37" width="24" height={GROUND - 37} className="fill-navy-100" />
@@ -189,7 +189,7 @@ export function WarehouseIcon({ className }: { className?: string }) {
         rx={0.4}
       />
 
-      <rect x="11" y="44" width="6" height={GROUND - 44} rx="0.8" className="fill-rosegold-400" />
+      <rect x="11" y="44" width="6" height={GROUND - 44} rx="0.8" className="fill-rosegold-icon-400" />
       <rect x="47" y="38" width="6" height="6" rx="0.8" className="fill-navy-100" />
     </BuildIcon>
   );
@@ -210,7 +210,7 @@ export function JointVentureIcon({ className }: { className?: string }) {
       <path
         d={HANDSHAKE_SLEEVES}
         fillRule="evenodd"
-        className="fill-rosegold-500"
+        className="fill-rosegold-icon-500"
       />
     </BuildIcon>
   );

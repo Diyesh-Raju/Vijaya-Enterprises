@@ -40,6 +40,17 @@
   --color-rosegold-500: #c98878;
   --color-rosegold-600: #b76e79;
 
+  /* Rose gold with the gold in it — for the flat build icons ---
+     The ramp above is tuned for hairlines, small caps and pill fills, where
+     it reads as metal. Poured into the large solid areas of a 90px icon it
+     loses the gold and reads as salmon, so those get their own ramp: the
+     same rose, carried a few degrees warmer, and opening to champagne at
+     the light end so the set reads as one alloy rather than one flat paint. */
+  --color-rosegold-icon-200: #f9e5d0;
+  --color-rosegold-icon-300: #f0cba8;
+  --color-rosegold-icon-400: #dda986;
+  --color-rosegold-icon-500: #c88a6a;
+
   /* Neutrals ---------------------------------------------------- */
   --color-mist: #f6f8fc;
   --color-line: #e5ebf5;

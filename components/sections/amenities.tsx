@@ -12,6 +12,12 @@ import { cn } from "@/lib/cn";
  * whether or not it is showing. The card is a button rather than a plain box
  * because hover alone strands touch and keyboard users: tapping or focusing
  * reveals the same line.
+ *
+ * The tile is glass, built to the same recipe as the review cards: a white
+ * frost for the look, a navy wash under it to carry the type, and a lit top
+ * edge so it reads as a surface over the garden rather than a hole cut in it.
+ * The garden behind it is the whole point of the backdrop — a solid white
+ * card would blank out three quarters of it.
  */
 function AmenityCard({ amenity }: { amenity: Amenity }) {
   const [held, setHeld] = useState(false);
@@ -23,7 +29,13 @@ function AmenityCard({ amenity }: { amenity: Amenity }) {
       onClick={() => setHeld((was) => !was)}
       onBlur={() => setHeld(false)}
       aria-expanded={held}
-      className="group/card relative flex aspect-[5/4] w-full flex-col items-center justify-center rounded-[1.25rem] border border-line bg-white p-5 text-center transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-rosegold-400 hover:shadow-soft sm:rounded-[1.5rem] sm:p-6"
+      className={cn(
+        "group/card relative flex aspect-[5/4] w-full flex-col items-center justify-center rounded-[1.25rem] p-5 text-center sm:rounded-[1.5rem] sm:p-6",
+        "border border-white/25 backdrop-blur-md",
+        "bg-navy-950/22 bg-[linear-gradient(rgba(255,255,255,0.08),rgba(255,255,255,0.08))]",
+        "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.22)]",
+        "transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-white/45 hover:bg-navy-950/30",
+      )}
     >
       <span
         className={cn(
@@ -31,15 +43,17 @@ function AmenityCard({ amenity }: { amenity: Amenity }) {
           held ? "opacity-0" : "opacity-100 group-hover/card:opacity-0",
         )}
       >
-        <Icon className="h-12 w-12 text-rosegold-600 sm:h-14 sm:w-14" />
-        <span className="mt-4 font-display text-[1rem] leading-snug text-navy-900 sm:text-[1.125rem]">
+        {/* 300 rather than 600: the line weight that reads on white
+            disappears against the garden. */}
+        <Icon className="h-12 w-12 text-rosegold-300 sm:h-14 sm:w-14" />
+        <span className="mt-4 font-display text-[1rem] leading-snug text-white sm:text-[1.125rem]">
           {amenity.name}
         </span>
       </span>
 
       <span
         className={cn(
-          "absolute inset-0 flex items-center justify-center px-5 text-[0.8125rem] leading-relaxed text-slate-body transition-opacity duration-300 sm:px-6 sm:text-[0.875rem]",
+          "absolute inset-0 flex items-center justify-center px-5 text-[0.8125rem] leading-relaxed text-white/85 transition-opacity duration-300 sm:px-6 sm:text-[0.875rem]",
           held ? "opacity-100" : "opacity-0 group-hover/card:opacity-100",
         )}
       >
