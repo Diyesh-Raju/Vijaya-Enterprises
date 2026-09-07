@@ -21,6 +21,19 @@ const SCROLL_THRESHOLD = 24;
  * The home page is on the list because its walkthrough now starts *below*
  * the bar rather than running behind it: there is white paper up there, not
  * film, so a transparent bar would leave the lockup on nothing.
+ *
+ * That is true of the walkthrough, and only of the walkthrough. A phone gets
+ * `HomeHeroPhone` instead, and that band now runs up behind the bar with a
+ * photograph in it — so at that width the home page wants the transparent
+ * state after all. It cannot be taken off this list to get it: the list is
+ * about the laptop as much as the phone, and dropping "/" would leave the
+ * walkthrough's white paper under a white lockup.
+ *
+ * So the phone's half of it is done in CSS rather than here — see
+ * `.header--phone-hero` below and in `globals.css`. The reason it is not a
+ * width check in this component is first paint: the server cannot know the
+ * window, so a `useSyncExternalStore` would have to pick one branch to
+ * render and the other width would see the bar flip after hydration.
  */
 const LIGHT_FROM_TOP = ["/", "/faq", "/privacy-policy", "/cookie-policy"];
 
@@ -132,6 +145,18 @@ export function SiteHeader() {
   const solid = scrolled || LIGHT_FROM_TOP.includes(pathname);
   const light = !solid && !open;
 
+  /**
+   * The home page at the top of itself, where a phone — and only a phone —
+   * has a photograph behind the bar rather than under it.
+   *
+   * Rendered at every width and honoured at one: the media query on
+   * `.header--phone-hero` is what confines it, so the markup the server
+   * sends is right for both and neither flips after hydration. It comes off
+   * the moment the page scrolls, which is what hands the bar back to its
+   * ordinary frosted state.
+   */
+  const phoneHero = pathname === "/" && !scrolled && !open;
+
   return (
     <>
       <header
@@ -145,6 +170,7 @@ export function SiteHeader() {
           solid && !open
             ? "glass border-line shadow-soft"
             : "border-transparent bg-transparent",
+          phoneHero && "header--phone-hero",
         )}
       >
         <div className="container-page">
@@ -173,7 +199,9 @@ export function SiteHeader() {
               aria-expanded={open}
               aria-controls="site-menu"
               className={cn(
-                "group inline-flex shrink-0 items-center gap-3 rounded-full transition-colors duration-300 sm:gap-4",
+                // `header__menu` is the hook the phone-hero state colours
+                // through — see the note on `phoneHero` above.
+                "header__menu group inline-flex shrink-0 items-center gap-3 rounded-full transition-colors duration-300 sm:gap-4",
                 light ? "text-white" : "text-navy-900",
               )}
             >
@@ -184,7 +212,7 @@ export function SiteHeader() {
               <span
                 aria-hidden="true"
                 className={cn(
-                  "relative flex h-[3.25rem] w-[3.25rem] items-center justify-center rounded-full border-[1.5px] transition-colors duration-300 sm:h-14 sm:w-14",
+                  "header__menu-ring relative flex h-[3.25rem] w-[3.25rem] items-center justify-center rounded-full border-[1.5px] transition-colors duration-300 sm:h-14 sm:w-14",
                   light
                     ? "border-white/40 group-hover:bg-white/10"
                     : "border-line-strong group-hover:bg-navy-50",

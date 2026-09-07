@@ -404,8 +404,14 @@
    At 767×400 there is only 135px left after the bar, and a floor set where
    portrait sits would fill 96% of that window with the hero. */
 @utility h-hero-phone {
-  height: clamp(11rem, 58vh - var(--header-h), 27rem);
-  height: clamp(11rem, 58svh - var(--header-h), 27rem);
+  /* The whole band, bar included. It used to subtract `--header-h`,
+     because the section reserved that much in top padding and started
+     under the bar; the band now runs up behind it instead, so it takes
+     that height back and the section's total is unchanged — nothing below
+     the hero moves. The clamp's two ends move with it, which is why they
+     are written as sums rather than left at 11 and 27. */
+  height: clamp(calc(11rem + var(--header-h)), 58vh, calc(27rem + var(--header-h)));
+  height: clamp(calc(11rem + var(--header-h)), 58svh, calc(27rem + var(--header-h)));
 }
 
 /* Scroll reveal: hidden until the observer marks it visible. Uses
@@ -5065,4 +5071,102 @@
 .why-orb--back .why-orb__cue {
   color: var(--color-brass-400);
   opacity: 0.85;
+}
+
+/* ------------------------------------------------------------------
+   The bar over the phone's home hero.
+
+   Every other page that opens on a photograph gets the transparent bar
+   from React: `LIGHT_FROM_TOP` in `site-header.tsx` names the pages that
+   do *not*, and the home page is on that list because its laptop
+   walkthrough starts below the bar on white paper.
+
+   A phone does not get the walkthrough. It gets `HomeHeroPhone`, and that
+   band now runs up behind the bar with a photograph in it — so at this
+   width the home page wants the transparent state that the list is
+   denying it. Taking "/" off the list would fix the phone and break the
+   laptop, which is why the phone's half is here instead: the component
+   puts `header--phone-hero` on the bar at every width whenever the home
+   page is at the top of itself, and this query is what confines it to the
+   width that should have it. Nothing is width-checked in React, so the
+   markup the server sends is right for both and neither flips after
+   hydration.
+
+   It comes off as soon as the page scrolls past 24px, which hands the bar
+   back to its ordinary frosted state on the transition that is already
+   declared on it.
+
+   ⚠️ THE TYPE OVER THE PICTURE. The four hero frames are daylight — blue
+   sky over the towers, a sunset over Aqua Green — and white type laid
+   straight on that measures about 1.3:1. What makes this legible is the
+   scrim across the top of the band in `home-hero-phone.tsx`, not anything
+   here. Re-measure both together if either changes: the photographs, the
+   scrim's depth, or the bar's height.
+------------------------------------------------------------------- */
+@media (max-width: 767.98px), (max-height: 499.98px) {
+  .header--phone-hero {
+    /* `glass` is a Tailwind utility and therefore layered; these rules are
+       not, and unlayered CSS outranks a layer whatever the specificity —
+       which is what lets four plain declarations undo it. */
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .header--phone-hero .header__menu {
+    color: #ffffff;
+  }
+
+  .header--phone-hero .header__menu-ring {
+    border-color: rgb(255 255 255 / 0.4);
+  }
+
+  /* The lockup swaps to the artwork drawn for a dark ground. Both are
+     already in the DOM and cross-faded on opacity — see `logo.tsx` — so
+     this is the same swap the `reversed` prop makes, asked for in CSS
+     because React cannot know the width in time to ask for it. */
+  .header--phone-hero .logo-art--full {
+    opacity: 0;
+  }
+
+  .header--phone-hero .logo-art--reversed {
+    opacity: 1;
+  }
+}
+
+/* The ground the transparent bar's white type stands on.
+
+   Rendered by `HomeHeroPhone` at the top of its band; the bar itself is
+   `.header--phone-hero` above. The two are one design and have to be
+   measured together.
+
+   MEASURED. The four frames are daylight and the type is white, so this
+   is doing all the work — bare, the worst line-sized patch under "Menu"
+   gives about 1.3:1. The stops are cut to where the type actually is
+   rather than spread evenly: the bar is `--header-h` tall and everything
+   in it — the lockup, the word, the ring — sits inside that, so the scrim
+   holds most of its weight to the bar's foot and only then falls away.
+   Past it there is nothing to protect and the photograph should be the
+   photograph.
+
+   Scanned across a full turn of the cycle, worst line-sized patch: 7.5:1
+   under the lockup, 5.9:1 under "Menu" and its ring. Re-measure if the
+   photographs change, if the bar's height changes, or if anything else
+   moves into the top of the band. */
+.reshero__bar-scrim {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 3;
+  height: calc(var(--header-h) + 4.5rem);
+  background-image: linear-gradient(
+    to bottom,
+    rgb(6 20 49 / 0.7) 0%,
+    rgb(6 20 49 / 0.48) 53%,
+    rgb(6 20 49 / 0) 100%
+  );
+  pointer-events: none;
 }

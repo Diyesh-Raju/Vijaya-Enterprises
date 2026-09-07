@@ -228,11 +228,20 @@ export function HomeHeroPhone() {
   }, []);
 
   /*
-   * The white strip above the band is the header's own: the bar is frosted
-   * white from the first pixel on this page (see `LIGHT_FROM_TOP` in
-   * `site-header.tsx`), so the hero starts below it rather than running
-   * behind it — which is exactly what the walkthrough does at wider
-   * widths, and why the padding is the same variable.
+   * The band runs up behind the bar rather than starting under it.
+   *
+   * It used to start under it: the header is frosted white from the first
+   * pixel on this page (see `LIGHT_FROM_TOP` in `site-header.tsx`) and the
+   * section reserved its height in top padding. That is still what the
+   * walkthrough does at wider widths, and it is right there — a laptop
+   * opens on white paper, and a transparent bar over white paper leaves
+   * the lockup on nothing.
+   *
+   * A phone opens on a photograph, so it can afford the bar the laptop
+   * cannot, and the picture is better for reaching the top of the screen.
+   * The bar goes transparent over it — that half is `.header--phone-hero`
+   * in `globals.css` — and the band takes back the height the padding was
+   * holding, so nothing below this section moves by a pixel.
    *
    * `desk:hidden` is the pre-hydration half of the split with `ScrollHero`.
    * After hydration the wide branch of this component unmounts outright, so
@@ -247,7 +256,7 @@ export function HomeHeroPhone() {
   const active = frame.rising ?? frame.settled;
 
   return (
-    <section className="reshero relative bg-white pt-[var(--header-h)] desk:hidden">
+    <section className="reshero relative bg-white desk:hidden">
       {/* The page's heading. The walkthrough keeps its own inside the lockup
           it closes on; there is no lockup here and nothing is laid over the
           pictures, so this one is read rather than seen. */}
@@ -360,6 +369,24 @@ export function HomeHeroPhone() {
             </div>
           );
           })}
+
+        {/* The bar's own ground.
+
+            The four photographs are daylight: blue sky over the towers, a
+            sunset over Aqua Green. A white lockup and a white "Menu" laid
+            straight onto that do not read — measured bare, the worst
+            line-sized patch under the type gives around 1.3:1. So the top
+            of the band is darkened under the bar and lets go a little
+            below it, which is the one place a scrim can go without
+            touching the picture anybody is actually looking at.
+
+            Sized by measurement, not by eye: see the note on
+            `.header--phone-hero` in `globals.css` for what it clears.
+
+            `z-3` puts it over both photograph layers — a settled frame is
+            `z-1` and a rising one `z-2` — and it shares that level with
+            the caption slot, which is at the other end of the band. */}
+        <div aria-hidden="true" className="reshero__bar-scrim" />
 
         {/* The caption, hung in the lower right corner.
 

@@ -52,14 +52,18 @@ export function Logo({
         alt=""
         {...size}
         priority={priority && !reversed}
-        className={`h-full w-auto ${fade} ${reversed ? "opacity-0" : "opacity-100"}`}
+        // `logo-art--*` are hooks, not styling: the header's phone-only
+        // transparent state has to swap which artwork shows, and it does
+        // that in CSS because React does not know the window's width at
+        // first paint. See `.header--phone-hero` in `globals.css`.
+        className={`logo-art logo-art--full h-full w-auto ${fade} ${reversed ? "opacity-0" : "opacity-100"}`}
       />
       <Image
         src={logoReversed}
         alt=""
         {...size}
         priority={priority && reversed}
-        className={`absolute left-0 top-0 h-full w-auto ${fade} ${
+        className={`logo-art logo-art--reversed absolute left-0 top-0 h-full w-auto ${fade} ${
           reversed ? "opacity-100" : "opacity-0"
         }`}
       />
