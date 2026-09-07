@@ -19,6 +19,10 @@ import amenitiesGarden from "@/assets/images/amenities-garden.jpg";
 import agreementSigning from "@/assets/images/agreement-signing.jpg";
 import bankReception from "@/assets/images/bank-reception.jpg";
 import backdropFabric from "@/assets/images/backdrop-fabric.jpg";
+/* The same cloth, for the phone's shape of the residence-finder panel. A
+   portrait frame with the fold running corner to corner, where the laptop's
+   is landscape and folds across — see `FindResidences`. */
+import backdropFabricPhone from "@/assets/images/backdrop-fabric-phone.jpg";
 /**
  * The footer's backdrop. Several are kept on disk and one is imported:
  * swapping the footer means changing which file this line names, and nothing
@@ -127,6 +131,7 @@ export const img = {
   amenitiesGarden,
   agreementSigning,
   backdropFabric,
+  backdropFabricPhone,
   backdropFooter,
   backdropHibiscus,
   backdropInterior,
@@ -200,6 +205,8 @@ export const alt = {
     "Two people either side of a desk, one signing an agreement while the other holds the papers steady",
   backdropFabric:
     "Soft folds of cream fabric, lit from one side",
+  backdropFabricPhone:
+    "A single deep fold of cream fabric running corner to corner, lit from above",
   backdropFooter:
     "A living room open to a planted courtyard through full-height glass, a large Krishna pichwai hung above the sofa",
   backdropHibiscus:

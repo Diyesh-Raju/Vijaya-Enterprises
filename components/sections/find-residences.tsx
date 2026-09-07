@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { CurtainPhoto } from "@/components/sections/curtain-photo";
 import Link from "next/link";
 import { Fragment, useState } from "react";
 import { Container, Section } from "@/components/ui/section";
@@ -119,17 +119,30 @@ export function FindResidences() {
           competing with the type. `-z-10` inside the section's own stacking
           context, so nothing here can climb over the page.
 
-          Decorative, so it carries no alt text: the panel says what it is in
-          the heading beside it. */}
-      <Image
-        src={img.backdropFabric}
-        alt=""
-        fill
-        sizes="100vw"
-        quality={85}
-        placeholder="blur"
-        className="-z-10 object-cover"
-      />
+          Two cloths, one per shape of screen, and only ever one of them
+          fetched — `CurtainPhoto` is the branch, and the note on it is why
+          this cannot be two `<Image>`s and a `desk:hidden`: a hidden image
+          is still downloaded.
+
+          The panel is landscape on a laptop and a tall column on a phone,
+          and one photograph cannot serve both. The laptop's drape folds
+          across the frame, which reads along a wide band and comes out as a
+          crop of one fold turned on its side down a phone. The phone's runs
+          corner to corner, which is a diagonal in a portrait frame and a
+          bar across a wide one.
+
+          Decorative, so neither carries alt text: the panel says what it is
+          in the heading beside it.
+
+          The wrapper is what puts them behind the type — `CurtainPhoto`
+          draws at its parent's level and has no z-index of its own, and the
+          veil below is at `-z-10` too. */}
+      <div aria-hidden="true" className="absolute inset-0 -z-10">
+        <CurtainPhoto
+          wide={{ src: img.backdropFabric, alt: "", position: "50% 50%" }}
+          phone={{ src: img.backdropFabricPhone, alt: "", position: "50% 50%" }}
+        />
+      </div>
       {/* A veil to lift the fabric back off the type. Warm rather than white,
           so the cloth keeps its colour instead of reading as a grey wash. */}
       <div
