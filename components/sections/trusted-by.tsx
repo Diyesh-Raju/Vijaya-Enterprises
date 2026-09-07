@@ -87,6 +87,27 @@ function Wordmark({ org }: { org: TrustedOrg }) {
   );
 }
 
+/** One pass of the strip. Two of these make a `Marquee`'s seamless loop. */
+function Row({ orgs }: { orgs: readonly TrustedOrg[] }) {
+  return (
+    <ul className="flex shrink-0 items-end">
+      {orgs.map((org) =>
+        org.logo ? (
+          <Logo key={org.mark} org={org} src={org.logo} />
+        ) : (
+          <Wordmark key={org.mark} org={org} />
+        ),
+      )}
+    </ul>
+  );
+}
+
+/** The roster started from its middle — see the note on the phone rows. */
+const ROTATED = [
+  ...trustedBy.slice(Math.ceil(trustedBy.length / 2)),
+  ...trustedBy.slice(0, Math.ceil(trustedBy.length / 2)),
+];
+
 export function TrustedBy() {
   return (
     <section className="relative isolate overflow-hidden border-t border-line bg-white py-16 sm:py-20 lg:py-24">
@@ -101,19 +122,47 @@ export function TrustedBy() {
         />
       </Container>
 
-      <Reveal delay={160}>
-        <Marquee speed={72} className="trusted-row mt-12 sm:mt-16">
-          <ul className="flex shrink-0 items-end">
-            {trustedBy.map((org) =>
-              org.logo ? (
-                <Logo key={org.mark} org={org} src={org.logo} />
-              ) : (
-                <Wordmark key={org.mark} org={org} />
-              ),
-            )}
-          </ul>
-        </Marquee>
-      </Reveal>
+      {/* One row, running right to left. The laptop's, unchanged — the
+          wrapper is the whole of the difference, and it only ever takes
+          this branch off a phone. */}
+      <div className="hidden desk:block">
+        <Reveal delay={160}>
+          <Marquee speed={72} className="trusted-row mt-12 sm:mt-16">
+            <Row orgs={trustedBy} />
+          </Marquee>
+        </Reveal>
+      </div>
+
+      {/* Two rows on a phone, pulling against each other.
+
+          A single strip at this size is a slow drift in one direction and
+          reads as a static picture that happens to be sliding; two rows
+          going opposite ways read as motion, and they do it without either
+          row going any faster. The band also gets twice the marks on screen
+          at once, which is the point of a client list.
+
+          The lower row is the same roster started halfway down it, not a
+          second set and not the first one reversed. Reversed, the two rows
+          would show the same neighbours in the same order and the eye would
+          catch it; rotated, every logo has a different logo beside it in the
+          other row, and the roster is still read in one order by anyone
+          following a single strip. */}
+      <div className="desk:hidden">
+        <Reveal delay={160}>
+          <Marquee speed={72} className="trusted-row mt-12">
+            <Row orgs={trustedBy} />
+          </Marquee>
+
+          {/* The gutter between the rows is the gutter between the boxes —
+              12px, set as `mt-3` here and as the `padding-inline` on
+              `.trusted-row li` in the phone block of `globals.css`. Two
+              rows of squares in a regular grid is what the spacing is
+              drawing; a different vertical gap would break it. */}
+          <Marquee reverse speed={72} className="trusted-row mt-3">
+            <Row orgs={ROTATED} />
+          </Marquee>
+        </Reveal>
+      </div>
     </section>
   );
 }

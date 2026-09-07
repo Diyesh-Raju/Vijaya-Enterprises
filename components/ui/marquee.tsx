@@ -43,6 +43,16 @@ type MarqueeProps = {
   className?: string;
   /** Seconds for one full loop. Defaults to the 42s in `globals.css`. */
   speed?: number;
+  /**
+   * Run the track the other way — items entering at the left edge and
+   * leaving at the right.
+   *
+   * `animation-direction` rather than a second keyframe set: the loop is
+   * two identical passes translated by -50%, and played backwards that is
+   * still two identical passes translated by -50%. The seam is in the same
+   * place either way, so reversing it costs nothing and cannot drift.
+   */
+  reverse?: boolean;
 } & (
   | {
       /** Plain names, set as the built-in dotted list. */
@@ -66,7 +76,14 @@ type MarqueeProps = {
  * avoid reading every item twice. Whatever one pass renders must end with the
  * same trailing gap it puts between items, or the seam shows.
  */
-export function Marquee({ items, children, className, onNavy = false, speed }: MarqueeProps) {
+export function Marquee({
+  items,
+  children,
+  className,
+  onNavy = false,
+  speed,
+  reverse = false,
+}: MarqueeProps) {
   const pass = (ariaHidden: boolean) =>
     children ? (
       <div
@@ -88,7 +105,10 @@ export function Marquee({ items, children, className, onNavy = false, speed }: M
           property set further down the tree could never reach it.
           `animation-duration` set inline outranks the shorthand's duration. */}
       <div
-        className="flex w-max animate-marquee items-center group-hover:[animation-play-state:paused] motion-reduce:animate-none"
+        className={cn(
+          "flex w-max animate-marquee items-center group-hover:[animation-play-state:paused] motion-reduce:animate-none",
+          reverse && "[animation-direction:reverse]",
+        )}
         style={speed ? { animationDuration: `${speed}s` } : undefined}
       >
         {pass(false)}

@@ -42,6 +42,37 @@ export function LineIcon({
   );
 }
 
+/** Looking something up. */
+export function SearchIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16 16 4.5 4.5" />
+    </LineIcon>
+  );
+}
+
+/** Narrowing a list down — the three-slider mark, read as "filters". */
+export function SlidersIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M4 7h11M18.5 7H20M4 12h3M10.5 12H20M4 17h9M16.5 17H20" />
+      <circle cx="16.75" cy="7" r="1.75" />
+      <circle cx="8.75" cy="12" r="1.75" />
+      <circle cx="14.75" cy="17" r="1.75" />
+    </LineIcon>
+  );
+}
+
+/** Shutting a panel. */
+export function CloseIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="m6 6 12 12M18 6 6 18" />
+    </LineIcon>
+  );
+}
+
 /** Time served. */
 export function HourglassIcon({ className }: { className?: string }) {
   return (

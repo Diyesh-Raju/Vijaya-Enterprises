@@ -18,6 +18,7 @@ import { Container, Section, Eyebrow } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { Frame } from "@/components/ui/media";
 import { Button } from "@/components/ui/button";
+import { PearlCard } from "@/components/ui/pearl-card";
 import { VideoBackdrop } from "@/components/ui/video-backdrop";
 import { img, alt, video } from "@/lib/images";
 
@@ -272,7 +273,45 @@ export default function HomePage() {
           is the photographic version of the left card.) */}
       <Section tone="white" size="sm">
         <Container>
-          <div className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
+          {/* ---- On a phone: one label, two chips -------------------------
+
+              The panels below are the laptop's. Stacked onto a 390px screen
+              they came to about two and a half screens of scrolling for what
+              is, in the end, two links — and the buttons sitting inside them
+              made each panel read as a box that *held* an offer rather than
+              as the offer itself. So the phone gets the same two offers as
+              two small cards that are the links, with the label the first
+              panel used to carry lifted out to stand over both of them.
+
+              A separate branch rather than a responsive panel, because
+              almost nothing survives the change: different copy, different
+              heading level arrangement, no eyebrow inside either card, no
+              buttons at all. `hidden`/`desk:hidden` is the whole of the
+              split, and the laptop's markup below is untouched. */}
+          <div className="desk:hidden">
+            <Reveal>
+              <Eyebrow>Have a Project to Build?</Eyebrow>
+            </Reveal>
+
+            <div className="mt-7 space-y-4">
+              <Reveal delay={80}>
+                <PearlCard
+                  href="/contact"
+                  title="Your project. Our experience."
+                  description="Homes, offices, warehouses, institutional work — and five decades of building behind it."
+                />
+              </Reveal>
+              <Reveal delay={160}>
+                <PearlCard
+                  href="/joint-ventures"
+                  title="Build more together."
+                  description="Land and capital are only the start. We bring the planning, the building and the record."
+                />
+              </Reveal>
+            </div>
+          </div>
+
+          <div className="hidden desk:grid items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
             <Reveal className="h-full">
               <div className="flex h-full flex-col rounded-[2rem] bg-navy-950 p-8 sm:rounded-[2.5rem] sm:p-12 lg:p-14">
                 <Eyebrow onNavy>Have a Project to Build?</Eyebrow>

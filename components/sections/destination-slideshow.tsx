@@ -200,6 +200,35 @@ export function DestinationSlideshow() {
           element of its own while it was being walked sideways against the
           strip; it does not move any more, so it does not need one. */}
 
+      {/* Except on a phone, where it needs one after all.
+
+          Off a phone the band is exactly one screen tall, so a backdrop
+          pinned to the section is a backdrop pinned to the window and
+          `::before` is the whole answer. On a phone the band is a wall of
+          five awards several screens tall, and the same `::before` would
+          be a photograph stretched over all of it and dragged past the
+          reader as they scroll — which is the opposite of what a ground
+          does.
+
+          So there the ground gets an element: a screen-tall box made
+          `sticky` inside a box that spans the section, which holds the
+          photograph at the top of the window for exactly as long as the
+          awards are going past it and lets it go at the section's floor.
+          The same arrangement as the Amenities page's garden, and for the
+          same two reasons — `background-attachment: fixed` is ignored
+          outright on iOS, and a `sticky` child needs an ancestor that is
+          not a scroll container, which is why the band clips on x with
+          `clip` rather than `hidden`.
+
+          It is empty and `display: none` above the phone breakpoint, so a
+          laptop carries one bare div and downloads nothing for it: the
+          picture is a background on a rule inside the phone media query,
+          and a background in a rule that does not match is never
+          fetched. */}
+      <div className="gooey-demo__ground" aria-hidden="true">
+        <div className="gooey-demo__ground-still" />
+      </div>
+
       <h2 id="accolades-title" className="page-title | title">
         Our <span className="slideshow__title__offset | title__offset">Accolades</span>
       </h2>

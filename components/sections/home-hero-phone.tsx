@@ -57,11 +57,44 @@ import { img, alt } from "@/lib/images";
  * where the band is three times as wide as it is tall and a centred crop
  * would take the name clean off the parapet.
  */
+/**
+ * `caption` is the line hung in the band's lower right corner, and it turns
+ * over with the picture it belongs to. One or two short sentences each, and
+ * each about the company rather than about the photograph: the band is the
+ * first thing on the phone's home page and there is no other copy on it, so
+ * these four lines are where a reader who has arrived from a search result
+ * finds out who they are looking at. Written to be read in the two seconds a
+ * frame holds — a third sentence does not get read, it gets scrolled past.
+ */
 const FRAMES = [
-  { src: img.towersLawn, alt: alt.towersLawn, position: "50% 50%" },
-  { src: img.vijayAquaGreen, alt: alt.vijayAquaGreen, position: "20% 50%" },
-  { src: img.courtyardHouse, alt: alt.courtyardHouse, position: "50% 50%" },
-  { src: img.vijayaSurya, alt: alt.vijayaSurya, position: "50% 18%" },
+  {
+    src: img.towersLawn,
+    alt: alt.towersLawn,
+    position: "50% 50%",
+    caption:
+      "Building trust since 1973. Over fifty years of homes across Karnataka, still run by the family that started it.",
+  },
+  {
+    src: img.vijayAquaGreen,
+    alt: alt.vijayAquaGreen,
+    position: "20% 50%",
+    caption:
+      "Apartments planned around light, air and the way a family actually lives in a home.",
+  },
+  {
+    src: img.courtyardHouse,
+    alt: alt.courtyardHouse,
+    position: "50% 50%",
+    caption:
+      "Residential, commercial, industrial and institutional work — one standard of building across all four.",
+  },
+  {
+    src: img.vijayaSurya,
+    alt: alt.vijayaSurya,
+    position: "50% 18%",
+    caption:
+      "Every project. Every customer. Like family. That is the whole of how we work.",
+  },
 ];
 
 /**
@@ -208,6 +241,11 @@ export function HomeHeroPhone() {
   // Off a laptop entirely once the width is known — see the note above.
   if (width === "wide") return null;
 
+  /* Which line the corner is showing. `rising` while the blinds are cutting
+     one picture in, `settled` the rest of the time — the same expression the
+     frames themselves are drawn from, read the other way round. */
+  const active = frame.rising ?? frame.settled;
+
   return (
     <section className="reshero relative bg-white pt-[var(--header-h)] desk:hidden">
       {/* The page's heading. The walkthrough keeps its own inside the lockup
@@ -322,6 +360,28 @@ export function HomeHeroPhone() {
             </div>
           );
           })}
+
+        {/* The caption, hung in the lower right corner.
+
+            One element, not four: it carries whichever line belongs to the
+            picture currently arriving, and `key` is that index — so React
+            tears the old line down and builds the new one, which is what
+            replays the fade rather than cross-dissolving two strings on top
+            of each other. It follows `rising` the moment the blinds start,
+            so the words change with the picture instead of a beat after it.
+
+            `aria-hidden`, and deliberately. The lines are about the company,
+            not about the photograph, and a reader who cannot see the band
+            gets no use out of a caption that turns over every two seconds
+            while they are still on the first word of it. The `h1` above
+            names the company once, which is the version that reads. */}
+        {width === "phone" && (
+          <div className="reshero__caption-slot" aria-hidden="true">
+            <p key={active} className="reshero__caption">
+              {FRAMES[active].caption}
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );

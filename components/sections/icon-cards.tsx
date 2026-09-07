@@ -45,23 +45,115 @@ export function IconCards({
   className?: string;
 }) {
   return (
-    <ul
-      className={cn(
-        // Two to a row at every width. It used to be one below `sm`, back
-        // when a phone card carried both faces stacked and a pair of those
-        // side by side would have been unreadable. The card turns now, so it
-        // is only ever as wide as one face needs — and the six read as a set
-        // rather than as six screens of scrolling. Everything below `sm` is
-        // sized down to match; from `sm` up the card is what it always was.
-        "grid grid-cols-2 gap-3 sm:gap-5",
-        columns === 3 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2",
-        className,
-      )}
-    >
+    <>
+      {/* On a phone the set is medallions, not cards — see `IconOrbs`. */}
+      <IconOrbs items={items} className={cn("desk:hidden", className)} />
+
+      <ul
+        className={cn(
+          "hidden",
+          // Two to a row at every width. It used to be one below `sm`, back
+          // when a phone card carried both faces stacked and a pair of those
+          // side by side would have been unreadable. The card turns now, so it
+          // is only ever as wide as one face needs — and the six read as a set
+          // rather than as six screens of scrolling. Everything below `sm` is
+          // sized down to match; from `sm` up the card is what it always was.
+          "grid-cols-2 gap-3 sm:gap-5 desk:grid",
+          columns === 3 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2",
+          className,
+        )}
+      >
+        {items.map((item, index) => (
+          <IconCard key={item.title} item={item} index={index} />
+        ))}
+      </ul>
+    </>
+  );
+}
+
+/**
+ * The same six things, on a phone: a medallion each rather than a card.
+ *
+ * The cards are right where there is a row to put three of them in and a
+ * pointer to turn them with. Stacked two-up on a 390px screen they are six
+ * tall boxes over two screens of scrolling, and the section reads as a wall
+ * of paragraphs rather than as six reasons.
+ *
+ * So here each one is a small disc: the emblem and the heading inside it,
+ * and the line that was under the heading moved to the back. That is the
+ * trade, and it is deliberate — a disc small enough to read as one of a set
+ * cannot hold a sentence as well as a heading, and six headings in a tidy
+ * grid say what the section is for at a glance in a way six paragraphs do
+ * not.
+ *
+ * `detail` — the longer answer the laptop card turns to — is not shown at
+ * this width. The medallion has one back and `body` is the version that
+ * fits in it.
+ *
+ * The turn itself is the cards' own: same `.flip-card` machinery, same
+ * `is-flipped` toggle, same reasons. Only the shape and what is on each
+ * face differ.
+ */
+function IconOrbs({
+  items,
+  className,
+}: {
+  items: readonly IconCardItem[];
+  className?: string;
+}) {
+  return (
+    <ul className={cn("grid grid-cols-2 gap-x-4 gap-y-7", className)}>
       {items.map((item, index) => (
-        <IconCard key={item.title} item={item} index={index} />
+        <IconOrb key={item.title} item={item} index={index} />
       ))}
     </ul>
+  );
+}
+
+function IconOrb({ item, index }: { item: IconCardItem; index: number }) {
+  /* The disc turns if there is a line to turn to. `body` rather than
+     `detail`: see the note above. */
+  const flips = Boolean(item.body);
+  const [flipped, setFlipped] = useState(false);
+
+  return (
+    <Reveal as="li" delay={(index % 2) * 70} className="flex justify-center">
+      <div
+        className={cn(
+          "why-orb-shell",
+          flips && "flip-card",
+          flipped && "is-flipped",
+        )}
+        tabIndex={flips ? 0 : undefined}
+        // No `role` and no `aria-pressed`, for the same reason as the cards:
+        // both faces are in the accessibility tree whichever way the disc is
+        // facing, so there is nothing behind the turn for a reader to miss.
+        onClick={flips ? () => setFlipped((turned) => !turned) : undefined}
+      >
+        <div className="flip-card-inner">
+          <div className="why-orb why-orb--front">
+            <span className="why-orb__icon">{item.icon}</span>
+            <h3 className="why-orb__title">{item.title}</h3>
+            {flips && (
+              <span aria-hidden="true" className="why-orb__cue">
+                +
+              </span>
+            )}
+          </div>
+
+          {item.body && (
+            <div className="why-orb why-orb--back flip-card-back">
+              <p className="why-orb__body">{item.body}</p>
+              {/* The way back out. Without it the only exit from the line is
+                  a guess that tapping again returns. */}
+              <span aria-hidden="true" className="why-orb__cue">
+                &times;
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    </Reveal>
   );
 }
 

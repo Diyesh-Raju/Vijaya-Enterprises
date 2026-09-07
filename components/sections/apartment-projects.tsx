@@ -6,6 +6,8 @@ import { Reveal } from "@/components/ui/reveal";
 import { cn } from "@/lib/cn";
 import { ProjectCard } from "@/components/sections/project-card";
 import { SelectMenu } from "@/components/ui/select-menu";
+import { ProjectFilterDrawer } from "@/components/sections/project-filter-drawer";
+import { SlidersIcon } from "@/components/ui/line-icons";
 import { projects } from "@/lib/projects";
 
 /**
@@ -59,20 +61,42 @@ export function ApartmentProjects() {
   });
   const [page, setPage] = useState(1);
 
-  const filtered = useMemo(
-    () =>
-      projects.filter((project) =>
-        filters.every(({ key }) => {
-          if (selected[key] === ANY) return true;
-          const value = project[key];
-          // `bhk` holds every layout the project offers; the rest are single.
-          return Array.isArray(value)
-            ? value.includes(selected[key])
-            : value === selected[key];
-        }),
-      ),
-    [selected],
-  );
+  /**
+   * The free-text box, which only the phone's sheet offers. It is state on
+   * this component rather than inside the sheet because the sheet is a
+   * control panel, not the owner of the search — the count under the
+   * heading and the grid itself both have to move with it, and they are out
+   * here.
+   */
+  const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    // Matched against the name and the locality, folded to lower case once
+    // rather than per project. A project with no `projectType` yet — most of
+    // them are still placeholders — simply has one fewer field to match on.
+    const needle = query.trim().toLowerCase();
+
+    return projects.filter((project) => {
+      if (
+        needle &&
+        ![project.name, project.locality, project.projectType]
+          .filter(Boolean)
+          .some((field) => field!.toLowerCase().includes(needle))
+      ) {
+        return false;
+      }
+
+      return filters.every(({ key }) => {
+        if (selected[key] === ANY) return true;
+        const value = project[key];
+        // `bhk` holds every layout the project offers; the rest are single.
+        return Array.isArray(value)
+          ? value.includes(selected[key])
+          : value === selected[key];
+      });
+    });
+  }, [selected, query]);
 
   const totalPages =
     filtered.length <= FIRST_PAGE
@@ -88,17 +112,29 @@ export function ApartmentProjects() {
   );
   const visible = filtered.slice(0, visibleCount);
   const hasMore = currentPage < totalPages;
-  const isFiltered = filters.some(({ key }) => selected[key] !== ANY);
+  const isFiltered =
+    query.trim() !== "" || filters.some(({ key }) => selected[key] !== ANY);
 
   const choose = (key: FilterKey, value: string) => {
     setSelected((previous) => ({ ...previous, [key]: value }));
     setPage(1);
   };
 
-  const clear = () => {
-    setSelected({ bhk: ANY, locality: ANY, status: ANY, possession: ANY });
+  const search = (value: string) => {
+    setQuery(value);
     setPage(1);
   };
+
+  const clear = () => {
+    setSelected({ bhk: ANY, locality: ANY, status: ANY, possession: ANY });
+    setQuery("");
+    setPage(1);
+  };
+
+  /** How many of the sheet's groups the reader has actually narrowed. */
+  const narrowedCount =
+    usefulFilters.filter(({ key }) => selected[key] !== ANY).length +
+    (query.trim() === "" ? 0 : 1);
 
   return (
     <section
@@ -113,10 +149,14 @@ export function ApartmentProjects() {
         <Reveal delay={80}>
           <h2 className="text-balance-head mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
             Residential Projects
+            {/* Off on a phone. Beside a heading that wraps to two lines it
+                lands on a line of its own under the word, where it reads as
+                a stray rule rather than as the flourish it is on a laptop,
+                where the heading is one line and the arrow finishes it. */}
             <svg
               viewBox="0 0 44 16"
               aria-hidden="true"
-              className="h-[0.5em] w-auto shrink-0 text-rosegold-600"
+              className="hidden h-[0.5em] w-auto shrink-0 text-rosegold-600 desk:block"
             >
               <path
                 d="M1 8h40M34 2l7 6-7 6"
@@ -134,7 +174,8 @@ export function ApartmentProjects() {
             animates a transform and so opens its own stacking context — an
             open menu could not otherwise paint over the cards below it. */}
         <Reveal delay={140} className="relative z-20">
-          <div className="mt-10 flex flex-wrap items-center gap-3 sm:mt-12">
+          {/* ---- The laptop's row of dropdowns, unchanged ---------------- */}
+          <div className="mt-10 hidden flex-wrap items-center gap-3 sm:mt-12 desk:flex">
             {usefulFilters.map(({ key, label }) => (
               <SelectMenu
                 key={key}
@@ -155,7 +196,56 @@ export function ApartmentProjects() {
               </button>
             )}
           </div>
+
+          {/* ---- The phone's one button ---------------------------------
+              Three dropdowns wrapped onto two lines here and pushed the
+              first card most of a screen down the page, and each of them
+              opened a menu over the cards it was meant to be narrowing. One
+              button instead, and the controls come in from the side.
+
+              The count is the whole reason the button can be the only thing
+              on this line: shut, the sheet is the only place the filters
+              live, so without it there is nothing on the page to say that
+              the list has been narrowed at all. */}
+          <div className="mt-8 desk:hidden">
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              aria-haspopup="dialog"
+              aria-expanded={searchOpen}
+              className="group inline-flex items-center gap-2.5 rounded-full bg-navy-900 py-3 pl-5 pr-5 text-[0.875rem] font-semibold text-white shadow-soft transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]"
+            >
+              <SlidersIcon className="h-4 w-4" />
+              Custom Search
+              {narrowedCount > 0 && (
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[0.6875rem] font-bold text-navy-900">
+                  {narrowedCount}
+                </span>
+              )}
+            </button>
+          </div>
         </Reveal>
+
+        {/* The sheet itself. Rendered here rather than beside the button so
+            it is not inside a `Reveal` — that wrapper animates a transform,
+            which would make it the containing block for the `fixed` panel
+            and pin the drawer to this section instead of to the window. */}
+        <ProjectFilterDrawer
+          open={searchOpen}
+          onClose={() => setSearchOpen(false)}
+          groups={usefulFilters.map(({ key, label }) => ({
+            key,
+            label: key === "bhk" ? "Beds" : label,
+            options: optionsFor(key),
+            value: selected[key],
+          }))}
+          query={query}
+          onQueryChange={search}
+          onChoose={(key, value) => choose(key as FilterKey, value)}
+          onReset={clear}
+          resultCount={filtered.length}
+          isFiltered={isFiltered}
+        />
 
         {/* Count, announced when the filters change */}
         <p aria-live="polite" className="mt-6 text-[0.875rem] text-slate-muted">

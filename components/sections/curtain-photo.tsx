@@ -74,11 +74,16 @@ export function CurtainPhoto({ wide, phone }: { wide: Photo; phone: Photo }) {
   return (
     <>
       {[
-        { photo: phone, visibility: "desk:hidden" },
-        { photo: wide, visibility: "hidden desk:block" },
-      ].map(({ photo: blur, visibility }) => (
+        { branch: "phone", photo: phone, visibility: "desk:hidden" },
+        { branch: "wide", photo: wide, visibility: "hidden desk:block" },
+      ].map(({ branch, photo: blur, visibility }) => (
         <div
-          key={blur.src.src}
+          // Keyed by which branch it is, not by the picture it holds. The
+          // two are allowed to name the same photograph — they do today,
+          // Vijay Aqua Green on both, differing only in where the crop
+          // hangs on — and keyed by `src` that made two siblings with one
+          // key, which React reports and which lets it drop one of them.
+          key={branch}
           aria-hidden="true"
           className={`absolute inset-0 bg-cover ${visibility}`}
           style={{

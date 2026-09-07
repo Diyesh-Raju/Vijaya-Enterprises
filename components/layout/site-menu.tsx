@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, type CSSProperties } from "react";
 import { cn } from "@/lib/cn";
+import { Logo } from "@/components/layout/logo";
 import { img, alt } from "@/lib/images";
 import { navLinks, site } from "@/lib/site";
 
@@ -158,13 +159,36 @@ export function SiteMenu({
             "px-7 py-7 sm:px-10 sm:py-9 lg:px-11 lg:py-[clamp(1.75rem,4vh,2.5rem)] xl:px-14",
           )}
         >
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between">
+            {/* The lockup, on a phone only.
+
+                The laptop menu has the photograph filling its left half and
+                the links its right, and the mark is already on screen in the
+                header behind it — a second one at the top of the panel would
+                be the same artwork twice in one view. A phone gets no
+                photograph and no header while the sheet is down, so without
+                this the panel opens on a bare navy field with an X in the
+                corner and nothing saying whose menu it is.
+
+                `reversed` is the artwork drawn for a dark ground — white
+                wordmark, the Ganesha mark relit to hold its blue against
+                navy. See `logo.tsx`.
+
+                Not a link. "Home" is the first row of the list directly
+                below it, at four times the size, and a second route to the
+                same page — one that would also have to close the sheet on
+                the way — is a second thing to get wrong for no gain. */}
+            <Logo reversed width={200} className="h-11 shrink-0 desk:hidden" />
+
             <button
               type="button"
               onClick={onClose}
               aria-label="Close menu"
+              // `ml-auto` so the laptop, which has no lockup beside it,
+              // keeps the button hard right exactly as `justify-end` used
+              // to put it.
               className={cn(
-                "-mr-2 inline-flex h-12 w-12 items-center justify-center rounded-full text-white/70",
+                "-mr-2 ml-auto inline-flex h-12 w-12 items-center justify-center rounded-full text-white/70",
                 "transition-colors duration-300 hover:bg-white/10 hover:text-white",
               )}
             >

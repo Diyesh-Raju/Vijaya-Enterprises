@@ -1007,6 +1007,14 @@
   background-repeat: no-repeat;
 }
 
+/* The phone's ground, and nothing off a phone. `display: none` on the
+   wrapper is what keeps the picture off a laptop entirely — the `url()`
+   naming it lives inside the phone media query at the foot of this
+   section, so a rule that never matches is a file that is never fetched. */
+.gooey-demo__ground {
+  display: none;
+}
+
 /* The band is one screen, and everything on it is measured out of that
    one screen: the heading holds the top, the progress bar the bottom, and
    between them stand the photographs with their labels. The padding here
@@ -1665,10 +1673,136 @@
     --accolade-cap: 0rem;
     --accolade-controls: 0rem;
     height: auto;
+    /* The colour under the phone's own ground, which is a night courtyard
+       rather than the laptop's estate at dusk. It is what shows in the
+       photograph's place for the moment before it decodes, so it is that
+       photograph's own dark and not the warm brown above. */
+    --color-bg: #0d0b09;
+
+    /* One band of the photograph held down, and nothing else touched.
+
+       The courtyard is a night frame and the type clears it comfortably
+       almost everywhere — measured against the ground as it actually
+       renders, the worst line-sized patch runs 11:1 through the upper
+       two thirds and does not drop under 4.9:1 across the lit statue. The
+       exception is the ring of lamplit pebbles at its foot, between about
+       78% and 84% of the frame, which measures 3.3:1 against the band's
+       mist ink and fails a 4.5 floor for type this size.
+
+       The laptop's ground answers the same problem with a gradient across
+       its foot, and the reason it can be aimed there is that the ground
+       does not move. That holds twice over here: the picture is nailed to
+       the window and its own bands are always in the same place in the
+       window. But the awards *do* move across it now, so it is the frame
+       that has to be safe rather than one strip of the window — which is
+       why this is cut to the picture's own bright band, in percentages of
+       the sticky box, and falls to nothing well before either edge of it.
+
+       At 0.30 the ring comes down to 6.3:1 and everything outside 70–94%
+       of the frame is the photograph exactly as it was given: the sky,
+       the tree, the carved wall and the statue all at full strength.
+
+       ⚠️ Re-measure if the photograph is replaced or the captions change
+       size. See the note on `--color-text` above for how. */
+    --gooey-phone-scrim: linear-gradient(
+      to bottom,
+      rgb(4 6 12 / 0) 70%,
+      rgb(4 6 12 / 0.3) 79%,
+      rgb(4 6 12 / 0.3) 86%,
+      rgb(4 6 12 / 0) 94%
+    );
     /* The room the heading used to reserve by being pinned `--header-h`
        down from the section's top. In the flow it needs the section to
        hold it instead. */
     padding-top: 3.5rem;
+  }
+
+  /* The laptop's ground off. Both halves of it: the estate photograph,
+     which was stretched down a wall several screens tall, and the scrim
+     that was cut to where the type sits on a band exactly one screen high
+     — a strip that means nothing here. What is left is the flat colour
+     above, under the sticky photograph below.
+
+     Setting `background-image: none` is also what keeps the estate frame
+     and its 2x off a phone's connection: a background named only by rules
+     that no longer apply is not downloaded. */
+  .gooey-demo::before {
+    background-image: none;
+  }
+
+  /* The band clips on both axes here, where off a phone it clips only on
+     x. The ground below hangs a screen past the section at each end and
+     has to be cut off at the section's edges, or it would paint over the
+     white band above the awards and the one below them.
+
+     `clip` and not `hidden`, and the distinction is the whole reason this
+     works: `hidden` makes an element a scroll container, and a scroll
+     container is what a `sticky` child sticks to — the photograph would
+     bind to a box that never scrolls and therefore never stick to
+     anything. `clip` cuts the overflow without creating one, so the
+     sticky child below still measures itself against the window. */
+  .gooey-demo {
+    overflow: clip;
+  }
+
+  /* The rails the photograph runs between.
+
+     A screen past the section at each end, deliberately. Held to the
+     section's own box — `inset: 0` — the photograph is only pinned for
+     the 290-odd pixels by which the wall of awards is taller than the
+     window, and it rides up with the page through the whole of the
+     section's arrival and departure. Which is most of the time it is
+     being looked at, and it is exactly what the ground was asked not to
+     do.
+
+     Extended by a screen at each end the arithmetic comes out even: the
+     sticky child engages the moment the section's top edge comes into
+     view and lets go the moment its bottom edge leaves, so the picture is
+     nailed to the window for every pixel of scroll in which any part of
+     the band is on screen. It never moves. The awards move across it. */
+  .gooey-demo__ground {
+    display: block;
+    position: absolute;
+    top: -100lvh;
+    right: 0;
+    bottom: -100lvh;
+    left: 0;
+    /* Behind the awards but above the flat colour on `::before`. Negative,
+       so it paints under the in-flow content of a band that is its own
+       stacking context (`isolation: isolate` on `.gooey-demo`). */
+    z-index: -2;
+  }
+
+  /* One screen of photograph, held at the top of the window for as long as
+     the wall of awards is going past it.
+
+     The picture is used exactly as it was given — no grade, no scrim, no
+     tint. It is a night frame and already dark everywhere the captions
+     land; the one lit passage is the ring of pebbles at the statue's foot,
+     and the award photographs are opaque and cover it. `cover` on a 9:16
+     frame in a 9:19.5 window crops a little off each side, which the
+     statue is centred well clear of.
+
+     `100svh` rather than `100vh`: on a phone the two differ by the browser
+     chrome, and `vh` would hang the bottom of the picture under the
+     address bar where it can never be seen. */
+  .gooey-demo__ground-still {
+    position: sticky;
+    top: 0;
+    /* `lvh`, not `svh`. The two differ by the browser's own chrome, and
+       the box has to be the larger of them: sized to the small viewport
+       it would come up short by exactly that chrome the moment the
+       address bar retracts, and the flat colour would show in a strip
+       along the foot of the window. Sized to the large one the surplus is
+       simply below the fold, where nothing is lost. `100vh` under it is
+       the fallback for a browser that has neither, and resolves to the
+       same large viewport in every browser that has ever shipped it. */
+    height: 100vh;
+    height: 100lvh;
+    background-image: var(--gooey-phone-scrim), url("/gooey/backdrop-phone.jpg");
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
   }
 
   /* Out of the corner it was pinned into and back into the flow, where it
@@ -1852,6 +1986,33 @@
   }
 }
 
+/* A phone on its side, where the aimed scrim above cannot be aimed.
+
+   `background-size: cover` crops a 9:16 photograph very differently into a
+   932x430 window than into a 390x844 one: upright it shows the frame whole
+   and trims the sides, on its side it keeps a band across the middle and
+   throws away the rest. So a gradient written in percentages of the box
+   lands on a different part of the picture in each, and the one cut to the
+   ring of pebbles upright falls across the carved wall instead — measured,
+   3.8:1 against the mist ink, under the floor.
+
+   Rather than aim a second gradient at a crop that changes with every
+   handset, the sideways case takes a flat wash. It can afford to: most of
+   the photograph is outside the frame here anyway, so there is much less
+   picture left to protect, and 0.16 takes the worst patch to 5.2:1 while
+   staying light enough that the lamplight still reads as lamplight.
+
+   Height alone, and no `min-width`: a short window is the whole of what
+   this is about, and a narrow short one crops the same way. */
+@media (max-height: 499.98px) {
+  .gooey-demo {
+    --gooey-phone-scrim: linear-gradient(
+      rgb(4 6 12 / 0.16),
+      rgb(4 6 12 / 0.16)
+    );
+  }
+}
+
 /* A phone on its side reaches this layout too, and two columns of an 844px
    window are 370px each — tiles nearly as big as the ones a laptop gets,
    stacked into a wall four and a half screens tall in a window 390px high.
@@ -1994,6 +2155,84 @@
    opens on its own even if a frame is somehow marked as rising. */
 @media (prefers-reduced-motion: reduce) {
   .reshero__blind {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   The line in the phone hero's lower right corner.
+
+   Only `HomeHeroPhone` renders these — the Residential hero uses the rest
+   of `.reshero` and has its own lockup over the picture — so nothing here
+   is behind a media query. The component simply does not mount it at any
+   other width.
+
+   The slot is the whole width of the band rather than a box in the corner,
+   with the paragraph pushed to its end. That is what keeps a long line and
+   a short one both ranged to the same right edge, and it is what lets the
+   scrim be a gradient across the foot of the band instead of a plaque
+   behind the words — a plaque was never going to sit on four photographs
+   that agree on nothing, and one was asked off this site before.
+
+   The scrim is on the slot, the words are in the paragraph, and they are
+   separate for a reason: the paragraph is torn down and rebuilt on every
+   turn of the cycle to replay its fade, and the scrim must not blink with
+   it.
+------------------------------------------------------------------- */
+.reshero__caption-slot {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: flex-end;
+  padding: 3.25rem 1.125rem 1rem;
+  background-image: linear-gradient(
+    to top,
+    rgb(6 10 18 / 0.72) 0%,
+    rgb(6 10 18 / 0.5) 42%,
+    rgb(6 10 18 / 0) 100%
+  );
+  pointer-events: none;
+}
+
+.reshero__caption {
+  /* Two lines at this size on a 390px screen, three on the longest of the
+     four. Held to 78% so the line breaks land inside the corner rather
+     than running the full width of the band, which would read as a
+     paragraph of body copy rather than as a caption. */
+  max-width: 78%;
+  margin: 0;
+  color: rgb(255 255 255 / 0.94);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  letter-spacing: 0.005em;
+  text-align: right;
+  text-wrap: pretty;
+  /* Belt to the gradient's braces: the scrim is doing the work, and this
+     only has to survive the brightest thing any of the four photographs
+     puts in this corner — lawn in low sun, in practice. Measured across a
+     full turn of the cycle, the worst line-sized patch under these words
+     gives white 9.2:1. */
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.55);
+  animation: reshero-caption 0.85s var(--ease-out-soft) both;
+}
+
+@keyframes reshero-caption {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.5rem, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reshero__caption {
     animation: none;
   }
 }
@@ -4441,4 +4680,389 @@
     stroke-dashoffset: 0;
     fill: rgb(230 211 168 / 0.07);
   }
+}
+
+/* ------------------------------------------------------------------
+   Pearl cards — the page's two closing offers, on a phone.
+
+   A laptop gets those two offers as full-height panels: a heading, three
+   or four sentences, and a pair of buttons pinned to a common baseline.
+   Stacked onto a 390px screen that pair came to about two and a half
+   screens of scrolling for what is, in the end, two links — and the
+   buttons inside them made the panels read as containers rather than as
+   the offers themselves. So on a phone each becomes one small chip that
+   *is* the link: the heading, a line or two under it, and an arrow in the
+   corner.
+
+   The treatment is the 21st.dev Pearl Button's (@reuno-ui) — a dark chip
+   lit from inside, so that it sits on the white section as an object with
+   a surface rather than as a filled rectangle. Everything below is its
+   shadow recipe with three changes, all of them because this is a card
+   with a sentence in it and not a pill with a word:
+
+     · The base is the site's own navy rather than the original's near
+       black. On a page whose every other dark surface is navy-950, a true
+       black chip reads as a component borrowed from somewhere else.
+     · The drop shadow is pulled in hard. The original throws 3rem of it,
+       which is right under a pill floating on a dark stage and a smudge
+       under a card sitting on white.
+     · The copy is lifted above both gloss layers. In the original the top
+       highlight paints over the label on purpose; over a heading and a
+       description it is a veil across the first line of each.
+
+   See `components/ui/pearl-card.tsx` for the markup and for the rest of
+   what was left behind.
+------------------------------------------------------------------- */
+
+.pearl-card {
+  /* Between navy-950 and navy-1000. The inset highlights below are read
+     against this, and they need it dark enough that a 22% white lip still
+     looks like light rather than like grey. */
+  --pearl-bg: #061431;
+
+  position: relative;
+  display: block;
+  border-radius: 1.5rem;
+  background-color: var(--pearl-bg);
+  /* Four lights and two shadows, in order: the bloom across the top inside
+     edge, the thin dark line under it that gives the rim something to sit
+     against, the lip of light along the bottom that makes the chip look
+     rounded rather than flat, then the cast shadow in two parts — a wide
+     soft one for the lift and a tight dark one directly under the card for
+     the contact. */
+  box-shadow:
+    inset 0 0.3rem 0.9rem rgb(255 255 255 / 0.22),
+    inset 0 -0.1rem 0.3rem rgb(0 0 0 / 0.65),
+    inset 0 -0.4rem 0.9rem rgb(255 255 255 / 0.3),
+    0 1.5rem 2rem -0.9rem rgb(4 13 32 / 0.3),
+    0 0.6rem 0.8rem -0.5rem rgb(4 13 32 / 0.45);
+  transition:
+    box-shadow 0.3s var(--ease-out-soft),
+    transform 0.2s var(--ease-out-soft);
+}
+
+/* The clip. Both gloss layers are drawn outside the card's box — the bloom
+   starts a full card-height above its top edge — so without something to
+   cut them to the radius they would be a pale rectangle standing behind
+   it. */
+.pearl-card__wrap {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  overflow: hidden;
+  border-radius: inherit;
+  padding: 1.15rem 1.25rem 1.05rem;
+}
+
+/* The bloom — light coming from above and dying out into the card.
+
+   A gradient, where the original draws a flat-coloured ellipse hanging out
+   past the top of the button. The ellipse is the right idea on a pill 90px
+   tall: its edge falls near the bottom rim, where the label's mask is
+   already fading things out, so it never has to be seen. This card is
+   350x103 and there is a sentence sitting exactly where that edge lands —
+   drawn as a shape, the boundary reads as a second box printed inside the
+   first, which was the first thing wrong with this. A radial gradient has
+   the same fall of light and no edge to find. */
+.pearl-card__wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    135% 105% at 50% -22%,
+    rgb(255 255 255 / 0.15) 0%,
+    rgb(255 255 255 / 0.06) 42%,
+    rgb(255 255 255 / 0) 74%
+  );
+  transition: transform 0.3s var(--ease-out-soft);
+}
+
+/* The rim: a hairline of light along the top edge and nothing else.
+
+   The original hangs a half-height gradient off this same element, which on
+   a pill is a highlight across the top of a curved face. Across a card it
+   is a pale slab over the heading and the first line of the description —
+   so what is left here is the `box-shadow` that draws the lit edge itself.
+   Inset from the sides, and stopped well short of the floor, so it reads as
+   a reflection rather than as a border. */
+.pearl-card__wrap::after {
+  content: "";
+  position: absolute;
+  top: 7%;
+  right: 5%;
+  bottom: 55%;
+  left: 5%;
+  border-radius: 18px 18px 0 0;
+  box-shadow: inset 0 10px 8px -10px rgb(255 255 255 / 0.6);
+  transition:
+    opacity 0.3s var(--ease-out-soft),
+    transform 0.3s var(--ease-out-soft);
+}
+
+/* Above both of them — see the third note at the top of this block. */
+.pearl-card__body {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pearl-card__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  color: #ffffff;
+  text-wrap: balance;
+}
+
+.pearl-card__desc {
+  margin: 0.45rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: rgb(228 236 249 / 0.72);
+  text-wrap: pretty;
+}
+
+/* The arrow, held to the card's floor by the wrap's `align-items: flex-end`
+   rather than hung off the corner absolutely — so it can never land on the
+   last line of a description that ran longer than expected. */
+.pearl-card__arrow {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  /* Nudged down to sit on the description's baseline rather than on the
+     box of its last line, which reads a hair high. */
+  margin-bottom: 0.1rem;
+  color: rgb(255 255 255 / 0.62);
+  transition:
+    transform 0.3s var(--ease-out-soft),
+    color 0.3s var(--ease-out-soft);
+}
+
+.pearl-card__arrow svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+/* Pressed. A phone has no hover, so this is the only state that will ever
+   actually be seen: the chip drops a few pixels, its cast shadow tightens
+   under it and the inside lights come up, which together read as the thing
+   being pushed into the page. */
+.pearl-card:active {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 0.3rem 0.5rem rgb(255 255 255 / 0.4),
+    inset 0 -0.1rem 0.3rem rgb(0 0 0 / 0.75),
+    inset 0 -0.4rem 0.9rem rgb(255 255 255 / 0.26),
+    0 0.75rem 1rem -0.7rem rgb(4 13 32 / 0.3),
+    0 0.3rem 0.5rem -0.35rem rgb(4 13 32 / 0.45);
+}
+
+.pearl-card:active .pearl-card__wrap::after {
+  opacity: 0.45;
+  transform: translateY(5%);
+}
+
+.pearl-card:active .pearl-card__arrow {
+  transform: translateX(2px);
+  color: rgb(255 255 255 / 0.9);
+}
+
+/* Kept for the pointer that may yet meet one of these — a tablet with a
+   trackpad reaches this layout in landscape. */
+@media (hover: hover) {
+  .pearl-card:hover .pearl-card__wrap::before {
+    transform: translateY(-5%);
+  }
+
+  .pearl-card:hover .pearl-card__arrow {
+    transform: translateX(3px);
+    color: rgb(255 255 255 / 0.9);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pearl-card,
+  .pearl-card__wrap::before,
+  .pearl-card__wrap::after,
+  .pearl-card__arrow {
+    transition-duration: 0s;
+  }
+
+  .pearl-card:active {
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   The "Why Vijaya" medallions — the phone shape of the flip cards.
+
+   Everything here is phone-only by where it is used, not by a media
+   query: `IconCards` renders the disc list under `desk:hidden` and the
+   card grid under `desk:grid`, so a laptop never builds one of these.
+
+   A disc rather than a rounded box because the set is six short reasons
+   and a circle is the shape that says "one of a set" without needing a
+   rule between them. Two rings: the disc itself, and a brass hairline
+   held a few pixels off it. That second ring is the whole design — it is
+   what makes the thing read as a medallion rather than as a button, and
+   it is the site's own accent doing it, so the set belongs to the page
+   it is standing on rather than looking imported.
+
+   The disc turns on the cards' machinery — `.flip-card`, `.flip-card-inner`,
+   `.flip-card-back`, and the `is-flipped` toggle for a screen that cannot
+   hover. See that block for how it works and why the toggle is inside a
+   `hover: none` query.
+------------------------------------------------------------------- */
+
+.why-orb-shell {
+  /* Capped rather than filling the column. At 390px a two-column cell is
+     about 165px, and a disc that wide is not a medallion — it is a
+     button the size of a card. Held to 140 and centred, six of them read
+     as a set with air around each. */
+  width: 100%;
+  max-width: 8.75rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  /* The site's focus ring, on the shape it is actually going round. */
+  outline-offset: 4px;
+}
+
+.why-orb-shell:focus-visible {
+  outline: 2px solid var(--color-brass-500);
+}
+
+.why-orb {
+  position: relative;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Radial padding, near enough: a circle's usable box is its inscribed
+     square, and this keeps the type off the curve on both axes at once. */
+  padding: 0 1.35rem;
+  border-radius: 50%;
+  text-align: center;
+}
+
+/* The hairline ring, held off the disc. Drawn on both faces so the
+   medallion keeps its outline through the turn. */
+.why-orb::before {
+  content: "";
+  position: absolute;
+  inset: -0.3125rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-brass-500);
+  opacity: 0.45;
+}
+
+/* ---- The face it rests on ---------------------------------------- */
+
+.why-orb--front {
+  /* Lit from the top, like every other raised surface on this site. The
+     ground under this section is a photograph of hibiscus behind a white
+     veil, so the disc has to be a *surface* rather than a flat white
+     shape or it disappears into the brightest parts of the flowers. */
+  background: radial-gradient(
+    118% 118% at 50% 0%,
+    #ffffff 0%,
+    #ffffff 45%,
+    var(--color-navy-50) 100%
+  );
+  box-shadow:
+    inset 0 0 0 1px var(--color-navy-200),
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    0 0.85rem 1.5rem -0.85rem rgb(6 20 49 / 0.38);
+}
+
+.why-orb__icon {
+  display: block;
+  flex: 0 0 auto;
+  color: var(--color-navy-800);
+}
+
+.why-orb__icon > svg {
+  height: 1.625rem;
+  width: 1.625rem;
+}
+
+.why-orb__title {
+  margin-top: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  color: var(--color-navy-900);
+  text-wrap: balance;
+}
+
+/* ---- The face it turns to ---------------------------------------- */
+
+.why-orb--back {
+  /* The cue's room, reserved. The face centres its line, and the two
+     longest of the six run to six lines — centred against the whole disc
+     those sat on top of the `×`. Padding the foot shifts the centre up by
+     half of it, which clears the glyph on the long ones and barely moves
+     the short ones. */
+  padding-bottom: 1rem;
+  background: radial-gradient(
+    118% 118% at 50% 0%,
+    var(--color-navy-800) 0%,
+    var(--color-navy-950) 70%
+  );
+  box-shadow: 0 0.85rem 1.5rem -0.85rem rgb(6 20 49 / 0.45);
+}
+
+.why-orb--back::before {
+  border-color: var(--color-brass-400);
+  opacity: 0.6;
+}
+
+.why-orb__body {
+  /* Smaller than anything else on the site, and this is the one place it
+     earns it: the line has to sit inside a circle's inscribed square,
+     which at 140px across is about 105 by 105. The longest of the six is
+     77 characters, which is five lines here — it fits with room, and the
+     ink is white on navy at 15:1, which is what makes type this size
+     readable at all. */
+  margin: 0;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: rgb(255 255 255 / 0.92);
+  text-wrap: pretty;
+}
+
+/* ---- The cue -----------------------------------------------------
+   A phone cannot hover, so nothing about a disc says it turns. The
+   cards answer this with the word "Click" in a corner; there is no
+   corner on a circle and no room for a word, so it is one glyph on the
+   disc's lower axis: `+` to open, `×` to close. */
+
+.why-orb__cue {
+  position: absolute;
+  bottom: 0.9rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.why-orb--front .why-orb__cue {
+  color: var(--color-brass-600);
+}
+
+.why-orb--back .why-orb__cue {
+  color: var(--color-brass-400);
+  opacity: 0.85;
 }
