@@ -4,15 +4,15 @@ import Image, { type StaticImageData } from "next/image";
 import { useSyncExternalStore } from "react";
 
 /**
- * The photograph at the head of `PlannedForLiving` — which is not the same
- * photograph on a phone as it is on a laptop.
+ * The photograph at the head of `PlannedForLiving`, and the branch that
+ * decides which one — and, when both branches name the same picture, which
+ * part of it each shape of screen gets.
  *
- * A laptop gets the Hara Vijaya concept view, which is what has always been
- * there. A phone gets Vijay Aqua Green: the concept render is a night shot
- * of two towers, and cropped to the near-square band a phone gives this
- * section it reduces to a wall of lit balconies with no development around
- * it. Aqua Green is low, wide and daylit, and it survives that crop with
- * the entrance, the name and the planting all still in frame.
+ * Both branches are Vijay Aqua Green today: low, wide and daylit, it holds
+ * up as a full-window backdrop on a laptop and still survives the
+ * near-square band a phone gives this section with the entrance, the name
+ * and the planting in frame. The two `position`s differ because the crops
+ * do — see the note on that field.
  *
  * This is a client component for one reason, and it is the reason
  * `home-hero-phone.tsx` is one too: **a hidden `<img>` is still downloaded**.

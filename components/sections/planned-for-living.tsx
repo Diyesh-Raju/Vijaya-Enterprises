@@ -123,14 +123,17 @@ export function PlannedForLiving() {
                 with why it cannot be done in CSS. */}
             <CurtainPhoto
               wide={{
-                src: img.haraVijayaConcept,
-                alt: alt.haraVijayaConcept,
-                // Hung right of centre. A 16:9 photograph in a taller frame
-                // is trimmed top and bottom rather than at the sides, so on
-                // a laptop this does almost nothing; it is here because the
-                // stage is wider than the source at the far end of the
-                // sweep, and the towers should stay in the opening.
-                position: "62% 50%",
+                src: img.vijayAquaGreen,
+                alt: alt.vijayAquaGreen,
+                // Centred, and the horizontal half of that is very nearly
+                // decorative: a 3:2 photograph is narrower than the stage at
+                // any laptop shape, so `object-cover` fills the width and
+                // takes its bite out of the height instead. The whole run of
+                // the building is in frame at every point of the sweep; what
+                // 50% down decides is only how the trim is split between the
+                // sunset above and the verge below, and an even split keeps
+                // the roofline off the top edge.
+                position: "50% 50%",
               }}
               phone={{
                 src: img.vijayAquaGreen,
