@@ -53,6 +53,24 @@ import balconyFamily from "@/assets/images/balcony-family.jpg";
 import balconyFamilyEvening from "@/assets/images/balcony-family-evening.jpg";
 import balconyFamilyTower from "@/assets/images/balcony-family-tower.jpg";
 import blueprintCraft from "@/assets/images/blueprint-craft.jpg";
+/* The commercial panel on /civil-contracts, in place of the stock office
+   interior: a finished commercial block on a Bengaluru street. Supplied by
+   the client at 1600px on the long edge, where the stock panels are 2400.
+
+   Graded down off `commercial-street-block-ungraded.jpg`, which is kept
+   beside it and is not imported:
+
+     ffmpeg -i commercial-street-block-ungraded.jpg \
+       -vf "curves=all='0/0 0.25/0.24 0.5/0.465 0.75/0.70 1/0.95'" \
+       -q:v 2 commercial-street-block.jpg
+
+   Ungraded, the worst line-sized patch under the phone's description read
+   4.4:1 against the body ink — the one panel of the six under AA. The
+   rolloff takes the sky and the road down and leaves the shadows: 4.7:1
+   there, in line with the other five, and 13:1 under the desktop heading.
+   Measure before changing it — see the note on `undertake` in
+   `app/globals.css`. */
+import commercialStreetBlock from "@/assets/images/commercial-street-block.jpg";
 import cityNight from "@/assets/images/city-night.jpg";
 import citySunset from "@/assets/images/city-sunset.jpg";
 import cranesSkyline from "@/assets/images/cranes-skyline.jpg";
@@ -70,6 +88,10 @@ import haraVijayaConcept from "@/assets/images/hara-vijaya-concept.jpg";
 import haraVijayaHeights from "@/assets/images/hara-vijaya-heights.jpg";
 import haraVijayaHeightsHero from "@/assets/images/hara-vijaya-heights-hero.jpg";
 import haraVijayaVision from "@/assets/images/hara-vijaya-vision.jpg";
+/* The last stage of a contract on /civil-contracts — the handover.
+   Supplied by the client: the couple whose house it is, reading the
+   drawings with the engineer at the site table. */
+import handoverFamilyEngineer from "@/assets/images/handover-family-engineer.jpg";
 import homeDusk from "@/assets/images/home-dusk.jpg";
 import homeScrollEnd from "@/assets/images/home-scroll-end.jpg";
 import homeScrollPoster from "@/assets/images/home-scroll-poster.jpg";
@@ -77,9 +99,42 @@ import homeLawn from "@/assets/images/home-lawn.jpg";
 import industrialEngineer from "@/assets/images/industrial-engineer.jpg";
 import institutionCampus from "@/assets/images/institution-campus.jpg";
 import institutionHospital from "@/assets/images/institution-hospital.jpg";
+/* The industrial panel on /civil-contracts, in place of the stock
+   warehouse aisle: a finished PEB shed, its structure and its floor both
+   on show, which is what that panel is about. Supplied by the client at
+   1600px on the long edge, where the stock panels are 2400.
+
+   Ungraded, unlike its neighbour on panel 01: a white floor that fills two
+   thirds of the frame still measures 8.7:1 against white and 5.4:1 against
+   the body ink under the phone's description — the best of the six — because
+   what the description sits on is the scrim, and the floor is behind it. */
+import industrialShedFloor from "@/assets/images/industrial-shed-floor.jpg";
 import interiorFamily from "@/assets/images/interior-family.jpg";
 import interiorLiving from "@/assets/images/interior-living.jpg";
+/* The landscaping panel on /civil-contracts. Supplied by the client, and
+   the one photograph here that is not stock: 1376px on the long edge where
+   the other five panels are 2400, so it is the softest of the six on a wide
+   window. Replace it with a larger copy of the same scene if one exists. */
+import landscapeGardenPath from "@/assets/images/landscape-garden-path.jpg";
 import legacyPoster from "@/assets/images/legacy-poster.jpg";
+/* The second stage of a contract on /civil-contracts — the legal and
+   statutory check before anything is drawn. Supplied by the client.
+
+   Graded down off `legal-verification-desk-ungraded.jpg`, which is kept
+   beside it and is not imported:
+
+     ffmpeg -i legal-verification-desk-ungraded.jpg \
+       -vf "curves=all='0/0 0.25/0.20 0.5/0.385 0.75/0.575 1/0.86'" \
+       -q:v 2 legal-verification-desk.jpg
+
+   The stage's copy runs across the bottom left and the folder on the desk
+   is directly under the right-hand column of points: ungraded, the top two
+   of those read 3.2:1 and 4.0:1 against the body ink, both under AA. The
+   rolloff takes the paper down and leaves the room: 4.6:1 at the worst
+   line, 6.4:1 under the line below the title. Measure before changing it —
+   see [the note on `size-a-photo-grade-by-measuring`] in the project's
+   memory, and `.stages__scrim` in `app/globals.css`. */
+import legalVerificationDesk from "@/assets/images/legal-verification-desk.jpg";
 import meetingHands from "@/assets/images/meeting-hands.jpg";
 import menuInterior from "@/assets/images/menu-interior.jpg";
 import officeInterior from "@/assets/images/office-interior.jpg";
@@ -111,6 +166,12 @@ import siteTeam from "@/assets/images/site-team.jpg";
 import slabDusk from "@/assets/images/slab-dusk.jpg";
 import steelRebar from "@/assets/images/steel-rebar.jpg";
 import towerOccupied from "@/assets/images/tower-occupied.jpg";
+/* The residential panel on /civil-contracts. Supplied by the client: a
+   finished private residence at dusk, lit, from the street. It replaces
+   `homeDusk` there, which the closing call to action on /residential also
+   uses — so the section no longer shares a photograph with another page.
+   1376px on the long edge, where the stock panels are 2400. */
+import villaStreetDusk from "@/assets/images/villa-street-dusk.jpg";
 import towersGlass from "@/assets/images/towers-glass.jpg";
 import villaPool from "@/assets/images/villa-pool.jpg";
 import warehouseAisle from "@/assets/images/warehouse-aisle.jpg";
@@ -142,6 +203,7 @@ export const img = {
   blueprintCraft,
   cityNight,
   citySunset,
+  commercialStreetBlock,
   cranesSkyline,
   drawingBoard,
   familyConversation,
@@ -154,16 +216,20 @@ export const img = {
   haraVijayaHeights,
   haraVijayaHeightsHero,
   haraVijayaVision,
+  handoverFamilyEngineer,
   homeDusk,
   homeLawn,
   homeScrollEnd,
   homeScrollPoster,
   industrialEngineer,
+  industrialShedFloor,
   institutionCampus,
   institutionHospital,
   interiorFamily,
   interiorLiving,
+  landscapeGardenPath,
   legacyPoster,
+  legalVerificationDesk,
   meetingHands,
   menuInterior,
   officeInterior,
@@ -188,6 +254,7 @@ export const img = {
   steelRebar,
   towerOccupied,
   towersGlass,
+  villaStreetDusk,
   villaPool,
   warehouseAisle,
   towersLawn,
@@ -216,6 +283,8 @@ export const alt = {
   bankReception: "Banking hall interior with a curved reception counter",
   blueprintCraft: "Hands marking up a construction drawing at a desk",
   cityNight: "Long-exposure traffic trails running through a city at night",
+  commercialStreetBlock:
+    "A completed four-storey commercial building in brick, stone and glass on a Bengaluru street, lit offices behind its ground-floor glazing and traffic passing in front",
   citySunset: "City skyline and arterial roads at sunset",
   cranesSkyline: "Tower cranes rising over buildings under construction",
   drawingBoard:
@@ -243,6 +312,8 @@ export const alt = {
     "Hara Vijaya Heights seen from the landscaped frontage, its towers stepping back behind mature trees",
   haraVijayaHeightsHero:
     "Architectural view of Hara Vijaya Heights, with the tree-lined approach to the entrance lobby",
+  handoverFamilyEngineer:
+    "A couple and a site engineer at a table on site, reading the drawings together with a model of the house in front of them and the building going up behind",
   homeDusk: "Entrance of a newly completed home lit at dusk",
   balconyFamily:
     "A family on their apartment balcony at dusk, looking out over tree cover and the city beyond",
@@ -253,10 +324,16 @@ export const alt = {
   homeLawn: "Contemporary family home with a landscaped lawn",
   industrialEngineer: "Engineer working at an automated production line",
   institutionCampus: "Institutional campus building with landscaped grounds",
+  industrialShedFloor:
+    "The inside of a completed pre-engineered industrial shed, its steel frame and roof lights overhead and a finished, sealed floor running the length of it",
   institutionHospital: "Hospital building entrance and approach road",
   interiorFamily: "Family living room with a dog resting by the sofa",
   interiorLiving: "Open-plan living and dining space in a completed apartment",
+  landscapeGardenPath:
+    "A paved garden path between flowering beds and clipped hedges, frangipani in bloom overhead, with lawn, a lily pond and terraced fields beyond",
   legacyPoster: "A building frame and tower crane silhouetted against the sunset",
+  legalVerificationDesk:
+    "Property papers being read across a desk: a folder and pen, a model house, a gavel and a set of scales",
   meetingHands: "A project discussion in progress across a meeting table",
   menuInterior:
     "A balcony shrine at dusk, warmly lit, with a marble platform, brass lamps and bamboo either side, open to the city skyline",
@@ -296,6 +373,8 @@ export const alt = {
   steelRebar: "Reinforcement steel being placed on an active construction site",
   towerOccupied:
     "A completed apartment block at night with its windows lit, the building in use",
+  villaStreetDusk:
+    "A completed private residence at dusk seen from the street: three storeys in stone, timber and glass, the rooms and the planting lit, and a car standing in the porch",
   towersGlass: "Glass office towers seen from street level",
   villaPool: "Completed villa with a swimming pool and terrace",
   warehouseAisle: "Aisle inside a completed warehouse facility",

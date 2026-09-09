@@ -27,41 +27,49 @@ const undertakings: Undertaking[] = [
   {
     id: "commercial",
     eyebrow: "01 — Commercial Construction",
-    title: "Reliable spaces for growing businesses.",
-    body: "Spaces designed and built to support businesses for years to come — planned around how your organisation actually works, and built to stay serviceable long after handover.",
+    title: "Commercial spaces built around your business.",
+    body: "We undertake complete civil construction for offices, commercial buildings and business spaces — from structural work and building services to finishing and final handover. Our focus is on creating durable, functional spaces built for everyday use and long-term performance.",
     points: [
       "Corporate offices and workspaces",
       "Commercial buildings and complexes",
+      "Retail and business establishments",
       "Mixed-use developments",
-      "Business infrastructure",
+      "Complete civil construction and execution",
+      "Renovation, refurbishment and upgrades",
     ],
-    image: img.officeInterior,
-    imageAlt: alt.officeInterior,
+    image: img.commercialStreetBlock,
+    imageAlt: alt.commercialStreetBlock,
   },
   {
     id: "industrial",
     eyebrow: "02 — Industrial Construction",
-    title: "Engineering precision for mission-critical facilities.",
-    body: "Strong foundations for industries that demand precision, reliability and performance. We have built for manufacturing, engineering and public-sector organisations where tolerances and timelines are not negotiable.",
+    title: "Industrial structures built for performance.",
+    body: "Industrial construction demands more than a strong building. It requires careful planning, structural precision and an understanding of how the facility will operate. We undertake civil and structural works for factories, warehouses, production facilities and other industrial requirements.",
     points: [
-      "Factories and production facilities",
+      "Factories and manufacturing facilities",
+      "PEB (Pre-Engineered Building) structures",
+      "Industrial sheds and warehouses",
+      "RCC foundations and industrial flooring",
       "Laboratories and engineering facilities",
-      "Warehouses and storage",
+      "Structural and civil infrastructure",
       "Specialised industrial structures",
     ],
-    image: img.warehouseAisle,
-    imageAlt: alt.warehouseAisle,
+    image: img.industrialShedFloor,
+    imageAlt: alt.industrialShedFloor,
   },
   {
     id: "institutional",
     eyebrow: "03 — Institutional Construction",
-    title: "Trusted construction for organisations that serve society.",
-    body: "Buildings for institutions carry a different kind of responsibility — they are used by the public every day, for decades. We have built for educational institutions, hospitals, banks, temples and government organisations.",
+    title: "Buildings that serve people for generations.",
+    body: "Institutional buildings demand reliability, safety and careful execution because they are used by large numbers of people every day. We undertake civil construction and infrastructure works for institutions where quality, durability and dependable project execution are essential.",
     points: [
-      "Educational institutions",
+      "Educational institutions and campuses",
       "Hospitals and healthcare facilities",
-      "Banks and public sector buildings",
+      "Banks and financial institutions",
+      "Government and public-sector buildings",
       "Temples and community buildings",
+      "Institutional renovations and expansions",
+      "Complete civil construction and execution",
     ],
     image: img.institutionHospital,
     imageAlt: alt.institutionHospital,
@@ -69,76 +77,165 @@ const undertakings: Undertaking[] = [
   {
     id: "residential-contracts",
     eyebrow: "04 — Residential Construction",
-    title: "A home built with care for your family.",
-    body: "Private residential contracts, built with the same discipline we bring to a large industrial facility. Your drawings or ours, your plot, our execution.",
+    title: "Homes built around the way you want to live.",
+    body: "We undertake residential construction for individual homeowners, developers and builders — from foundation and structural work to finishing and final handover. Whether it is a private residence or a larger residential development, we bring the same attention to quality, workmanship and execution.",
     points: [
-      "Individual and independent homes",
+      "Independent homes and villas",
       "Residential buildings and apartments",
       "Builder-contract execution",
-      "Turnkey residential delivery",
+      "Structural and civil construction",
+      "Renovation and extensions",
+      "Turnkey residential construction",
+      "External works and site development",
     ],
-    image: img.homeDusk,
-    imageAlt: alt.homeDusk,
+    image: img.villaStreetDusk,
+    imageAlt: alt.villaStreetDusk,
   },
   {
     id: "renovation",
-    eyebrow: "05 — Renovation & Expansion",
-    title: "Upgrades, extensions and redevelopment.",
-    body: "Not every project starts from open ground. We take on additions, upgrades and redevelopment of existing structures — work that needs judgement about what is already standing.",
+    eyebrow: "05 — Renovation, Expansion & Redevelopment",
+    title: "Upgrade, expand or rebuild — without starting from scratch.",
+    body: "Not every project begins construction on an empty site. We undertake additions, extensions, renovations and redevelopment of existing buildings, working around the structure and conditions already on site. Our experience allows us to approach such projects with practical planning, careful execution and minimal disruption.",
     points: [
-      "Extensions and additional floors",
+      "Building extensions and additional floors",
       "Renovation and refurbishment",
-      "Structural upgrades",
-      "Redevelopment requirements",
+      "Structural repairs and strengthening",
+      "Building upgrades and modifications",
+      "Redevelopment of existing properties",
+      "Alterations and additions to existing structures",
     ],
     image: img.siteTeam,
     imageAlt: alt.siteTeam,
+  },
+  {
+    id: "landscaping",
+    eyebrow: "06 — Landscaping & Site Development",
+    title: "From the building to the landscape — we complete the whole site.",
+    body: "We undertake landscaping and external development works to transform unfinished sites into functional, well-planned outdoor environments. Our scope covers both hardscape and softscape works, coordinated with the building and site requirements.",
+    points: [
+      "Landscape design execution",
+      "Gardens and planting",
+      "Paving, pathways and driveways",
+      "Outdoor spaces and seating areas",
+      "Irrigation and drainage",
+      "Boundary walls and site features",
+      "Complete external site development",
+    ],
+    image: img.landscapeGardenPath,
+    imageAlt: alt.landscapeGardenPath,
   },
 ];
 
 /**
  * The sequence a contract goes through, first call to handover.
  *
- * The page names five kinds of work it takes on but never said how the work
- * is actually run, which is the first thing a contract client asks. Five
+ * The page names six kinds of work it takes on but never said how the work
+ * is actually run, which is the first thing a contract client asks. Six
  * stages, in the order they happen — and a photograph each, because they
- * are five screens rather than five list items. See `ContractStages`.
+ * are six screens rather than six list items. See `ContractStages`.
  */
 const stages: ContractStage[] = [
   {
     step: "01",
-    title: "The first conversation",
-    body: "You tell us the site, the scope and roughly what you want to spend. We listen first, then say plainly what that plot and that budget will support — before anyone draws anything.",
+    title: "01 — Site & Project Assessment",
+    subtitle: "We start by understanding the project.",
+    points: [
+      "Site inspection and existing-condition assessment",
+      "Understanding your requirements and intended use",
+      "Site access, levels and surrounding conditions",
+      "Initial scope and construction expectations",
+      "Preliminary budget discussion",
+      "Identifying project constraints",
+    ],
     image: img.plotWalkover,
     imageAlt: alt.plotWalkover,
   },
   {
     step: "02",
-    title: "Drawings and a written estimate",
-    body: "Your architect's drawings or ours. Either way the estimate comes back broken down item by item, so you can see what each part of the building costs instead of one lump sum you have to take on faith.",
+    title: "02 — Legal & Statutory Verification",
+    subtitle: "Before we draw, we make sure the project can proceed.",
+    points: [
+      "Property and ownership documentation",
+      "Khata and relevant property records",
+      "Land use and zoning requirements",
+      "Setbacks, FAR/FSI and permissible construction",
+      "Sanctioned plans and building permissions",
+      "BBMP/BDA and other applicable approvals",
+      "Required NOCs and statutory clearances",
+      "Identification of potential legal or approval issues",
+    ],
+    note: "We identify requirements early — before they become construction problems.",
+    image: img.legalVerificationDesk,
+    imageAlt: alt.legalVerificationDesk,
+  },
+  {
+    step: "03",
+    title: "03 — Drawings & Detailed Estimate",
+    subtitle: "Every part of the project is defined before construction.",
+    points: [
+      "Architectural and structural drawings",
+      "Construction specifications",
+      "Material and quality specifications",
+      "Detailed quantity estimation",
+      "Item-wise costing",
+      "Clear scope of work and inclusions",
+      "Construction methodology and stages",
+      "Preliminary project timeline",
+    ],
     image: img.drawingBoard,
     imageAlt: alt.drawingBoard,
   },
   {
-    step: "03",
-    title: "Agreement and schedule",
-    body: "Scope, specification, payment stages and a construction schedule, all set down in writing. Everything is agreed before the first load of material reaches the site.",
+    step: "04",
+    title: "04 — Agreement & Construction Schedule",
+    subtitle: "Scope, cost and timelines — clearly agreed.",
+    points: [
+      "Final scope of work",
+      "Detailed specifications",
+      "Contract value",
+      "Payment milestones",
+      "Construction schedule",
+      "Responsibilities of both parties",
+      "Material and workmanship standards",
+      "Variation and additional-work terms",
+      "Completion and handover terms",
+    ],
     image: img.agreementSigning,
     imageAlt: alt.agreementSigning,
   },
   {
-    step: "04",
-    title: "Execution, in house",
-    body: "The same teams that build our own developments build yours — civil, plumbing, electrical, carpentry, finishing — with one site engineer answerable for the whole job. Come and walk the site whenever you want to see the stage it has reached.",
+    step: "05",
+    title: "05 — In-House Execution & Site Management",
+    subtitle: "Our team takes the project from plans to completion.",
+    points: [
+      "Civil and structural construction",
+      "Plumbing and electrical works",
+      "Masonry and plastering",
+      "Flooring and finishing works",
+      "Carpentry and painting",
+      "External works and site development",
+      "Landscaping, where included",
+      "Dedicated site supervision",
+      "Regular progress monitoring",
+    ],
     image: img.slabDusk,
     imageAlt: alt.slabDusk,
   },
   {
-    step: "05",
-    title: "Handover, and after",
-    body: "Snags closed, drawings and documents handed over, and we stay reachable once the building is in use. A good share of our work comes from people who have built with us before.",
-    image: img.towerOccupied,
-    imageAlt: alt.towerOccupied,
+    step: "06",
+    title: "06 — Handover & After Completion",
+    subtitle: "We stay involved until the project is properly handed over.",
+    points: [
+      "Final inspection",
+      "Snag identification and closure",
+      "Completion of pending works",
+      "Finishing and quality checks",
+      "Relevant drawings and documentation",
+      "Final handover",
+      "Post-handover support",
+    ],
+    image: img.handoverFamilyEngineer,
+    imageAlt: alt.handoverFamilyEngineer,
   },
 ];
 
@@ -217,7 +314,7 @@ export default function CivilContractsPage() {
       </Section>
 
       {/* ------------------------------------------------------ We undertake */}
-      {/* No heading, and no padding: the five screens are the section. Each
+      {/* No heading, and no padding: the six screens are the section. Each
           one names itself in its own eyebrow, and anything set above them
           would be counted as travel by the scrub — see `Undertakings`. */}
       <section id="we-undertake" className="relative isolate">
@@ -225,7 +322,7 @@ export default function CivilContractsPage() {
       </section>
 
       {/* ------------------------------------------------- What a contract is */}
-      {/* A short breather between the five photo screens and the stages, and
+      {/* A short breather between the six photo screens and the stages, and
           the one place on the site that draws the line between contract work
           and the two arrangements where we take a share of what is built. */}
       <Section tone="white" size="sm">
@@ -259,8 +356,8 @@ export default function CivilContractsPage() {
       {/* This replaces a second "trusted by" block that said what the client
           band under the hero already says.
 
-          The lead-in only, now: the five stages that used to run down the
-          right of it are five screens of their own below. Nothing is held
+          The lead-in only, now: the six stages that used to run down the
+          right of it are six screens of their own below. Nothing is held
           under the header any more — there is nothing left beside this to
           hold it against. */}
       <Section tone="mist" size="lg">
@@ -281,8 +378,8 @@ export default function CivilContractsPage() {
               <Reveal delay={160}>
                 <p className="text-[1.0625rem] leading-[1.8] text-slate-body">
                   A contract should be predictable long before it is signed.
-                  These are the five stages every project goes through with us,
-                  whether it is a single house or a factory floor.
+                  These are the six stages every project goes through with
+                  us, whether it is a single house or a factory floor.
                 </p>
               </Reveal>
               <Reveal delay={240}>
@@ -297,15 +394,52 @@ export default function CivilContractsPage() {
         </Container>
       </Section>
 
-      {/* ------------------------------------------------- The five stages */}
-      {/* No heading and no padding, like the five screens above it: each
+      {/* -------------------------------------------------- The six stages */}
+      {/* No heading and no padding, like the six screens above it: each
           stage names itself, and the lead-in has just been read. */}
       <section id="how-a-contract-runs" className="relative isolate">
-        {/* The badge is constant across the five, as the reference's
+        {/* The badge is constant across the six, as the reference's
             "Featured" is. It does not repeat the eyebrow on the lead-in
             immediately above, which is read a second before it. */}
         <ContractStages items={stages} badge="Contract stage" />
       </section>
+
+      {/* ------------------------------------------------ After the handover */}
+      {/* The close of the page, on white between the last stage and the
+          footer. Six dark screens run one into the next above it and the
+          footer is a seventh, so this is both the breath between them and the
+          one thing the page has left to ask for. Heading, a line of prose and
+          a single action, centred — the shape of the reference this section
+          was set from. */}
+      <Section tone="white" size="lg">
+        <Container>
+          <div className="mx-auto max-w-[46rem] text-center">
+            <Reveal>
+              <h2 className="text-balance-head text-[clamp(1.875rem,4vw,3rem)] leading-[1.12]">
+                The project is complete when you are satisfied with the
+                handover.
+              </h2>
+            </Reveal>
+            <Reveal delay={80}>
+              <p className="mx-auto mt-6 max-w-[38rem] text-[1.0625rem] leading-[1.8] text-slate-body">
+                Bring us the plot, the drawings and a budget. We will tell you
+                plainly what it will take to build — item by item, before
+                anything is signed.
+              </p>
+            </Reveal>
+            <Reveal delay={160}>
+              {/* `primary` is the navy pill rather than the brass one: on a
+                  white ground this is the page's one action, and it is the
+                  same button the home page closes on. */}
+              <div className="mt-10">
+                <Button href="/contact" variant="primary" size="lg" withArrow>
+                  Start A Conversation
+                </Button>
+              </div>
+            </Reveal>
+          </div>
+        </Container>
+      </Section>
     </>
   );
 }
