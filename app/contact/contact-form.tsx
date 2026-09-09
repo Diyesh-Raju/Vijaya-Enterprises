@@ -152,12 +152,13 @@ export function ContactForm() {
             htmlFor={`${uid}-phone`}
             className="mb-2.5 block text-[0.8125rem] font-semibold text-navy-900"
           >
-            Phone
+            Phone <span className="text-brass-600">*</span>
           </label>
           <input
             id={`${uid}-phone`}
             name="phone"
             type="tel"
+            required
             autoComplete="tel"
             inputMode="tel"
             maxLength={20}

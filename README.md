@@ -32,23 +32,42 @@ Also replace `offices[0].mapHref` with the real Google Maps link.
 ### 2. Where enquiries go — environment variables
 
 The enquiry form validates and rate-limits on the server, then delivers
-through whichever channel is configured. **Until one is set, submissions are
+through whichever channels are configured. **Until one is set, submissions are
 not delivered**: in development they are logged to the server console, and in
 production the visitor is told plainly to call instead (the enquiry is also
 written to the server log so nothing is lost silently).
 
-Pick one:
-
 ```bash
-# Option A — post the enquiry as JSON to any endpoint
-# (CRM, Zapier/Make, Google Apps Script, Slack workflow…)
-CONTACT_WEBHOOK_URL="https://…"
+# Primary — Vijaya's CRM (a Supabase Edge Function maintained by the CRM team)
+CRM_WEBHOOK_URL="https://…/functions/v1/website-lead-webhook"
 
-# Option B — email it via Resend (https://resend.com)
+# Copy by email, via Resend (https://resend.com)
 RESEND_API_KEY="re_…"
-CONTACT_TO_EMAIL="enquiry@vijayaenterprises.in"
-CONTACT_FROM_EMAIL="website@vijayaenterprises.in"   # must be a verified sender
+CONTACT_TO_EMAIL="diyeshraju@gmail.com"       # comma-separate for several people
+CONTACT_FROM_EMAIL="onboarding@resend.dev"    # see "sending domain" below
 ```
+
+**Sending domain.** Until a domain is verified with Resend, the only usable
+sender is `onboarding@resend.dev`, and it may only deliver to the address that
+owns the Resend account. That is why `CONTACT_TO_EMAIL` currently holds a single
+address. Once a company domain is verified, change `CONTACT_FROM_EMAIL` to
+something on it (`enquiry@vijayaenterprises.in`) and add the rest of the team to
+`CONTACT_TO_EMAIL` as a comma-separated list — both are environment changes, no
+code change. Verifying a domain also adds SPF and DKIM, which is what keeps
+Gmail from filing these in spam.
+
+Set both and every enquiry is filed in the CRM *and* copied to the inbox. The
+two are sent independently: an enquiry that reaches either one is not lost, so
+a channel that is down is logged by name but does not fail the submission or
+suppress the other. The visitor is only shown an error when nothing got
+through at all. This means `CRM_WEBHOOK_URL` can be set before the CRM is
+live — leads keep arriving by email, and start filing themselves the moment
+that endpoint answers.
+
+The CRM keys each lead on its **phone number**, so the phone field is required
+and re-submitting the same number updates that lead rather than creating a
+duplicate. Fields the CRM has no column for — the project type and the message
+— are sent inside `customFields`, which its Lead Details panel renders as-is.
 
 Also set the canonical origin, which drives `sitemap.xml`, canonical URLs and
 Open Graph tags:
