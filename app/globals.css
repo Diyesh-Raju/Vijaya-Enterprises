@@ -3047,10 +3047,10 @@
 }
 
 /* ------------------------------------------------------------------
-   What we undertake — the five kinds of work, one screen at a time, on
+   What we undertake — the six kinds of work, one screen at a time, on
    /civil-contracts.
 
-   A tall track with a pinned screen inside it and five panels stacked in
+   A tall track with a pinned screen inside it and six panels stacked in
    the screen. A panel is three layers: the photograph across the whole
    screen, the same photograph again in a portrait card left of centre,
    and the description over the right of the screen opposite it.
@@ -3077,7 +3077,7 @@
    for where the two come from.
 
    The block below the enhancement is the whole design for anyone who has
-   asked for less motion: no track, no pin, no travel — five ordinary
+   asked for less motion: no track, no pin, no travel — six ordinary
    screens, in reading order.
 ------------------------------------------------------------------- */
 
@@ -3089,7 +3089,7 @@
 /* Zero-size, and only ever a scroll target — `#industrial` and its
    neighbours, which the home page links straight into.
 
-   Unpinned, the five screens are laid out one after another and each
+   Unpinned, the six screens are laid out one after another and each
    anchor sits at its own share of the track, which lands it on its
    screen. That is an even split rather than a measurement: unpinned the
    screens are the same height to the pixel, so the split is exact. */
@@ -3135,7 +3135,7 @@
 
 /* Shade under the description, and the only reason it is readable.
 
-   Not a light wash. These five photographs are bright and busy — racking,
+   Not a light wash. These six photographs are bright and busy — racking,
    glazing, a lit warehouse aisle — and a gradient gentle enough to leave
    them alone is a gradient a bullet list disappears into. So it is a deep
    band over the side the description is read on, feathered out over
@@ -3178,9 +3178,9 @@
 
 /* ---- The cards --------------------------------------------------- */
 
-/* The box the five cards stand in, which is the template's portrait
+/* The box the six cards stand in, which is the template's portrait
    frame. It keeps the template's proportion — 22vw by 27.5vw, four to
-   five — but not its position: centred, it would sit under the
+   six — but not its position: centred, it would sit under the
    description, so from `lg` up it moves to a third across and the
    description takes the right of the screen. Above the fold on a phone,
    with the description under it.
@@ -3190,7 +3190,7 @@
    sizes they cap, so the card can never take a short window sideways —
    whichever cap bites, it bites both at once and the shape holds.
 
-   Hidden unpinned: the five panels are five separate screens there, and
+   Hidden unpinned: the six panels are six separate screens there, and
    one box cannot stand in front of all of them. What is left is a
    photograph per screen with its description over it, which is the whole
    of that design. */
@@ -3302,6 +3302,25 @@
   max-width: 34rem;
 }
 
+/* The prose keeps its 34rem measure; the list under it is allowed the rest
+   of the column. That is the whole reason a six-point list can set as three
+   and three — at 34rem the second column is too narrow for a line like
+   "Complete civil construction and execution" and every other point would
+   wrap, which is both ugly and two rows taller than the panel has room for.
+   Only from `lg` up: below it the description is across the foot of the
+   screen, where a wider block is not a wider column but a longer line. */
+@media (min-width: 1024px) {
+  .undertake__copy {
+    max-width: 40rem;
+  }
+
+  .undertake__copy > *:nth-child(1),
+  .undertake__copy > *:nth-child(2),
+  .undertake__copy > *:nth-child(3) {
+    max-width: 34rem;
+  }
+}
+
 .undertake__copy > *:nth-child(2) {
   margin-top: 1.25rem;
 }
@@ -3314,12 +3333,50 @@
   margin-top: 1.75rem;
 }
 
-/* ---- The count: five rules along the foot ------------------------ */
+/* The points, once a list runs past four and goes into two columns.
 
-/* Five of them, one per picture, where the template puts `01 / 06`. Each
+   Filled top to bottom rather than across, which is how a two-column list
+   is read — and that is why the row count is handed in from the markup as
+   `--point-rows`: column flow needs its rows declared. It also buys the one
+   thing row flow cannot do, which is an odd last point on a row of its own
+   across the foot of both columns rather than a column left one short.
+
+   One column below `sm`, where the description is across the foot of the
+   screen and two columns of it would be two lines wide. The odd point's
+   span is left behind with them: at one column it would collide with
+   whatever the auto-placement had already put in that row.
+
+   Tighter between rows at one column than the four-point lists are, because
+   at one column every point is a row of its own — seven of them at the gap
+   those lists use is 240px of the panel, and on a phone the description is
+   bottom-aligned, so height it takes is height the heading loses to the card
+   standing in front of it. */
+.undertake__points {
+  display: grid;
+  width: 100%;
+  gap: 0.5rem 2rem;
+}
+
+@media (min-width: 640px) {
+  .undertake__points {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: repeat(var(--point-rows), auto);
+    grid-auto-flow: column;
+    row-gap: 0.75rem;
+  }
+
+  .undertake__point--wide {
+    grid-row: calc(var(--point-rows) + 1);
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---- The count: six rules along the foot ------------------------- */
+
+/* Six of them, one per picture, where the template puts `01 / 06`. Each
    fills over the stretch its own picture is on screen for. Filled,
-   part-filled and empty together they say both how far through the five
-   you are and that there are five — which is the thing a pinned section
+   part-filled and empty together they say both how far through the six
+   you are and that there are six — which is the thing a pinned section
    otherwise cannot tell you, because the scrollbar is measuring a track
    and not a sequence.
 
@@ -3354,7 +3411,7 @@
   }
 }
 
-/* One rule, unfilled. Wide enough on a phone to read as a row of five
+/* One rule, unfilled. Wide enough on a phone to read as a row of six
    rather than as dashes, and capped from `lg` up so the row does not run
    the whole width of the description. */
 .undertake__tick {
@@ -3774,7 +3831,7 @@
 }
 
 /* ------------------------------------------------------------------
-   How a contract runs — the five stages on /civil-contracts.
+   How a contract runs — the six stages on /civil-contracts.
 
    One photograph per stage, one screen each, with the copy along the
    bottom edge. The layout is here; what makes it a section rather than
@@ -3947,6 +4004,51 @@
 
 .stages__text {
   max-width: 46rem;
+}
+
+/* A stage that names what it covers gets more width than one that explains
+   itself in a paragraph — but only for the list. At 46rem the two columns
+   are 348px, which is a line short of "Site inspection and existing-
+   condition assessment", and every other point would wrap around the one
+   that does. The title and the line under it keep the 46rem measure, which
+   is what a display line and a sentence want. */
+@media (min-width: 1024px) {
+  .stages__text--wide {
+    max-width: 54rem;
+  }
+
+  .stages__text--wide > h3,
+  .stages__text--wide > p {
+    max-width: 46rem;
+  }
+}
+
+/* What a stage covers, where another stage has a paragraph. Two columns
+   filled top to bottom from `md` up, on the same reasoning as
+   `.undertake__points`: a two-column list is read down one column and then
+   down the next, and six points in one column would take the copy past the
+   bottom of the screen. One column below that, where the panel is a tall
+   crop and the copy has the width of a phone. */
+.stages__points {
+  display: grid;
+  gap: 0.5rem 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .stages__points {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: repeat(var(--point-rows), auto);
+    grid-auto-flow: column;
+    row-gap: 0.75rem;
+  }
+
+  /* An odd last point across the foot of both columns rather than a column
+     left one short — see `.undertake__point--wide`, which is the same
+     arrangement in the section above. */
+  .stages__point--wide {
+    grid-row: calc(var(--point-rows) + 1);
+    grid-column: 1 / -1;
+  }
 }
 
 .stages__count {

@@ -14,7 +14,7 @@ export type Undertaking = {
 };
 
 /**
- * The five kinds of work we take on, one at a time, on a screen that holds
+ * The six kinds of work we take on, one at a time, on a screen that holds
  * still while the page is scrolled through it.
  *
  * The arrangement is the template's (`files3.1`, `script.js`): the
@@ -33,7 +33,7 @@ export type Undertaking = {
  *     1.15 behind it;
  *   · the card wipes down from the top edge, against it;
  *   · both pictures pan downwards a little as they change over;
- *   · the rule under the description hands over to the next of the five;
+ *   · the rule under the description hands over to the next of the six;
  *   · the description leaves to the right as the move opens, and comes
  *     back a part at a time over the second half of it.
  *
@@ -41,20 +41,20 @@ export type Undertaking = {
  * page. Every animation is declared in `globals.css` under `.undertake`
  * and left `paused`; `ScrollScrub` writes progress through the track into
  * `--undertake` as a time, and each animation's delay is its own start
- * minus that. One number scrubs all five panels at once, forwards and
+ * minus that. One number scrubs all six panels at once, forwards and
  * backwards, at exactly the rate the page is scrolled. The template runs
  * the same move from a GSAP timeline on the wheel, which is both a
  * dependency and a hijacked scroll; this keeps neither.
  *
  * Below the enhancement — anyone who has asked for less motion — the
- * track collapses and the five panels become five ordinary screens, each
+ * track collapses and the six panels become six ordinary screens, each
  * its own photograph with its own card and description, in reading order.
  * Same content, no travel.
  */
 
 /**
  * The clock, in scrub units. A panel HOLDs still, then MOVEs over to the
- * next one; five panels are five holds with four moves between them.
+ * next one; six panels are six holds with five moves between them.
  *
  * `PER_SCREEN` is the only one of the three that is about scrolling
  * rather than about the sequence: it is how much of the clock one screen
@@ -82,11 +82,60 @@ const PER_SCREEN = 200;
  */
 const EASE = 0.32;
 
+/**
+ * A panel's points. One column of four or fewer, as they always were; past
+ * that, two columns and a step down in size with them.
+ *
+ * Six or seven points in one column would put the last of them under the
+ * count along the foot of the screen. Three and three fit the panel, and
+ * the list is allowed the width the prose above it is not — see
+ * `.undertake__copy` in `globals.css`.
+ *
+ * The columns fill top to bottom rather than across, because a two-column
+ * list is read down one column and then down the next. That is why the row
+ * count is worked out here and handed to the stylesheet as `--point-rows`:
+ * column flow needs its rows declared. It also buys the one thing row flow
+ * cannot do — an odd last point on a row of its own across the foot of both
+ * columns (`.undertake__point--wide`), rather than seven points set as four
+ * and three with one column left visibly short.
+ */
+function Points({ points }: { points: readonly string[] }) {
+  const rows = points.length > 4 ? Math.floor(points.length / 2) : 0;
+
+  return (
+    <ul
+      className={
+        rows
+          ? "undertake__points text-[0.875rem] leading-[1.6]"
+          : "grid gap-2.5 text-[0.9375rem]"
+      }
+      style={
+        rows ? ({ "--point-rows": String(rows) } as CSSProperties) : undefined
+      }
+    >
+      {points.map((point, at) => (
+        <li
+          key={point}
+          className={`flex items-start gap-3 text-navy-100/90${
+            rows && at >= rows * 2 ? " undertake__point--wide" : ""
+          }`}
+        >
+          <span
+            aria-hidden="true"
+            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brass-400"
+          />
+          {point}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function Undertakings({ items }: { items: readonly Undertaking[] }) {
   const slot = HOLD + MOVE;
-  // Five holds and four moves. The last panel's `--exit` lands on exactly
+  // Six holds and five moves. The last panel's `--exit` lands on exactly
   // this, so the scrub runs out on the frame before it would start to
-  // leave and the fifth picture is never taken off.
+  // leave and the last picture is never taken off.
   const span = items.length * HOLD + (items.length - 1) * MOVE;
   // One screen of stage, and the rest of the track is travel to scrub that
   // screen through.
@@ -122,7 +171,7 @@ export function Undertakings({ items }: { items: readonly Undertaking[] }) {
       {/* The anchors for `#industrial` and its neighbours, which the home
           page links straight into. They are dropped down the track at the
           scroll positions where each panel has settled, and they cannot
-          live inside a panel: pinned, all five panels are stacked on the
+          live inside a panel: pinned, all six panels are stacked on the
           same screen, so an anchor in one of them would scroll to the top
           of the track and show the first. */}
       {items.map((item, index) =>
@@ -189,7 +238,7 @@ export function Undertakings({ items }: { items: readonly Undertaking[] }) {
             <div className="undertake__copy-layer">
               <div className="container-page undertake__grid">
                 <div className="undertake__copy">
-                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-brass-400">
+                  <p className="text-[0.8125rem] font-semibold uppercase tracking-[0.26em] text-brass-400 lg:text-[0.875rem]">
                     {item.eyebrow}
                   </p>
                   <h2 className="text-balance-head font-display text-[clamp(1.75rem,3.4vw,3rem)] leading-[1.1] text-white">
@@ -198,20 +247,7 @@ export function Undertakings({ items }: { items: readonly Undertaking[] }) {
                   <p className="text-[1.0625rem] leading-[1.8] text-navy-100/85">
                     {item.body}
                   </p>
-                  <ul className="grid gap-2.5">
-                    {item.points.map((point) => (
-                      <li
-                        key={point}
-                        className="flex items-start gap-3 text-[0.9375rem] text-navy-100/90"
-                      >
-                        <span
-                          aria-hidden="true"
-                          className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brass-400"
-                        />
-                        {point}
-                      </li>
-                    ))}
-                  </ul>
+                  <Points points={item.points} />
                 </div>
               </div>
             </div>
@@ -228,8 +264,8 @@ export function Undertakings({ items }: { items: readonly Undertaking[] }) {
             than twice the box to land sharp. `next dev` warns about the
             `100vw` on something rendered narrower than the window, and the
             warning is the point rather than a mistake — declaring the card's
-            own width instead would take the section from five downloads to
-            ten to save nothing.
+            own width instead would take the section from six downloads to
+            twelve to save nothing.
 
             They are here at stage level rather than one inside each panel,
             and that is the template's own arrangement rather than a
@@ -265,32 +301,32 @@ export function Undertakings({ items }: { items: readonly Undertaking[] }) {
           ))}
         </div>
 
-        {/* Five rules across the foot of the screen, one per picture, in
+        {/* Six rules across the foot of the screen, one per picture, in
             place of the template's `01 / 06`. They are here at stage level
             rather than inside a panel because they are the one thing that
             has to outlast a changeover — a panel is replaced, and the
             count of what is left to see is not.
 
             Filled, part-filled and empty together they say both how far
-            through the five you are and that there are five, which is the
+            through the six you are and that there are six, which is the
             thing a pinned section otherwise cannot tell you: the scrollbar
             is measuring a track, not a sequence.
 
             A rule fills over its own picture's stretch of the clock: from
             the moment that picture starts arriving to the moment the next
-            one does. The five stretches meet exactly, so the row reads as
-            one bar of the whole section that happens to be cut into five.
+            one does. The six stretches meet exactly, so the row reads as
+            one bar of the whole section that happens to be cut into six.
 
             Both ends are clamped, and that is the whole reason the
             arithmetic is here rather than as literal offsets in the
             stylesheet. The first picture arrives a whole move before the
             scrub starts and the last one is never taken off, so left alone
-            the row would open a fifth full and end a fifth short — the two
-            things a count of five must not do.
+            the row would open a sixth full and end a sixth short — the two
+            things a count of six must not do.
 
-            Hidden unpinned: five screens laid out one after another need
+            Hidden unpinned: six screens laid out one after another need
             no count of how many are left, and a row of rules at the bottom
-            of the last of them would be four fifths of a lie. */}
+            of the last of them would be five sixths of a lie. */}
         <div className="undertake__ticks" aria-hidden="true">
           <div className="container-page undertake__grid">
             <div className="undertake__tick-row">

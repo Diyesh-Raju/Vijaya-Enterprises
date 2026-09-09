@@ -1,10 +1,23 @@
 import Image, { type StaticImageData } from "next/image";
+import type { CSSProperties } from "react";
 
 export type ContractStage = {
   /** `01` … `05`. Written out rather than derived so it can be read here. */
   step: string;
   title: string;
-  body: string;
+  /**
+   * One line under the title, smaller than it, saying what the stage is
+   * for. It goes with `points`: a stage either explains itself in a
+   * paragraph (`body`) or names what it covers (`subtitle` and a list).
+   */
+  subtitle?: string;
+  body?: string;
+  points?: readonly string[];
+  /**
+   * One line under the list, larger than the points and in white: the thing
+   * the stage wants you to take away from them.
+   */
+  note?: string;
   image: StaticImageData;
   imageAlt: string;
 };
@@ -40,9 +53,42 @@ export type ContractStage = {
  * goes back to sitting in its own panel and scrolling with it. Mobile
  * Safari treats a fixed element as a special case during momentum scroll
  * and the hand-over judders; the reference drops the effect at those
- * widths too, and reshapes the screens into squares. Same five stages,
+ * widths too, and reshapes the screens into squares. Same six stages,
  * same order, no travel.
  */
+/**
+ * What a stage covers, where another stage has a paragraph. Two columns from
+ * `md` up, filled top to bottom, with an odd last point across the foot of
+ * both — the same arrangement as the section above this one on the page, and
+ * for the same reasons. See `Points` in `components/sections/undertakings.tsx`
+ * and `.stages__points` in `globals.css`.
+ */
+function StagePoints({ points }: { points: readonly string[] }) {
+  const rows = Math.floor(points.length / 2);
+
+  return (
+    <ul
+      className="stages__points mt-6 text-[0.9375rem] leading-[1.6]"
+      style={{ "--point-rows": String(rows) } as CSSProperties}
+    >
+      {points.map((point, at) => (
+        <li
+          key={point}
+          className={`flex items-start gap-3 text-navy-100/90${
+            at >= rows * 2 ? " stages__point--wide" : ""
+          }`}
+        >
+          <span
+            aria-hidden="true"
+            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brass-400"
+          />
+          {point}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function ContractStages({
   items,
   badge,
@@ -83,17 +129,42 @@ export function ContractStages({
             <p className="stages__badge">{badge}</p>
 
             <div className="stages__foot">
-              <div className="stages__text">
+              <div
+                className={
+                  item.points
+                    ? "stages__text stages__text--wide"
+                    : "stages__text"
+                }
+              >
                 <h3 className="text-balance-head font-display text-[clamp(1.875rem,4vw,3.25rem)] leading-[1.08] text-white">
                   {item.title}
                 </h3>
-                <p className="mt-5 max-w-[42rem] text-[1.0625rem] leading-[1.8] text-navy-100/85">
-                  {item.body}
-                </p>
+
+                {/* The line under the title, and then either the
+                    paragraph or the list — see `ContractStage`. */}
+                {item.subtitle ? (
+                  <p className="mt-4 max-w-[38rem] text-[clamp(1.0625rem,1.4vw,1.25rem)] leading-[1.5] text-white/90">
+                    {item.subtitle}
+                  </p>
+                ) : null}
+
+                {item.body ? (
+                  <p className="mt-5 max-w-[42rem] text-[1.0625rem] leading-[1.8] text-navy-100/85">
+                    {item.body}
+                  </p>
+                ) : null}
+
+                {item.points ? <StagePoints points={item.points} /> : null}
+
+                {item.note ? (
+                  <p className="mt-6 max-w-[38rem] text-[clamp(1rem,1.2vw,1.125rem)] leading-[1.6] text-white">
+                    {item.note}
+                  </p>
+                ) : null}
               </div>
 
               {/* Where the reference sets a price. It is the one thing on
-                  the screen that says how far through the five you are —
+                  the screen that says how far through the six you are —
                   a scrollbar cannot, because it is measuring the page. */}
               <p className="stages__count">
                 <span className="font-display text-[2.25rem] leading-none tabular-nums text-white sm:text-[2.75rem]">
