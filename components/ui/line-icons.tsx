@@ -160,6 +160,57 @@ export function BuildingIcon({ className }: { className?: string }) {
   );
 }
 
+/* ------------------------------------------------------------------
+   Who the company builds for — the four kinds of client the six shapes
+   above did not already have a glyph for. Same 24-unit grid and the same
+   1.5 stroke as the rest of the set, so they sit in the icon tiles on
+   /our-legacy at the weight of every other line icon on the site.
+------------------------------------------------------------------- */
+
+/** A private home — for the individuals and families. */
+export function HouseIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M3.2 10.4 12 3.5l8.8 6.9V20a1 1 0 0 1-1 1H4.2a1 1 0 0 1-1-1Z" />
+      <path d="M9.5 21v-6h5v6" />
+    </LineIcon>
+  );
+}
+
+/** A plant — a chimney block beside two stepped sheds. */
+export function FactoryIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M3 21V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v8.2l5-3.4v3.4l5-3.4V21" />
+      <path d="M2 21h20" />
+      <path d="M11.5 17.5h1.2M16 17.5h1.2" />
+    </LineIcon>
+  );
+}
+
+/** A mortarboard, tassel and all — for the schools and colleges. */
+export function GraduationCapIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M12 4 2.5 8.4 12 12.8l9.5-4.4Z" />
+      <path d="M6.6 10.6V16c0 1.6 2.4 2.9 5.4 2.9s5.4-1.3 5.4-2.9v-5.4" />
+      <path d="M21.5 8.4v5.4" />
+    </LineIcon>
+  );
+}
+
+/** A cross over a doorway — for the hospitals and medical facilities. */
+export function HospitalIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M4.5 21V5.5a1.5 1.5 0 0 1 1.5-1.5h12a1.5 1.5 0 0 1 1.5 1.5V21" />
+      <path d="M2.5 21h19" />
+      <path d="M12 7.5v5M9.5 10h5" />
+      <path d="M9.8 21v-4.6h4.4V21" />
+    </LineIcon>
+  );
+}
+
 /** How many bedrooms the layouts offer. */
 export function BedIcon({ className }: { className?: string }) {
   return (
@@ -342,5 +393,16 @@ export function PlayIcon({ className }: { className?: string }) {
     >
       <path d="M7.5 4.9a1.4 1.4 0 0 1 2.1-1.2l9 6.9a1.4 1.4 0 0 1 0 2.4l-9 7a1.4 1.4 0 0 1-2.1-1.2Z" />
     </svg>
+  );
+}
+
+/** Taking a copy away with you. */
+export function DownloadIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M12 3.5v11" />
+      <path d="m7.5 10 4.5 4.5 4.5-4.5" />
+      <path d="M4.5 17.5v1a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1" />
+    </LineIcon>
   );
 }

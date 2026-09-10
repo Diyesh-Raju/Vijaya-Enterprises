@@ -88,6 +88,11 @@ import haraVijayaConcept from "@/assets/images/hara-vijaya-concept.jpg";
 import haraVijayaHeights from "@/assets/images/hara-vijaya-heights.jpg";
 import haraVijayaHeightsHero from "@/assets/images/hara-vijaya-heights-hero.jpg";
 import haraVijayaVision from "@/assets/images/hara-vijaya-vision.jpg";
+/* The two management portraits on /our-legacy — the founder and the
+   managing director. Vijaya's own, like `tudorApartments`; see
+   `Management`. */
+import hbShivakumar from "@/assets/images/hb-shivakumar.jpg";
+import mahanteshNelavagi from "@/assets/images/mahantesh-nelavagi.jpg";
 /* The last stage of a contract on /civil-contracts — the handover.
    Supplied by the client: the couple whose house it is, reading the
    drawings with the engineer at the site table. */
@@ -116,6 +121,11 @@ import interiorLiving from "@/assets/images/interior-living.jpg";
    the other five panels are 2400, so it is the softest of the six on a wide
    window. Replace it with a larger copy of the same scene if one exists. */
 import landscapeGardenPath from "@/assets/images/landscape-garden-path.jpg";
+/* The Our Legacy hero, behind the opening aperture. Supplied by the
+   client: a model of a building being set down on its site plan with a
+   city behind it, which is the page's subject in one frame. See
+   `LegacyHero`. */
+import legacyModelCity from "@/assets/images/legacy-model-city.jpg";
 import legacyPoster from "@/assets/images/legacy-poster.jpg";
 /* The second stage of a contract on /civil-contracts — the legal and
    statutory check before anything is drawn. Supplied by the client.
@@ -162,6 +172,40 @@ import residenceBlueHour from "@/assets/images/residence-blue-hour.jpg";
 import scaleModelHands from "@/assets/images/scale-model-hands.jpg";
 import residentialInterior from "@/assets/images/residential-interior.jpg";
 import residentialLivingDusk from "@/assets/images/residential-living-dusk.jpg";
+/* The four chapters of the Vijaya story, in the order they are told: a crane
+   against a burning sky, a welder on the steel at dusk, the city lit from
+   above, and a finished room someone lives in. All four are new to the site
+   and used nowhere else — see `LegacyChapters` for the note on choosing
+   them. */
+import storyCraneDawn from "@/assets/images/story-crane-dawn.jpg";
+import storySteelWelder from "@/assets/images/story-steel-welder.jpg";
+import storyCityNight from "@/assets/images/story-city-night.jpg";
+import storyLivingRoom from "@/assets/images/story-living-room.jpg";
+/* The ground the whole story band is told against — a house at dusk over
+   still water, held behind the four chapters while they stack up over it.
+   Supplied by the client at 1072px on the long edge, where a backdrop this
+   size normally wants 4K; it survives because it is a soft render with no
+   fine detail in it and it never shows unscrimmed. See `LegacyChapters`.
+
+   Graded down off `story-ground-dusk-ungraded.jpg`, which is kept beside it
+   and is not imported:
+
+     ffmpeg -i story-ground-dusk-ungraded.jpg \
+       -vf "curves=all='0/0 0.25/0.235 0.5/0.44 0.75/0.615 1/0.79'" \
+       -q:v 2 story-ground-dusk.jpg
+
+   A rolloff on the TOP end, which is the opposite of the usual one here:
+   the ink on this band is light, so it is the photograph's highlights that
+   decide it, not its shadows, and the highlight is the sun still in the
+   cloud over the water. Ungraded, the year markers measured 2.5:1 against
+   the 3:1 a display face needs — but only past about 1600px, where the
+   shell stops growing, centres, and walks the marker column inward off the
+   scrim's edge weight and onto the brightest quarter of the frame, so a
+   laptop never showed it. Graded, the worst display type at any width from
+   1024 to 2560 is 4.0:1 and the worst small type is 5.3:1. Re-measure
+   before touching the grade or the scrim — see `.legacy-ground__fade` in
+   `app/globals.css`. */
+import storyGroundDusk from "@/assets/images/story-ground-dusk.jpg";
 import siteTeam from "@/assets/images/site-team.jpg";
 import slabDusk from "@/assets/images/slab-dusk.jpg";
 import steelRebar from "@/assets/images/steel-rebar.jpg";
@@ -173,6 +217,10 @@ import towerOccupied from "@/assets/images/tower-occupied.jpg";
    1376px on the long edge, where the stock panels are 2400. */
 import villaStreetDusk from "@/assets/images/villa-street-dusk.jpg";
 import towersGlass from "@/assets/images/towers-glass.jpg";
+/* Vijaya's own — a completed Tudor-framed apartment block, and the one
+   picture on the site that is not stock. It carries the arch on
+   /our-legacy; see `WhoWeBuildFor`. */
+import tudorApartments from "@/assets/images/tudor-apartments.jpg";
 import villaPool from "@/assets/images/villa-pool.jpg";
 import warehouseAisle from "@/assets/images/warehouse-aisle.jpg";
 
@@ -216,7 +264,9 @@ export const img = {
   haraVijayaHeights,
   haraVijayaHeightsHero,
   haraVijayaVision,
+  hbShivakumar,
   handoverFamilyEngineer,
+  mahanteshNelavagi,
   homeDusk,
   homeLawn,
   homeScrollEnd,
@@ -228,6 +278,7 @@ export const img = {
   interiorFamily,
   interiorLiving,
   landscapeGardenPath,
+  legacyModelCity,
   legacyPoster,
   legalVerificationDesk,
   meetingHands,
@@ -249,12 +300,18 @@ export const img = {
   scaleModelHands,
   residentialInterior,
   residentialLivingDusk,
+  storyCraneDawn,
+  storySteelWelder,
+  storyCityNight,
+  storyLivingRoom,
+  storyGroundDusk,
   siteTeam,
   slabDusk,
   steelRebar,
   towerOccupied,
   towersGlass,
   villaStreetDusk,
+  tudorApartments,
   villaPool,
   warehouseAisle,
   towersLawn,
@@ -312,6 +369,10 @@ export const alt = {
     "Hara Vijaya Heights seen from the landscaped frontage, its towers stepping back behind mature trees",
   haraVijayaHeightsHero:
     "Architectural view of Hara Vijaya Heights, with the tree-lined approach to the entrance lobby",
+  hbShivakumar:
+    "Sri H. B. Shivakumar, founder of Vijaya Enterprises, in a dark suit and striped tie",
+  mahanteshNelavagi:
+    "Mahantesh B. Nelavagi, Managing Director of Vijaya Enterprises, seated in his office",
   handoverFamilyEngineer:
     "A couple and a site engineer at a table on site, reading the drawings together with a model of the house in front of them and the building going up behind",
   homeDusk: "Entrance of a newly completed home lit at dusk",
@@ -331,6 +392,8 @@ export const alt = {
   interiorLiving: "Open-plan living and dining space in a completed apartment",
   landscapeGardenPath:
     "A paved garden path between flowering beds and clipped hedges, frangipani in bloom overhead, with lawn, a lily pond and terraced fields beyond",
+  legacyModelCity:
+    "Two hands setting a model of a low glass-fronted building down on its site plan, the model lit from within, a city skyline at sunset behind it",
   legacyPoster: "A building frame and tower crane silhouetted against the sunset",
   legalVerificationDesk:
     "Property papers being read across a desk: a folder and pen, a model house, a gavel and a set of scales",
@@ -367,6 +430,16 @@ export const alt = {
     "Warmly lit living and dining room in a completed Vijaya home, with a sofa, armchair and planting",
   residentialLivingDusk:
     "A warmly lit living room at dusk, floor-to-ceiling glass open to the city lights, with a Ganesha idol, marigolds and embroidered cushions",
+  storyCraneDawn:
+    "A tower crane and two workers in silhouette against a burning orange sky, reinforcement bars rising around them",
+  storySteelWelder:
+    "A welder at work on a steel frame at dusk, sparks falling from the torch, a second worker on the beam above",
+  storyCityNight:
+    "An Indian city from the air at night, apartment towers and a lit arterial road running away into the haze",
+  storyLivingRoom:
+    "A finished contemporary living room, panelled navy feature wall, filament pendants and daylight through sheer curtains",
+  storyGroundDusk:
+    "A low modern house of glass and stone at dusk, its roof reaching out over a still infinity pool that runs to a lake and distant hills",
   siteTeam: "Site engineers and workers walking a large concrete deck",
   slabDusk:
     "Workers silhouetted at dusk against a pink sky, on the reinforcement cage of a floor going up",
@@ -376,6 +449,8 @@ export const alt = {
   villaStreetDusk:
     "A completed private residence at dusk seen from the street: three storeys in stone, timber and glass, the rooms and the planting lit, and a car standing in the porch",
   towersGlass: "Glass office towers seen from street level",
+  tudorApartments:
+    "A completed four-storey apartment block with a tiled gabled roof and black timber framing over white render, seen from the road",
   villaPool: "Completed villa with a swimming pool and terrace",
   warehouseAisle: "Aisle inside a completed warehouse facility",
   towersLawn:

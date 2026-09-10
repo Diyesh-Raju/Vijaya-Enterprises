@@ -59,3 +59,19 @@ next-env.d.ts
 /files5/
 /Scroll-Transition-main/
 /gooey-hover-codrops-master/
+/Legacy 1.0/
+/Legacy 1.1/
+/Legacy 1.2/
+
+# The three Legacy demos above are the same kind of thing and are named in
+# comments as the source of two effects — the Capsule preloader behind the
+# hero in `legacy-hero.tsx`, and the stack behind `LegacyChapters`. They
+# carry 47 MB of media between them, including a 30 MB smoke clip, none of
+# which is imported or served.
+
+# The brochures as the client supplied them, at the repo root. The copies
+# that are served — and the page images rendered off them — are committed
+# under `public/brochures/` and `assets/brochures/`; these are the same
+# 21 MB again, under names nothing references.
+/E-Brochure.pdf
+/E-BROCHURE*.pdf

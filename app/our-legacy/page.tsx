@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
-import { PageHero } from "@/components/sections/page-hero";
+import { LegacyHero } from "@/components/sections/legacy-hero";
 import { CtaBand } from "@/components/sections/cta-band";
+import { WhoWeBuildFor } from "@/components/sections/who-we-build-for";
+import { Management } from "@/components/sections/management";
+import { LegacyChapters, type Chapter } from "@/components/sections/legacy-chapters";
+import { BrochureShelf } from "@/components/sections/brochure-shelf";
 import { Container, Section, SectionHeading, Eyebrow } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { Frame } from "@/components/ui/media";
-import { Counter } from "@/components/ui/counter";
 import { Marquee } from "@/components/ui/marquee";
 import { VideoBackdrop } from "@/components/ui/video-backdrop";
 import { img, alt, video } from "@/lib/images";
@@ -17,26 +20,53 @@ export const metadata: Metadata = {
   alternates: { canonical: "/our-legacy" },
 };
 
-const story = [
+/**
+ * The four chapters, and the photograph each is told against.
+ *
+ * All four photographs were brought in for this section and appear nowhere
+ * else on the site; nothing already in `lib/images.ts` was reused, because
+ * everything already there has been on the site at some point.
+ *
+ * The pictures are an arc, and it opens out: a crane and two men against a
+ * burning sky, then a welder on the steel at dusk, then the whole city lit
+ * from the air, then one finished room with the light coming through it. The
+ * first three are the work and the last is what it was for.
+ *
+ * SIX candidates were rejected at full size along the way, all of them for
+ * carrying somebody else's name where a contact sheet showed nothing: a "KRA"
+ * polo shirt, a Chinese contractor's board on a crane jib, a bank's mark on a
+ * glass tower, "INFINITY" on two different hard hats, and the UB and
+ * Kingfisher lettering on a Bengaluru skyline. Check the full-size file
+ * before adding a fifth.
+ */
+const story: readonly Chapter[] = [
   {
     marker: "1973",
     title: "The beginning of our journey.",
     body: "Vijaya Enterprises begins work as a construction company, with a simple commitment: build properly, and stand behind the work.",
+    image: img.storyCraneDawn,
+    imageAlt: alt.storyCraneDawn,
   },
   {
     marker: "Growing",
     title: "Years of construction experience.",
     body: "Growing through projects, partnerships and relationships — and through every change in materials, methods and technology the industry went through.",
+    image: img.storySteelWelder,
+    imageAlt: alt.storySteelWelder,
   },
   {
     marker: "Expanding",
     title: "Multiple sectors.",
     body: "Residential. Commercial. Industrial. Institutional. Work for individuals and families, and for organisations across defence, banking, education, healthcare and the public sector.",
+    image: img.storyCityNight,
+    imageAlt: alt.storyCityNight,
   },
   {
     marker: "Today",
     title: "The next generation of spaces.",
     body: "Building for a new generation of customers with the same values that built our reputation in the first place.",
+    image: img.storyLivingRoom,
+    imageAlt: alt.storyLivingRoom,
   },
 ];
 
@@ -61,228 +91,27 @@ const values = [
 export default function OurLegacyPage() {
   return (
     <>
-      <PageHero
-        eyebrow="Our Legacy"
-        title="Building trust since 1973."
-        lead="For more than five decades, Vijaya Enterprises has been part of the construction landscape. What began in 1973 has grown into a diversified construction and development company working across residential, commercial, industrial and institutional projects."
-        image={img.siteTeam}
-        imageAlt={alt.siteTeam}
-      />
+      <LegacyHero />
 
-      {/* ---------------------------------------------------------- Opening */}
-      <Section tone="white" size="lg">
-        <Container>
-          <div className="grid gap-14 lg:grid-cols-12 lg:gap-20">
-            <div className="lg:col-span-7">
-              <Reveal>
-                <Eyebrow>Who We Build For</Eyebrow>
-              </Reveal>
-              <Reveal delay={80}>
-                <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
-                  Individuals, families, businesses, institutions.
-                </h2>
-              </Reveal>
-              <Reveal delay={160}>
-                <div className="mt-7 space-y-5 text-[1.0625rem] leading-[1.8] text-slate-body">
-                  <p>
-                    We have built for individuals, families, businesses,
-                    institutions and large organisations. Our experience ranges from
-                    homes and apartments to industrial facilities, educational
-                    buildings, hospitals, commercial spaces and specialised
-                    infrastructure.
-                  </p>
-                  <p>
-                    Unlike many developers that specialise in a single segment, we
-                    have delivered projects for homeowners, industries, government
-                    organisations, educational institutions, hospitals, banks and
-                    public sector organisations. That breadth is one of the things
-                    we are most confident about.
-                  </p>
-                </div>
-              </Reveal>
-            </div>
+      <WhoWeBuildFor />
 
-            <div className="lg:col-span-5">
-              <Reveal delay={120}>
-                <div className="rounded-[2rem] border border-line bg-mist p-8 sm:p-10">
-                  <dl className="space-y-8">
-                    <div>
-                      <dt className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-slate-muted">
-                        Years of experience
-                      </dt>
-                      <dd className="mt-3 font-display text-[3rem] leading-none text-navy-900">
-                        <Counter to={50} suffix="+" />
-                      </dd>
-                    </div>
-                    <div className="h-px w-full bg-line-strong" />
-                    <div>
-                      <dt className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-slate-muted">
-                        Building since
-                      </dt>
-                      <dd className="mt-3 font-display text-[3rem] leading-none text-navy-900">
-                        1973
-                      </dd>
-                    </div>
-                    <div className="h-px w-full bg-line-strong" />
-                    <div>
-                      <dt className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-slate-muted">
-                        Construction verticals
-                      </dt>
-                      <dd className="mt-3 font-display text-[1.25rem] leading-snug text-navy-900">
-                        Residential · Commercial · Industrial · Institutional
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-              </Reveal>
-            </div>
-          </div>
-        </Container>
-      </Section>
+      <Management />
 
-      {/* ------------------------------------------------------------- Story */}
-      <Section tone="mist" size="lg">
-        <Container>
-          <SectionHeading
-            eyebrow="The Vijaya Story"
-            title="Five decades, in four chapters."
-          />
-
-          <ol className="mt-14 lg:mt-20">
-            {story.map((chapter, index) => (
-              <Reveal
-                key={chapter.marker}
-                as="li"
-                delay={index * 70}
-                className="group grid gap-5 border-t border-line-strong py-10 last:border-b sm:grid-cols-12 sm:gap-8 sm:py-12"
-              >
-                <div className="sm:col-span-3">
-                  <span className="font-display text-[1.75rem] leading-none text-brass-600 sm:text-[2rem]">
-                    {chapter.marker}
-                  </span>
-                </div>
-                <div className="sm:col-span-9">
-                  <h3 className="font-display text-[1.5rem] leading-snug text-navy-900 sm:text-[1.875rem]">
-                    {chapter.title}
-                  </h3>
-                  <p className="mt-4 max-w-2xl text-[1rem] leading-[1.8] text-slate-body">
-                    {chapter.body}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
-          </ol>
-        </Container>
-      </Section>
-
-      {/* ------------------------------------------- Experience & confidence */}
-      <Section tone="white" size="lg">
-        <Container>
-          <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
-            <div className="order-2 lg:order-1 lg:col-span-6">
-              <Reveal>
-                <Frame
-                  src={img.blueprintCraft}
-                  alt={alt.blueprintCraft}
-                  ratio="landscape"
-                  sizes="(max-width: 1024px) 100vw, 45vw"
-                  rounded="rounded-[2rem] sm:rounded-[3rem]"
-                />
-              </Reveal>
-            </div>
-            <div className="order-1 lg:order-2 lg:col-span-6">
-              <Reveal>
-                <Eyebrow>Experience Builds Confidence</Eyebrow>
-              </Reveal>
-              <Reveal delay={80}>
-                <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
-                  Experience matters when you choose a partner.
-                </h2>
-              </Reveal>
-              <Reveal delay={160}>
-                <div className="mt-7 space-y-5 text-[1.0625rem] leading-[1.8] text-slate-body">
-                  <p>
-                    Over five decades, Vijaya Enterprises has worked across
-                    different project types, budgets, industries and requirements.
-                  </p>
-                  <p className="font-display text-[1.375rem] leading-snug text-navy-900 sm:text-[1.5rem]">
-                    That experience has taught us something simple: every project
-                    matters, and every customer matters.
-                  </p>
-                </div>
-              </Reveal>
-            </div>
-          </div>
-        </Container>
-      </Section>
-
-      {/* -------------------------------------------------------- Philosophy */}
-      <section className="relative isolate overflow-hidden bg-navy-950">
-        <VideoBackdrop
-          poster={img.legacyPoster}
-          posterAlt={alt.legacyPoster}
-          srcDesktop={video.legacyDesktop}
-          srcMobile={video.legacyMobile}
-          kenBurns={false}
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-b from-navy-950/94 via-navy-950/90 to-navy-950/97"
-        />
-
-        <Container className="relative py-24 sm:py-32 lg:py-40">
-          <div className="mx-auto max-w-3xl text-center">
-            <Reveal>
-              <Eyebrow onNavy className="justify-center">
-                Our Philosophy
-              </Eyebrow>
-            </Reveal>
-            <Reveal delay={80}>
-              <h2 className="text-balance-head mt-7 text-[clamp(2rem,5vw,3.75rem)] leading-[1.06] text-white">
-                Every Project. Every Customer. Like Family.
-              </h2>
-            </Reveal>
-            <Reveal delay={160}>
-              <p className="mt-8 text-[1.0625rem] leading-[1.8] text-navy-100/85">
-                We believe construction should be handled with the same care we
-                would expect when building something for our own family. That means
-                understanding the requirement, maintaining quality, being
-                responsible with resources and delivering value.
-              </p>
-            </Reveal>
-            <Reveal delay={240}>
-              <p className="mt-8 text-[1.0625rem] leading-[1.8] text-navy-100/85">
-                Customers are not transactions. They are families placing their
-                life&rsquo;s savings and dreams in our hands.
-              </p>
-            </Reveal>
-          </div>
-
-          <div className="mx-auto mt-16 grid max-w-4xl gap-4 sm:mt-20 sm:grid-cols-2 sm:gap-5">
-            <Reveal className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-8 text-center sm:p-10">
-              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-brass-400">
-                Our Vision
-              </p>
-              <p className="mt-5 font-display text-[1.5rem] leading-snug text-white sm:text-[1.75rem]">
-                Building trust for generations.
-              </p>
-            </Reveal>
-            <Reveal
-              delay={90}
-              className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-8 text-center sm:p-10"
-            >
-              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-brass-400">
-                Our Mission
-              </p>
-              <p className="mt-5 font-display text-[1.5rem] leading-snug text-white sm:text-[1.75rem]">
-                Building trust through quality construction.
-              </p>
-            </Reveal>
-          </div>
-        </Container>
-      </section>
+      <LegacyChapters chapters={story} />
 
       {/* ------------------------------------------------------------ Values */}
+      {/* Straight off the back of the story, and before the brochures. The
+          four chapters are what Vijaya did; these are what it held to while
+          doing it, which is the sentence the story has just finished making.
+          The books then follow as the thing a reader can open and check it
+          against — the claim, then the evidence.
+
+          It is also the one light band in the run: the chapters, the
+          brochures and the credibility band are all dark, so wherever this
+          sits, two dark bands meet somewhere. Here the seam falls between
+          the brochures and the credibility band, both of which are flat
+          navy behind their content, rather than between two bands carrying
+          photographs. */}
       <Section tone="white" size="lg">
         <Container>
           <SectionHeading
@@ -309,6 +138,60 @@ export default function OurLegacyPage() {
           </dl>
         </Container>
       </Section>
+
+      {/* --------------------------------------------------------- Brochures */}
+      {/* The band the philosophy used to hold. It keeps its ground — the
+          same footage under the same gradient — and gives the row that
+          carried the vision and the mission over to the two brochures
+          Vijaya has printed. The anchor is what a reader comes back to
+          from a book. */}
+      <section
+        id="brochures"
+        className="relative isolate overflow-hidden bg-navy-950 scroll-mt-[var(--header-h)]"
+      >
+        <VideoBackdrop
+          poster={img.legacyPoster}
+          posterAlt={alt.legacyPoster}
+          srcDesktop={video.legacyDesktop}
+          srcMobile={video.legacyMobile}
+          kenBurns={false}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-b from-navy-950/94 via-navy-950/90 to-navy-950/97"
+        />
+
+        <Container className="relative py-24 sm:py-32 lg:py-40">
+          <div className="mx-auto max-w-3xl text-center">
+            <Reveal>
+              <Eyebrow onNavy className="justify-center">
+                The Brochures
+              </Eyebrow>
+            </Reveal>
+            <Reveal delay={80}>
+              <h2 className="text-balance-head mt-7 text-[clamp(2rem,5vw,3.75rem)] leading-[1.06] text-white">
+                What we have built, cover to cover.
+              </h2>
+            </Reveal>
+            <Reveal delay={160}>
+              <p className="mt-8 text-[1.0625rem] leading-[1.8] text-navy-100/85">
+                Two of our residential projects were printed as books — the
+                master plan, the specifications, the floor plans unit by unit
+                and the roads that reach them, set out page by page the way
+                they went to press.
+              </p>
+            </Reveal>
+            <Reveal delay={240}>
+              <p className="mt-8 text-[1.0625rem] leading-[1.8] text-navy-100/85">
+                Both are here whole, with nothing left out. Open one and turn
+                it a spread at a time, or take the PDF with you.
+              </p>
+            </Reveal>
+          </div>
+
+          <BrochureShelf />
+        </Container>
+      </section>
 
       {/* ------------------------------------------------------- Credibility */}
       <Section tone="navy" size="lg">

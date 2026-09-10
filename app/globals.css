@@ -5272,3 +5272,1591 @@
   );
   pointer-events: none;
 }
+
+/* ------------------------------------------------------------------
+   The seal on the arch — /our-legacy, "Who we build for".
+
+   A dark disc hung off the bottom-right corner of the arch, with the
+   company's name turning slowly around a crest. Drawn here rather than in
+   utilities for two reasons: the ring is a `textPath`, whose size and
+   tracking are SVG properties Tailwind has no hold on, and the spin is a
+   loop, which on this site means it has to be switchable off under
+   `prefers-reduced-motion` in one place with the rest of them.
+
+   Every measurement clamps off the same three-point scale as the arch it
+   sits on, so the seal keeps its proportion to the picture from a 390px
+   phone up to the container's cap. It overhangs the frame's right edge by
+   a hair — that is what stops it reading as a sticker placed *on* the
+   photograph and makes it read as a seal pressed over its corner.
+
+   See `Seal` in `components/sections/who-we-build-for.tsx`.
+------------------------------------------------------------------- */
+.legacy-seal {
+  position: absolute;
+  right: clamp(-10px, -1vw, -6px);
+  bottom: clamp(18px, 4vw, 40px);
+  display: grid;
+  place-items: center;
+  width: clamp(88px, 11vw, 122px);
+  height: clamp(88px, 11vw, 122px);
+  border-radius: 50%;
+  background-color: var(--color-navy-900);
+  color: #fff;
+  box-shadow: 0 16px 34px rgb(11 26 58 / 0.34);
+  pointer-events: none;
+}
+
+.legacy-seal__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  animation: legacy-seal-spin 22s linear infinite;
+}
+
+/* 6.6px on a 100-unit box, and the tracking with it: the ring carries 42
+   characters where the geometry has room for about 40 at 7.4, so both come
+   down together rather than the letters being squeezed into the same
+   advance. */
+.legacy-seal__ring text {
+  fill: rgb(255 255 255 / 0.92);
+  font-family: var(--font-sans);
+  font-size: 6.6px;
+  font-weight: 600;
+  letter-spacing: 1.35px;
+}
+
+.legacy-seal__mark {
+  width: clamp(28px, 3.4vw, 38px);
+  height: clamp(28px, 3.4vw, 38px);
+  color: var(--color-brass-400);
+}
+
+@keyframes legacy-seal-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .legacy-seal__ring {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   The management panel's entrance and exit — /our-legacy.
+
+   In from the right, out to the left. Two classes, added and removed by
+   `management.tsx`, and deliberately NOT the `@starting-style` +
+   `transition-behavior: allow-discrete` approach this started as.
+
+   That approach is the modern one and it animated correctly in Chrome, but
+   it asks the browser to keep painting an element that is no longer an open
+   dialog — `close()` drops `[open]`, and `display` and `overlay` are then
+   held only by the discrete transition. Where any part of that is imperfect
+   the panel comes apart on the way out: the reported symptom was the top
+   two thirds vanishing on the spot while the bottom slid away, which is
+   what a half-torn-down top-layer element looks like.
+
+   So the dialog is never closed until the travel is over. `[open]` stays
+   on, the element stays `:modal` and stays in the top layer for the whole
+   exit, and `close()` is called from `transitionend`. Nothing about the
+   element's own rendering changes mid-animation, which is the only way to
+   be sure it cannot break apart.
+
+   THE CURVE IS DIFFERENT PER DIRECTION, and that is not decoration. An
+   arrival curve run backwards is wrong in a way that is very visible:
+   `--ease-out-soft` on the way out threw the panel 70% of the way off
+   screen inside 120ms and then crept the remainder. `--ease-reveal` comes
+   in — its own note in the token block explains why it, and not
+   `--ease-out-soft`, is the arrival curve over a distance this long.
+
+   The hand-written cubic goes out. It was picked by measuring rather than
+   by eye; the share of the screen crossed at 150/300/450/600/750ms of the
+   900 was compared for four candidates:
+
+     0.64,0,0.78,0.39   1%   4%  12%  26%  57%   hangs, then snaps away
+     0.40,0,0.75,0.45   2%   9%  22%  40%  64%   still slow off the mark
+     0.32,0,0.67,0.55   4%  15%  31%  54%  77%   ← this one
+     0.55,0,0.45,1      3%  16%  50%  81%  96%   crawls the last sliver off
+
+   A departure wants an ease-IN — it should gather pace and leave, not slow
+   down as the last strip of it clears the edge, which is what the fourth
+   does. But a strong ease-in is worse: the third of a second where the
+   first two candidates have not visibly moved reads as the panel freezing
+   before it goes.
+
+   `--mgmt-travel` is set on the element by `management.tsx`, so the length
+   of the journey and the timer that ends it cannot drift apart.
+------------------------------------------------------------------- */
+.mgmt-dialog {
+  transform: translateX(0);
+  transition: transform var(--mgmt-travel, 900ms) var(--ease-reveal);
+}
+
+/* Where it starts. `transition: none` so that putting the panel out to the
+   right is instant and invisible; releasing the class one frame later is
+   what the eye actually sees, and that transitions on the rule above. */
+.mgmt-dialog.is-entering {
+  transform: translateX(100%);
+  transition: none;
+}
+
+.mgmt-dialog.is-leaving {
+  transform: translateX(-100%);
+  transition: transform var(--mgmt-travel, 900ms)
+    cubic-bezier(0.32, 0, 0.67, 0.55);
+}
+
+/* The ground behind it fades rather than travelling: a scrim that slides is
+   a second moving object competing with the panel for the eye. It runs to
+   the same clock, so the page behind is never uncovered ahead of the panel
+   clearing it. */
+.mgmt-dialog::backdrop {
+  opacity: 1;
+  transition: opacity var(--mgmt-travel, 900ms) var(--ease-reveal);
+}
+
+.mgmt-dialog.is-entering::backdrop {
+  opacity: 0;
+  transition: none;
+}
+
+.mgmt-dialog.is-leaving::backdrop {
+  opacity: 0;
+  transition: opacity var(--mgmt-travel, 900ms)
+    cubic-bezier(0.32, 0, 0.67, 0.55);
+}
+
+/* Asked for less movement, the panel arrives and leaves without the
+   journey. `management.tsx` asks the same question and closes the dialog on
+   the spot rather than waiting for a `transitionend` that will never come.
+   Both halves have to agree, or the panel sits on screen after the press. */
+@media (prefers-reduced-motion: reduce) {
+  .mgmt-dialog,
+  .mgmt-dialog.is-entering,
+  .mgmt-dialog.is-leaving {
+    transform: none;
+    transition: none;
+  }
+
+  .mgmt-dialog::backdrop,
+  .mgmt-dialog.is-entering::backdrop,
+  .mgmt-dialog.is-leaving::backdrop {
+    opacity: 1;
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   The Vijaya story — /our-legacy.
+
+   Four chapters, one picture each, stacking up. Rebuilt on the pattern the
+   Nocturne café band uses, and the important thing about it is what is NOT
+   here: there is no keyframe and no transition on the pictures. Each one is
+   a `position: sticky` block a screen tall, laid out one after another in
+   the ordinary flow, and scrolling brings the next up from below and pins
+   it over the last. The travel is the browser's own sticky positioning.
+
+   Only two things are left for `legacy-chapters.tsx` to write each frame:
+   the words either side, which cross over as a picture lands, and the
+   shrink on the pictures underneath.
+
+   The layout is the picture, as large as the window will carry, in the
+   MIDDLE — with the chapter's marker down its left and what happened in it
+   down its right, in one sticky layer over the whole stack.
+------------------------------------------------------------------- */
+
+.legacy-band {
+  /* The words layer spans the track and the pictures are centred in it;
+     neither should be able to widen the document on a narrow window. */
+  overflow-x: clip;
+}
+
+/* The ground the story is told against — the dusk photograph, held still
+   while the chapters ride up over it.
+
+   `clip` above and nothing else: `overflow: hidden` anywhere between here
+   and a sticky child makes an ancestor a scroll container and the child
+   stops sticking, which would take out both the ground and every picture in
+   the band. `clip` does not, which is why the rule above says `clip`.
+
+   The layer spans the whole section and the screen inside it is sticky, so
+   the browser pins the photograph for as long as the section is passing it
+   and lets go at its foot. No z-index: it is the first child, and every
+   positioned thing after it — the heading, the track, the words — paints
+   over it in document order. */
+.legacy-ground {
+  position: absolute;
+  inset: 0;
+  /* Nothing here is clickable, and it is under the pictures. */
+  pointer-events: none;
+}
+
+.legacy-ground__screen {
+  position: sticky;
+  /* 0, not `--header-h`: the bar is fixed over the page and the ground goes
+     behind it. A screen means the whole screen. */
+  top: 0;
+  height: 100svh;
+}
+
+/* The scrim, in two layers, and every number in it is measured — with the
+   ink hidden, off the worst line-sized patch inside each run's own rects.
+
+   The binding ink is the brass year marker, not the body copy, and that is
+   worth saying because it is the opposite of what it looks like. The
+   description is 15px and wants 4.5:1, but it sits on the house, which is
+   the dark end of the photograph; the marker is a 35-48px display face and
+   only wants 3:1, but it sits on the water, which is the bright end.
+   `brass-400` is a 0.53-luminance ink, so it clears 3:1 only while the
+   ground under it stays below about 0.14 — and ungraded that water runs to
+   0.9. That is what sets the flat layer, and the file's own grade.
+
+   Flat first, so the whole picture settles by the same amount and the dusk
+   keeps its own tonal shape rather than being flattened into a wash. */
+.legacy-ground__wash {
+  position: absolute;
+  inset: 0;
+  background-color: rgb(6 20 49 / 0.46);
+}
+
+/* Then the weight, where the words are. Two gradients in one layer, the
+   horizontal painted over the vertical.
+
+   DOWN: heavy at the head of the screen, where the section heading sits on
+   the brightest part of the sky, and heavy again at its foot. The foot is
+   doing two jobs: for most of the band it is simply a vignette under the
+   picture, and at the very end — where sticky has clamped and the screen's
+   bottom edge IS the section's — it is what hands the band over to the navy
+   the Philosophy section starts on, so the two meet in a fade rather than
+   at an edge. The middle is left alone; the picture stands there and the
+   chapters cover it anyway.
+
+   ACROSS: the year markers run down the far left of the band, and the left
+   of this photograph is its brightest quarter — the sun still in the cloud
+   over the water. The right edge is carried along at less, where the
+   description already has room, so the falloff reads as one vignette rather
+   than as a patch over the left column.
+
+   Note what this layer CANNOT do, because it caught me out: it is measured
+   off the window, and the words are not. Past about 1600px the shell stops
+   growing and centres, which walks the marker column inward, off this edge
+   weight and onto the brightest part of the frame — so the worst marker on
+   the site is at 2560, not at 1024. The grade on the file is what covers
+   that; this is what covers the narrow end.
+
+   Measured across 1024→2560, at every chapter: display type bottoms out at
+   4.0:1 against a 3:1 floor, small type at 5.3:1 against 4.5. Re-measure
+   both before touching the grade, the scrim, or the marker's colour. */
+.legacy-ground__fade {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(
+      to right,
+      rgb(6 20 49 / 0.26) 0%,
+      rgb(6 20 49 / 0) 30%,
+      rgb(6 20 49 / 0) 72%,
+      rgb(6 20 49 / 0.16) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgb(6 20 49 / 0.62) 0%,
+      /* Held out to a quarter of the screen rather than falling straight
+         away: the eyebrow sits about 200px down, on sky, and it is 11px
+         type — the tightest thing in the band. */
+      rgb(6 20 49 / 0.4) 24%,
+      rgb(6 20 49 / 0.12) 46%,
+      rgb(6 20 49 / 0.12) 62%,
+      rgb(6 20 49 / 0.72) 100%
+    );
+}
+
+/* Wider than the site's `container-page`, and only here. The picture is the
+   point of this band and every inch the gutters give up goes to it. */
+.legacy-shell {
+  width: 100%;
+  max-width: 96rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .legacy-shell {
+    padding-inline: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .legacy-shell {
+    padding-inline: 3rem;
+  }
+}
+
+/* The track is exactly its slots — one screen each — plus a tail. Every
+   slot goes on sticking until the track's bottom edge reaches it, so the
+   tail is what holds the last picture on screen for a moment before the
+   band lets go. */
+.legacy-track {
+  position: relative;
+  padding-bottom: 40svh;
+}
+
+/* One chapter's screen. `top` is the bar's height because the bar is fixed
+   over the page: a picture pinned to 0 would have its head under it. */
+.legacy-slot {
+  position: sticky;
+  top: var(--header-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100svh - var(--header-h));
+  padding-inline: 1.25rem;
+}
+
+.legacy-card {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  width: min(100%, 46rem);
+  aspect-ratio: 4 / 3;
+  border-radius: 1.25rem;
+  background-color: var(--color-navy-100);
+  /* Cast for the dusk ground, not the mist one it used to stand on: on
+     navy a 0.3 navy shadow is not there at all. */
+  box-shadow: 0 30px 70px rgb(2 8 22 / 0.55);
+  /* The shrink grows downward from the head of the picture, so the lip at
+     the top of the stack stays put while the foot of a covered picture
+     rises behind the one over it. */
+  transform-origin: top center;
+  /* A picture is only ever transformed between two resting sizes, and CSS
+     takes it there — see `COVER_AT` in `legacy-chapters.tsx` for why this
+     is a transition and not a scrubbed value. `will-change` keeps the
+     photograph on its own layer so the change is a texture scale rather
+     than a re-raster of a 768px image. */
+  transform: scale(1);
+  transition: transform 620ms var(--ease-reveal);
+  will-change: transform;
+}
+
+/* How far back a picture sits, by how many are on top of it. Written as
+   multiples of one step, so the step is stated once, in the component. */
+.legacy-card[data-covered="1"] {
+  transform: scale(calc(1 - var(--legacy-shrink)));
+}
+
+.legacy-card[data-covered="2"] {
+  transform: scale(calc(1 - var(--legacy-shrink) * 2));
+}
+
+.legacy-card[data-covered="3"] {
+  transform: scale(calc(1 - var(--legacy-shrink) * 3));
+}
+
+/* The shrink is decoration on top of the stack the lip already makes. */
+@media (prefers-reduced-motion: reduce) {
+  .legacy-card {
+    transition: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .legacy-card {
+    border-radius: 1.75rem;
+    /* Sized off the WINDOW rather than off a column, so the picture is as
+       large as the band can carry. Width follows from the aspect ratio; the
+       ceiling is what leaves the words a column either side of it.
+
+       And it is stated as the room actually left over, not as a share of
+       the window. The words are in a separate sticky layer with fixed outer
+       columns, so nothing stops a picture sized off `vw` from growing into
+       them — and under about 1360px a `64vw` picture did exactly that, far
+       enough that at 1024 the description was set over the middle of the
+       photograph.
+
+       The subtraction is DOUBLE THE DESCRIPTION COLUMN, not the two columns
+       added together, and that is the whole trick: the picture is centred
+       on the WINDOW, by the slot's flexbox, while the room the words leave
+       is not centred on anything — the description column is wider than the
+       marker column, so the gap in the middle sits left of centre. What a
+       window-centred picture can carry is therefore twice its distance to
+       the nearer edge, which is always the description's, since that column
+       is the wider of the two at every width. The `2rem` is a hand's width
+       of air so the picture never comes right up to the type; it is what
+       the band already left at 1440, so nothing above that width moves. */
+    width: auto;
+    height: min(calc((100svh - var(--header-h)) * 0.82), 36rem);
+    max-width: min(
+      64vw,
+      52rem,
+      calc(min(100vw, 96rem) - 6rem - calc(2 * clamp(11rem, 19vw, 19rem)) - 2rem)
+    );
+  }
+}
+
+/* The words, over the stack. `absolute` across the whole track with a sticky
+   screen inside it, so the layer holds still while the pictures move
+   through it — the same shape the reference uses for its headline. */
+.legacy-words {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  /* Nothing here is clickable, and the pictures underneath should still be
+     able to take a pointer. */
+  pointer-events: none;
+}
+
+.legacy-words__screen {
+  position: sticky;
+  top: var(--header-h);
+  height: calc(100svh - var(--header-h));
+}
+
+.legacy-words__grid {
+  display: grid;
+  /* The two outer columns are the words; the middle one is empty and is the
+     room the picture stands in. Fixed outer columns rather than fractions,
+     so the picture's own width decides the composition and the words simply
+     take what is left either side of it. */
+  grid-template-columns:
+    clamp(6rem, 11vw, 11rem)
+    minmax(0, 1fr)
+    clamp(11rem, 19vw, 19rem);
+  align-items: center;
+  gap: clamp(1rem, 2vw, 2rem);
+  height: 100%;
+}
+
+/* All four sets laid over each other in one cell, so the column keeps the
+   height of its tallest chapter and nothing moves as they cross over. */
+.legacy-notes {
+  display: grid;
+  grid-template-areas: "note";
+  align-items: center;
+}
+
+.legacy-note {
+  grid-area: note;
+  will-change: transform, opacity;
+}
+
+/* `visibility` is written from the component alongside the opacity, and is
+   not derived here from it.
+
+   The obvious rule — `.legacy-note[style*="opacity: 0"]` — is a trap, and it
+   cost a chapter once: an attribute substring match on the inline style also
+   matches `opacity: 0.96`, so the note that was up was the one being hidden.
+   Anything reading a live numeric value has to come from the code writing
+   it. */
+
+/* ------------------------------------------------------------------
+   The Our Legacy hero — a load on white paper, and the photograph
+   opening out of the middle of it.
+
+   Built on the Capsule preloader in `Legacy 1.2/`. That is a GSAP timeline
+   of some thirty tweens; this is CSS animations on one clock with no
+   JavaScript in it at all, which is why there is no hydration step that
+   could arrive after the first paint and restart the load.
+
+   ONE CLOCK — `--reveal` — and every animation below is a share of it.
+   The load's phases follow one another; the arrival's overlap on purpose,
+   which is the note under the table:
+
+        0 →  4%   the capsule, up from the template's own 0.86
+        4 → 19%   the name dealt in from the right, a word at a time
+        6 → 40%   the bar fills — in surges, the way a real one does
+       41 → 48%   the name slides out to the left, as one line
+       46 → 54%   THEN the capsule fades
+       50 → 63%   THEN the white goes, and the photograph is simply there
+       50 → 84%   easing out of its zoom as it arrives
+       58 → 72%   the grade, under the white as it leaves
+       74 → 86%   THEN the title, from above
+       80 → 96%   and the date, from below
+
+   ONE MOVE, NOT TWO. The white simply leaves, and the photograph is
+   already behind it at full size — no shape opens on it and nothing grows.
+   The only thing still moving as it arrives is the picture's own zoom,
+   which settles half a second later, so the arrival reads as one continuous
+   thing rather than as a device. The grade comes up under the white while
+   the white is still going, for the same reason: two fades that overlap are
+   one change, where a picture that flashes bright and then darkens is two.
+
+   The two lines are the pair this hero already ended on; the grade under
+   them was re-weighted for this photograph, and the numbers are on
+   `.legacy-hero__scrim` below.
+
+   THE CAPSULE IS NOT A PROGRESS BAR. It reports nothing; it is the
+   template's own device, and it runs for a fixed time whether the page is
+   ready or not. What it buys is the two and a half seconds the photograph
+   has to decode behind it.
+
+   POSITIONS ARE VIEWPORT UNITS, not measurements, so the whole thing
+   re-lays itself out on a resize with nothing running.
+------------------------------------------------------------------- */
+
+/* Over everything, the header included — which is why it is a sibling of
+   the section and not a layer inside it: `.legacy-hero` isolates, and a
+   preloader that leaves the bar sitting on top of it is not a preloader. */
+.legacy-load {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  overflow: hidden;
+  animation: legacy-load-off var(--reveal) both;
+
+  /* The capsule, off the template as it runs rather than off its
+     stylesheet. `.preloader-progress` is written 72vw wide capped at 980
+     and 24vw tall capped at 260, which comes out at 61% of a 1600 window
+     and reads as a plate rather than as a load. Measured off the reference
+     the capsule is 384x138, and that is the size it wants to be on the
+     screen rather than a share of the window: 400 is the cap here, 26vw
+     takes it down from there on a narrow one, and 2.78 to 1 is the
+     reference's own shape.
+
+     The words have to fit inside it: "Vijaya Enterprises' Legacy" is
+     twenty-six characters where the template's "Capsule" is seven, which
+     is what the type scale below is sized against rather than the
+     template's own. */
+  --pill-w: min(26vw, 400px);
+  --pill-h: min(9.36vw, 144px);
+  --pill-rest: 0.86;
+}
+
+/* A phone gets three quarters of the width at the same shape, because at
+   26vw the capsule is 100px across and the name does not go in it. */
+@media (max-width: 768px) {
+  .legacy-load {
+    --pill-w: 74vw;
+    --pill-h: max(26.6vw, 104px);
+    --pill-rest: 0.88;
+  }
+}
+
+/* The capsule: the template's shape, on this site's palette. Empty it is
+   the palest navy on white, and it fills with the company's own blue. */
+.legacy-load__pill {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  width: var(--pill-w);
+  height: var(--pill-h);
+  border-radius: 999px;
+  background-color: var(--color-navy-100);
+  /* Both for the same reason: the words inside are blended against the bar
+     and the capsule, and neither the blend nor the fill may reach the page
+     behind them. */
+  isolation: isolate;
+  overflow: hidden;
+  /* And the mask for a third reason, which is the only one that is a bug:
+     the bar inside is transformed, so it is composited on a layer of its
+     own, and a composited child inside `overflow: hidden` is clipped to the
+     box rather than to the corners on WebKit. The fill then runs square out
+     to both ends of a capsule that is drawn round. An opaque mask forces
+     the clip to be taken with the radius; it costs nothing and changes
+     nothing where the browser was already doing it right. */
+  -webkit-mask-image: radial-gradient(#000, #000);
+  mask-image: radial-gradient(#000, #000);
+  transform: translate(-50%, -50%) scale(var(--pill-rest));
+  opacity: 0;
+  animation: legacy-load-pill var(--reveal) both;
+  will-change: transform, opacity;
+}
+
+.legacy-load__bar {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-navy-900);
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: legacy-load-bar var(--reveal) both;
+  will-change: transform;
+}
+
+/* `difference` is what lets one colour of type read against both halves of
+   a capsule that is filling underneath it: white on the palest navy comes
+   out near black, and white on navy-900 comes out cream. Measured on the
+   composite, 14.8:1 on the empty half and 10.3:1 on the filled one. */
+.legacy-load__word {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  padding-inline: 1.5rem;
+  color: #fff;
+  mix-blend-mode: difference;
+  font-family: var(--font-display);
+  font-size: clamp(0.8125rem, 1.55vw, 1.375rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+  white-space: nowrap;
+  animation: legacy-load-word-out var(--reveal) both;
+  will-change: transform;
+}
+
+/* The words arrive one at a time and leave together, and the two moves are
+   on different elements so neither has to share a transform with the other:
+   each word rises inside its own mask, and the line they sit on is what
+   slides out. Together, because a mask is only as wide as the word in it —
+   a share of its own width is a different distance for each of the three,
+   and staggered they pile up on the way out. The capsule's own overflow is
+   what takes them off the screen.
+
+   `clip-path` and not `overflow: hidden`, for the reason the hero's own
+   masks give below: a word arrives from the side, so only the left and
+   right edges have to hold it, and the tail of a `g` at rest sits outside
+   the box that fits the line — `overflow` would shave it off for good.
+   These insets clip at both ends and let the type through top and bottom. */
+.legacy-load__word-mask {
+  display: block;
+  clip-path: inset(-0.45em 0 -0.4em 0);
+}
+
+.legacy-load__word-run {
+  display: block;
+  transform: translate3d(110%, 0, 0);
+  animation: legacy-load-word-in calc(var(--reveal) * 0.15)
+    var(--ease-out-soft) calc(var(--reveal) * (0.04 + var(--i) * 0.026)) both;
+  will-change: transform;
+}
+
+/* The white the capsule stands on, and the only thing between the reader
+   and the photograph. It does not open, wipe or grow: it goes. The picture
+   is behind it at full size the whole time, so what the fade uncovers is
+   already the finished frame — there is no shape to read, and nothing that
+   has to travel the diagonal of the window to get out of the way. */
+.legacy-load__sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-color: #fff;
+  animation: legacy-load-clear var(--reveal) both;
+  will-change: opacity;
+}
+
+@keyframes legacy-load-clear {
+  0%,
+  50% {
+    opacity: 1;
+    animation-timing-function: var(--ease-out-soft);
+  }
+  63%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes legacy-load-pill {
+  0% {
+    transform: translate(-50%, -50%) scale(var(--pill-rest));
+    opacity: 0;
+    animation-timing-function: var(--ease-out-soft);
+  }
+  4%,
+  46% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  54%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+
+/* Three surges with a settle between each, which is how a load that is
+   waiting on something behaves. A bar that fills evenly reads as a timer. */
+@keyframes legacy-load-bar {
+  0%,
+  6% {
+    transform: scaleX(0);
+    animation-timing-function: var(--ease-out-soft);
+  }
+  16% {
+    transform: scaleX(0.36);
+  }
+  21% {
+    transform: scaleX(0.41);
+    animation-timing-function: var(--ease-out-soft);
+  }
+  30% {
+    transform: scaleX(0.72);
+  }
+  34% {
+    transform: scaleX(0.76);
+    animation-timing-function: var(--ease-out-soft);
+  }
+  40%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes legacy-load-word-in {
+  from {
+    transform: translate3d(110%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes legacy-load-word-out {
+  0%,
+  41% {
+    transform: translate3d(0, 0, 0);
+    animation-timing-function: var(--ease-out-soft);
+  }
+  48%,
+  100% {
+    transform: translate3d(-110%, 0, 0);
+  }
+}
+
+/* The sheet is transparent by 63%; the layer is taken out of the paint just
+   after, so nothing is left compositing over the page. */
+@keyframes legacy-load-off {
+  0%,
+  64% {
+    visibility: visible;
+  }
+  64.01%,
+  100% {
+    visibility: hidden;
+  }
+}
+
+/* The clock, on the one element both halves of the hero are inside. It
+   cannot live on the section: the load is a sibling of it, and a custom
+   property only reaches descendants. Nothing else is declared here, so the
+   holder does not become a stacking context and the fixed load inside it
+   still comes out over the header. */
+.legacy-intro {
+  /* The whole sequence. Every animation in the hero is a share of it. */
+  --reveal: 4.5s;
+
+}
+
+.legacy-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  height: 100svh;
+  /* The ground the picture is uncovered on, and the same white the aperture
+     is cut out of. */
+  background-color: #fff;
+  border-end-start-radius: 2.5rem;
+  border-end-end-radius: 2.5rem;
+}
+
+@media (min-width: 640px) {
+  .legacy-hero {
+    border-end-start-radius: 4rem;
+    border-end-end-radius: 4rem;
+  }
+}
+
+.legacy-hero__frame,
+.legacy-hero__zoom {
+  position: absolute;
+  inset: 0;
+}
+
+.legacy-hero__zoom {
+  transform: scale(1.3);
+  animation: legacy-hero-zoom var(--reveal) both;
+  will-change: transform;
+}
+
+@keyframes legacy-hero-zoom {
+  0%,
+  50% {
+    transform: scale(1.3);
+    animation-timing-function: var(--ease-out-soft);
+  }
+  84%,
+  100% {
+    transform: scale(1);
+  }
+}
+
+.legacy-hero__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  /* MEASURED against this photograph, which is a model at sunrise: dark
+     through the middle where the words are, bright at the top and along the
+     water. Lighter than the site's own hero grade (`PageHero` runs navy at
+     85/70/95) because it can be — at that weight the two lines came back
+     11.5:1 and 7.5:1, which is a picture hidden to buy contrast nothing
+     needed.
+
+     At 78/44/80 the worst line-sized patch under "Our Legacy" gives 6.5:1
+     against white, and under "Since 1973" 4.9:1 against brass-400 — small
+     caps, so the 4.5 is the one with the least room in it. The top stays
+     heavy because the header's lockup stands on it from the frame the load
+     is taken off. Re-measure if the photograph changes. */
+  background-image: linear-gradient(
+    to bottom,
+    rgb(6 20 49 / 0.78) 0%,
+    rgb(6 20 49 / 0.44) 46%,
+    rgb(6 20 49 / 0.8) 100%
+  );
+  opacity: 0;
+  animation: legacy-scrim var(--reveal) both;
+}
+
+/* Up under the white while the white is still going, so the photograph is
+   never seen twice — once bright and once graded. It has to be down by the
+   time the title arrives, and it has to be down early for the header's
+   sake: from the frame the white is gone the lockup is standing on this
+   photograph, and this photograph is a sunrise. */
+@keyframes legacy-scrim {
+  0%,
+  58% {
+    opacity: 0;
+  }
+  72%,
+  100% {
+    opacity: 1;
+  }
+}
+
+.legacy-hero__copy {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.85rem, 1.8vw, 1.5rem);
+  padding-inline: 1.5rem;
+  pointer-events: none;
+  text-align: center;
+}
+
+/* The clip each line travels inside, so it is uncovered rather than seen
+   sliding in over the photograph. `clip-path` and not `overflow: hidden`:
+   the descenders of a line at rest sit outside the box that fits it, and
+   `overflow` would shave them off for good. */
+.legacy-hero__mask {
+  display: block;
+  clip-path: inset(-0.35em 0 -0.32em 0);
+}
+
+.legacy-hero__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 9vw, 7rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #fff;
+  /* From above. */
+  transform: translate3d(0, -135%, 0);
+  opacity: 0;
+  animation: legacy-drop var(--reveal) both;
+  will-change: transform;
+}
+
+.legacy-hero__since {
+  margin: 0;
+  font-size: clamp(0.75rem, 1.4vw, 0.9375rem);
+  font-weight: 600;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--color-brass-400);
+  /* And from below. */
+  transform: translate3d(0, 135%, 0);
+  opacity: 0;
+  animation: legacy-rise var(--reveal) both;
+  will-change: transform;
+}
+
+/* The opacity step is not a fade — it flips on the frame the line starts
+   moving. It is there so that a browser which disagrees about `clip-path`
+   on an inline-block still cannot show the words early. */
+@keyframes legacy-drop {
+  0%,
+  74% {
+    transform: translate3d(0, -135%, 0);
+    opacity: 0;
+  }
+  74.01% {
+    opacity: 1;
+    animation-timing-function: var(--ease-out-soft);
+  }
+  86%,
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes legacy-rise {
+  0%,
+  80% {
+    transform: translate3d(0, 135%, 0);
+    opacity: 0;
+  }
+  80.01% {
+    opacity: 1;
+    animation-timing-function: var(--ease-out-soft);
+  }
+  96%,
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+/* Asked for less movement, the hero is its own last frame: the picture, the
+   grade and the words, all where they finish. No pages go by, and nothing
+   has to be waited out before the page can be read. */
+/* Asked for less movement, the hero is its own last frame: the picture, the
+   grade and the words, all where they finish. There is no load at all —
+   waiting two and a half seconds for a capsule to fill is the part of this
+   that a reader who asked for less would least want. */
+@media (prefers-reduced-motion: reduce) {
+  .legacy-load {
+    display: none;
+  }
+
+  .legacy-hero__zoom,
+  .legacy-hero__scrim,
+  .legacy-hero__title,
+  .legacy-hero__since {
+    animation: none;
+  }
+
+  .legacy-hero__zoom {
+    transform: none;
+  }
+
+  .legacy-hero__scrim {
+    opacity: 1;
+  }
+
+  .legacy-hero__title,
+  .legacy-hero__since {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------
+   The brochures — the closed book, and the book opened.
+
+   Two blocks. The first is the object: a printed brochure lying at an
+   angle with a second copy under it, small enough for two of them to
+   share the row the vision and mission cards used to have on the legacy
+   page. The second is the reader it opens into.
+
+   Both are drawn here rather than in utilities because both are made of
+   things Tailwind has no shorthand for — a stacked `box-shadow` standing
+   in for a block of pages, a hinge on the spine of a leaf, a face whose
+   back is the next page of a book.
+------------------------------------------------------------------- */
+
+.book {
+  position: relative;
+  display: block;
+  width: var(--book-w, 12.5rem);
+  /* The aspect ratio is the cover file's own, set inline. Both of these
+     brochures are square; a portrait one would arrive portrait. */
+  perspective: 1600px;
+}
+
+.book__leaf {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 0.125rem 0.375rem 0.375rem 0.125rem;
+  transition:
+    transform 0.9s var(--ease-out-soft),
+    box-shadow 0.9s var(--ease-out-soft);
+}
+
+.book__art {
+  object-fit: cover;
+}
+
+/* The copy underneath. Turned the same amount and pushed down and right,
+   so it reads as a second book on the pile rather than as a shadow.
+
+   Taken a long way down in brightness, and closer in than the reference
+   this was drawn from puts it. Both of these covers are near enough white,
+   and a second white square lying on navy at anything like full strength
+   stops reading as the book underneath and starts reading as a duplicate
+   somebody forgot to delete. Dark and tucked in, it is thickness. */
+.book__leaf--under {
+  z-index: 1;
+  transform: rotate(-17deg) translate(10%, 11%);
+  filter: brightness(0.38) saturate(0.65);
+  box-shadow: 0 1.25rem 2.25rem -0.75rem rgb(2 8 20 / 0.55);
+}
+
+/* The one you are looking at. The first three shadows are the page block
+   down the fore edge — three hairlines of paper just outside the box,
+   which is the only place they can go, since the leaf clips its own
+   artwork and anything drawn inside would sit on the cover design. */
+.book__leaf--over {
+  z-index: 2;
+  transform: perspective(1600px) rotate(-17deg) rotateX(7deg) translate(-4%, -6%);
+  box-shadow:
+    0.11rem 0 0 rgb(255 255 255 / 0.6),
+    0.2rem 0 0 rgb(206 218 238 / 0.55),
+    0.29rem 0 0 rgb(255 255 255 / 0.42),
+    0 2rem 3.25rem -0.9rem rgb(2 8 20 / 0.62);
+}
+
+.book__sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    118deg,
+    rgb(255 255 255 / 0.28),
+    rgb(255 255 255 / 0) 40%
+  );
+}
+
+/* ---- The book as a link ------------------------------------------
+   One target: cover, name and cue are all inside it, so there is no
+   second, smaller thing to aim at.
+
+   The padding is the room the tilt needs. A 17° turn carries a square
+   cover's corners about 0.15 of its width past each edge, the copy
+   underneath adds another 0.14 below and to the right, and the lift on
+   hover takes the top edge further still — so the box the book lays out
+   in is nowhere near the room it occupies, and all of it is written
+   against `--book-w` so one number moves the whole arrangement. */
+
+/* One to a row, with the whole width to itself. */
+.book-link {
+  --book-w: min(17rem, 54vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* The room the tilt needs, and no more than that. A 17° turn carries a
+     square cover's corners 0.124 of its width past each edge; the copy
+     underneath is pushed a further 0.10 right and the one on top 0.04 left,
+     so 0.24 clears the widest of them. See the arithmetic in the comment
+     above `.book-link__label` for the same sum going down. */
+  padding: calc(var(--book-w) * 0.24) calc(var(--book-w) * 0.24) 0;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  outline-offset: 6px;
+}
+
+.book-link:focus-visible {
+  outline: 2px solid var(--color-brass-500);
+}
+
+/* Two to a row, from the same breakpoint the grid splits on. The cover has
+   to fit its own half of the row *and* the room the tilt needs either side
+   of it, so this is a good deal narrower than a share of the window would
+   suggest — 40vw of a 700px window is a book that runs off the page. The
+   ceiling is what the widest the row is allowed to get can hold: a 19rem
+   cover occupies 1.48 of its own width once the tilt is counted, and the
+   row is capped at 64rem. */
+@media (min-width: 40rem) {
+  .book-link {
+    --book-w: clamp(11rem, 22vw, 19rem);
+  }
+}
+
+/* Clear of the copy lying underneath, which reaches 0.234 of the cover's
+   width below the box the book lays out in — so the gap that is actually
+   seen is the remaining tenth of it. */
+.book-link__label {
+  display: block;
+  margin-top: calc(var(--book-w) * 0.34);
+}
+
+.book-link__volume {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-brass-400);
+}
+
+.book-link__title {
+  display: block;
+  margin-top: 0.7rem;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  line-height: 1.25;
+  color: #ffffff;
+}
+
+.book-link__place {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 0.6);
+}
+
+.book-link__cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.8);
+}
+
+.book-link__disc {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  color: var(--color-brass-400);
+  transition:
+    background-color 0.5s var(--ease-out-soft),
+    border-color 0.5s var(--ease-out-soft),
+    color 0.5s var(--ease-out-soft),
+    transform 0.5s var(--ease-out-soft);
+}
+
+/* Guarded, so a phone that reports a tap as a hover is not left holding
+   the opened state after the finger has gone. */
+@media (hover: hover) and (pointer: fine) {
+  .book-link:hover .book__leaf--over,
+  .book-link:focus-visible .book__leaf--over {
+    transform: perspective(1600px) rotate(-7deg) rotateX(4deg) translate(-7%, -12%)
+      scale(1.03);
+    box-shadow:
+      0.11rem 0 0 rgb(255 255 255 / 0.68),
+      0.2rem 0 0 rgb(206 218 238 / 0.6),
+      0.29rem 0 0 rgb(255 255 255 / 0.5),
+      0 3rem 4.5rem -1rem rgb(2 8 20 / 0.7);
+  }
+
+  .book-link:hover .book__leaf--under,
+  .book-link:focus-visible .book__leaf--under {
+    transform: rotate(-7deg) translate(14%, 8%);
+  }
+
+  .book-link:hover .book-link__disc,
+  .book-link:focus-visible .book-link__disc {
+    background-color: var(--color-brass-500);
+    border-color: var(--color-brass-500);
+    color: var(--color-navy-950);
+    transform: translateX(3px);
+  }
+}
+
+/* ------------------------------------------------------------------
+   The reader.
+
+   A leaf is one element hinged on the spine, the page you are looking at
+   on its face and the next one on its back; turning it is a single
+   `rotateY`. Everything else here is what makes a stack of those read as
+   a book: the gutter each page darkens toward, the shade that sweeps a
+   leaf as it comes over, and the shift of the whole block when only one
+   side of it is holding a page.
+
+   `--book-ratio`, `--book-ar` and `--turn` are all set on the stage by
+   `BrochureReader` — the shape of the book comes from the artwork, and
+   the duration is shared with the timer that cleans up after the turn.
+------------------------------------------------------------------- */
+
+.fbk {
+  position: relative;
+}
+
+/* Before the reader knows which of its two shapes it is. Held at the
+   height the book will be so nothing under it moves when it arrives. The
+   width it is derived from is the stage's, repeated — see `--book-w`. */
+.fbk__waiting {
+  height: calc(
+    min(
+        100% - 2.5rem,
+        68rem,
+        max(34rem, (100svh - 15rem) * var(--book-ar, 2))
+      ) / var(--book-ar, 2)
+  );
+}
+
+.fbk__stage {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  padding-inline: 1.25rem;
+  /* Deep enough that a leaf swings rather than looms. */
+  perspective: 2800px;
+  perspective-origin: 50% 44%;
+  /* Two leaves wide, and short enough to sit in the screen with its
+     controls under it — but only down to a point. Held to the window on a
+     laptop window of ordinary height, and past that the floor takes over
+     and the page scrolls instead: a brochure squeezed into a 640px window
+     is 300px of book, which is a picture of a book rather than one that
+     can be read. */
+  --book-w: min(100%, 68rem, max(34rem, calc((100svh - 15rem) * var(--book-ar, 2))));
+}
+
+.fbk__book,
+.fbk__aim {
+  grid-area: 1 / 1;
+  width: var(--book-w);
+  aspect-ratio: var(--book-ratio, 2 / 1);
+  transition: transform var(--turn, 820ms) var(--ease-in-out-soft);
+}
+
+.fbk__book {
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+/* The book's own shadow, cast once.
+ *
+ * It was on the leaves to begin with, which is the obvious place for it and
+ * the wrong one: twenty-four faces stacked on the same spot cast the same
+ * shadow twenty-four times, and what lands on the paper around the book is
+ * a hard-edged glow rather than a book sitting on a table. So the shadow —
+ * and the sheet of paper casting it — belongs to the book itself, behind
+ * every leaf, and there is exactly one of it.
+ *
+ * Closed, and again at the end, it covers the half that is holding a page
+ * and opens out in step with the leaf that is turning. */
+.fbk__book::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 0.3rem;
+  background: #ffffff;
+  box-shadow: 0 1.75rem 3.5rem -1.25rem rgb(6 20 49 / 0.4);
+  transition:
+    left var(--turn, 820ms) var(--ease-in-out-soft),
+    right var(--turn, 820ms) var(--ease-in-out-soft);
+}
+
+.fbk__stage[data-state="closed"] .fbk__book::before {
+  left: 50%;
+}
+
+.fbk__stage[data-state="ended"] .fbk__book::before {
+  right: 50%;
+}
+
+/* Closed, and again at the end, only one half of the book is holding a
+   page — so the block slides half a leaf over and the page that is there
+   sits in the middle of the screen instead of off to one side. */
+.fbk__stage[data-state="closed"] .fbk__book,
+.fbk__stage[data-state="closed"] .fbk__aim {
+  transform: translateX(-25%);
+}
+
+.fbk__stage[data-state="ended"] .fbk__book,
+.fbk__stage[data-state="ended"] .fbk__aim {
+  transform: translateX(25%);
+}
+
+.fbk__leaf {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 100%;
+  width: 50%;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  transition: transform var(--turn, 820ms) var(--ease-in-out-soft);
+}
+
+.fbk__face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+  background: #ffffff;
+}
+
+/* Only the leaf in flight is lifted off the block, and only while it is.
+   One leaf is two faces and a turned-away face paints nothing, so this is
+   one shadow at a time — see the note on the book's own. */
+.fbk__leaf.is-turning .fbk__face {
+  box-shadow: 0 1.5rem 3rem -1rem rgb(6 20 49 / 0.35);
+}
+
+/* Rounded on the fore edge only — a book is only square where it is
+   bound. The spine is at the leaf's own left edge on the front of a leaf
+   and at its right edge on the back, because the back is drawn mirrored
+   and then turned back over by the leaf itself. */
+.fbk__face--front {
+  border-radius: 0 0.3rem 0.3rem 0;
+}
+
+.fbk__face--back {
+  transform: rotateY(180deg);
+  border-radius: 0.3rem 0 0 0.3rem;
+}
+
+.fbk__art {
+  object-fit: contain;
+}
+
+/* Where the paper turns down into the binding. */
+.fbk__face--front .fbk__gutter {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to right, rgb(6 20 49 / 0.2), rgb(6 20 49 / 0) 7%);
+}
+
+.fbk__face--back .fbk__gutter {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to left, rgb(6 20 49 / 0.2), rgb(6 20 49 / 0) 7%);
+}
+
+/* A page passing overhead takes the light with it. Run as an animation
+   rather than a transition because the value has to go out and come back
+   within one turn, and it is on both faces at once so the leaf is shaded
+   whichever way round it is. */
+.fbk__shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgb(6 20 49);
+  opacity: 0;
+}
+
+.fbk__leaf.is-turning .fbk__shade {
+  animation: leaf-shade var(--turn, 820ms) var(--ease-in-out-soft) both;
+}
+
+@keyframes leaf-shade {
+  from { opacity: 0; }
+  50% { opacity: 0.2; }
+  to { opacity: 0; }
+}
+
+/* ---- Turning by clicking the page ---------------------------------
+   A flat layer in front of the leaves, the same size as the book and
+   carried along with it. Half each when the book is open; when it is
+   closed or finished, the one half that is holding a page. */
+
+.fbk__aim {
+  position: relative;
+  z-index: 6;
+  display: flex;
+}
+
+.fbk__half {
+  flex: 0 0 50%;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fbk__half--right {
+  margin-left: auto;
+}
+
+/* ---- Under the book ------------------------------------------------ */
+
+.fbk__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 2.75rem;
+}
+
+.fbk__arrow {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-line-strong);
+  background: #ffffff;
+  color: var(--color-navy-900);
+  transition:
+    background-color 0.4s var(--ease-out-soft),
+    border-color 0.4s var(--ease-out-soft),
+    color 0.4s var(--ease-out-soft),
+    opacity 0.4s var(--ease-out-soft);
+}
+
+.fbk__arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .fbk__arrow:not(:disabled):hover {
+    background-color: var(--color-navy-900);
+    border-color: var(--color-navy-900);
+    color: #ffffff;
+  }
+}
+
+.fbk__count {
+  min-width: 9rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-slate-muted);
+}
+
+.fbk__hint {
+  margin-top: 1.15rem;
+  text-align: center;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-slate-muted);
+}
+
+/* ---- The phone's reading of the same book --------------------------
+   One page at a time in a strip that snaps, scrolled by the platform
+   rather than by a transform: the drag, the momentum and the bounce at
+   either end are all the browser's, which is what makes it feel like a
+   phone. A printed spread here would be two pages 170px wide, and
+   neither of them could be read. */
+
+.fbk-strip {
+  display: flex;
+  gap: 0.9rem;
+  margin: 0;
+  /* Half the room either side that an item leaves in the middle, so the
+     first and the last can come to rest centred like the rest. */
+  padding: 0 6vw;
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.fbk-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.fbk-strip__leaf {
+  flex: 0 0 88vw;
+  scroll-snap-align: center;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  box-shadow: 0 1rem 2.25rem -1rem rgb(6 20 49 / 0.35);
+}
+
+.fbk-strip__art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ---- The way back, and the way out --------------------------------- */
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-slate-body);
+}
+
+.back-link__disc {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 1px solid var(--color-line-strong);
+  background: #ffffff;
+  color: var(--color-navy-900);
+  transition:
+    background-color 0.4s var(--ease-out-soft),
+    border-color 0.4s var(--ease-out-soft),
+    color 0.4s var(--ease-out-soft),
+    transform 0.4s var(--ease-out-soft);
+}
+
+.download-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.05rem 1.9rem;
+  border-radius: 999px;
+  background: var(--color-navy-900);
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  box-shadow: var(--shadow-soft);
+  transition:
+    background-color 0.4s var(--ease-out-soft),
+    box-shadow 0.4s var(--ease-out-soft);
+}
+
+/* The weight of the file, said before it is asked for. */
+.download-link__size {
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: rgb(255 255 255 / 0.55);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .back-link:hover .back-link__disc {
+    background-color: var(--color-navy-900);
+    border-color: var(--color-navy-900);
+    color: #ffffff;
+    transform: translateX(-3px);
+  }
+
+  .download-link:hover {
+    background-color: var(--color-navy-800);
+    box-shadow: var(--shadow-lift);
+  }
+}
+
+/* Asked for less movement: the book still turns — that is the content,
+   not decoration — but it arrives rather than travels, and no light
+   sweeps across it on the way. */
+@media (prefers-reduced-motion: reduce) {
+  .book__leaf,
+  .fbk__book,
+  .fbk__aim,
+  .fbk__leaf {
+    transition: none;
+  }
+
+  .fbk__leaf.is-turning .fbk__shade {
+    animation: none;
+  }
+}

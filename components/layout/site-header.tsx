@@ -35,7 +35,24 @@ const SCROLL_THRESHOLD = 24;
  * window, so a `useSyncExternalStore` would have to pick one branch to
  * render and the other width would see the bar flip after hydration.
  */
-const LIGHT_FROM_TOP = ["/", "/faq", "/privacy-policy", "/cookie-policy"];
+/*
+ * An entry ending in a slash covers everything under it — the brochure
+ * readers are one page per book and all of them open on paper.
+ */
+const LIGHT_FROM_TOP = [
+  "/",
+  "/faq",
+  "/privacy-policy",
+  "/cookie-policy",
+  "/brochures/",
+];
+
+const opensLight = (pathname: string) =>
+  LIGHT_FROM_TOP.some((path) =>
+    path.length > 1 && path.endsWith("/")
+      ? pathname.startsWith(path)
+      : pathname === path,
+  );
 
 /**
  * Through the site's shared scroll loop rather than a listener of its own,
@@ -142,7 +159,7 @@ export function SiteHeader() {
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   // Over a hero, before the panel is up: white type on nothing.
-  const solid = scrolled || LIGHT_FROM_TOP.includes(pathname);
+  const solid = scrolled || opensLight(pathname);
   const light = !solid && !open;
 
   /**
