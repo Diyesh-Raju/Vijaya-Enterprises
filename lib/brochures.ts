@@ -35,10 +35,28 @@
  * good under its content hash, and fetched ahead of the reader in order.
  *
  * 1200px on the leaf is twice what the widest spread asks of it, so a retina
- * screen still has pixels in hand. Smaller screens take the same file — at
- * quality 80 with sharp chroma the pages run 30–200KB and average 80, and
- * the small print on the specification pages survives — which is the whole
- * price of never encoding.
+ * screen still has pixels in hand. At quality 80 with sharp chroma the pages
+ * run 30–200KB and average 80, and the small print on the specification
+ * pages survives — which is the whole price of never encoding.
+ *
+ * A phone does not take that file. Its reading of the book is one page at a
+ * time, 88vw wide — under 400 CSS pixels — and 1200px of page for that is
+ * three and a half megabytes across the two books on the connection least
+ * able to afford it. `small` is the same leaves at 840px (2.1x over a 400px
+ * page; a little under on a 3x screen, which a scan at this size does not
+ * show), at 57% of the bytes. Cut from the finished 1200px files, so the
+ * two sets can never disagree:
+ *
+ *   node -e '
+ *     const sharp = require("sharp"), fs = require("fs");
+ *     for (const f of fs.readdirSync("assets/brochures/vijaya-luxo").filter(f => f.endsWith(".webp")))
+ *       sharp("assets/brochures/vijaya-luxo/" + f).resize({ width: 840 })
+ *         .webp({ quality: 80, effort: 6, smartSubsample: true })
+ *         .toFile("assets/brochures/vijaya-luxo/small/" + f);
+ *   '
+ *
+ * The shelf on the legacy page shows the small cover at every width, and
+ * reads ahead whichever set the reader here will want — see `pagesFor`.
  */
 
 import type { StaticImageData } from "next/image";
@@ -84,6 +102,47 @@ import luxo13 from "@/assets/brochures/vijaya-luxo/13.webp";
 import luxo14 from "@/assets/brochures/vijaya-luxo/14.webp";
 import luxo15 from "@/assets/brochures/vijaya-luxo/15.webp";
 
+import haraS01 from "@/assets/brochures/hara-vijaya-heights/small/01.webp";
+import haraS02 from "@/assets/brochures/hara-vijaya-heights/small/02.webp";
+import haraS03 from "@/assets/brochures/hara-vijaya-heights/small/03.webp";
+import haraS04 from "@/assets/brochures/hara-vijaya-heights/small/04.webp";
+import haraS05 from "@/assets/brochures/hara-vijaya-heights/small/05.webp";
+import haraS06 from "@/assets/brochures/hara-vijaya-heights/small/06.webp";
+import haraS07 from "@/assets/brochures/hara-vijaya-heights/small/07.webp";
+import haraS08 from "@/assets/brochures/hara-vijaya-heights/small/08.webp";
+import haraS09 from "@/assets/brochures/hara-vijaya-heights/small/09.webp";
+import haraS10 from "@/assets/brochures/hara-vijaya-heights/small/10.webp";
+import haraS11 from "@/assets/brochures/hara-vijaya-heights/small/11.webp";
+import haraS12 from "@/assets/brochures/hara-vijaya-heights/small/12.webp";
+import haraS13 from "@/assets/brochures/hara-vijaya-heights/small/13.webp";
+import haraS14 from "@/assets/brochures/hara-vijaya-heights/small/14.webp";
+import haraS15 from "@/assets/brochures/hara-vijaya-heights/small/15.webp";
+import haraS16 from "@/assets/brochures/hara-vijaya-heights/small/16.webp";
+import haraS17 from "@/assets/brochures/hara-vijaya-heights/small/17.webp";
+import haraS18 from "@/assets/brochures/hara-vijaya-heights/small/18.webp";
+import haraS19 from "@/assets/brochures/hara-vijaya-heights/small/19.webp";
+import haraS20 from "@/assets/brochures/hara-vijaya-heights/small/20.webp";
+import haraS21 from "@/assets/brochures/hara-vijaya-heights/small/21.webp";
+import haraS22 from "@/assets/brochures/hara-vijaya-heights/small/22.webp";
+import haraS23 from "@/assets/brochures/hara-vijaya-heights/small/23.webp";
+import haraS24 from "@/assets/brochures/hara-vijaya-heights/small/24.webp";
+
+import luxoS01 from "@/assets/brochures/vijaya-luxo/small/01.webp";
+import luxoS02 from "@/assets/brochures/vijaya-luxo/small/02.webp";
+import luxoS03 from "@/assets/brochures/vijaya-luxo/small/03.webp";
+import luxoS04 from "@/assets/brochures/vijaya-luxo/small/04.webp";
+import luxoS05 from "@/assets/brochures/vijaya-luxo/small/05.webp";
+import luxoS06 from "@/assets/brochures/vijaya-luxo/small/06.webp";
+import luxoS07 from "@/assets/brochures/vijaya-luxo/small/07.webp";
+import luxoS08 from "@/assets/brochures/vijaya-luxo/small/08.webp";
+import luxoS09 from "@/assets/brochures/vijaya-luxo/small/09.webp";
+import luxoS10 from "@/assets/brochures/vijaya-luxo/small/10.webp";
+import luxoS11 from "@/assets/brochures/vijaya-luxo/small/11.webp";
+import luxoS12 from "@/assets/brochures/vijaya-luxo/small/12.webp";
+import luxoS13 from "@/assets/brochures/vijaya-luxo/small/13.webp";
+import luxoS14 from "@/assets/brochures/vijaya-luxo/small/14.webp";
+import luxoS15 from "@/assets/brochures/vijaya-luxo/small/15.webp";
+
 export type Brochure = {
   slug: string;
   /** Roman numeral over the title, as the reference books number themselves. */
@@ -104,7 +163,21 @@ export type Brochure = {
    * spreads.
    */
   pages: readonly StaticImageData[];
+  /** The same leaves at 840px, for a phone's one-page-at-a-time reading. */
+  small: readonly StaticImageData[];
 };
+
+/**
+ * Where the reader's spread takes over from its strip — a laptop-shaped
+ * window rather than a merely wide one. Identical to the `desk:` variant in
+ * `globals.css`; the two must stay in step. Here rather than in the reader
+ * because the shelf asks the same question, to read ahead the right set.
+ */
+export const READER_WIDE_QUERY = "(min-width: 48rem) and (min-height: 500px)";
+
+/** The set of pages the reader will show on a window of this shape. */
+export const pagesFor = (brochure: Brochure, wide: boolean) =>
+  wide ? brochure.pages : brochure.small;
 
 export const brochures: readonly Brochure[] = [
   {
@@ -123,6 +196,12 @@ export const brochures: readonly Brochure[] = [
       hara13, hara14, hara15, hara16, hara17, hara18,
       hara19, hara20, hara21, hara22, hara23, hara24,
     ],
+    small: [
+      haraS01, haraS02, haraS03, haraS04, haraS05, haraS06,
+      haraS07, haraS08, haraS09, haraS10, haraS11, haraS12,
+      haraS13, haraS14, haraS15, haraS16, haraS17, haraS18,
+      haraS19, haraS20, haraS21, haraS22, haraS23, haraS24,
+    ],
   },
   {
     slug: "vijaya-luxo",
@@ -138,6 +217,11 @@ export const brochures: readonly Brochure[] = [
       luxo01, luxo02, luxo03, luxo04, luxo05,
       luxo06, luxo07, luxo08, luxo09, luxo10,
       luxo11, luxo12, luxo13, luxo14, luxo15,
+    ],
+    small: [
+      luxoS01, luxoS02, luxoS03, luxoS04, luxoS05,
+      luxoS06, luxoS07, luxoS08, luxoS09, luxoS10,
+      luxoS11, luxoS12, luxoS13, luxoS14, luxoS15,
     ],
   },
 ];

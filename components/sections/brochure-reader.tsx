@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { preload } from "react-dom";
 import {
   useCallback,
   useEffect,
@@ -9,10 +8,12 @@ import {
   useState,
   useSyncExternalStore,
   type CSSProperties,
+  type ReactNode,
 } from "react";
 import { ArrowLeftIcon, ArrowRightIcon } from "@/components/ui/line-icons";
 import { cn } from "@/lib/cn";
-import type { Brochure } from "@/lib/brochures";
+import { READER_WIDE_QUERY, type Brochure } from "@/lib/brochures";
+import { readAhead, readingOrder, type Reader } from "@/lib/read-ahead";
 
 /**
  * How long a leaf takes to come over, and the one place that number lives.
@@ -21,33 +22,16 @@ import type { Brochure } from "@/lib/brochures";
  */
 const TURN_MS = 820;
 
-/**
- * How many pages the book fetches at once while it reads itself ahead.
- *
- * A few rather than all of them. A browser handed the whole book at once
- * shares the connection between every page, so on a slow link the next
- * spread lands at the same moment as the back cover — which is to say
- * last. Three at a time, in reading order from wherever the reader is,
- * keeps the next spread the next thing to arrive, and still has the whole
- * book in within a few seconds on an ordinary connection.
- */
-const AHEAD = 3;
-
-/**
- * Where the spread takes over from the strip — a laptop-shaped window rather
- * than a merely wide one. Identical to the `desk:` variant in `globals.css`;
- * the two must stay in step.
- */
-const WIDE_QUERY = "(min-width: 48rem) and (min-height: 500px)";
-
 function subscribeToWidth(onChange: () => void) {
-  const query = window.matchMedia(WIDE_QUERY);
+  const query = window.matchMedia(READER_WIDE_QUERY);
   query.addEventListener("change", onChange);
   return () => query.removeEventListener("change", onChange);
 }
 
 const getWidth = () =>
-  window.matchMedia(WIDE_QUERY).matches ? ("wide" as const) : ("phone" as const);
+  window.matchMedia(READER_WIDE_QUERY).matches
+    ? ("wide" as const)
+    : ("phone" as const);
 
 /**
  * The brochure, opened.
@@ -64,6 +48,10 @@ const getWidth = () =>
  * the branch a window is not using would ask for the whole book at once, in
  * its own order, over the top of the one the reader is actually looking at.
  * Nothing is asked for until it is known which book is being built.
+ *
+ * Until then — which on a hard load is the whole time the script takes to
+ * arrive — the page shows the cover, in the place and at the size the book
+ * will put it, with the controls under it. See `Waiting`.
  */
 export function BrochureReader({ brochure }: { brochure: Brochure }) {
   const width = useSyncExternalStore(
@@ -72,27 +60,20 @@ export function BrochureReader({ brochure }: { brochure: Brochure }) {
     () => "ssr" as const,
   );
 
-  // The cover is the first thing either reading shows, and it is the same
-  // file in both, so it is asked for with the HTML itself rather than after
-  // hydration has worked out which book to build.
-  const cover = brochure.pages[0];
-  preload(cover.src, { as: "image", fetchPriority: "high" });
-
   // The book is two leaves wide. Its shape is handed to the stylesheet
   // rather than assumed there, so a brochure printed portrait would come
   // through as portrait; the bare number is given as well, because the
   // width is also capped against the height of the window and `calc` cannot
-  // do that with a ratio.
+  // do that with a ratio. One page's shape goes along for the phone.
+  const cover = brochure.pages[0];
   const shape = {
     "--turn": `${TURN_MS}ms`,
     "--book-ratio": `${cover.width * 2} / ${cover.height}`,
     "--book-ar": (cover.width * 2) / cover.height,
+    "--page-ratio": `${cover.width} / ${cover.height}`,
   } as CSSProperties;
 
-  // Holds the room the book will take, so the controls under it do not jump
-  // up the page and back down again as hydration lands.
-  if (width === "ssr")
-    return <div className="fbk__waiting" style={shape} aria-hidden="true" />;
+  if (width === "ssr") return <Waiting brochure={brochure} shape={shape} />;
 
   return width === "wide" ? (
     <Spread brochure={brochure} shape={shape} />
@@ -100,6 +81,73 @@ export function BrochureReader({ brochure }: { brochure: Brochure }) {
     <Strip brochure={brochure} />
   );
 }
+
+/**
+ * The reader before it knows which of its two shapes it is.
+ *
+ * Not an empty box. It used to be one — and a box whose height was written
+ * as a share of `100%` inside `height`, which against a parent of no fixed
+ * height is nothing at all, so on every hard load the download link sat
+ * where the book was about to be and dropped by the book's height when the
+ * script landed. Now it is the cover, sized and placed as the book will
+ * place it, with the same controls under it that the book has: nothing
+ * moves when the book arrives, and until it does the reader has the cover
+ * to look at rather than a blank.
+ *
+ * Which of the two shapes is decided by the stylesheet, on the same query
+ * the component asks, and the `<picture>` chooses the file the same way —
+ * the 1200px cover for the spread, the 840px one for the strip — so what
+ * this fetches is what the book then finds already in.
+ */
+function Waiting({ brochure, shape }: { brochure: Brochure; shape: CSSProperties }) {
+  const total = brochure.pages.length;
+  const wide = brochure.pages[0];
+  const small = brochure.small[0];
+
+  return (
+    <div className="fbk" style={shape} aria-busy="true">
+      <div className="fbk__waiting">
+        <div className="fbk__waiting-book">
+          <picture className="fbk__waiting-cover">
+            <source media={READER_WIDE_QUERY} srcSet={wide.src} />
+            <img
+              src={small.src}
+              alt={pageAlt(brochure, 0)}
+              width={small.width}
+              height={small.height}
+              fetchPriority="high"
+              decoding="async"
+              style={{
+                backgroundImage: `url(${small.blurDataURL})`,
+                backgroundSize: "cover",
+              }}
+            />
+          </picture>
+        </div>
+      </div>
+
+      <Controls
+        onPrev={noop}
+        onNext={noop}
+        atStart
+        atEnd
+        label={
+          <>
+            <span className="desk:hidden">1 of {total}</span>
+            <span className="hidden desk:inline">Cover</span>
+          </>
+        }
+      />
+
+      <p className="fbk__hint">
+        <span className="desk:hidden">Swipe, or use the arrows</span>
+        <span className="hidden desk:inline">Click the cover, or use the arrows</span>
+      </p>
+    </div>
+  );
+}
+
+const noop = () => {};
 
 /* ------------------------------------------------------------------ Laptop */
 
@@ -243,12 +291,14 @@ function Spread({ brochure, shape }: { brochure: Brochure; shape: CSSProperties 
                   index={leaf * 2}
                   side="front"
                   mounted={ready.has(leaf)}
+                  hot={Math.abs(leaf - spread) <= 1}
                 />
                 <Face
                   brochure={brochure}
                   index={leaf * 2 + 1}
                   side="back"
                   mounted={ready.has(leaf)}
+                  hot={Math.abs(leaf - spread) <= 1}
                 />
               </div>
             );
@@ -303,11 +353,14 @@ function Face({
   index,
   side,
   mounted,
+  hot,
 }: {
   brochure: Brochure;
   index: number;
   side: "front" | "back";
   mounted: boolean;
+  /** Within a turn of the open spread: on screen, or one click from it. */
+  hot: boolean;
 }) {
   const page = brochure.pages[index];
 
@@ -321,7 +374,22 @@ function Face({
           mounted face is by definition one the reader is about to see, and
           a lazy image inside a leaf that is turned away, or under the stack,
           is left to the browser's guess about whether it is worth fetching
-          yet. */}
+          yet. And decoded `sync`: in the ordinary case a face is mounted
+          only once its picture is decoded, so there is nothing to wait for
+          — and the moment a page is revealed is exactly the wrong moment
+          for the browser to paint the leaf now and the picture a frame or
+          two later, which is what `async` licenses it to do. WebKit also
+          drops the decoded pixels of a picture it has not painted lately,
+          so a page that has sat under the stack for a while comes back
+          through a decode; synchronous, that is a blank page never shown.
+
+          And the leaves around the open spread are fetched HIGH. Opening a
+          book on a cold cache used to put its first spread on the wire
+          alongside the read-ahead's next three pages, all at the same
+          priority, so the two pages the reader was about to turn to shared
+          the connection with pages they were not — and on a phone's
+          connection arrived most of a second after the click. Marked high,
+          they go first, and the read-ahead takes what is left. */}
       {page && mounted && (
         <Image
           src={page}
@@ -329,6 +397,8 @@ function Face({
           fill
           unoptimized
           loading="eager"
+          decoding="sync"
+          fetchPriority={hot ? "high" : undefined}
           placeholder="blur"
           className="fbk__art"
         />
@@ -349,9 +419,13 @@ function Face({
  * momentum and the rubber band at either end are all the platform's, which
  * is what makes it feel like a phone rather than like a website. The buttons
  * scroll it; the counter is read back off wherever it came to rest.
+ *
+ * The pages are the 840px set — see `small` in `lib/brochures.ts`. A page
+ * here is under 400 CSS pixels wide, and the 1200px leaves were three and a
+ * half megabytes of book for the screen that could least afford them.
  */
 function Strip({ brochure }: { brochure: Brochure }) {
-  const pages = brochure.pages;
+  const pages = brochure.small;
   const [index, setIndex] = useState(0);
   const track = useRef<HTMLUListElement>(null);
   const frame = useRef(0);
@@ -454,7 +528,7 @@ function Controls({
   onNext: () => void;
   atStart: boolean;
   atEnd: boolean;
-  label: string;
+  label: ReactNode;
 }) {
   return (
     <div className="fbk__controls">
@@ -485,70 +559,6 @@ function Controls({
       </button>
     </div>
   );
-}
-
-type Reader = {
-  /** Fetch in this order from now on; whatever is in flight finishes. */
-  focus: (order: readonly number[]) => void;
-  stop: () => void;
-};
-
-/**
- * Fetches and decodes the pictures at `urls`, `AHEAD` at a time, in
- * whatever order `focus` last asked for, telling `onPage` as each lands.
- *
- * Through an `<img>` rather than `fetch`, because what has to be warm is
- * the browser's picture cache and not only its HTTP cache: an `<img>`
- * mounted later with the same `src` finds the file already fetched and,
- * after `decode()`, already decoded, and paints on its first frame instead
- * of some frames later. A picture that fails to load is counted as done,
- * so one bad file cannot wedge the queue behind it.
- */
-function readAhead(
-  urls: readonly string[],
-  onPage?: (page: number) => void,
-): Reader {
-  const done = new Set<number>();
-  const inFlight = new Set<number>();
-  let order: readonly number[] = [];
-  let live = true;
-
-  const pump = () => {
-    while (live && inFlight.size < AHEAD) {
-      const page = order.find((p) => !done.has(p) && !inFlight.has(p));
-      if (page === undefined) return;
-      inFlight.add(page);
-
-      const img = document.createElement("img");
-      img.decoding = "async";
-      img.src = urls[page];
-      const settle = () => {
-        inFlight.delete(page);
-        done.add(page);
-        if (!live) return;
-        onPage?.(page);
-        pump();
-      };
-      img.decode().then(settle, settle);
-    }
-  };
-
-  return {
-    focus(next) {
-      order = next;
-      pump();
-    },
-    stop() {
-      live = false;
-    },
-  };
-}
-
-/** Every page from `from` to the end, then the ones before it, nearest first. */
-function readingOrder(from: number, total: number) {
-  const ahead = Array.from({ length: total - from }, (_, i) => from + i);
-  const behind = Array.from({ length: from }, (_, i) => from - 1 - i);
-  return [...ahead, ...behind];
 }
 
 /**

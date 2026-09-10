@@ -16,6 +16,15 @@ import { cn } from "@/lib/cn";
  * project's name and mark, so nothing is captioned over it. The name is set
  * under the book instead, where it can be read.
  *
+ * It is served as the file is, like every other page of the book (see
+ * `lib/brochures.ts`), rather than through the image optimiser, so nothing
+ * on the band waits on an encode. The file is the book's own first page from
+ * the 840px set — some thirty kilobytes for a box a third of that width —
+ * and on a phone it is exactly the file the book opens on, so the cover a
+ * reader has just been looking at is already in when the page is asked
+ * for. A laptop's spread opens on the 1200px cover instead, which the
+ * shelf's read-ahead has fetched first of all by then.
+ *
  * Size and angle come from the caller: `--book-w` is the width the cover is
  * drawn at and the rest is proportional to it, so one book can be a shelf
  * item at 12rem and a hero at 22rem without a second set of rules. The
@@ -39,14 +48,14 @@ export function BookCover({
       style={{ aspectRatio: `${cover.width} / ${cover.height}`, ...style }}
     >
       <span className="book__leaf book__leaf--under" aria-hidden="true">
-        <Image src={cover} alt="" fill sizes="320px" className="book__art" />
+        <Image src={cover} alt="" fill unoptimized className="book__art" />
       </span>
       <span className="book__leaf book__leaf--over">
         <Image
           src={cover}
           alt={alt}
           fill
-          sizes="320px"
+          unoptimized
           placeholder="blur"
           className="book__art"
         />
