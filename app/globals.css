@@ -5598,10 +5598,23 @@
 /* The track is exactly its slots — one screen each — plus a tail. Every
    slot goes on sticking until the track's bottom edge reaches it, so the
    tail is what holds the last picture on screen for a moment before the
-   band lets go. */
+   band lets go.
+
+   The tail is a block of content, NOT padding, and that is the whole
+   point. A sticky element is held inside its containing block's CONTENT
+   box, so padding on the track is room the slots cannot stick into — the
+   last picture let go the moment it landed. The words layer, being
+   `absolute`, spans the padding box instead, so it went on holding for
+   the whole tail while the picture it belonged to slid away underneath.
+   As content the tail counts for both, and the two let go together. */
 .legacy-track {
   position: relative;
-  padding-bottom: 40svh;
+}
+
+.legacy-track::after {
+  content: "";
+  display: block;
+  height: 40svh;
 }
 
 /* One chapter's screen. `top` is the bar's height because the bar is fixed
@@ -5740,6 +5753,14 @@
 .legacy-note {
   grid-area: note;
   will-change: transform, opacity;
+}
+
+/* Until the component has written to them, only the first chapter's words
+   show. All four sets sit in the same cell, so before the script runs — or
+   without it — they would otherwise be read on top of one another. The
+   component writes `visibility` inline on every frame, which outranks this. */
+.legacy-note:not([data-chapter="0"]) {
+  visibility: hidden;
 }
 
 /* `visibility` is written from the component alongside the opacity, and is
@@ -6040,7 +6061,53 @@
 .legacy-intro {
   /* The whole sequence. Every animation in the hero is a share of it. */
   --reveal: 4.5s;
+  /* The hero's passage through the window, for the gate on the load — see
+     `legacy-load-gate` below. Naming a timeline makes the holder neither a
+     stacking context nor a containing block, so the fixed load inside it
+     still comes out over the header. */
+  view-timeline-name: --legacy-hero;
+  view-timeline-axis: block;
+}
 
+/* THE LOAD ONLY RUNS OVER THE HERO. It is a fixed sheet over the window,
+   and the hero is where a page opens — but not where every reader arrives.
+   A reader coming back from a brochure lands at `#brochures`, a reload
+   restores the scroll, a shared link can carry the anchor; each of those
+   used to get the white sheet and the capsule over whatever they had come
+   to look at, for the two and a half seconds the clock runs.
+
+   So the sheet is gated on the hero being in view: a second animation on
+   the same element, driven by the hero's own view timeline rather than the
+   clock, that takes the load out once the hero has gone a quarter of a
+   screen off the top. Arriving anywhere further down, the timeline is past
+   its end and the load is simply not there; scrolling away during the load
+   takes it off too, rather than leaving a sheet fixed over the page.
+
+   Guarded, because in a browser without scroll-driven animations the
+   second animation would run on the clock instead — zero seconds, filled
+   both ways — and the load would never be seen at all. Those get the load
+   over every arrival, which is what they had before. */
+@supports (animation-timeline: --a) and (animation-range: exit) {
+  .legacy-load {
+    animation:
+      legacy-load-off var(--reveal) both,
+      legacy-load-gate linear both;
+    animation-timeline: auto, --legacy-hero;
+    /* `exit`: from the hero's foot at the window's foot (the top of the
+       page) to its foot at the window's head (the hero fully gone). */
+    animation-range: normal, exit 0% exit 100%;
+  }
+}
+
+@keyframes legacy-load-gate {
+  0%,
+  25% {
+    opacity: 1;
+  }
+  40%,
+  100% {
+    opacity: 0;
+  }
 }
 
 .legacy-hero {

@@ -93,8 +93,12 @@ export function LegacyHero() {
               // It is the first thing on the page and it is behind a hole
               // that opens on it two and a half seconds in. A picture that
               // has not decoded by then is a white screen with a title on
-              // it.
-              priority
+              // it. Eager, so the server writes its preload into the head,
+              // and fetched high, so that preload goes to the front of the
+              // queue — `priority` used to mean both and in Next 16 means
+              // only the first.
+              loading="eager"
+              fetchPriority="high"
               className="object-cover"
             />
           </div>

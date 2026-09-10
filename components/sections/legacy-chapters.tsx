@@ -127,14 +127,12 @@ export function LegacyChapters({ chapters }: { chapters: readonly Chapter[] }) {
     if (cards.length === 0) return;
 
     const last = chapters.length - 1;
-    const headerH =
-      parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue("--header-h"),
-      ) || 0;
 
     /** Document offset of the track, and the screen one chapter is held on. */
     let top = 0;
     let unit = 1;
+    /** The bar's height, which is where every slot sticks. */
+    let headerH = 0;
     let dirty = true;
     let measuredWidth = -1;
     let measuredHeight = -1;
@@ -148,6 +146,13 @@ export function LegacyChapters({ chapters }: { chapters: readonly Chapter[] }) {
       // screen is, and on a short window it makes it taller than `svh`.
       const slot = track.querySelector<HTMLElement>(".legacy-slot");
       unit = slot?.offsetHeight || 1;
+      // Read off the slot's own `top`, which the stylesheet sets to
+      // `var(--header-h)`, rather than off the custom property: asked for
+      // directly, the property comes back as the unresolved string
+      // `calc(6rem + 1px)`, which `parseFloat` reads as NaN — and the whole
+      // band then ran a bar's height late, with each chapter's words still
+      // arriving after its picture had landed.
+      headerH = slot ? parseFloat(getComputedStyle(slot).top) || 0 : 0;
       dirty = false;
     };
 
@@ -315,7 +320,13 @@ export function LegacyChapters({ chapters }: { chapters: readonly Chapter[] }) {
                 fill
                 sizes="(max-width: 1024px) 92vw, 60vw"
                 placeholder="blur"
-                priority={index === 0}
+                // The first picture starts at load rather than when the band
+                // is near: `eager` is what Next 16 asks for in place of the
+                // deprecated `priority`, and React still writes a preload for
+                // an eager image into the head, after the hero's own. Nothing
+                // raises its fetch priority, so it queues behind the hero,
+                // which has a two-and-a-half second clock to decode against.
+                loading={index === 0 ? "eager" : undefined}
                 className="object-cover"
               />
             </figure>
@@ -352,14 +363,19 @@ function StoryGround() {
   return (
     <div aria-hidden="true" className="legacy-ground">
       <div className="legacy-ground__screen">
-        <Image
-          src={img.storyGroundDusk}
-          alt=""
-          fill
-          sizes="100vw"
-          placeholder="blur"
-          className="object-cover"
-        />
+        {/* A box of its own inside the sticky screen: `fill` lays the
+            picture out against its nearest positioned ancestor, and Next
+            warns when that ancestor is `sticky` even though it works. */}
+        <div className="absolute inset-0">
+          <Image
+            src={img.storyGroundDusk}
+            alt=""
+            fill
+            sizes="100vw"
+            placeholder="blur"
+            className="object-cover"
+          />
+        </div>
         <div className="legacy-ground__wash" />
         <div className="legacy-ground__fade" />
       </div>
