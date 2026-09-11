@@ -69,8 +69,16 @@ export function ProjectNav({ slug }: { slug: string }) {
             })}
           </nav>
 
-          {/* Balances the back link so the tab group sits on the page centre. */}
-          <span aria-hidden="true" className="hidden sm:block" />
+          {/* Balances the back link so the tab group sits on the page centre —
+              and, from `sm` up, is the shortest route to the project's own
+              booking page. Below `sm` the row has no room for it; the prompt
+              and the foot of the Location page carry the same link there. */}
+          <Link
+            href={`/site-booking/${slug}`}
+            className="hidden shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-brass-500 px-5 py-2.5 text-[0.8125rem] font-semibold text-navy-950 transition-[background-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-brass-400 sm:inline-flex sm:justify-self-end"
+          >
+            Book a Visit
+          </Link>
         </div>
       </div>
     </div>

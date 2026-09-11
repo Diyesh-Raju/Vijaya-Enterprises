@@ -40,6 +40,7 @@ const MENU_LINKS = [
   { href: "/", label: "Home" },
   ...navLinks.map(({ href, label }) => ({ href, label })),
   { href: "/contact", label: "Contact Us" },
+  { href: "/site-booking", label: "Site Booking" },
   { href: "/faq", label: "FAQ" },
 ];
 

@@ -85,6 +85,13 @@ const sections: readonly PolicySection[] = [
             className="font-medium text-navy-900 underline decoration-navy-900/30 underline-offset-4 transition-colors hover:decoration-navy-900"
           >
             enquiry form
+          </Link>{" "}
+          or the{" "}
+          <Link
+            href="/site-booking"
+            className="font-medium text-navy-900 underline decoration-navy-900/30 underline-offset-4 transition-colors hover:decoration-navy-900"
+          >
+            site-booking form
           </Link>
           :
         </p>
@@ -93,6 +100,7 @@ const sections: readonly PolicySection[] = [
             "Your name and email address, so we can reply.",
             "Your phone number, only if you give it — the field is optional.",
             "The kind of project you have in mind, and whatever you write in the message.",
+            "For a site visit: the project, and the day and time of day you would like to come.",
           ]}
         />
         <p className="mt-4">

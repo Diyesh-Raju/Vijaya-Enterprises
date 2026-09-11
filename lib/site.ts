@@ -96,6 +96,7 @@ export const allRoutes = [
   "/",
   ...navLinks.map((l) => l.href),
   "/contact",
+  "/site-booking",
   "/faq",
   "/privacy-policy",
   "/cookie-policy",

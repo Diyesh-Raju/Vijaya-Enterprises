@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteBookingPrompt } from "@/components/ui/site-booking-prompt";
 import { site, contact } from "@/lib/site";
 import "./globals.css";
 
@@ -142,6 +143,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <SiteFooter />
+        {/* The site-visit speech bubble. Mounted once, here; it decides for
+            itself which pages it speaks on — see the component. */}
+        <SiteBookingPrompt />
         <OrganizationJsonLd />
       </body>
     </html>

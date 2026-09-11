@@ -6977,3 +6977,172 @@
     animation: none;
   }
 }
+
+/* ------------------------------------------------------------------
+   The visit pass — app/site-booking/booking-form.tsx
+
+   Two panels drawn as one ticket. The stub is joined to the questions by a
+   perforation: a dashed rule with a round notch bitten out of each end,
+   the notches painted in the band's own navy so they read as holes rather
+   than as dots. On a laptop the stub stands to the right and the rule is
+   vertical; on a phone it drops beneath and the rule turns horizontal.
+------------------------------------------------------------------- */
+
+.pass {
+  position: relative;
+  box-shadow: var(--shadow-deep);
+}
+
+.pass__stub {
+  --pass-ground: var(--color-navy-deep);
+  --pass-notch: 1.375rem;
+  border-top: 2px dashed rgb(255 255 255 / 0.22);
+}
+
+.pass__stub::before,
+.pass__stub::after {
+  content: "";
+  position: absolute;
+  width: var(--pass-notch);
+  height: var(--pass-notch);
+  border-radius: 9999px;
+  background-color: var(--pass-ground);
+  top: calc(var(--pass-notch) / -2 - 1px);
+}
+
+.pass__stub::before { left: calc(var(--pass-notch) / -2); }
+.pass__stub::after { right: calc(var(--pass-notch) / -2); }
+
+@media (min-width: 1024px) {
+  .pass__stub {
+    border-top: 0;
+    border-left: 2px dashed rgb(255 255 255 / 0.22);
+  }
+
+  .pass__stub::before,
+  .pass__stub::after {
+    top: auto;
+    left: calc(var(--pass-notch) / -2 - 1px);
+    right: auto;
+  }
+
+  .pass__stub::before { top: calc(var(--pass-notch) / -2); }
+  .pass__stub::after { bottom: calc(var(--pass-notch) / -2); }
+}
+
+/* ------------------------------------------------------------------
+   The speech bubble — components/ui/site-booking-prompt.tsx
+
+   A comic balloon in the site's own hand: a navy ink line, a brass hard
+   shadow set off to the bottom right, a tail cut from the same outline,
+   and the badge it speaks from. The pop-in overshoots (`--ease-pop`) and
+   settles from the bottom-right corner, where the tail is; the burst
+   strokes flick in a beat later; the badge nods once it has landed.
+------------------------------------------------------------------- */
+
+.speech-bubble {
+  --ink: var(--color-navy-900);
+  --ink-w: 2px;
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Room beneath for the badge, which hangs below the balloon's edge. */
+  margin-bottom: 2.5rem;
+  transform-origin: 100% 100%;
+  transition:
+    transform 0.6s var(--ease-pop),
+    opacity 0.3s ease-out;
+}
+
+.speech-bubble--out {
+  opacity: 0;
+  transform: translate3d(0, 1.5rem, 0) scale(0.6) rotate(-3deg);
+  transition:
+    transform 0.36s cubic-bezier(0.4, 0, 1, 1),
+    opacity 0.28s ease-in;
+}
+
+.speech-bubble--in {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+}
+
+.speech-bubble__body {
+  border: var(--ink-w) solid var(--ink);
+  /* The hard offset is the comic; the soft lift beneath it is the site. */
+  box-shadow:
+    0.375rem 0.375rem 0 0 var(--color-brass-500),
+    var(--shadow-lift);
+}
+
+/* The tail: a square sharing the balloon's ink, turned 45° and hung off the
+   bottom edge so its lower corner points at the badge. Only the half below
+   the edge is kept; the top half, which would sit inside the balloon and
+   over its type, is clipped away. */
+.speech-bubble__tail {
+  position: absolute;
+  right: 2.75rem;
+  bottom: -0.7rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: #fff;
+  border-right: var(--ink-w) solid var(--ink);
+  border-bottom: var(--ink-w) solid var(--ink);
+  transform: rotate(45deg);
+  box-shadow: 0.25rem 0.25rem 0 0 var(--color-brass-500);
+  clip-path: polygon(-20% 20%, 100% 100%, 100% -20%);
+}
+
+.speech-bubble__badge {
+  position: absolute;
+  right: 0.75rem;
+  bottom: -2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  background-color: var(--ink);
+  color: #fff;
+  border: var(--ink-w) solid #fff;
+  box-shadow: 0 0 0 var(--ink-w) var(--ink), var(--shadow-soft);
+}
+
+.speech-bubble--in .speech-bubble__badge {
+  animation: bubble-nod 0.9s var(--ease-pop) 0.45s both;
+}
+
+.speech-bubble__burst {
+  opacity: 0;
+  transform: scale(0.4) rotate(-20deg);
+  transform-origin: 100% 100%;
+}
+
+.speech-bubble--in .speech-bubble__burst {
+  animation: bubble-burst 0.5s var(--ease-pop) 0.3s both;
+}
+
+@keyframes bubble-nod {
+  0% { transform: translate3d(0, 0, 0) rotate(0); }
+  35% { transform: translate3d(0, -0.35rem, 0) rotate(-8deg); }
+  70% { transform: translate3d(0, 0.1rem, 0) rotate(4deg); }
+  100% { transform: translate3d(0, 0, 0) rotate(0); }
+}
+
+@keyframes bubble-burst {
+  from { opacity: 0; transform: scale(0.4) rotate(-20deg); }
+  to { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .speech-bubble,
+  .speech-bubble--out {
+    transition: opacity 0.3s ease-out;
+    transform: none;
+  }
+  .speech-bubble--in .speech-bubble__badge,
+  .speech-bubble--in .speech-bubble__burst {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

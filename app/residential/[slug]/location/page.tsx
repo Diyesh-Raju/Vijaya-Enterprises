@@ -59,7 +59,7 @@ export default async function LocationPage({
         </div>
 
         <Reveal delay={60} className="mx-auto mt-20 flex max-w-3xl flex-col items-center gap-6 lg:mt-24">
-          <BookVisitButton />
+          <BookVisitButton slug={slug} />
           <ButtonWithIcon href="/contact">Contact Us</ButtonWithIcon>
         </Reveal>
       </Container>

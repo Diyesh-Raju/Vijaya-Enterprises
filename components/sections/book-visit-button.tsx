@@ -6,17 +6,17 @@ import { SmokyButton } from "@/components/ui/smoky-button";
 /**
  * The page's main call to action.
  *
- * It goes to the enquiry form. There is no booking flow of its own yet — the
- * form is where a visit is actually arranged — and a button that did nothing
- * is what stood here until then. `SmokyButton` is a `<button>` rather than a
- * link, so the navigation is by the router; if a dedicated booking page ever
- * arrives, this is the one place to point at it.
+ * It goes to the site-booking page — to the project's own copy of it when
+ * the button sits on a project's pages, so the pass arrives with the project
+ * already written on it, and to the general one otherwise. `SmokyButton` is
+ * a `<button>` rather than a link, so the navigation is by the router.
  */
-export function BookVisitButton() {
+export function BookVisitButton({ slug }: { slug?: string }) {
   const router = useRouter();
+  const href = slug ? `/site-booking/${slug}` : "/site-booking";
 
   return (
-    <SmokyButton onClick={() => router.push("/contact#enquiry")}>
+    <SmokyButton onClick={() => router.push(href)}>
       Book a Site Visit
     </SmokyButton>
   );
