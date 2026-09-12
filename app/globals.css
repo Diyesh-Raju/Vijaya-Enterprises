@@ -132,6 +132,17 @@
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-display: var(--font-sans);
+  /* Two faces used in exactly one place — the head of "Who we build for" on
+     /our-legacy, which is set the way the reference page the client brought
+     sets its own (2026-09-12). `font-serif` is the heading: Cinzel, whose
+     minuscules are drawn as small capitals. `font-system` is the lead under
+     it, and it is a plain system stack on purpose — the reference names no
+     webfont there, so the paragraph is Segoe UI on Windows, SF on a Mac and
+     Roboto on Android, which is how it looks on the page the client is
+     matching. That is the one paragraph on the site not set in Manrope;
+     everything else uses `font-display` or the body default. */
+  --font-serif: var(--font-cinzel), Georgia, "Times New Roman", serif;
+  --font-system: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
   /* Shadows — soft, wide, navy-tinted (never grey/harsh) -------- */
   --shadow-soft: 0 2px 8px -2px rgb(10 31 68 / 0.06), 0 12px 32px -12px rgb(10 31 68 / 0.12);
@@ -281,6 +292,23 @@
   .font-display {
     font-weight: 600;
     letter-spacing: -0.015em;
+  }
+
+  /* The inscriptional serif, wherever a heading is set in it rather than in
+     the grotesk. Always use this rather than `font-serif` on its own: the
+     rule above puts every heading at 600 and tracks it in, and both are
+     wrong for this face. Only one weight of Cinzel is loaded — see
+     `app/layout.tsx` — so 600 does not select a bolder cut, it has the
+     browser draw a fake one, thickening the strokes and closing the
+     counters at exactly the sizes this is used at. And a line of capitals
+     set at -0.015em closes up; capitals want to be opened, not tightened.
+
+     Both of those are silent: the page renders, it just renders badly. The
+     class exists so neither can be forgotten. */
+  .inscribed {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    letter-spacing: 0.02em;
   }
 
   p { color: var(--color-slate-body); }
@@ -3795,7 +3823,12 @@
    rather than on a paragraph left pale. */
 .scroll-lit {
   color: var(--color-navy-900);
-  --lit-off: color-mix(in oklab, var(--color-navy-900) 26%, white);
+  /* The unlit word. It was 26% navy, which is lighter than the site's own
+     muted grey and read as text that had failed to load rather than as text
+     whose turn had not come. At 44% the sweep is still plainly a sweep and
+     the paragraph is legible at every point in it — which matters, because
+     the whole paragraph is legible before the effect ever runs. */
+  --lit-off: color-mix(in oklab, var(--color-navy-900) 44%, white);
 }
 
 .scroll-lit[data-lit="on"] > span {
@@ -7266,5 +7299,242 @@
     animation: none;
     opacity: 1;
     transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Projects carousel — see `components/sections/project-carousel.tsx`
+
+   A ring of cards in 3D, turned by the two arrows under it and by nothing
+   else. Every number below is set against one thing: the card at the front
+   must be read as a photograph, and the two beside it must read as the next
+   and the last without competing for the eye.
+------------------------------------------------------------------- */
+
+.projects {
+  /* The card height, and the one number a narrow screen argues with.
+     `clamp` is what it wants to be; the `min` is what it is allowed to be.
+
+     Cards share a height and take their width from their own picture, so the
+     widest picture in the set is what decides whether the row fits the
+     screen — at 30vw a 2.04:1 card came out 427px wide on a 390px phone and
+     ran off both edges, which is the one thing the brief ruled out. The
+     second term is that card at the screen's width, and `--max-ratio` is the
+     widest ratio in the set, handed down by the component so this does not
+     have to be edited when the pictures change. It only binds below about
+     700px; every wider screen takes the clamp. */
+  --card-h: min(
+    clamp(15rem, 30vw, 26rem),
+    calc((100vw - 2.5rem) / var(--max-ratio, 2))
+  );
+  /* The step between one card and the next, as a length rather than a share
+     of a card: the five cards are not one width, so spacing them by their own
+     widths would open and close the gaps as the ring turns. */
+  --card-step: clamp(10.5rem, 29vw, 28rem);
+  /* How far back each step sits, how far it is turned, and how much of the
+     card is left. Pushed further than the reference's own ring, which turns
+     its cards a full 60°: these are landscape and a card turned that far is a
+     sliver. */
+  --card-depth: 9rem;
+  --card-turn: 26deg;
+  --card-shrink: 0.15;
+}
+
+.projects__stage {
+  position: relative;
+  /* The card is the tallest thing in the stage and the ring leans back, so
+     the stage is the card plus the room the lean needs. */
+  height: calc(var(--card-h) + 5.5rem);
+  perspective: 1600px;
+  /* The ring runs wider than the page's column at every width. It is clipped
+     to the viewport rather than to the container, so the cards furthest out
+     leave the screen rather than stopping at a margin. */
+  margin-inline: calc(50% - 50vw);
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+
+.projects__card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: var(--card-h);
+  /* Width follows the picture's own shape. Nothing is cropped and nothing is
+     letterboxed; see the note in the component. */
+  aspect-ratio: var(--ratio);
+  margin: 0;
+  border-radius: var(--radius-xl);
+  background-color: white;
+  box-shadow: var(--shadow-lift);
+  /* Centre first, then place. Order matters: the centring has to happen in
+     the card's own plane before the ring's rotation, or the card swings
+     about the stage's centre instead of its own. */
+  transform:
+    translate(-50%, -50%)
+    translateX(calc(var(--o) * var(--card-step)))
+    translateZ(calc(var(--away) * var(--card-depth) * -1))
+    rotateY(calc(var(--o) * var(--card-turn) * -1))
+    scale(calc(1 - var(--away) * var(--card-shrink)));
+  opacity: calc(1 - var(--away) * 0.42);
+  transition:
+    transform 0.75s var(--ease-out-soft),
+    opacity 0.75s var(--ease-out-soft);
+  will-change: transform;
+}
+
+.projects__frame {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+/* The caption sits on the picture rather than under it, so the card stays
+   exactly the photograph's own shape. It is held to the foot on a scrim that
+   only reaches a third of the way up — enough for the one line, and the
+   picture keeps the rest of itself. */
+.projects__label {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 1;
+  padding: 3.5rem 1.75rem 1.4rem;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    to top,
+    rgb(6 20 49 / 0.86) 0%,
+    rgb(6 20 49 / 0.5) 45%,
+    rgb(6 20 49 / 0) 100%
+  );
+  color: white;
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 1.7vw, 1.375rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-align: center;
+  transition: opacity 0.45s var(--ease-out-soft);
+}
+
+/* Only the card at the front is captioned. A turned card is half behind the
+   one in front of it, so its caption came out as a fragment of a word running
+   under the centre card's edge — and five captions at once is five things
+   asking to be read when only one of them is the subject. */
+.projects__card:not([data-active]) .projects__label {
+  opacity: 0;
+}
+
+/* ---- The controls ---------------------------------------------- */
+
+.projects__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.25rem, 3vw, 2.25rem);
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+.projects__arrow {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 3.75rem;
+  width: 3.75rem;
+  flex: none;
+  border-radius: 999px;
+  border: 1px solid var(--color-line-strong);
+  background-color: transparent;
+  color: var(--color-navy-900);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    color 0.45s var(--ease-out-soft),
+    border-color 0.45s var(--ease-out-soft),
+    transform 0.45s var(--ease-out-soft);
+}
+
+/* The fill. A disc that grows from the middle rather than a colour that
+   fades in: the arrow is inked over it, so a fade would take the glyph
+   through the muddy middle of navy-on-white with it. */
+.projects__arrow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--color-navy-900);
+  transform: scale(0);
+  transition: transform 0.45s var(--ease-out-soft);
+}
+
+.projects__arrow:hover {
+  color: white;
+  border-color: var(--color-navy-900);
+}
+
+.projects__arrow:hover::before {
+  transform: scale(1);
+}
+
+.projects__arrow:active {
+  transform: scale(0.94);
+}
+
+.projects__arrow:focus-visible {
+  outline: 2px solid var(--color-brass-500);
+  outline-offset: 4px;
+}
+
+.projects__arrow-glyph {
+  position: relative;
+  height: 1.35rem;
+  width: 1.35rem;
+  transition: transform 0.45s var(--ease-out-soft);
+}
+
+/* The nudge, each arrow towards its own side. `:first-child` and
+   `:last-child` rather than a modifier class: the row is two buttons and a
+   figure between them, and which is which is the order they are in. */
+.projects__arrow:first-child:hover .projects__arrow-glyph {
+  transform: translateX(-0.2rem);
+}
+
+.projects__arrow:last-child:hover .projects__arrow-glyph {
+  transform: translateX(0.2rem);
+}
+
+.projects__count {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-slate-muted);
+  line-height: 1;
+}
+
+.projects__count-now {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: var(--color-navy-900);
+}
+
+.projects__count-rule {
+  height: 1px;
+  width: 1.75rem;
+  background-color: var(--color-line-strong);
+}
+
+.projects__count-all {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .projects__card,
+  .projects__arrow,
+  .projects__arrow::before,
+  .projects__arrow-glyph {
+    transition-duration: 0.01ms;
   }
 }

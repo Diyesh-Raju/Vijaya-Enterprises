@@ -94,7 +94,7 @@ const accolades: readonly Accolade[] = [
       "Mahantesh B. Nelavagi received the prestigious Vijayavani International Award 2025. The honour was presented by Mr. B. N. Reddy, High Commissioner of India to Malaysia, and Dr. Anand Sankeshwar, MD of VRL Groups.",
     alt: "Mahantesh B. Nelavagi receiving the Vijayavani International Award 2025",
     wide: true,
-    shape: 533 / 799,
+    shape: 790 / 1200,
   },
   // Two honours from the same occasion, which is why they carry the same
   // name: the society gave both at the opening ceremonies for its new school

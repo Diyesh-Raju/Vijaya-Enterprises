@@ -98,8 +98,7 @@ type HandshakeRevealProps = {
  * the home page, sized to about half the screen — except the mark is not
  * inked, it is cut out. Behind it is the photograph, held back under navy so
  * only glimpses of it come through the silhouette and the thing still reads
- * as the icon. Scrolling opens the cut-out: the navy lifts, the rose-gold
- * cuffs go, the hands grow past the edges of the screen, and what is left is
+ * as the icon. Scrolling opens the cut-out: the navy lifts, the cuffs go, the hands grow past the edges of the screen, and what is left is
  * the photograph full-bleed. The last of the scroll brings the copy up onto
  * it.
  *
@@ -256,8 +255,21 @@ export function HandshakeReveal({
         />
 
         {/* The white ground with the mark cut out of it, and the cuffs laid
-            back over their own cut-outs in rose gold. One `transform` opens
-            both. */}
+            back over their own cut-outs. One `transform` opens both.
+
+            The cuffs were rose gold — the accent the icon set uses — until
+            2026-09-12, and at this size that peach read as bare wrists rather
+            than as sleeves. Navy-950 rather than black, which was the other
+            candidate: rendered side by side at the same scroll position,
+            black sat as a flat hole against a photograph that is all
+            blue-grey dusk, where the navy belongs to both the picture and the
+            palette. Nothing else on the site is pure black either — even the
+            shadows are navy-tinted.
+
+            The small handshake in `build-icons.tsx` keeps its rose gold: that
+            one is a member of a set where every icon carries the same accent,
+            and it is drawn at a size where the cuff is a detail rather than a
+            sleeve. */}
         <svg
           aria-hidden="true"
           focusable="false"
@@ -282,7 +294,7 @@ export function HandshakeReveal({
             <path
               d={HANDSHAKE_SLEEVES}
               fillRule="evenodd"
-              className="fill-rosegold-500"
+              className="fill-navy-950"
             />
           </g>
         </svg>

@@ -11,7 +11,8 @@
  * of `build-icons.tsx`: the white separations in the source are gaps in the
  * path, so they take whatever the section behind is, and the whole thing
  * scales without the source bitmap. The two sleeves are their own contours,
- * so they can carry the rose gold the set uses as its accent.
+ * so they can be filled apart from the hands — rose gold at icon size in
+ * `build-icons.tsx`, navy at the size `HandshakeReveal` draws them.
  *
  * Both paths need `evenodd` — the enclosed white shapes are holes, not
  * separate marks.

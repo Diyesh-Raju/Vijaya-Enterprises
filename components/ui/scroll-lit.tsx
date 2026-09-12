@@ -15,7 +15,13 @@ type ScrollLitProps = {
   feather?: number;
   /** Where the paragraph's top edge starts lighting, as a share of the screen. */
   from?: number;
-  /** Where its bottom edge finishes, as a share of the screen. */
+  /**
+   * Where its bottom edge finishes, as a share of the screen. Higher finishes
+   * sooner. Keep it above the middle: a sweep that closes below the fold
+   * leaves the paragraph parked half-lit at every position a reader is
+   * likely to stop at, and a sentence in two colours reads as a fault rather
+   * than as an effect.
+   */
   to?: number;
 };
 
@@ -28,11 +34,14 @@ type ScrollLitProps = {
  * scrolling is one custom property write, not a pass over fifty spans, and
  * nothing here re-renders: the value goes straight onto the node.
  *
- * The run is deliberately longer than the paragraph. It opens when the first
- * line is still low on the screen and closes only once the whole block has
- * climbed past `to`, which on this page is a screen after the section below
- * has come into frame — the sweep finishes under the next section rather
- * than racing ahead of the reader.
+ * The run is longer than the paragraph: it opens when the first line is still
+ * low on the screen and closes once the whole block has climbed past `to`.
+ * How much longer is the only thing to get right. It ran to 0.3 until
+ * 2026-09-12, a screen after the section below had come into frame, which
+ * read well while scrolling and badly the moment anyone stopped — the
+ * paragraph sat half navy and half grey at exactly the height a reader
+ * settles at. It now closes as the block clears the middle of the screen,
+ * which is still behind the reader's eye and no longer strands it.
  *
  * Undimmed unless this says otherwise: the stylesheet's default is the
  * finished paragraph, and `data-lit` is only set once the effect runs and
@@ -45,7 +54,7 @@ export function ScrollLit({
   className,
   feather = 2.5,
   from = 0.82,
-  to = 0.3,
+  to = 0.55,
 }: ScrollLitProps) {
   const ref = useRef<HTMLParagraphElement | null>(null);
   const words = children.split(/\s+/).filter(Boolean);

@@ -136,60 +136,79 @@ function LeaderCard({
   onOpen: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      aria-haspopup="dialog"
-      aria-label={`Read about ${leader.name}, ${leader.role}`}
-      className="group block w-full cursor-pointer overflow-hidden rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brass-500"
-    >
-      <figure className="relative isolate aspect-square overflow-hidden rounded-full bg-navy-100">
-        <Image
-          src={leader.photo}
-          alt=""
-          fill
-          sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 420px"
-          placeholder="blur"
-          style={{ objectPosition: leader.objectPosition }}
-          // The same slow settle every other photograph on the site has on
-          // hover. `alt=""` because the button already carries the name: read
-          // out, the portrait would otherwise announce it twice.
-          className="object-cover transition-transform duration-[1.4s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-        />
-        {/* The name sits on the photograph, so it needs a ground. Both
-            portraits are lit from above against a pale backdrop and go dark at
-            the shoulders, which is where this lands. */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/25 to-transparent"
-        />
-        {/* Centred, and lifted off the foot: a circle is narrowest at the
-            bottom, so a line set in the corner the card had would be cut by
-            the curve. At 12% up the chord is still two-thirds of the
-            diameter, which is room for the longer role on a phone. */}
-        <figcaption className="absolute inset-x-0 bottom-[12%] px-[14%] text-center">
-          <h3 className="font-display text-[1.25rem] leading-snug text-white sm:text-[1.4375rem]">
-            {leader.name}
-          </h3>
-          <p className="mt-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.24em] text-brass-400">
-            {leader.role}
-          </p>
-        </figcaption>
+    <div>
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-haspopup="dialog"
+        aria-label={`Read about ${leader.name}, ${leader.role}`}
+        className="group block w-full cursor-pointer overflow-hidden rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brass-500"
+      >
+        <figure className="relative isolate aspect-square overflow-hidden rounded-full bg-navy-100">
+          <Image
+            src={leader.photo}
+            alt=""
+            fill
+            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 420px"
+            placeholder="blur"
+            style={{ objectPosition: leader.objectPosition }}
+            // The same slow settle every other photograph on the site has on
+            // hover. `alt=""` because the button already carries the name: read
+            // out, the portrait would otherwise announce it twice.
+            className="object-cover transition-transform duration-[1.4s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+          />
+          {/* The name sits on the photograph, so it needs a ground. Both
+              portraits are lit from above against a pale backdrop and go dark at
+              the shoulders, which is where this lands. */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/25 to-transparent"
+          />
+          {/* Centred, and lifted off the foot: a circle is narrowest at the
+              bottom, so a line set in the corner the card had would be cut by
+              the curve. At 12% up the chord is still two-thirds of the
+              diameter, which is room for the longer of the two names on a
+              phone. The role used to sit under the name here and now stands
+              below the circle instead — see the note on it. */}
+          <figcaption className="absolute inset-x-0 bottom-[12%] px-[14%] text-center">
+            <h3 className="font-display text-[1.25rem] leading-snug text-white sm:text-[1.4375rem]">
+              {leader.name}
+            </h3>
+          </figcaption>
 
-        {/* The cue that the card opens. `aria-hidden` because it describes a
-            gesture, not content, and the button's own label already says what
-            pressing does. */}
-        {/* Where the card had it in the corner, the circle has no corner:
-            22% in from the top and the right puts it on the diagonal, well
-            inside the curve. */}
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute right-[22%] top-[22%] inline-flex h-9 w-9 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-white/15 text-[1.125rem] leading-none text-white backdrop-blur-sm transition-colors duration-300 group-hover:bg-white/25"
-        >
-          +
-        </span>
-      </figure>
-    </button>
+          {/* The cue that the card opens. `aria-hidden` because it describes a
+              gesture, not content, and the button's own label already says what
+              pressing does. */}
+          {/* Where the card had it in the corner, the circle has no corner:
+              22% in from the top and the right puts it on the diagonal, well
+              inside the curve. */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute right-[22%] top-[22%] inline-flex h-9 w-9 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-white/15 text-[1.125rem] leading-none text-white backdrop-blur-sm transition-colors duration-300 group-hover:bg-white/25"
+          >
+            +
+          </span>
+        </figure>
+      </button>
+
+      {/* The role, under the circle rather than inside it (2026-09-12).
+          Set in Cinzel, which the head of "Who we build for" further down
+          this page already loads — it has no true lowercase, so "Founder"
+          comes out as a capital F over small capitals without anything here
+          having to uppercase it. That is also why there is no
+          `text-transform`: forcing caps would flatten the two sizes into one
+          and throw away the reason for using the face.
+
+          It is outside the `<button>` on purpose. The button is round and
+          clips to its own circle, so a line inside it would be cut off at
+          the bottom; and its focus ring is `rounded-full`, which would have
+          to become a stadium around a caption to keep it. The role is still
+          announced with the portrait — the button's `aria-label` carries
+          it — so nothing is lost by it not being pressable. */}
+      <p className="inscribed mt-6 text-center text-[clamp(1.125rem,2vw,1.625rem)] leading-[1.2] tracking-[0.04em] text-navy-900">
+        {leader.role}
+      </p>
+    </div>
   );
 }
 

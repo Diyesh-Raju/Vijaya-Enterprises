@@ -13,6 +13,7 @@ import {
 import { Container, Section, Eyebrow } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { ScrollLit } from "@/components/ui/scroll-lit";
+import { HardHatIcon } from "@/components/ui/line-icons";
 import { Button } from "@/components/ui/button";
 import { img, alt } from "@/lib/images";
 
@@ -273,7 +274,7 @@ export default function CivilContractsPage() {
                 <Eyebrow>Your Project. Our Experience.</Eyebrow>
               </Reveal>
               <Reveal delay={80}>
-                <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
+                <h2 className="text-balance-head inscribed mt-6 text-[clamp(1.75rem,3.6vw,2.75rem)] leading-[1.06]">
                   Every construction project is different.
                 </h2>
               </Reveal>
@@ -297,7 +298,14 @@ export default function CivilContractsPage() {
             <div className="lg:col-span-5">
               <Reveal delay={120}>
                 <div className="rounded-[2rem] border border-line bg-mist p-8 sm:p-10">
-                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-slate-muted">
+                  {/* The card's label is grey rather than brass, so it is
+                      the one eyebrow on the page without the site's brass
+                      rule in front of it. The hat stands in for that rule and
+                      says what the card is about at the same time: it is the
+                      company's own crew that does the work. Brass, because
+                      that is what marks an eyebrow everywhere else. */}
+                  <p className="flex items-center gap-2.5 text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-slate-muted">
+                    <HardHatIcon className="h-[1.125rem] w-[1.125rem] flex-none text-brass-600" />
                     In-house execution
                   </p>
                   <p className="mt-6 font-display text-[1.5rem] leading-snug text-navy-900 sm:text-[1.75rem]">
@@ -334,15 +342,27 @@ export default function CivilContractsPage() {
               <Eyebrow>Contract Construction</Eyebrow>
             </Reveal>
             <Reveal delay={80}>
-              <h2 className="text-balance-head mt-6 text-[clamp(1.75rem,3.6vw,2.5rem)] leading-[1.12]">
+              <h2 className="text-balance-head inscribed mt-6 text-[clamp(1.625rem,3.1vw,2.375rem)] leading-[1.08]">
                 You own the project. We build it.
               </h2>
             </Reveal>
             <Reveal delay={160}>
-              {/* Lights word by word on the scroll, and is not finished until
-                  the stages below are in frame — set larger than body copy
-                  for it, but held under the heading it sits beneath. */}
-              <ScrollLit className="mt-7 text-[clamp(1.1875rem,2.1vw,1.5rem)] leading-[1.7]">
+              {/* Lights word by word on the scroll. Two things about it were
+                  what made this section read as unfinished rather than as an
+                  effect (2026-09-12).
+
+                  It used to run until the stages below were in frame, which
+                  meant that at every scroll position where a reader actually
+                  stops on this paragraph it was half navy and half pale grey
+                  — a sentence in two colours, which looks like a fault. The
+                  sweep now closes while the block is still comfortably on
+                  screen; `to` is the control, and `ScrollLit` documents it.
+
+                  And at 24px against a 40px heading there was no step between
+                  them, so the two competed. It is a size down now: still
+                  above body copy, which is the point of it, but plainly
+                  second to the line above. */}
+              <ScrollLit className="mt-8 text-[clamp(1.0625rem,1.7vw,1.3125rem)] leading-[1.75]">
                 {`A contract with Vijaya covers the building itself — foundation
                   to finishes, on your land, to your drawings or ours. No share
                   and no stake: what is built stays entirely yours, and we are
@@ -362,30 +382,47 @@ export default function CivilContractsPage() {
           right of it are six screens of their own below. Nothing is held
           under the header any more — there is nothing left beside this to
           hold it against. */}
-      <Section tone="mist" size="lg">
+      <Section tone="mist" size="md">
         <Container>
-          <div className="grid gap-10 lg:grid-cols-12 lg:items-end lg:gap-20">
+          {/* The two columns start together at the top. They used to be
+              `items-end`, which bottom-aligns them — and since the right
+              column is the taller of the two, that pushed the heading down
+              until its last line sat level with a button, leaving a quarter
+              of the row empty above the eyebrow and nothing to explain why.
+              Aligned at the top there is one line across the row to read
+              from, which is what the section was missing.
+
+              The right column is then pushed down by the height of the
+              eyebrow and its margin, so its first line starts level with the
+              heading's first line rather than with the eyebrow above it. The
+              rule across the top is what makes that reading deliberate: both
+              columns hang from it. */}
+          <div className="grid gap-10 border-t border-line pt-12 lg:grid-cols-12 lg:items-start lg:gap-20 lg:pt-14">
             <div className="lg:col-span-6">
               <Reveal>
                 <Eyebrow>How A Contract Runs</Eyebrow>
               </Reveal>
               <Reveal delay={80}>
-                <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
+                <h2 className="text-balance-head inscribed mt-6 text-[clamp(1.75rem,3.6vw,2.75rem)] leading-[1.06]">
                   What happens after you call us.
                 </h2>
               </Reveal>
             </div>
 
-            <div className="lg:col-span-6">
+            {/* 2.9rem is the eyebrow's own line plus the `mt-6` under it, so
+                the paragraph opens on the heading's first line. Only from
+                `lg`: below it the columns are stacked and there is nothing
+                left to align to. */}
+            <div className="lg:col-span-6 lg:pt-[2.9rem]">
               <Reveal delay={160}>
-                <p className="text-[1.0625rem] leading-[1.8] text-slate-body">
+                <p className="max-w-[34rem] text-[1.0625rem] leading-[1.8] text-slate-body">
                   A contract should be predictable long before it is signed.
                   These are the six stages every project goes through with
                   us, whether it is a single house or a factory floor.
                 </p>
               </Reveal>
               <Reveal delay={240}>
-                <div className="mt-9">
+                <div className="mt-8">
                   <Button href="/our-legacy" variant="outline" withArrow>
                     See Our Legacy
                   </Button>
@@ -417,7 +454,7 @@ export default function CivilContractsPage() {
         <Container>
           <div className="mx-auto max-w-[46rem] text-center">
             <Reveal>
-              <h2 className="text-balance-head text-[clamp(1.875rem,4vw,3rem)] leading-[1.12]">
+              <h2 className="text-balance-head inscribed text-[clamp(1.625rem,3.3vw,2.5rem)] leading-[1.08]">
                 The project is complete when you are satisfied with the
                 handover.
               </h2>

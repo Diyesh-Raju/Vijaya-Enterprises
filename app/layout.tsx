@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope } from "next/font/google";
+import { Manrope, Cinzel } from "next/font/google";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SamePageLinks } from "@/components/layout/same-page-links";
@@ -7,14 +7,30 @@ import { SiteBookingPrompt } from "@/components/ui/site-booking-prompt";
 import { site, contact } from "@/lib/site";
 import "./globals.css";
 
-// The one face on the site. Headings and body are both set in it; the
-// variable weight range is what separates them, so nothing else is loaded.
+// The face the site is set in. Headings and body are both set in it; the
+// variable weight range is what separates them.
 const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
   display: "swap",
   // Keep the fallback metrics close so the swap does not shift layout.
   adjustFontFallback: true,
+});
+
+// The one exception, and it is deliberately a narrow one: the heading over
+// "Who we build for" on /our-legacy, which the client asked to be set the way
+// a reference page sets its own (2026-09-12). Cinzel is an inscriptional
+// Roman face — it has no true lowercase, so its minuscules are drawn as small
+// capitals, which is where that heading's cut-in-stone look comes from.
+//
+// It is loaded for one heading, so keep it to one: it is another font file on
+// every page that uses it, and a second voice in a site that otherwise has
+// exactly one. Reach for `font-display` — Manrope — everywhere else.
+const cinzel = Cinzel({
+  variable: "--font-cinzel",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["500"],
 });
 
 export const metadata: Metadata = {
@@ -115,7 +131,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // changes unless this attribute is present — without it every navigation
       // would animate a long scroll to the top.
       data-scroll-behavior="smooth"
-      className={manrope.variable}
+      className={`${manrope.variable} ${cinzel.variable}`}
     >
       <head>
         {/* Scroll reveals start hidden and are switched on by an observer.

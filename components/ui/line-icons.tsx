@@ -129,6 +129,26 @@ export function ShieldCheckIcon({ className }: { className?: string }) {
   );
 }
 
+/**
+ * A hard hat — the company's own crew on site, for the in-house execution
+ * card on /civil-contracts.
+ *
+ * Four parts, and the raised crown is the one that matters: without it a
+ * dome over a brim is a bowl, or a mushroom. The two shoulder arcs stop
+ * short of the middle and the crown block stands between them, which is how
+ * a hard hat is actually made and how the eye reads one at 18px.
+ */
+export function HardHatIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M4.6 14.6v-2.4a5.6 5.6 0 0 1 5.4-5.6" />
+      <path d="M14 6.6a5.6 5.6 0 0 1 5.4 5.6v2.4" />
+      <path d="M10 10.6V5.8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4.8" />
+      <rect x="2.2" y="14.6" width="19.6" height="3.8" rx="1.1" />
+    </LineIcon>
+  );
+}
+
 /** Treating the customer like family. */
 export function HeartIcon({ className }: { className?: string }) {
   return (
@@ -161,11 +181,73 @@ export function BuildingIcon({ className }: { className?: string }) {
 }
 
 /* ------------------------------------------------------------------
-   Who the company builds for — the four kinds of client the six shapes
-   above did not already have a glyph for. Same 24-unit grid and the same
-   1.5 stroke as the rest of the set, so they sit in the icon tiles on
-   /our-legacy at the weight of every other line icon on the site.
+   Who the company builds for — the six glyphs beside the arch on
+   /our-legacy. Same 24-unit grid and the same 1.5 stroke as the rest of the
+   set, so they sit in their tiles at the weight of every other line icon on
+   the site.
+
+   Four of the six are buildings, which is the honest answer for a builder:
+   what changes between a client and the next one is the building, not the
+   subject. So each carries one mark that is its own and nothing else's — a
+   pitched roof and an arched door, a curtain wall of floor bands, a saw-tooth
+   shed under a stack, a pediment on columns — and no two of them are read
+   apart by their outline alone.
+
+   `HouseIcon`, `BuildingIcon` and `ShieldCheckIcon` used to do three of these
+   jobs and are left exactly as they were: the first two are shared with the
+   booking prompt and the project cards, and a shield with a tick reads as
+   "verified", which is not what a government client is. Redrawing any of them
+   would have moved pages this section has nothing to do with.
 ------------------------------------------------------------------- */
+
+/**
+ * A home with a chimney and an arched door — for the individuals and
+ * families. The arch is the section's own shape, borrowed at glyph size.
+ */
+export function FamilyHomeIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M3.3 10.7 12 4l8.7 6.7" />
+      <path d="M5.6 9.1v10.9a1 1 0 0 0 1 1h10.8a1 1 0 0 0 1-1V9.1" />
+      <path d="M9.9 21v-4.3a2.1 2.1 0 0 1 4.2 0V21" />
+      <path d="M16.4 7.3V4.9h2.2v4.2" />
+    </LineIcon>
+  );
+}
+
+/**
+ * An office tower banded floor by floor — for the businesses. The bands are
+ * a curtain wall rather than punched windows, which is what keeps it from
+ * reading as `BuildingIcon` at 22px.
+ */
+export function OfficeTowerIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M5.9 21V5a1 1 0 0 1 1-1h10.2a1 1 0 0 1 1 1v16" />
+      <path d="M5.9 8.2h12.2M5.9 11.8h12.2M5.9 15.4h12.2" />
+      <path d="M12 4.6v12.4" />
+      <path d="M10.4 21v-3.4h3.2V21" />
+      <path d="M3.2 21h17.6" />
+    </LineIcon>
+  );
+}
+
+/**
+ * A pediment on three columns — for the government and public sector work.
+ * Courts, banks and public offices are built this way here, which is why the
+ * shape says "civic" on its own.
+ */
+export function CivicBuildingIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M2.9 10 12 4.6 21.1 10" />
+      <path d="M2.9 10h18.2" />
+      <path d="M6.1 10v7.4M12 10v7.4M17.9 10v7.4" />
+      <path d="M4.6 17.4h14.8" />
+      <path d="M2.6 20.8h18.8" />
+    </LineIcon>
+  );
+}
 
 /** A private home — for the individuals and families. */
 export function HouseIcon({ className }: { className?: string }) {
@@ -177,36 +259,58 @@ export function HouseIcon({ className }: { className?: string }) {
   );
 }
 
-/** A plant — a chimney block beside two stepped sheds. */
+/**
+ * A plant — a tall block with two saw-tooth bays running off it.
+ *
+ * Drawn as one outline on one baseline, which is the whole trick. An earlier
+ * pass made the stack a thin pipe and hung a shallow zig-zag beside it: a tall
+ * bar, two short bars and a descending line, which read as a falling chart
+ * rather than as a factory. Widening the block to a quarter of the grid and
+ * running the roof out of it as notches of the same mass fixes that — the
+ * silhouette is a building before it is anything else.
+ */
 export function FactoryIcon({ className }: { className?: string }) {
   return (
     <LineIcon className={className}>
-      <path d="M3 21V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v8.2l5-3.4v3.4l5-3.4V21" />
+      <path d="M3 21V4.9a.9.9 0 0 1 .9-.9h4.2a.9.9 0 0 1 .9.9v8.2l6-4.1v4.1l6-4.1V21" />
       <path d="M2 21h20" />
-      <path d="M11.5 17.5h1.2M16 17.5h1.2" />
+      <path d="M5.1 21v-3.4h2.4V21" />
+      <path d="M12.2 17.4h1.7M17.4 17.4h1.7" />
     </LineIcon>
   );
 }
 
-/** A mortarboard, tassel and all — for the schools and colleges. */
+/**
+ * A mortarboard — for the schools and colleges. The cord now ends in its
+ * knot: without one it read as a stray rule down the right of the tile.
+ */
 export function GraduationCapIcon({ className }: { className?: string }) {
   return (
     <LineIcon className={className}>
-      <path d="M12 4 2.5 8.4 12 12.8l9.5-4.4Z" />
-      <path d="M6.6 10.6V16c0 1.6 2.4 2.9 5.4 2.9s5.4-1.3 5.4-2.9v-5.4" />
-      <path d="M21.5 8.4v5.4" />
+      <path d="M12 4.2 2.8 8.3 12 12.4l9.2-4.1Z" />
+      <path d="M6.9 10.2v4.7c0 1.5 2.3 2.7 5.1 2.7s5.1-1.2 5.1-2.7v-4.7" />
+      <path d="M21.2 8.6v4.4" />
+      <circle cx="21.2" cy="14.2" r="1.1" />
     </LineIcon>
   );
 }
 
-/** A cross over a doorway — for the hospitals and medical facilities. */
+/**
+ * A cross over a doorway — for the hospitals.
+ *
+ * No canopy over the block, which is what the first two passes tried: a rule
+ * drawn across the top and oversailing the walls reads as a roof slab on
+ * posts, and the glyph came out a carport. The block closes itself instead,
+ * and the cross — set large, because it is the only mark saying which kind of
+ * building this is — does the rest.
+ */
 export function HospitalIcon({ className }: { className?: string }) {
   return (
     <LineIcon className={className}>
-      <path d="M4.5 21V5.5a1.5 1.5 0 0 1 1.5-1.5h12a1.5 1.5 0 0 1 1.5 1.5V21" />
-      <path d="M2.5 21h19" />
-      <path d="M12 7.5v5M9.5 10h5" />
-      <path d="M9.8 21v-4.6h4.4V21" />
+      <path d="M4.6 21V8.6a1 1 0 0 1 1-1h12.8a1 1 0 0 1 1 1V21" />
+      <path d="M12 10.6v5M9.5 13.1h5" />
+      <path d="M9.9 21v-3.6h4.2V21" />
+      <path d="M2.6 21h18.8" />
     </LineIcon>
   );
 }

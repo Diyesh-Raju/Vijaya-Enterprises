@@ -244,9 +244,28 @@ import villaStreetDusk from "@/assets/images/villa-street-dusk.jpg";
 import villaStreetDuskPortrait from "@/assets/images/villa-street-dusk-portrait.jpg";
 import towersGlass from "@/assets/images/towers-glass.jpg";
 /* Vijaya's own — a completed Tudor-framed apartment block, and the one
-   picture on the site that is not stock. It carries the arch on
-   /our-legacy; see `WhoWeBuildFor`. */
+   picture on the site that is not stock. It carried the arch on /our-legacy
+   until the garden below took it (2026-09-12), and is kept for going back to. */
 import tudorApartments from "@/assets/images/tudor-apartments.jpg";
+/* The five projects in the carousel on /joint-ventures. Landscape, and each
+   card is cut to its own file's shape rather than to a shared one, so every
+   picture shows whole — see `ProjectCarousel`. They are renders and
+   photographs of Vijaya's own buildings, supplied by the client on
+   2026-09-12; only the second names itself, on the building. */
+import projectTudorCourt from "@/assets/images/project-tudor-court.jpg";
+import projectVijayaLuxo from "@/assets/images/project-vijaya-luxo.jpg";
+import projectStonePlinth from "@/assets/images/project-stone-plinth.jpg";
+import projectTimberCorner from "@/assets/images/project-timber-corner.jpg";
+import projectLawnTowers from "@/assets/images/project-lawn-towers.jpg";
+/* The ground under the brochures on /our-legacy. It is the section's whole
+   background and is never cropped — see the note in `app/our-legacy/page.tsx`
+   — so what the band can be is set by the file's own 16:9. */
+import airportDusk from "@/assets/images/airport-dusk.jpg";
+/* The arch on /our-legacy — a lit approach at sunset, the shrine on one side
+   and the house on the other. Upright to begin with, which the 4:5 arch wants:
+   it keeps the photograph's whole width and trims only the sky and the near
+   foreground. See `WhoWeBuildFor`. */
+import gardenShrineDusk from "@/assets/images/garden-shrine-dusk.jpg";
 import villaPool from "@/assets/images/villa-pool.jpg";
 import warehouseAisle from "@/assets/images/warehouse-aisle.jpg";
 
@@ -342,6 +361,13 @@ export const img = {
   villaStreetDusk,
   villaStreetDuskPortrait,
   tudorApartments,
+  gardenShrineDusk,
+  airportDusk,
+  projectTudorCourt,
+  projectVijayaLuxo,
+  projectStonePlinth,
+  projectTimberCorner,
+  projectLawnTowers,
   villaPool,
   warehouseAisle,
   towersLawn,
@@ -459,7 +485,7 @@ export const alt = {
   scaleModelHands:
     "Two hands lowering a lit scale model of a low-rise building onto a site plan, the city skyline behind it at sunset",
   residentialInterior:
-    "Warmly lit living and dining room in a completed Vijaya home, with a sofa, armchair and planting",
+    "Living room of a completed Vijaya home in the evening, a fire in the hearth, lit shelves behind the sofa and the dining room through the doorway",
   residentialLivingDusk:
     "A warmly lit living room at dusk, floor-to-ceiling glass open to the city lights, with a Ganesha idol, marigolds and embroidered cushions",
   storyCraneDawn:
@@ -485,6 +511,20 @@ export const alt = {
   towersGlass: "Glass office towers seen from street level",
   tudorApartments:
     "A completed four-storey apartment block with a tiled gabled roof and black timber framing over white render, seen from the road",
+  gardenShrineDusk:
+    "A lit stone path curving through a landscaped garden at sunset, a Ganesha shrine on a fountain plinth under the trees and a lamp-lit residence beyond",
+  airportDusk:
+    "An airport at dusk from above: aircraft standing at the gates along a lit terminal, one on approach over the runways, and a city skyline on the horizon",
+  projectTudorCourt:
+    "A four-storey apartment block at dusk, its gabled roofs tiled and its façade framed in dark timber over cream render, palms around a paved forecourt",
+  projectVijayaLuxo:
+    "Vijaya Luxo at dusk from the street, a white and dark-stone façade with timber panelling, balconies lit and the name on the boundary wall",
+  projectStonePlinth:
+    "A white apartment block in daylight, its balconies banded in grey and terracotta above a rough stone plinth, lawns and palms around it",
+  projectTimberCorner:
+    "A timber-clad residential block on a street corner at dusk, its balconies and planting lit, traffic passing on the road in front",
+  projectLawnTowers:
+    "Four white residential towers under a clear sky, circular canopies at their tops, seen across an open lawn",
   villaPool: "Completed villa with a swimming pool and terrace",
   warehouseAisle: "Aisle inside a completed warehouse facility",
   towersLawn:

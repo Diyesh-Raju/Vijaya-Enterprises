@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { PageHero } from "@/components/sections/page-hero";
 import { HandshakeReveal } from "@/components/sections/handshake-reveal";
-import { PartnerPanels } from "@/components/sections/partner-panels";
+import {
+  ProjectCarousel,
+  type CarouselProject,
+} from "@/components/sections/project-carousel";
 import {
   ProcessReveal,
   type ProcessStep,
@@ -21,38 +24,38 @@ export const metadata: Metadata = {
   alternates: { canonical: "/joint-ventures" },
 };
 
-const idealPartners = [
+/* The five projects in the carousel, in the order the client gave them
+   (2026-09-12). The label under each is a description of the picture rather
+   than a project name: only the second names itself — the name is on the
+   building — and inventing names for the other four would put words on a real
+   builder's page that nothing supports. Ask the client for them, and swap
+   them in here; nothing else has to change. Three words is the ceiling, and
+   the caption is one line at every width. */
+const projects: CarouselProject[] = [
   {
-    title: "Landowners",
-    body: "Owners of land who want it developed well, by a builder who will still be here afterwards.",
-    image: img.partnerLandHolding,
-    imageAlt: alt.partnerLandHolding,
+    image: img.projectTudorCourt,
+    alt: alt.projectTudorCourt,
+    label: "Tudor-framed apartments",
   },
   {
-    title: "Families With Development Land",
-    body: "Family-held land where several members need a fair, clear and workable arrangement.",
-    // The family from the Residential hero, so the people a joint venture is
-    // finally built for are the same people on both pages.
-    image: img.balconyFamily,
-    imageAlt: alt.balconyFamily,
-    // A narrow panel holds about a third of this photograph's width, and the
-    // four of them stand well left of centre in it. Held here the whole
-    // group is in frame, from the father to the girl's pointing hand.
-    focus: "24% 50%",
+    image: img.projectVijayaLuxo,
+    alt: alt.projectVijayaLuxo,
+    label: "Vijaya Luxo",
   },
   {
-    title: "Property Owners",
-    body: "Owners of existing property considering redevelopment rather than an outright sale.",
-    image: img.partnerBungalow,
-    imageAlt: alt.partnerBungalow,
+    image: img.projectStonePlinth,
+    alt: alt.projectStonePlinth,
+    label: "Stone-plinth apartments",
   },
   {
-    title: "Development Partners",
-    body: "Partners looking for construction capability and delivery they do not have to supervise.",
-    image: img.partnerPlansSite,
-    imageAlt: alt.partnerPlansSite,
-    // Hold the drawing and the men over it, not the plot behind them.
-    focus: "38% 60%",
+    image: img.projectTimberCorner,
+    alt: alt.projectTimberCorner,
+    label: "Timber-clad corner block",
+  },
+  {
+    image: img.projectLawnTowers,
+    alt: alt.projectLawnTowers,
+    label: "Lawn-facing towers",
   },
 ];
 
@@ -68,13 +71,19 @@ const whyPartner: ReasonPanel[] = [
     imageAlt: alt.fiftyYearsLegacy,
     imageClosed: img.fiftyYearsLegacySlat,
     // The one panel carrying a picture with type in it rather than a
-    // photograph, and every line of that type has to survive — the banner is
-    // 2.23:1 and the panel is nearer square, so no crop of the banner alone
-    // could hold both the "50 Years" lockup and the tagline beside it. The
-    // asset is therefore the banner already sitting on its own cream, sized
-    // and placed so the crop only ever eats that cream: the picture is held
-    // to the top, the lockup clears the copy at every width, and the copy
-    // reads on the empty cream below it rather than across the logo.
+    // photograph, and every line of that type has to survive. It used to be
+    // handled by the asset: the banner was padded out onto its own cream to
+    // roughly a square, so the crop that fills this panel only ever ate the
+    // padding. The client reshaped it to 3:2 on 2026-09-12, which takes that
+    // away — cropped to the panel, a third of the width goes and the tagline
+    // beside the lockup is cut in half.
+    //
+    // So the panel shows it whole instead. `ground` is the mean of the file's
+    // own four edges, which is what lets the strip under the picture read as
+    // more of the banner's cream rather than as a panel behind it; resample it
+    // if the banner is ever replaced again. See `whole` in `ReasonPanels`.
+    whole: true,
+    ground: "rgb(218 202 189)",
     focus: "50% 0%",
     // From `lg` the slat carries `imageClosed` and this hold is under it. It
     // is for the bar below `lg`, where holding the top would put a band of
@@ -192,24 +201,31 @@ export default function JointVenturesPage() {
         </p>
       </HandshakeReveal>
 
-      {/* --------------------------------------------------------- Partners */}
-      {/* The heading sits in the page's column; the four partners run edge to
-          edge beneath it, a photograph apiece. See `PartnerPanels`.
+      {/* --------------------------------------------------------- Projects */}
+      {/* The heading sits in the page's column; the ring below it runs wider
+          than the column and is clipped to the viewport instead.
 
-          The section carries no bottom padding at all: the band runs to the
-          section's edge, so the process section that follows starts on the
-          bottom of the photographs rather than after a strip of empty page.
-          The heading above still gives the band its air. */}
-      <Section tone="mist" size="lg" className="pb-0 sm:pb-0 lg:pb-0">
+          This replaced the four partner panels — landowners, families,
+          property owners, development partners — on 2026-09-12, at the
+          client's asking and against a reference page of their own. The
+          panels named who a joint venture is *with*; the ring shows what one
+          ends up as, which is the better argument to put after the handshake
+          the section above opens on. `PartnerPanels` is still in the tree and
+          takes its items as a prop, so nothing about it was lost.
+
+          The section keeps its bottom padding, unlike the band it replaces:
+          the arrows are the last thing in it and need air under them before
+          the process section starts. */}
+      <Section tone="mist" size="lg">
         <Container>
           <SectionHeading
-            eyebrow="Ideal Partners"
-            title="Who we work with."
-            lead="If you hold land in or around Bengaluru and are considering what to do with it, there is a conversation worth having."
+            eyebrow="Our Projects"
+            title="What the partnership builds."
+            lead="Residential buildings Vijaya has designed and built in and around Bengaluru. Step through them with the arrows."
           />
         </Container>
-        <div className="mt-12 lg:mt-14">
-          <PartnerPanels items={idealPartners} />
+        <div className="mt-12 lg:mt-16">
+          <ProjectCarousel items={projects} />
         </div>
       </Section>
 

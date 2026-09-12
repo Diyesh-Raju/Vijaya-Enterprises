@@ -5,12 +5,13 @@ import { Counter } from "@/components/ui/counter";
 import { CompassRoseEmblem, CrestEmblem } from "@/components/ui/emblem-icons";
 import {
   BuildingIcon,
+  CivicBuildingIcon,
   FactoryIcon,
+  FamilyHomeIcon,
   GraduationCapIcon,
   HospitalIcon,
   HourglassIcon,
-  HouseIcon,
-  ShieldCheckIcon,
+  OfficeTowerIcon,
 } from "@/components/ui/line-icons";
 import { img, alt } from "@/lib/images";
 import { sectors } from "@/lib/site";
@@ -43,16 +44,16 @@ import type { ReactNode } from "react";
  *    they overrun an edge, which lands the crown on an exact semicircle rather
  *    than short of one.
  *  • The frame is 4:5 — the client asked for a longer arch at the same width
- *    (2026-09-11), and it was square before that — and the ratio is the zoom
- *    control. `object-cover` keeps `frameAspect / photoAspect` of a
- *    photograph's width, so the frame's own proportions decide how much of the
- *    building survives: 3:4 kept 45% and cut the elevation off mid-façade,
- *    1:1 kept 60% and held the whole block with its setting, and 4:5 keeps
- *    48%. It is also how far the source is magnified — 2.2x, 1.7x and 2.1x —
- *    which this photograph, 2000px on its long edge and the only one on the
- *    site not available at 4K, has little room for. Taller than 4:5 is back
- *    to the façade cut off. Square is as wide as it goes: past it the crown
- *    eats the roof and the shape reads as a dome rather than an arch.
+ *    (2026-09-11), and it was square before that. What that ratio does depends
+ *    entirely on which way up the photograph is, and the picture in it changed
+ *    on 2026-09-12 from a landscape to an upright one. A landscape was cropped
+ *    on its width and magnified to fill: 3:4 kept 45% of it, 1:1 kept 60%, 4:5
+ *    kept 48%, and the zoom that came with each — 2.2x, 1.7x, 2.1x — was the
+ *    real constraint on a 2000px source. The upright one is not magnified at
+ *    all: 4:5 is wider than its own 2:3, so it keeps the whole width and is
+ *    trimmed on its height instead. Square is still as wide as the frame goes,
+ *    whatever is in it — past that the crown eats the top of the picture and
+ *    the shape reads as a dome rather than an arch.
  *  • The three columns become one below `xl`, not below `lg`. At 1024 the
  *    split still technically fits, but only by leaving the lines 218px each,
  *    where half the six headings break across three rows. Stacked, the
@@ -80,12 +81,12 @@ const clientsLeft: readonly Client[] = [
   {
     title: "Individuals & Families",
     body: "Homes and apartments built for the people who will live in them.",
-    icon: <HouseIcon />,
+    icon: <FamilyHomeIcon />,
   },
   {
     title: "Businesses",
     body: "Offices, retail and commercial premises, from a single floor upwards.",
-    icon: <BuildingIcon />,
+    icon: <OfficeTowerIcon />,
   },
   {
     title: "Industries",
@@ -108,7 +109,7 @@ const clientsRight: readonly Client[] = [
   {
     title: "Government & Public Sector",
     body: "Defence, banking, public sector organisations and infrastructure.",
-    icon: <ShieldCheckIcon />,
+    icon: <CivicBuildingIcon />,
   },
 ];
 
@@ -121,27 +122,37 @@ export function WhoWeBuildFor() {
           <Reveal>
             <Eyebrow className="justify-center">Who We Build For</Eyebrow>
           </Reveal>
+          {/* The head is set the way the reference page the client brought
+              sets its own (2026-09-12), and it is the only place on the site
+              that departs from Manrope — `--font-serif` and `--font-system`
+              in `globals.css` say why, and are used nowhere else.
+
+              Cinzel has no true lowercase: its minuscules are drawn as small
+              capitals, so "From Airports to homes" comes out as two sizes of
+              capital rather than as caps and lowercase. That is the look
+              being matched, and it is also why the tracking is opened a
+              little — a line of capitals set solid closes up. */}
           <Reveal delay={80}>
-            <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
+            <h2 className="text-balance-head inscribed mt-6 text-[clamp(1.875rem,4.2vw,3.25rem)] leading-[1.06]">
               From Airports to homes
             </h2>
           </Reveal>
+          {/* One paragraph, not two. The six lines below name every kind of
+              client in full, so the lead only has to make the claim they are
+              evidence for — and at this size two paragraphs of it pushed the
+              arch a screen down the page.
+
+              `font-system` is the reference's own choice and is deliberate:
+              it names no webfont here, so this paragraph is Segoe UI on
+              Windows, SF on a Mac and Roboto on Android. It is the one
+              paragraph on the site that is not Manrope. */}
           <Reveal delay={160}>
-            <div className="mt-7 space-y-5 text-[1.0625rem] leading-[1.8] text-slate-body">
-              <p>
-                We have built for individuals, families, businesses, institutions
-                and large organisations. Our experience ranges from homes and
-                apartments to industrial facilities, educational buildings,
-                hospitals, commercial spaces and specialised infrastructure.
-              </p>
-              <p>
-                Unlike many developers that specialise in a single segment, we have
-                delivered projects for homeowners, industries, government
-                organisations, educational institutions, hospitals, banks and public
-                sector organisations. That breadth is one of the things we are most
-                confident about.
-              </p>
-            </div>
+            <p className="mx-auto mt-7 max-w-[42rem] font-system text-[clamp(1.0625rem,1.5vw,1.375rem)] leading-[1.6] text-slate-body">
+              Few builders work across every kind of project. We have handed over
+              homes and apartments, factories, campuses, hospitals and public
+              buildings — and that breadth is the thing we are most confident
+              about.
+            </p>
           </Reveal>
         </div>
 
@@ -163,57 +174,52 @@ export function WhoWeBuildFor() {
             variant="fade"
           >
             <Frame
-              // Vijaya's own building, and the reason this section carries a
-              // photograph at all.
+              // Whatever goes in the arch has to clear one measured bar. The
+              // crown stands on white, so it only reads as an arch if the
+              // picture holds tone to its own top edge — a number, not a
+              // feeling. Sampling the top 90px of the 4:5 crop each candidate
+              // renders at, against the section's white:
               //
-              // Whatever replaces it has to clear one measured bar. The arch
-              // stands on white, so the crown only reads if the picture holds
-              // tone to its own top edge — a number, not a feeling. Sampling
-              // the top 90px of the 3:4 crop each candidate renders at,
-              // against the section's white:
-              //
-              //   tudor-apartments      3.8:1   ← this one, tiled roof
-              //   residence-blue-hour   7.1:1
+              //   garden-shrine-dusk    4.5:1   ← this one, canopy on sunset
               //   villa-pool            4.1:1
+              //   tudor-apartments      3.4:1   the one it replaced
               //   cranes-skyline        2.5:1
               //   towers-glass          1.4:1   crown disappears
               //
               // An early pass used `residentialTowers`, which looks straight
               // up at an overcast sky and measures below all of them: the
               // curve — the whole point of the shape — vanished into the page.
-              src={img.tudorApartments}
-              alt={alt.tudorApartments}
+              src={img.gardenShrineDusk}
+              alt={alt.gardenShrineDusk}
               ratio="tall"
-              // `sizes` is NOT the width of the frame, and getting that wrong
-              // is what made this picture soft. The frame is a portrait window
-              // onto a 1.68:1 photograph, so `object-cover` shows only 48% of
-              // the image's width and magnifies it to fill — the browser needs
-              // a file about 2.1x the frame, not one the frame's own size.
-              // Asked for 30vw, Next served a 1080px candidate, 45% of which
-              // was 486 real pixels stretched across an 864px retina box.
+              // This photograph is upright — 848 × 1264, almost 2:3 — where
+              // the one before it was a 1.68:1 landscape, and that inverts
+              // everything the old note here said. A 4:5 frame is wider than
+              // 2:3, so `object-cover` keeps the picture's whole width and
+              // trims 8% off the top and the same off the bottom. Nothing is
+              // magnified, so `sizes` is simply the width the frame is drawn
+              // at — asking for more only downloads more.
               //
-              // The three stops below are written against Next's own width
-              // buckets rather than as tidy round numbers: 750 lands a phone
-              // on the 1920 candidate, 1000 lands the stacked tablet on the
-              // 2048 bucket, and 70vw asks a laptop for more than the 2000px
-              // original has — both of those serve it whole. They went up
-              // with the frame: at 4:5 the square's 600 and 780 fell a bucket
-              // short. Nudging any of them past a bucket edge doubles the
-              // download for no visible gain.
-              sizes="(max-width: 640px) 750px, (max-width: 1280px) 1000px, 70vw"
+              // The ceiling is where it costs something: at 560 CSS px on a
+              // 2x screen the browser wants 1120 real pixels and the file has
+              // 848, so the widest laptop draws it at about three quarters of
+              // native. Every narrower width, and every 1x screen, is served
+              // whole. A larger original is the only fix — Next will not
+              // invent the pixels, and upscaling the file here would only
+              // hide that it cannot.
+              sizes="(max-width: 1280px) min(100vw - 3rem, 520px), min(38vw, 560px)"
               // 280 is half of 560, the widest the frame is ever drawn, so the
               // crown is an exact semicircle there. Below that the pair of top
               // radii overrun the edge and CSS scales them down together —
               // which lands on a semicircle at every narrower width too.
               rounded="rounded-t-[clamp(140px,26vw,280px)] rounded-b-[2rem]"
               className="shadow-[0_40px_80px_rgba(11,26,58,0.24)]"
-              // Which 48% of the width. 48% is a hair left of centre, and
-              // centred on the building: the timbered bays, the steps and the
-              // two men at the gate, with the yellow car parked at the far
-              // right — the one thing in this photograph that pulls the eye
-              // off the building — kept out of it. The two end wings no
-              // longer fit at 4:5; the square held them.
-              imageClassName="object-[48%_50%]"
+              // Which 8% comes off each end. Centred would cut the path where
+              // it leaves the bottom of the frame, which is what leads the eye
+              // up to the house; held a little high, the trim comes off the
+              // sky instead — and the sky is the half the crown is about to
+              // cover anyway.
+              imageClassName="object-[50%_38%]"
             />
             <Seal />
           </Reveal>
