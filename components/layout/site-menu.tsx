@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, type CSSProperties } from "react";
 import { cn } from "@/lib/cn";
 import { Logo } from "@/components/layout/logo";
@@ -68,6 +69,7 @@ export function SiteMenu({
   isActive: (href: string) => boolean;
 }) {
   const sheetRef = useRef<HTMLDivElement | null>(null);
+  const pathname = usePathname();
 
   /**
    * Move focus into the sheet when it opens, so the keyboard lands inside the
@@ -242,6 +244,11 @@ export function SiteMenu({
                     <Link
                       href={link.href}
                       aria-current={isActive(link.href) ? "page" : undefined}
+                      // The header closes the sheet when the route changes,
+                      // and a link to this very page changes nothing — the
+                      // page glides back to its top as the sheet lifts
+                      // (`SamePageLinks`), and the sheet has to be told to.
+                      onClick={link.href === pathname ? onClose : undefined}
                       className={cn(
                         "block py-0.5",
                         // The site's own sans, not its display serif. The list

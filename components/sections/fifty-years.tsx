@@ -1,12 +1,16 @@
 import type { ReactElement } from "react";
 import { Container, Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
+import { Counter } from "@/components/ui/counter";
 import { GradientCard, type CardStat } from "@/components/ui/gradient-card";
 import {
   AreaIcon,
   BuildingIcon,
   HeartIcon,
 } from "@/components/ui/line-icons";
+
+/** Long enough to watch the lakhs roll over; the same for all five. */
+const COUNT_MS = 2200;
 
 /**
  * The band directly under the hero: the headline figure on the left, three
@@ -22,6 +26,12 @@ import {
  * `scroll-snap-type` on `html`; that handed the scroll from this band to the
  * next section, and made every gesture on every page of the site a snap
  * negotiation to pay for it. See the note in `globals.css`.
+ *
+ * Every figure counts up from nothing as it comes into view, and again each
+ * time the band is scrolled back to — see `Counter`. All five run for the
+ * same time, so they land together however far each has to climb. The
+ * finished figure is what the server sends, so it is on the page without
+ * JavaScript and read whole by a screen reader.
  */
 const points: {
   icon: (props: { className?: string }) => ReactElement;
@@ -31,20 +41,37 @@ const points: {
   {
     icon: AreaIcon,
     title: "Sq. Ft. Delivered",
-    stats: [{ value: "+10,00,000" }],
+    stats: [
+      {
+        value: (
+          <Counter to={1000000} prefix="+" grouping durationMs={COUNT_MS} />
+        ),
+      },
+    ],
   },
   {
     icon: BuildingIcon,
     title: "Residential Portfolio Scale",
     stats: [
-      { label: "Apartment projects", value: "30+" },
-      { label: "No. of flats constructed", value: "1200+" },
+      {
+        label: "Apartment projects",
+        value: <Counter to={30} suffix="+" durationMs={COUNT_MS} />,
+      },
+      {
+        label: "No. of flats constructed",
+        value: <Counter to={1200} suffix="+" durationMs={COUNT_MS} />,
+      },
     ],
   },
   {
     icon: HeartIcon,
     title: "Trusted by Families",
-    stats: [{ value: "+1,500", label: "happy families" }],
+    stats: [
+      {
+        value: <Counter to={1500} prefix="+" grouping durationMs={COUNT_MS} />,
+        label: "happy families",
+      },
+    ],
   },
 ];
 
@@ -57,7 +84,7 @@ export function FiftyYears() {
             <Reveal>
               <h2 className="text-navy-900">
                 <span className="block font-display text-[clamp(5rem,14vw,11rem)] leading-[0.8]">
-                  50+
+                  <Counter to={50} suffix="+" durationMs={COUNT_MS} />
                 </span>
                 <span
                   aria-hidden="true"

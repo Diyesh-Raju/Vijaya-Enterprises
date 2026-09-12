@@ -112,12 +112,13 @@ const whyPartner: ReasonPanel[] = [
   {
     title: "Trust You Can Check",
     body: "Ask about the organisations and families we have already built for. That is the reference.",
-    image: img.familyLivingRoom,
-    imageAlt: alt.familyLivingRoom,
-    // The three of them sit low in the frame. Held here the mother and the
-    // child are in the slat, and open the group stands clear of the copy
-    // rather than behind it.
-    focus: "46% 62%",
+    image: img.siteHandshakePlans,
+    imageAlt: alt.siteHandshakePlans,
+    // Open, the panel keeps the photograph's full width and two-thirds of
+    // its height: held here the faces and the handshake are in the upper
+    // half and the copy reads over the drawings. Closed, the slat is the
+    // handshake itself.
+    focus: "55% 45%",
   },
 ];
 

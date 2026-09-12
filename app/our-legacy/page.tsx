@@ -93,9 +93,9 @@ export default function OurLegacyPage() {
     <>
       <LegacyHero />
 
-      <WhoWeBuildFor />
-
       <Management />
+
+      <WhoWeBuildFor />
 
       <LegacyChapters chapters={story} />
 

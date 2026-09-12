@@ -8,30 +8,54 @@ import { cn } from "@/lib/cn";
 import { img, alt, video } from "@/lib/images";
 
 /**
- * Viewport heights the whole hero occupies, counting the one it starts on.
- * Five screens of scrolling: three and a half of walkthrough, then the close.
+ * Screens of scroll the walkthrough plays over. Set by the pace, not picked:
+ * 2.35 screens for a 6.97s clip is about three seconds of film a screen,
+ * which is what the long cut ran at — 10.47s over three and a half. Given the
+ * long cut's three and a half, this clip ran at two seconds a screen and
+ * dragged.
  */
-const TRACK_SCREENS = 6;
+const SCRUB_SCREENS = 2.35;
+
+/**
+ * Screens of scroll the close takes once the film has stopped: the picture
+ * softening, the lockup and the line arriving, then a hold on the finished
+ * card. Counted separately so it keeps its length whatever the clip's.
+ */
+const CLOSE_SCREENS = 1.5;
+
+/** Viewport heights the whole hero occupies, counting the one it starts on. */
+const TRACK_SCREENS = 1 + SCRUB_SCREENS + CLOSE_SCREENS;
+
+/** A point `screens` of scroll into the track, as a fraction of its travel. */
+const at = (screens: number) => screens / (SCRUB_SCREENS + CLOSE_SCREENS);
 
 /**
  * Where the clip reaches its last frame. Everything after this point happens
  * to a still — the walkthrough plays out in full first, and only then does
  * the picture soften and the lockup arrive. Nothing overlaps the film.
  */
-const CLIP_END = 0.7;
+const CLIP_END = at(SCRUB_SCREENS);
 
 /**
- * The close, in fractions of the track, all of it after `CLIP_END`. The
- * picture goes soft and shade pools under the middle of it, then the lockup
- * rises into that, then the line beneath. Each finishes before the track
- * does, so the hero holds the finished card for a quarter of a screen rather
- * than completing on the last pixel before it unpins.
+ * The close, in screens past `CLIP_END`. The picture goes soft and shade
+ * pools under the middle of it, then the lockup rises into that, then the
+ * line beneath. Each finishes before the track does, so the hero holds the
+ * finished card for a quarter of a screen rather than completing on the last
+ * pixel before it unpins.
  */
 const POOL_START = CLIP_END;
-const LOGO_START = 0.76;
-const FINALE_END = 0.9;
-const TAG_START = 0.83;
-const TAG_END = 0.95;
+const LOGO_START = at(SCRUB_SCREENS + 0.3);
+const FINALE_END = at(SCRUB_SCREENS + 1);
+const TAG_START = at(SCRUB_SCREENS + 0.65);
+const TAG_END = at(SCRUB_SCREENS + 1.25);
+
+/**
+ * The loading cue at the foot of the film stays for most of the walkthrough
+ * and gives way near its end — gone before the lockup starts to rise, so the
+ * two are never on the screen together.
+ */
+const CUE_FADE_START = at(SCRUB_SCREENS - 0.6);
+const CUE_FADE_END = at(SCRUB_SCREENS + 0.1);
 
 /**
  * How fast the played position converges on the scroll position, per second.
@@ -60,7 +84,7 @@ const HAVE_CURRENT_DATA = 2;
 /**
  * When the walkthrough runs at all: a laptop-shaped window, not merely a
  * wide one. The height is what keeps a phone turned on its side — 932
- * pixels across and 430 down — from being handed a six-screen scrubbed
+ * pixels across and 430 down — from being handed a five-screen scrubbed
  * video. Same string as `HomeHeroPhone` and the same pair of dimensions as
  * the `desk:` variant in `globals.css`; all three have to agree.
  */
@@ -88,9 +112,10 @@ const ramp = (value: number, from: number, to: number) => {
 };
 
 /**
- * The home page hero: one walkthrough — the towers from the air, the living
- * room, the foyer — with the scroll wheel as its transport control, closing
- * on the lockup. Nothing is laid over the film itself and no grade sits on it.
+ * The home page hero: one walkthrough — the towers from the air, in through
+ * a window to the living room — with the scroll wheel as its transport
+ * control, closing on the lockup. Nothing is laid over the film itself and
+ * no grade sits on it.
  *
  * The section is a tall *track*; the panel inside it is `sticky`, so it pins
  * to the viewport while the track scrolls past underneath. How far the track
@@ -112,8 +137,10 @@ const ramp = (value: number, from: number, to: number) => {
  *     the element's own `currentTime`, never against what we last asked for.
  *     A request that the browser quietly dropped is therefore reissued on the
  *     next frame instead of being remembered as done.
- *   • Seeks are held inside what has actually downloaded, so a fast scroll on
- *     a slow line makes the walkthrough lag rather than blank.
+ *   • The whole file is read in before the clip is attached, and a cue at
+ *     the foot of the screen counts it in — "Loading 42%", then "Scroll to
+ *     Discover" once the last byte is here. Every seek after that is to
+ *     memory, so nothing waits on a range request halfway down the page.
  *   • Coming back from a background tab, another app, or the bfcache, the
  *     decoder may have been torn down while we were away. The element is
  *     checked on every such wake and reloaded if it has nothing to draw.
@@ -136,9 +163,14 @@ export function ScrollHero() {
   const veilRef = useRef<HTMLDivElement | null>(null);
   const markRef = useRef<HTMLHeadingElement | null>(null);
   const tagRef = useRef<HTMLParagraphElement | null>(null);
+  const cueRef = useRef<HTMLDivElement | null>(null);
   const primed = useRef(false);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
+  /** The clip once all of it is here, as a blob URL — or its own URL, if reading it in failed. */
+  const [downloaded, setDownloaded] = useState<string | null>(null);
+  /** How much of it has arrived, 0–100; `null` if the server never said how big it is. */
+  const [percent, setPercent] = useState<number | null>(0);
 
   // `"ssr"` until mounted: the video is never rendered on the server, so a
   // phone never sees the desktop file in the markup.
@@ -149,15 +181,12 @@ export function ScrollHero() {
   );
 
   // The tall track is added after mount too. A visitor whose JavaScript never
-  // arrives would otherwise get four screens of dead scroll past a hero that
-  // cannot move. It grows at hydration, below the fold, so nothing shifts.
+  // arrives would otherwise get nearly four screens of dead scroll past a hero
+  // that cannot move. It grows at hydration, below the fold, so nothing shifts.
   const mounted = width !== "ssr";
-  const src =
-    failed || !mounted
-      ? null
-      : width === "wide"
-        ? video.homeScrollDesktop
-        : video.homeScrollMobile;
+  const src = failed ? null : downloaded;
+  /** The cue stops counting when there is a clip to scrub — or none coming. */
+  const loaded = ready || failed;
 
   /** Show the clip, and give iOS the one play it needs to paint a frame. */
   const reveal = (el: HTMLVideoElement) => {
@@ -170,17 +199,87 @@ export function ScrollHero() {
       .catch(() => {});
   };
 
+  /*
+   * Read the whole clip in before handing it to the element.
+   *
+   * Left to itself, a `<video>` fetches what it needs as it goes, and a
+   * reader who scrolls ahead of the download is asking for frames that are
+   * not there yet — the walkthrough holds whatever it last drew until the
+   * range request comes back. Reading all of it first makes every seek after
+   * that a seek into memory, and it is what lets the cue give an honest
+   * count: "Scroll to Discover" appears when the last byte has, not when the
+   * first frame happens to.
+   *
+   * `fetch`, so the count comes off the stream as it arrives and a repeat
+   * visit is answered from the HTTP cache, counting to a hundred at once.
+   * Should reading it in fail for any reason, the element is given the
+   * file's own URL instead and streams it the old way.
+   *
+   * Only for the laptop hero — a phone unmounts this section, and must not
+   * pay for a file it will never be shown.
+   */
+  useEffect(() => {
+    if (width !== "wide") return;
+    const controller = new AbortController();
+    let url: string | null = null;
+
+    const read = async () => {
+      const response = await fetch(video.homeScrollDesktop, {
+        signal: controller.signal,
+      });
+      if (!response.ok || !response.body) throw new Error(response.statusText);
+      const total = Number(response.headers.get("content-length")) || 0;
+      if (!total) setPercent(null);
+
+      const reader = response.body.getReader();
+      const chunks: Uint8Array<ArrayBuffer>[] = [];
+      let received = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        received += value.byteLength;
+        // Held at 99 until the stream actually ends: a server compressing on
+        // the way out reports the smaller size, and the count would overrun.
+        // Same-number updates are dropped by React, so this is a hundred
+        // renders at most, not one per chunk.
+        if (total) setPercent(Math.min(99, Math.floor((received / total) * 100)));
+      }
+
+      url = URL.createObjectURL(new Blob(chunks, { type: "video/mp4" }));
+      setPercent(100);
+      setDownloaded(url);
+    };
+
+    read().catch(() => {
+      if (!controller.signal.aborted) setDownloaded(video.homeScrollDesktop);
+    });
+
+    return () => {
+      controller.abort();
+      if (url) URL.revokeObjectURL(url);
+      // Back to the start, so a window resized out of the laptop layout and
+      // back in counts the clip in again rather than pointing the element at
+      // a blob URL that no longer exists.
+      setDownloaded(null);
+      setPercent(0);
+      setReady(false);
+      primed.current = false;
+    };
+  }, [width]);
+
   useEffect(() => {
     const track = trackRef.current;
     // Optional on purpose: if the clip never loads, everything else still
-    // runs over the poster rather than leaving five screens of dead scroll.
+    // runs over the poster rather than leaving four screens of dead scroll.
     const el = videoRef.current;
     const media = mediaRef.current;
     const soft = softRef.current;
     const veil = veilRef.current;
     const mark = markRef.current;
     const tag = tagRef.current;
-    if (!track || !media || !soft || !veil || !mark || !tag) return;
+    const cue = cueRef.current;
+    if (!track || !media || !soft || !veil || !mark || !tag || !cue) return;
 
     let frame = 0;
     let current = 0;
@@ -238,10 +337,11 @@ export function ScrollHero() {
       }
       seekAt = 0;
 
-      // A seek into a part of the file that has not arrived yet is fine: the
-      // browser range-requests it and keeps the last decoded frame on screen
-      // meanwhile, so the walkthrough lags rather than blanking. Stop a frame
-      // short of the end, though — the very last one is not always seekable,
+      // Only the fallback, which streams the file, can seek into a part that
+      // has not arrived yet — and that is fine: the browser range-requests it
+      // and keeps the last decoded frame on screen meanwhile, so the
+      // walkthrough lags rather than blanking. Stop a frame short of the end,
+      // though — the very last one is not always seekable,
       // and asking for it can leave `seeking` true indefinitely.
       const wanted = clamp01(progress / CLIP_END) * (duration - 0.05);
       if (Math.abs(el.currentTime - wanted) < SEEK_EPSILON) return;
@@ -273,6 +373,11 @@ export function ScrollHero() {
       const line = ramp(progress, TAG_START, TAG_END);
       tag.style.opacity = String(line);
       tag.style.transform = `translate3d(0, ${(1 - line) * 20}px, 0)`;
+
+      // Sinks a little as it fades, the opposite of the lockup's rise.
+      const cueOut = ramp(progress, CUE_FADE_START, CUE_FADE_END);
+      cue.style.opacity = String(1 - cueOut);
+      cue.style.transform = cueOut > 0 ? `translate3d(0, ${cueOut * 12}px, 0)` : "";
     };
 
     const tick = (now: number) => {
@@ -401,7 +506,7 @@ export function ScrollHero() {
       stopShared();
       el?.removeEventListener("stalled", wake);
       el?.removeEventListener("emptied", wake);
-      for (const node of [media, soft, veil, mark, tag]) {
+      for (const node of [media, soft, veil, mark, tag, cue]) {
         node.style.opacity = "";
         node.style.transform = "";
       }
@@ -411,7 +516,7 @@ export function ScrollHero() {
   /*
    * Phones do not get the walkthrough at all.
    *
-   * This is a six-screen track pinning a 1920-wide clip and scrubbing it off
+   * This is a five-screen track pinning a 1920-wide clip and scrubbing it off
    * the scroll position — an interaction that wants a wheel and a connection,
    * and on a phone is a long drag through a file that had to be downloaded
    * first. `HomeHeroPhone` opens the page there instead: a short band of
@@ -503,7 +608,14 @@ export function ScrollHero() {
               onLoadedData={(event) => reveal(event.currentTarget)}
               onCanPlay={(event) => reveal(event.currentTarget)}
               onSeeked={(event) => reveal(event.currentTarget)}
-              onError={() => setFailed(true)}
+              // A blob the page refuses to play — a policy that does not
+              // allow `blob:` media, say — falls back to streaming the file
+              // from its own URL. Only if that fails too is the clip given up.
+              onError={() =>
+                src === video.homeScrollDesktop
+                  ? setFailed(true)
+                  : setDownloaded(video.homeScrollDesktop)
+              }
             />
           )}
 
@@ -514,7 +626,7 @@ export function ScrollHero() {
               deferred — so on a phone, where this section is `display: none`
               and about to be unmounted altogether, it was being downloaded
               for nothing. Nothing is lost by waiting: it is invisible until
-              the track is seventy percent scrolled, four screens below the
+              the film has finished, more than two screens below the
               hydration this now happens on. */}
           <div ref={softRef} className="absolute inset-0 opacity-0">
             {mounted && (
@@ -573,6 +685,53 @@ export function ScrollHero() {
           >
             One trusted partner for construction and development
           </p>
+        </div>
+
+        {/* The count, then the go-ahead. Two and a half rems off the foot of
+            the screen and centred on it — the panel runs to the bottom of
+            the viewport, so its own foot is the screen's. It counts the clip
+            in as it downloads and, once every byte of it is here, tells the
+            reader to start scrolling. Nothing stops anyone scrolling sooner:
+            the poster and the close still run, the walkthrough is simply
+            not there yet.
+
+            Tracking is added after every letter, the last one included, so
+            the line carries the same amount again on its left to sit truly
+            centred over the hairline. The count is in tabular figures, so
+            the line does not twitch sideways as it climbs.
+
+            The box is always rendered, because the scrub effect takes hold of
+            it on its first run; what goes in it waits until mounted. Without
+            JavaScript nothing is counting, and a "Loading 0%" that never
+            moves would be the one thing on the screen. */}
+        <div
+          ref={cueRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-[max(2.5rem,env(safe-area-inset-bottom))] z-20 flex flex-col items-center gap-3"
+        >
+          {mounted && (
+            <>
+              <p
+                className="whitespace-nowrap pl-[0.45em] text-base font-light uppercase tabular-nums tracking-[0.45em] text-white sm:pl-[0.55em] sm:text-xl sm:tracking-[0.55em] md:text-2xl"
+                style={{
+                  textShadow:
+                    "0 2px 14px rgba(0,0,0,0.75), 0 0 28px rgba(183,110,121,0.28)",
+                }}
+              >
+                {loaded
+                  ? "Scroll to Discover"
+                  : percent === null
+                    ? "Loading"
+                    : `Loading ${percent}%`}
+              </p>
+              <span
+                className={cn(
+                  "block h-10 w-px bg-gradient-to-b from-rosegold-600 to-transparent",
+                  loaded ? "animate-pulse motion-reduce:animate-none" : "opacity-50",
+                )}
+              />
+            </>
+          )}
         </div>
       </div>
     </section>

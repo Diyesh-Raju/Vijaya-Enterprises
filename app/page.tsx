@@ -265,107 +265,40 @@ export default function HomePage() {
       </section>
 
       {/* ---------------------------------------- Contract + JV, side by side */}
-      {/* The page's two closing offers sit next to each other rather than
-          stacked, as one matched pair: same radius, same padding, buttons
-          pinned to a common baseline by `mt-auto`. Both are flat colour —
-          no photograph, no texture — so the copy and the button carry the
-          card. (The shared `CtaBand`, still used to close the other pages,
-          is the photographic version of the left card.) */}
+      {/* The page's two closing offers: one label asking the question, and
+          two pearl cards under it that are the links themselves.
+
+          This was the phone's design and is now the laptop's as well. The
+          laptop used to get two full-height panels — a heading, three or
+          four sentences and a pair of buttons each — and the buttons made
+          every panel read as a box that *held* an offer rather than as the
+          offer itself. The cards say the same two things in a line apiece,
+          and the whole of each one is the thing to press.
+
+          Stacked, as on a phone, until there is room for the pair to stand
+          side by side. From `lg` they take a column each, which keeps every
+          card near the shape it was drawn at rather than stretching it into
+          a bar the width of the page. */}
       <Section tone="white" size="sm">
         <Container>
-          {/* ---- On a phone: one label, two chips -------------------------
+          <Reveal>
+            <Eyebrow>Have a Project to Build?</Eyebrow>
+          </Reveal>
 
-              The panels below are the laptop's. Stacked onto a 390px screen
-              they came to about two and a half screens of scrolling for what
-              is, in the end, two links — and the buttons sitting inside them
-              made each panel read as a box that *held* an offer rather than
-              as the offer itself. So the phone gets the same two offers as
-              two small cards that are the links, with the label the first
-              panel used to carry lifted out to stand over both of them.
-
-              A separate branch rather than a responsive panel, because
-              almost nothing survives the change: different copy, different
-              heading level arrangement, no eyebrow inside either card, no
-              buttons at all. `hidden`/`desk:hidden` is the whole of the
-              split, and the laptop's markup below is untouched. */}
-          <div className="desk:hidden">
-            <Reveal>
-              <Eyebrow>Have a Project to Build?</Eyebrow>
+          <div className="mt-7 grid gap-4 lg:grid-cols-2 lg:gap-6">
+            <Reveal delay={80}>
+              <PearlCard
+                href="/contact"
+                title="Your project. Our experience."
+                description="Homes, offices, warehouses, institutional work — and five decades of building behind it."
+              />
             </Reveal>
-
-            <div className="mt-7 space-y-4">
-              <Reveal delay={80}>
-                <PearlCard
-                  href="/contact"
-                  title="Your project. Our experience."
-                  description="Homes, offices, warehouses, institutional work — and five decades of building behind it."
-                />
-              </Reveal>
-              <Reveal delay={160}>
-                <PearlCard
-                  href="/joint-ventures"
-                  title="Build more together."
-                  description="Land and capital are only the start. We bring the planning, the building and the record."
-                />
-              </Reveal>
-            </div>
-          </div>
-
-          <div className="hidden desk:grid items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
-            <Reveal className="h-full">
-              <div className="flex h-full flex-col rounded-[2rem] bg-navy-950 p-8 sm:rounded-[2.5rem] sm:p-12 lg:p-14">
-                <Eyebrow onNavy>Have a Project to Build?</Eyebrow>
-                <h2 className="text-balance-head mt-6 text-[clamp(1.75rem,2.6vw,2.375rem)] leading-[1.1] text-white">
-                  Your project. Our experience.
-                </h2>
-                <div className="mt-6 text-[1.0625rem] leading-[1.75] text-navy-100/90">
-                  <p>
-                    Whether you are planning a private residence, commercial
-                    building, office, industrial facility, warehouse,
-                    institutional building, renovation or extension, Vijaya
-                    Enterprises can bring decades of construction experience to
-                    your project.
-                  </p>
-                  <p className="mt-4 font-display text-[1.25rem] leading-snug text-white/90">
-                    Tell us what you want to build. We&rsquo;ll help you
-                    understand what it takes to build it.
-                  </p>
-                </div>
-                <div className="mt-auto flex flex-wrap gap-3 pt-10">
-                  <Button href="/contact" variant="light" size="lg" withArrow>
-                    Discuss Your Project
-                  </Button>
-                  <Button href="/civil-contracts" variant="ghost" size="lg">
-                    What We Undertake
-                  </Button>
-                </div>
-              </div>
-            </Reveal>
-
-            <Reveal delay={120} className="h-full">
-              <div className="flex h-full flex-col rounded-[2rem] border border-line bg-mist p-8 sm:rounded-[2.5rem] sm:p-12 lg:p-14">
-                <Eyebrow>Joint Ventures</Eyebrow>
-                <h2 className="text-balance-head mt-6 text-[clamp(1.75rem,2.6vw,2.375rem)] leading-[1.1]">
-                  Build more together.
-                </h2>
-                <div className="mt-6 text-[1.0625rem] leading-[1.75] text-slate-body">
-                  <p>
-                    A successful joint venture needs more than land and capital.
-                    It needs experience, planning, construction capability,
-                    market understanding and trust.
-                  </p>
-                  <p className="mt-4 font-display text-[1.25rem] leading-snug text-navy-900">
-                    Vijaya Enterprises brings more than five decades of
-                    construction and development experience to joint development
-                    opportunities.
-                  </p>
-                </div>
-                <div className="mt-auto flex flex-wrap gap-3 pt-10">
-                  <Button href="/joint-ventures" size="lg" withArrow>
-                    Explore Joint Ventures
-                  </Button>
-                </div>
-              </div>
+            <Reveal delay={160}>
+              <PearlCard
+                href="/joint-ventures"
+                title="Build more together."
+                description="Land and capital are only the start. We bring the planning, the building and the record."
+              />
             </Reveal>
           </div>
         </Container>

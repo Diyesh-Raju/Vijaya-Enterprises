@@ -39,6 +39,7 @@ const undertakings: Undertaking[] = [
     ],
     image: img.commercialStreetBlock,
     imageAlt: alt.commercialStreetBlock,
+    cardImage: img.commercialStreetBlockPortrait,
   },
   {
     id: "industrial",
@@ -90,6 +91,7 @@ const undertakings: Undertaking[] = [
     ],
     image: img.villaStreetDusk,
     imageAlt: alt.villaStreetDusk,
+    cardImage: img.villaStreetDuskPortrait,
   },
   {
     id: "renovation",

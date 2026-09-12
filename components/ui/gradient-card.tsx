@@ -1,9 +1,12 @@
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 export type CardStat = {
-  /** The figure itself, already formatted — "+10,00,000", "1,200". */
-  value: string;
+  /**
+   * The figure itself — already formatted, "+10,00,000", or a `Counter` that
+   * counts up to it.
+   */
+  value: ReactNode;
   /** What the figure counts. Omit on a single stat the title already names. */
   label?: string;
 };
@@ -73,9 +76,9 @@ export function GradientCard({
             </p>
           ) : (
             <dl className="mt-4 divide-y divide-white/10 border-t border-white/10">
-              {stats.map((stat) => (
+              {stats.map((stat, index) => (
                 <div
-                  key={stat.label ?? stat.value}
+                  key={stat.label ?? index}
                   className="flex items-baseline gap-4 py-2.5"
                 >
                   <dd className="order-first w-[4.25rem] shrink-0 font-display text-[1.375rem] leading-none text-white sm:w-[4.75rem] sm:text-[1.5rem]">

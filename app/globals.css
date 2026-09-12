@@ -899,8 +899,9 @@
   /* The controls' line, which is in the flow now. It used to be hung off the
      section's floor and cost the photographs nothing — and disappeared under
      the fold for it. Held here so the photograph is sized to leave room for
-     it rather than to be walked over by it. */
-  --accolade-controls: 4.25rem;
+     it rather than to be walked over by it — the line's own height (the
+     arrows') and the margin over it, so the two change together. */
+  --accolade-controls: 5.25rem;
   --accolade-img-h: calc(
     100vh - var(--header-h) - var(--accolade-head) - var(--accolade-cap) -
       var(--accolade-controls) - 4.25rem - 2 * var(--accolade-stagger)
@@ -1147,7 +1148,7 @@
   bottom: 1.75rem;
   z-index: 6;
   flex: 0 0 auto;
-  height: 3rem;
+  height: 4rem;
   margin-top: 1.25rem;
 }
 
@@ -1190,14 +1191,14 @@
   top: 0;
   left: 0;
   display: flex;
-  gap: 0.85rem;
+  gap: 1rem;
 }
 
 .gooey-demo .slideshow__arrow {
   display: grid;
   place-items: center;
-  width: 3rem;
-  height: 3rem;
+  width: 4rem;
+  height: 4rem;
   padding: 0;
   border: 1px solid rgb(246 248 252 / 0.45);
   border-radius: 50%;
@@ -1214,8 +1215,8 @@
 }
 
 .gooey-demo .slideshow__arrow svg {
-  width: 1.15rem;
-  height: 1.15rem;
+  width: 1.5rem;
+  height: 1.5rem;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.6;
@@ -1290,9 +1291,9 @@
    axes.
 
    Down the screen: the last term is `--accolade-img-h` solved for the
-   frame's own shape, divided by the portrait's 1.3636 or the landscape's
-   0.75, so no photograph is ever taller than the room the heading and
-   the caption leave it.
+   frame's own shape, divided by the portrait's 1.3636 or by a landscape
+   frame's own `--accolade-shape`, so no photograph is ever taller than
+   the room the heading and the caption leave it.
 
    Across it: the strip now stops in a fixed place rather than wherever a
    wheel left it, and the frame it stops on has to hold. 76vw leaves the
@@ -1321,14 +1322,20 @@
   margin-left: 10vw;
 }
 
-/* The two older awards are landscape photographs, and are given landscape
-   frames: wider than the portraits by a third, and shorter, so the pair
-   carries about the weight of one portrait beside it. */
+/* The landscape photographs get landscape frames, all of one height —
+   about a portrait's width — and each as wide as its own picture needs at
+   that height, so every one is shown whole. `--accolade-shape` is the
+   picture's height over its width: 4:3 by default, which is what the two
+   society photographs are, and set on the tile from the component for the
+   3:2 ceremony photographs. 1.005 is the 1.34 these frames were first
+   drawn at times 4:3's 0.75 — the old width restated as a height, so the
+   4:3 frames are exactly the size they were. */
 .gooey-demo .slideshow-list__el--wide {
+  --accolade-shape: 0.75;
   --accolade-w: min(
-    calc(var(--accolade-base) * 1.34),
+    calc(var(--accolade-base) * 1.005 / var(--accolade-shape)),
     86vw,
-    calc(var(--accolade-img-h) / 0.75)
+    calc(var(--accolade-img-h) / var(--accolade-shape))
   );
 }
 
@@ -1397,7 +1404,7 @@
 }
 
 .gooey-demo .slideshow-list__el--wide .tile__fig::before {
-  padding-top: 75%;
+  padding-top: calc(var(--accolade-shape) * 100%);
 }
 
 /* A certificate is not a photograph: it is read, not looked at, and the
@@ -1862,7 +1869,7 @@
     margin-inline: auto;
   }
 
-  /* One shape for all five. The set is two portraits, two landscapes and a
+  /* One shape for all five. The set is four landscapes in two shapes and a
      certificate, and side by side at this size five different frames read
      as five mistakes rather than as five awards. The photographs fill the
      frame and lose a little off their long side; the certificate still
@@ -2818,6 +2825,29 @@
   gap: 0.75rem;
 }
 
+/* ---- The scroll cue ---------------------------------------------- */
+
+/* "Scroll", at the foot of the stage, for as long as there is sequence
+   left to scroll through. The home hero's cue, in the same place and the
+   same hand — two and a half rems off the bottom of the window, centred,
+   light capitals tracked wide over a hairline — so the reader has met it
+   before and knows what it is asking.
+
+   The ground under it changes four times: the photograph, the navy it
+   darkens to, the page's own off-white once the slit turns away, and the
+   two photographs at the end. Those two wipe in from opposite ends, so
+   for most of a screen the left half of the word stands on off-white and
+   the right half on a photograph. No one colour reads on all of that, so
+   the word is white under `difference`: every pixel of it is the inverse
+   of what is behind it — near-black on the off-white, a warm cream on the
+   dark — and it reads wherever the sequence has got to.
+
+   Only where there is a track to scroll. Below the enhancement the three
+   layers are ordinary panels and there is nothing for it to point at. */
+.aperture__cue {
+  display: none;
+}
+
 /* ---- The enhancement: the track, the pin, and the scrub ---------- */
 
 @media (prefers-reduced-motion: no-preference) {
@@ -2863,7 +2893,8 @@
   .aperture__copy,
   .aperture__outro-img,
   .aperture__line > span,
-  .aperture__outro-actions {
+  .aperture__outro-actions,
+  .aperture__cue {
     animation-timing-function: linear;
     animation-fill-mode: both;
     animation-play-state: paused;
@@ -2975,6 +3006,58 @@
     animation-name: aperture-lift;
     animation-duration: 60ms;
     animation-delay: calc(940ms - var(--aperture, 0ms));
+  }
+
+  /* The cue. Above all three layers, so `difference` has the whole stage
+     to invert — the stage is `sticky`, and so its own stacking context,
+     which keeps the blend from reaching past it into the page. */
+  .aperture__cue {
+    position: absolute;
+    z-index: 3;
+    inset: auto 0 max(2.5rem, env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    color: #ffffff;
+    mix-blend-mode: difference;
+    pointer-events: none;
+    /* It stays for the whole sequence and leaves with its last move,
+       fading as the buttons lift into place: gone at 1000ms, when there is
+       nothing left that scrolling does. Scrolled back up, it returns. */
+    animation-name: aperture-fade-out;
+    animation-duration: 60ms;
+    animation-delay: calc(940ms - var(--aperture, 0ms));
+  }
+
+  .aperture__cue-word {
+    /* Tracking is added after every letter, the last one included, so the
+       word carries the same again on its left to sit truly centred over
+       the hairline. */
+    padding-left: 0.55em;
+    font-size: 1.5rem;
+    font-weight: 300;
+    line-height: 1.33;
+    letter-spacing: 0.55em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .aperture__cue-line {
+    width: 1px;
+    height: 2.5rem;
+    background: linear-gradient(to bottom, currentColor, transparent);
+  }
+
+  /* The heading's block stands clear of the cue. It sits on the left
+     gutter and the cue on the centre line, and on anything narrower than
+     about 1440 the last lines of its paragraph ran under the word at the
+     moment the stage pinned — which is the one moment both are on screen.
+     Lifted rather than narrowed, so the paragraph keeps its measure: the
+     cue takes 7.75rem off the foot of the window, and this leaves a
+     clear 1.25rem over it. */
+  .aperture__front-copy {
+    padding-bottom: 9rem;
   }
 }
 
@@ -4791,16 +4874,15 @@
 }
 
 /* ------------------------------------------------------------------
-   Pearl cards — the page's two closing offers, on a phone.
+   Pearl cards — the home page's two closing offers.
 
-   A laptop gets those two offers as full-height panels: a heading, three
-   or four sentences, and a pair of buttons pinned to a common baseline.
-   Stacked onto a 390px screen that pair came to about two and a half
-   screens of scrolling for what is, in the end, two links — and the
-   buttons inside them made the panels read as containers rather than as
-   the offers themselves. So on a phone each becomes one small chip that
-   *is* the link: the heading, a line or two under it, and an arrow in the
-   corner.
+   Each is one small chip that *is* the link: the heading, a line or two
+   under it, and an arrow in the corner. They began as the phone's answer
+   to the laptop's two full-height panels — stacked onto a 390px screen
+   those came to about two and a half screens of scrolling for what is, in
+   the end, two links, and the buttons inside them made the panels read as
+   containers rather than as the offers themselves. The laptop has since
+   taken the same design, so this is the one shape at every width.
 
    The treatment is the 21st.dev Pearl Button's (@reuno-ui) — a dark chip
    lit from inside, so that it sits on the white section as an object with
@@ -4959,10 +5041,10 @@
   height: 1.125rem;
 }
 
-/* Pressed. A phone has no hover, so this is the only state that will ever
-   actually be seen: the chip drops a few pixels, its cast shadow tightens
-   under it and the inside lights come up, which together read as the thing
-   being pushed into the page. */
+/* Pressed — and on a phone, which has no hover, the only state there is:
+   the chip drops a few pixels, its cast shadow tightens under it and the
+   inside lights come up, which together read as the thing being pushed
+   into the page. */
 .pearl-card:active {
   transform: translateY(3px);
   box-shadow:
@@ -4983,8 +5065,43 @@
   color: rgb(255 255 255 / 0.9);
 }
 
-/* Kept for the pointer that may yet meet one of these — a tablet with a
-   trackpad reaches this layout in landscape. */
+/* The laptop's scale. The same chip, drawn for a screen three times the
+   width: at the phone's own sizes it came out as a strip 83px tall with a
+   13px line in it — the right design, read as a footnote. Scaled here, the
+   heading and the line under it hold the proportion they have on a phone,
+   where the card is most of the screen and the sentence takes two lines.
+   And it stands taller than the phone's, with the words held in the middle
+   of the chip by the padding rather than pinned to one edge, so a pair
+   side by side reads as two things to press and not as two strips of
+   type. Only sizes change; every light and shadow above is the same.
+   `desk:`'s query, so a phone turned on its side keeps the phone's card. */
+@media (min-width: 48rem) and (min-height: 500px) {
+  .pearl-card {
+    border-radius: 2rem;
+  }
+
+  .pearl-card__wrap {
+    gap: 1.5rem;
+    padding: 4.25rem 2.75rem 4rem;
+  }
+
+  .pearl-card__title {
+    font-size: 1.5rem;
+  }
+
+  .pearl-card__desc {
+    margin-top: 0.6rem;
+    font-size: 1rem;
+  }
+
+  .pearl-card__arrow svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+/* Under a pointer — the laptop, now that it has these too: the light
+   inside lifts and the arrow steps towards where the card goes. */
 @media (hover: hover) {
   .pearl-card:hover .pearl-card__wrap::before {
     transform: translateY(-5%);
@@ -6159,18 +6276,19 @@
   inset: 0;
   z-index: 6;
   pointer-events: none;
-  /* MEASURED against this photograph, which is a model at sunrise: dark
-     through the middle where the words are, bright at the top and along the
-     water. Lighter than the site's own hero grade (`PageHero` runs navy at
-     85/70/95) because it can be — at that weight the two lines came back
-     11.5:1 and 7.5:1, which is a picture hidden to buy contrast nothing
-     needed.
+  /* MEASURED against this photograph, two men in an office in front of a
+     lit model of a tower: dark suits through the middle where the words
+     are, daylight through the glass at the top. Lighter than the site's own
+     hero grade (`PageHero` runs navy at 85/70/95) because it can be — a
+     heavier one would be a picture hidden to buy contrast nothing needed.
 
-     At 78/44/80 the worst line-sized patch under "Our Legacy" gives 6.5:1
-     against white, and under "Since 1973" 4.9:1 against brass-400 — small
-     caps, so the 4.5 is the one with the least room in it. The top stays
-     heavy because the header's lockup stands on it from the frame the load
-     is taken off. Re-measure if the photograph changes. */
+     At 78/44/80, worst of 1024 to 2560 and two phone widths, the line-sized
+     patch under "Our Legacy" gives 9.5:1 against white, and under "Since
+     1973" 6.7:1 against brass-400 — small caps, so the 4.5 is the one with
+     the least room in it. The white shirt crossing the title is what the
+     9.5 is measured on. The top stays heavy because the header's lockup
+     stands on it from the frame the load is taken off. Re-measure if the
+     photograph changes. */
   background-image: linear-gradient(
     to bottom,
     rgb(6 20 49 / 0.78) 0%,
@@ -6185,7 +6303,7 @@
    never seen twice — once bright and once graded. It has to be down by the
    time the title arrives, and it has to be down early for the header's
    sake: from the frame the white is gone the lockup is standing on this
-   photograph, and this photograph is a sunrise. */
+   photograph, and the top of this photograph is daylight. */
 @keyframes legacy-scrim {
   0%,
   58% {
@@ -6339,8 +6457,10 @@
   position: relative;
   display: block;
   width: var(--book-w, 12.5rem);
-  /* The aspect ratio is the cover file's own, set inline. Both of these
-     brochures are square; a portrait one would arrive portrait. */
+  /* The aspect ratio is set inline: the cover file's own, unless the caller
+     asks for a `shape`. Both of these brochures are square, and the shelf
+     draws them 4:5, with the square cover standing whole inside the taller
+     book on its own paper. See `BookCover`. */
   perspective: 1600px;
 }
 
@@ -6403,12 +6523,12 @@
    One target: cover, name and cue are all inside it, so there is no
    second, smaller thing to aim at.
 
-   The padding is the room the tilt needs. A 17° turn carries a square
-   cover's corners about 0.15 of its width past each edge, the copy
-   underneath adds another 0.14 below and to the right, and the lift on
-   hover takes the top edge further still — so the box the book lays out
-   in is nowhere near the room it occupies, and all of it is written
-   against `--book-w` so one number moves the whole arrangement. */
+   The padding is the room the tilt needs. A 17° turn carries a 4:5
+   cover's corners 0.16 of its width past each side, the copy underneath
+   is pushed another 0.14 right and 0.10 down, and the lift on hover takes
+   the top edge further still — so the box the book lays out in is nowhere
+   near the room it occupies, and all of it is written against `--book-w`
+   so one number moves the whole arrangement. */
 
 /* One to a row, with the whole width to itself. */
 .book-link {
@@ -6417,11 +6537,13 @@
   flex-direction: column;
   align-items: center;
   /* The room the tilt needs, and no more than that. A 17° turn carries a
-     square cover's corners 0.124 of its width past each edge; the copy
-     underneath is pushed a further 0.10 right and the one on top 0.04 left,
-     so 0.24 clears the widest of them. See the arithmetic in the comment
+     4:5 cover's corners 0.16 of its width past each side; the copy
+     underneath is pushed a further 0.14 right and the one on top 0.06
+     left — both offsets are taken after the turn, so they are turned with
+     it — and 0.30 clears the wider of the two. The lifted cover on hover
+     reaches 0.22 above the box, inside the same 0.30. See the comment
      above `.book-link__label` for the same sum going down. */
-  padding: calc(var(--book-w) * 0.24) calc(var(--book-w) * 0.24) 0;
+  padding: calc(var(--book-w) * 0.3) calc(var(--book-w) * 0.3) 0;
   border-radius: var(--radius-lg);
   text-align: center;
   outline-offset: 6px;
@@ -6436,7 +6558,7 @@
    of it, so this is a good deal narrower than a share of the window would
    suggest — 40vw of a 700px window is a book that runs off the page. The
    ceiling is what the widest the row is allowed to get can hold: a 19rem
-   cover occupies 1.48 of its own width once the tilt is counted, and the
+   cover occupies 1.6 of its own width once the tilt is counted, and the
    row is capped at 64rem. */
 @media (min-width: 40rem) {
   .book-link {
@@ -6444,9 +6566,9 @@
   }
 }
 
-/* Clear of the copy lying underneath, which reaches 0.234 of the cover's
-   width below the box the book lays out in — so the gap that is actually
-   seen is the remaining tenth of it. */
+/* Clear of the copy lying underneath, which reaches 0.22 of the cover's
+   width below the box the 4:5 book lays out in — so the gap that is
+   actually seen is the remaining 0.12 of it. */
 .book-link__label {
   display: block;
   margin-top: calc(var(--book-w) * 0.34);

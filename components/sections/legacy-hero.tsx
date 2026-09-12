@@ -84,12 +84,17 @@ export function LegacyHero() {
         <div className="legacy-hero__frame">
           <div className="legacy-hero__zoom">
             <Image
-              src={img.legacyModelCity}
-              alt={alt.legacyModelCity}
+              src={img.legacyHeroOffice}
+              alt={alt.legacyHeroOffice}
               fill
               quality={85}
               sizes="100vw"
               placeholder="blur"
+              // Held between the two faces rather than the frame's middle.
+              // A landscape window shows the whole width anyway; an upright
+              // phone keeps about a quarter of it, and held here both faces
+              // are in that quarter.
+              style={{ objectPosition: "45% 50%" }}
               // It is the first thing on the page and it is behind a hole
               // that opens on it two and a half seconds in. A picture that
               // has not decoded by then is a white screen with a title on

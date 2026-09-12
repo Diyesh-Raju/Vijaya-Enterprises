@@ -11,6 +11,9 @@ export type Undertaking = {
   points: string[];
   image: StaticImageData;
   imageAlt: string;
+  /** The card's own photograph, where it should not be a crop of `image`.
+   *  Decorative, like every card, so it takes no alt of its own. */
+  cardImage?: StaticImageData;
 };
 
 /**
@@ -267,6 +270,11 @@ export function Undertakings({ items }: { items: readonly Undertaking[] }) {
             own width instead would take the section from six downloads to
             twelve to save nothing.
 
+            The exception is a card given a photograph of its own
+            (`cardImage`). That is a second fetch whatever it is asked for,
+            so it is asked for at the card's own width — 22vw from `lg`,
+            35.2vw below, both with the 1.2 of pan headroom on top.
+
             They are here at stage level rather than one inside each panel,
             and that is the template's own arrangement rather than a
             convenience. A panel paints over the panel before it — that is
@@ -287,11 +295,15 @@ export function Undertakings({ items }: { items: readonly Undertaking[] }) {
                 <div className="undertake__pan">
                   <div className="undertake__pan-out">
                     <Image
-                      src={item.image}
+                      src={item.cardImage ?? item.image}
                       alt=""
                       fill
                       quality={85}
-                      sizes="100vw"
+                      sizes={
+                        item.cardImage
+                          ? "(min-width: 1024px) 27vw, 43vw"
+                          : "100vw"
+                      }
                       className="object-cover"
                     />
                   </div>

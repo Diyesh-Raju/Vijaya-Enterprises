@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 
 // `useLayoutEffect` warns when React runs it on the server, and this band is
 // server-rendered like the rest of the page. It is wanted for what it does on
@@ -38,8 +38,8 @@ const useIsomorphicLayoutEffect =
  * window, and the transform that puts it there is written once per press and
  * left to a CSS transition. Which tile is centred is measured from the layout
  * (`offsetLeft`, `offsetWidth`), so the frames can be any width they like —
- * the portraits, the wider landscapes and the certificate are all different,
- * and nothing here has to know that.
+ * the landscapes, in two shapes, and the certificate are all different, and
+ * nothing here has to know that.
  *
  * Each award wants a picture in `public/accolades/`, named by its key. Adding
  * or dropping one changes how many presses the strip takes and nothing else.
@@ -64,6 +64,12 @@ type Accolade = {
   alt: string;
   /** Landscape frame rather than the portrait default. */
   wide?: boolean;
+  /**
+   * A landscape frame cut to the photograph's own shape — its height over
+   * its width, read off the file — so the whole picture shows rather than
+   * being trimmed to 4:3. Leave it out for a 4:3 photograph.
+   */
+  shape?: number;
   /** A certificate rather than a photograph: shown whole, never cropped. */
   doc?: boolean;
 };
@@ -75,6 +81,11 @@ const accolades: readonly Accolade[] = [
     description:
       "Vijaya Enterprises received the Times Business Award 2024 from Anupam Kher, Padma Shri (2004) and Padma Bhushan (2016) awardee and renowned Indian film actor.",
     alt: "Vijaya Enterprises receiving the Times Business Award 2024 in Bengaluru",
+    // The two ceremony photographs are 3:2 and shown whole: their frames are
+    // cut to each file's own shape, not to the 4:3 the society photographs
+    // below are.
+    wide: true,
+    shape: 799 / 1200,
   },
   {
     key: "vijayavani",
@@ -82,6 +93,8 @@ const accolades: readonly Accolade[] = [
     description:
       "Mahantesh B. Nelavagi received the prestigious Vijayavani International Award 2025. The honour was presented by Mr. B. N. Reddy, High Commissioner of India to Malaysia, and Dr. Anand Sankeshwar, MD of VRL Groups.",
     alt: "Mahantesh B. Nelavagi receiving the Vijayavani International Award 2025",
+    wide: true,
+    shape: 533 / 799,
   },
   // Two honours from the same occasion, which is why they carry the same
   // name: the society gave both at the opening ceremonies for its new school
@@ -245,6 +258,13 @@ export function DestinationSlideshow() {
                   className={`slideshow-list__el${
                     award.wide ? " slideshow-list__el--wide" : ""
                   }${award.doc ? " slideshow-list__el--doc" : ""}`}
+                  // Read by the frame's width and its `::before` — see
+                  // `.slideshow-list__el--wide` in `globals.css`.
+                  style={
+                    award.shape
+                      ? ({ "--accolade-shape": award.shape } as CSSProperties)
+                      : undefined
+                  }
                 >
                   <article className="tile | js-tile">
                     {/* The photograph. The caption below is deliberately

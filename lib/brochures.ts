@@ -165,6 +165,15 @@ export type Brochure = {
   pages: readonly StaticImageData[];
   /** The same leaves at 840px, for a phone's one-page-at-a-time reading. */
   small: readonly StaticImageData[];
+  /**
+   * The shelf draws each book taller than its square cover, with the cover
+   * whole inside it — see `BookCover`. `coverPaper` is the colour of the
+   * cover's own edge, sampled off `small[0]`, so the rest of the book is the
+   * same stock; `coverHold` is where the cover sits in it. Re-sample if the
+   * cover file changes.
+   */
+  coverPaper: string;
+  coverHold: string;
 };
 
 /**
@@ -190,6 +199,11 @@ export const brochures: readonly Brochure[] = [
       "Three towers on three and a half acres, set out the way the book was printed: the master plan, the specifications line by line, the amenities, the location map, and the projects Vijaya finished before this one.",
     pdf: "/brochures/hara-vijaya-heights.pdf",
     pdfSize: "5.4 MB",
+    // The flowers run off the foot of this cover and the sky above them is
+    // one flat grey, 246 across its whole top row: held to the foot, the
+    // book grows upward into more of that sky, with no seam to find.
+    coverPaper: "#f6f6f6",
+    coverHold: "50% 100%",
     pages: [
       hara01, hara02, hara03, hara04, hara05, hara06,
       hara07, hara08, hara09, hara10, hara11, hara12,
@@ -213,6 +227,11 @@ export const brochures: readonly Brochure[] = [
       "The elevation, the typical floor plan for every unit on the site, the amenities and the roads that reach it. RERA PRM/KA/RERA/1251/310/PR/041122/005393.",
     pdf: "/brochures/vijaya-luxo.pdf",
     pdfSize: "14.9 MB",
+    // Textured white paper at both edges, 249 on average top and bottom,
+    // and something in every corner: centred, the extra paper is shared
+    // above the address and below the seals.
+    coverPaper: "#f9f9f9",
+    coverHold: "50% 50%",
     pages: [
       luxo01, luxo02, luxo03, luxo04, luxo05,
       luxo06, luxo07, luxo08, luxo09, luxo10,

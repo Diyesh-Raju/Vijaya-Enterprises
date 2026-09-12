@@ -105,10 +105,10 @@ export function Management() {
           className="mx-auto"
         />
 
-        {/* Two cards, and only ever two: a leadership pair reads as a pair.
-            They are held to a measure rather than stretched across the
-            container, because a portrait card wider than about 26rem stops
-            looking like a portrait. */}
+        {/* Two portraits, and only ever two: a leadership pair reads as a
+            pair. Circles, held to the same measure the cards were — about
+            26rem across at desktop — so they stay the size of a portrait
+            rather than growing into a pair of discs that fill the screen. */}
         <ul className="mx-auto mt-14 grid max-w-4xl gap-8 sm:grid-cols-2 sm:gap-10 lg:mt-20">
           {leaders.map((leader, index) => (
             <Reveal as="li" key={leader.name} delay={index * 90}>
@@ -123,7 +123,11 @@ export function Management() {
   );
 }
 
-/** The portrait on the page: a photograph, the name on it, and a way in. */
+/**
+ * The portrait on the page: a photograph in a circle, the name on it, and a
+ * way in. Pressing it opens the same note as it always has — only the shape
+ * of the thing pressed changed.
+ */
 function LeaderCard({
   leader,
   onOpen,
@@ -137,9 +141,9 @@ function LeaderCard({
       onClick={onOpen}
       aria-haspopup="dialog"
       aria-label={`Read about ${leader.name}, ${leader.role}`}
-      className="group block w-full cursor-pointer overflow-hidden rounded-[1.5rem] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brass-500 sm:rounded-[2rem]"
+      className="group block w-full cursor-pointer overflow-hidden rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brass-500"
     >
-      <figure className="relative isolate aspect-[4/5] overflow-hidden rounded-[1.5rem] bg-navy-100 sm:rounded-[2rem]">
+      <figure className="relative isolate aspect-square overflow-hidden rounded-full bg-navy-100">
         <Image
           src={leader.photo}
           alt=""
@@ -159,7 +163,11 @@ function LeaderCard({
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/25 to-transparent"
         />
-        <figcaption className="absolute inset-x-0 bottom-0 p-6 text-left sm:p-7">
+        {/* Centred, and lifted off the foot: a circle is narrowest at the
+            bottom, so a line set in the corner the card had would be cut by
+            the curve. At 12% up the chord is still two-thirds of the
+            diameter, which is room for the longer role on a phone. */}
+        <figcaption className="absolute inset-x-0 bottom-[12%] px-[14%] text-center">
           <h3 className="font-display text-[1.25rem] leading-snug text-white sm:text-[1.4375rem]">
             {leader.name}
           </h3>
@@ -171,9 +179,12 @@ function LeaderCard({
         {/* The cue that the card opens. `aria-hidden` because it describes a
             gesture, not content, and the button's own label already says what
             pressing does. */}
+        {/* Where the card had it in the corner, the circle has no corner:
+            22% in from the top and the right puts it on the diagonal, well
+            inside the curve. */}
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute right-5 top-5 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-[1.125rem] leading-none text-white backdrop-blur-sm transition-colors duration-300 group-hover:bg-white/25"
+          className="pointer-events-none absolute right-[22%] top-[22%] inline-flex h-9 w-9 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-white/15 text-[1.125rem] leading-none text-white backdrop-blur-sm transition-colors duration-300 group-hover:bg-white/25"
         >
           +
         </span>

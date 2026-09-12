@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { SamePageLinks } from "@/components/layout/same-page-links";
 import { SiteBookingPrompt } from "@/components/ui/site-booking-prompt";
 import { site, contact } from "@/lib/site";
 import "./globals.css";
@@ -139,6 +140,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Skip to content
         </a>
         <SiteHeader />
+        {/* The logo, Home, and any other link to the page you are on: back
+            to the top of it rather than nothing at all. */}
+        <SamePageLinks />
         <main id="main" className="min-h-dvh">
           {children}
         </main>

@@ -18,6 +18,67 @@ cheaper than the `minterpolate` pass the 24p files used to need.
 The second clip opens on the same living room the first one ends in, and the
 two run in that order with the join hidden across half a second.
 
+## The short cut — what the hero plays now
+
+Since 2026-09-12 the hero plays `public/video/home-scroll-short-hq.mp4` rather
+than the two-clip build below: one render, `walkthrough-short.mp4`
+(3524×2352, 7.04s, 24p, a Kling 3.0 render), which runs from the towers in
+through a window to the living room and stops there — no foyer, and so no
+join. The long cut's files are all still in place (`home-scroll.mp4`,
+`home-scroll-mobile.mp4`, `home-scroll-poster.jpg`, `home-scroll-end.jpg`),
+and going back to it is a matter of pointing `lib/images.ts` at them again.
+
+It is built to the long cut's settings — the same centred 3504×1971 window,
+3200×1800 and 1920×1080, a keyframe every second frame, no B-frames, 60fps —
+except the CRF, which is 28 rather than 34. At 34 this clip visibly lost the
+balcony railings and window frames against its own master; at 1:1, 28 cannot
+be told from the master, and 26 bought nothing more for another 7 MB:
+
+| crf | size | SSIM vs master | median seek | p95 |
+| --- | ------- | ----- | ---- | ---- |
+| 34 | 16.7 MB | 0.948 | 14.0 | 14.9 |
+| 30 | 24.6 MB | 0.964 | 14.2 | 15.1 |
+| **28** | **30.1 MB** | **0.970** | **14.2** | **15.3** |
+| 26 | 37.1 MB | 0.975 | 14.3 | 15.2 |
+
+The seek table further down argues for a high CRF, but it was taken on the
+software decoder. On Chrome's hardware decoder (Apple M5, headless, 80
+off-keyframe seeks on a buffered file, median of three rounds) the CRF moves
+nothing: every candidate lands inside a 60fps frame. What 28 costs is the
+download the cue counts in — 30 MB, against 23.5 MB for the long cut.
+
+The files carry `-hq` rather than overwriting the crf 34 pair they replaced,
+because `/video/` is served with a 30-day `max-age` (`next.config.ts`) and a
+browser that had the old file would have kept showing it. The render is 24p and there is no 60p upscale of it, so
+`minterpolate` synthesises the frames in between, as it did for the 24p
+renders before the Topaz files arrived. It is done once, into a near-lossless
+60p master, and both files are encoded from that.
+
+The render carries a "KlingAI 3.0 4K" mark in its bottom-right corner. Its top
+edge is at row 2207 and the window ends at 2161, so the crop takes it off the
+clip and both stills. Any window reaching lower than that brings it back.
+
+```sh
+SRC=assets/video-source/walkthrough-short.mp4
+WIN="crop=3504:1971:10:190"
+MI="minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1"
+X264="-an -c:v libx264 -preset slow -crf 28 -g 2 -keyint_min 2 -sc_threshold 0 -bf 0 -profile:v high -movflags +faststart"
+
+ffmpeg -y -i $SRC -vf "$WIN,scale=3200:1800:flags=lanczos,$MI" \
+  -an -c:v libx264 -preset fast -crf 8 -pix_fmt yuv420p /tmp/short-60p-master.mp4
+ffmpeg -y -i /tmp/short-60p-master.mp4 -vf format=yuv420p \
+  $X264 -level 5.2 public/video/home-scroll-short-hq.mp4
+ffmpeg -y -i /tmp/short-60p-master.mp4 -vf "scale=1920:1080:flags=lanczos,format=yuv420p" \
+  $X264 -level 4.2 public/video/home-scroll-short-hq-mobile.mp4
+
+ffmpeg -y -i $SRC -frames:v 1 -vf "$WIN" -q:v 3 assets/images/home-scroll-short-poster.jpg
+# The end still is the frame the scrub stops on — `duration - 0.05` in
+# `ScrollHero` — taken off the master, which interpolation leaves 0.07s
+# shorter than the render.
+ffmpeg -y -ss 6.9167 -i /tmp/short-60p-master.mp4 -frames:v 1 \
+  -vf "scale=1280:720:flags=lanczos,gblur=sigma=6" -q:v 4 assets/images/home-scroll-short-end.jpg
+```
+
 ## Rebuilding the hero video
 
 ```sh

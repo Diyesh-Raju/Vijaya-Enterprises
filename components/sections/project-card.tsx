@@ -80,11 +80,22 @@ export function ProjectCard({ project }: { project: Project }) {
         "transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-1",
       ].join(" ")}
     >
+      {/* A photograph sets the frame to its own shape, so all of it is on
+          the card — nothing trimmed off the sides to make it 16:9. The
+          Hara Vijaya Heights frontage is a little over 2:1, and in a 16:9
+          frame it lost the trees at either end of the lawn. A placeholder
+          has no shape of its own and keeps 16:9. */}
       <div
         className={[
-          "relative aspect-[16/9] w-full shrink-0 overflow-hidden bg-mist",
+          "relative w-full shrink-0 overflow-hidden bg-mist",
+          project.image ? "" : "aspect-[16/9]",
           detailed ? "rounded-[1.05rem] sm:rounded-[1.3rem]" : "",
         ].join(" ")}
+        style={
+          project.image
+            ? { aspectRatio: `${project.image.width} / ${project.image.height}` }
+            : undefined
+        }
       >
         {project.image ? (
           // Uncovered rather than faded in — see `ImageReveal`. The hover

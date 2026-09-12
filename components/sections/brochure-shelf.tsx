@@ -97,9 +97,15 @@ export function BrochureShelf() {
       {brochures.map((brochure, index) => (
         <Reveal key={brochure.slug} delay={index * 110} className="flex justify-center">
           <Link href={`/brochures/${brochure.slug}`} className="book-link">
+            {/* Drawn 4:5, taller than the square cover it carries: the
+                cover stands whole inside it on its own paper rather than
+                being cropped to fit. */}
             <BookCover
               cover={brochure.small[0]}
               alt={`The cover of the ${brochure.title} brochure`}
+              shape="4 / 5"
+              paper={brochure.coverPaper}
+              hold={brochure.coverHold}
             />
 
             <span className="book-link__label">

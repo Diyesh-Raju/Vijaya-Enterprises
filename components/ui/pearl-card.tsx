@@ -20,12 +20,13 @@ import { cn } from "@/lib/cn";
  *  - No mask on the text. The original fades its label out towards the
  *    bottom, which is a handsome trick on a single word and unreadable on a
  *    sentence. There is a description here, so it goes.
- *  - No sparkle swapping on hover. This is the phone layout; there is no
- *    hover on it. The arrow is the affordance instead.
+ *  - No sparkle swapping on hover. The arrow is the affordance instead: it
+ *    steps forward under a pointer, and a phone, which has none, still has
+ *    the arrow to read.
  *
- * Phone only, at the moment — `CtaPair` renders it below the `desk:`
- * breakpoint and the laptop keeps its two full-height panels. Nothing here
- * is width-aware, though; it would draw the same at any size.
+ * Used at every width: the home page's closing pair is this design on a
+ * phone and a laptop alike. Nothing here is width-aware; it draws the same
+ * at any size.
  */
 export function PearlCard({
   href,
@@ -46,10 +47,10 @@ export function PearlCard({
           would simply be a pale rectangle behind it. */}
       <span className="pearl-card__wrap">
         <span className="pearl-card__body">
-          {/* An `h2`, matching the panel it replaces: on a laptop each of
-              these two offers is a section of the page with its own
-              heading, and shrinking them onto a phone should not quietly
-              take both out of the document outline. */}
+          {/* An `h2`: each of these two offers is a section of the page
+              with its own heading, as the full-height panels before them
+              were, and turning them into cards should not quietly take
+              both out of the document outline. */}
           <h2 className="pearl-card__title">{title}</h2>
           <p className="pearl-card__desc">{description}</p>
         </span>

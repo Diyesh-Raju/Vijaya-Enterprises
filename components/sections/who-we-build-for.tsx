@@ -28,7 +28,7 @@ import type { ReactNode } from "react";
  * Three things carry the shape and are worth not undoing:
  *
  *  • The middle column is `minmax(280px, min(38vw, 560px))`, not a fraction.
- *    The arch is a fixed 9:10 upright, so what the column does decides how
+ *    The arch is a fixed 4:5 upright, so what the column does decides how
  *    tall the whole row is. A fraction alone is wrong at both ends: below
  *    1200 the picture has to give way to the six lines, which is what the
  *    `38vw` is for, and past about 1500 it would keep growing while the
@@ -42,15 +42,17 @@ import type { ReactNode } from "react";
  *    the narrower laptop widths: CSS scales every radius down together once
  *    they overrun an edge, which lands the crown on an exact semicircle rather
  *    than short of one.
- *  • The frame is square, not the reference's 3:4, and that is the zoom
+ *  • The frame is 4:5 — the client asked for a longer arch at the same width
+ *    (2026-09-11), and it was square before that — and the ratio is the zoom
  *    control. `object-cover` keeps `frameAspect / photoAspect` of a
  *    photograph's width, so the frame's own proportions decide how much of the
- *    building survives — 3:4 kept 45% and cut the elevation off mid-façade,
- *    1:1 keeps 60% and holds the whole block with its setting. It is also the
- *    difference between magnifying the source 2.2x and 1.7x, which this
- *    photograph — 2000px on its long edge, and the only one on the site not
- *    available at 4K — cannot spare. Square is as wide as it goes: past it the
- *    crown eats the roof and the shape reads as a dome rather than an arch.
+ *    building survives: 3:4 kept 45% and cut the elevation off mid-façade,
+ *    1:1 kept 60% and held the whole block with its setting, and 4:5 keeps
+ *    48%. It is also how far the source is magnified — 2.2x, 1.7x and 2.1x —
+ *    which this photograph, 2000px on its long edge and the only one on the
+ *    site not available at 4K, has little room for. Taller than 4:5 is back
+ *    to the façade cut off. Square is as wide as it goes: past it the crown
+ *    eats the roof and the shape reads as a dome rather than an arch.
  *  • The three columns become one below `xl`, not below `lg`. At 1024 the
  *    split still technically fits, but only by leaving the lines 218px each,
  *    where half the six headings break across three rows. Stacked, the
@@ -121,7 +123,7 @@ export function WhoWeBuildFor() {
           </Reveal>
           <Reveal delay={80}>
             <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
-              Individuals, families, businesses, institutions.
+              From Airports to homes
             </h2>
           </Reveal>
           <Reveal delay={160}>
@@ -181,33 +183,36 @@ export function WhoWeBuildFor() {
               // curve — the whole point of the shape — vanished into the page.
               src={img.tudorApartments}
               alt={alt.tudorApartments}
-              ratio="square"
+              ratio="tall"
               // `sizes` is NOT the width of the frame, and getting that wrong
               // is what made this picture soft. The frame is a portrait window
-              // onto a 1.68:1 photograph, so `object-cover` shows only 60% of
+              // onto a 1.68:1 photograph, so `object-cover` shows only 48% of
               // the image's width and magnifies it to fill — the browser needs
-              // a file about 1.7x the frame, not one the frame's own size.
+              // a file about 2.1x the frame, not one the frame's own size.
               // Asked for 30vw, Next served a 1080px candidate, 45% of which
               // was 486 real pixels stretched across an 864px retina box.
               //
               // The three stops below are written against Next's own width
-              // buckets rather than as tidy round numbers: 600 lands a phone
-              // on the 1200 candidate, 780 lands the stacked tablet on 1920,
-              // and 70vw asks a laptop for more than the 2000px original has,
-              // which serves it whole. Nudging any of them past a bucket edge
-              // doubles the download for no visible gain.
-              sizes="(max-width: 640px) 600px, (max-width: 1280px) 780px, 70vw"
+              // buckets rather than as tidy round numbers: 750 lands a phone
+              // on the 1920 candidate, 1000 lands the stacked tablet on the
+              // 2048 bucket, and 70vw asks a laptop for more than the 2000px
+              // original has — both of those serve it whole. They went up
+              // with the frame: at 4:5 the square's 600 and 780 fell a bucket
+              // short. Nudging any of them past a bucket edge doubles the
+              // download for no visible gain.
+              sizes="(max-width: 640px) 750px, (max-width: 1280px) 1000px, 70vw"
               // 280 is half of 560, the widest the frame is ever drawn, so the
               // crown is an exact semicircle there. Below that the pair of top
               // radii overrun the edge and CSS scales them down together —
               // which lands on a semicircle at every narrower width too.
               rounded="rounded-t-[clamp(140px,26vw,280px)] rounded-b-[2rem]"
               className="shadow-[0_40px_80px_rgba(11,26,58,0.24)]"
-              // Which 60% of the width. 48% is a hair left of centre: it holds
-              // both wings and both flights of steps inside the frame while
-              // keeping the yellow car parked at the far right — the one thing
-              // in this photograph that pulls the eye off the building — out
-              // of it. Past about 52% the car arrives.
+              // Which 48% of the width. 48% is a hair left of centre, and
+              // centred on the building: the timbered bays, the steps and the
+              // two men at the gate, with the yellow car parked at the far
+              // right — the one thing in this photograph that pulls the eye
+              // off the building — kept out of it. The two end wings no
+              // longer fit at 4:5; the square held them.
               imageClassName="object-[48%_50%]"
             />
             <Seal />

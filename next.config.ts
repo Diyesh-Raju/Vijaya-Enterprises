@@ -31,7 +31,10 @@ const csp = [
   // Every image is served from this origin: the photographs are static
   // imports through the optimiser, and the client logos are in `public/`.
   "img-src 'self' data: blob:",
-  "media-src 'self'",
+  // `blob:` because the home hero reads its walkthrough into memory before
+  // playing it, so the loading cue can count the file in and every seek is
+  // local — the element is then handed a blob URL, not the file's own.
+  "media-src 'self' blob:",
   "font-src 'self' data:",
   `connect-src 'self'${isDev ? " ws: wss: http://localhost:* http://127.0.0.1:*" : ""}`,
   "manifest-src 'self'",

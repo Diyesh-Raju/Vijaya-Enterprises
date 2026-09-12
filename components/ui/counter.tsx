@@ -12,10 +12,28 @@ type CounterProps = {
   className?: string;
   /** Set false to count once and stay put. */
   replay?: boolean;
+  /**
+   * Group the digits the Indian way — 10,00,000, 1,500. Off by default:
+   * most figures on the site are small enough not to want a comma, and some
+   * are deliberately written without one ("1200+").
+   */
+  grouping?: boolean;
 };
 
 /** Ease-out so the number decelerates into place rather than stopping dead. */
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
+/**
+ * One formatter for the server's render and every frame of the count, so
+ * the figure the count lands on is character for character the one that was
+ * sent. `en-IN` for the lakh grouping; rounding to `decimals` either way.
+ */
+const formatter = (decimals: number, grouping: boolean) =>
+  new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+    useGrouping: grouping,
+  });
 
 /**
  * Counts up when scrolled into view, and again each time it is scrolled
@@ -27,8 +45,13 @@ const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
  * second to swap one text node would be pure waste.
  *
  * The final value is rendered on the server, so it is present without
- * JavaScript, correct for screen readers, and never missing from the page if
- * reduced motion is requested or the observer is unavailable.
+ * JavaScript, and never missing from the page if reduced motion is requested
+ * or the observer is unavailable.
+ *
+ * A screen reader is given the final value on its own and never the count:
+ * the moving figure is hidden from it, and a visually hidden copy of the
+ * finished one stands in. Otherwise a figure not yet scrolled to reads as
+ * zero — "0+ Years of Vijaya" — to anyone navigating by headings.
  */
 export function Counter({
   to,
@@ -38,8 +61,10 @@ export function Counter({
   decimals = 0,
   className = "",
   replay = true,
+  grouping = false,
 }: CounterProps) {
   const ref = useRef<HTMLSpanElement | null>(null);
+  const final = `${prefix}${formatter(decimals, grouping).format(to)}${suffix}`;
 
   useEffect(() => {
     const el = ref.current;
@@ -49,8 +74,9 @@ export function Counter({
     if (reduced || typeof IntersectionObserver === "undefined") return;
 
     let frame = 0;
+    const format = formatter(decimals, grouping);
     const write = (value: number) => {
-      el.textContent = `${prefix}${value.toFixed(decimals)}${suffix}`;
+      el.textContent = `${prefix}${format.format(value)}${suffix}`;
     };
 
     const run = () => {
@@ -89,11 +115,14 @@ export function Counter({
       // Leave the finished value behind if we unmount mid-count.
       write(to);
     };
-  }, [to, durationMs, decimals, prefix, suffix, replay]);
+  }, [to, durationMs, decimals, prefix, suffix, replay, grouping]);
 
   return (
-    <span ref={ref} className={className}>
-      {`${prefix}${to.toFixed(decimals)}${suffix}`}
+    <span className={className}>
+      <span ref={ref} aria-hidden="true">
+        {final}
+      </span>
+      <span className="sr-only">{final}</span>
     </span>
   );
 }

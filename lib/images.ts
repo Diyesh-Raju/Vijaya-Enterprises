@@ -71,6 +71,12 @@ import blueprintCraft from "@/assets/images/blueprint-craft.jpg";
    Measure before changing it — see the note on `undertake` in
    `app/globals.css`. */
 import commercialStreetBlock from "@/assets/images/commercial-street-block.jpg";
+/* The same block again, upright, for the portrait card standing in front of
+   that panel — the one place on the section where the card is not a crop of
+   its own backdrop. Supplied by the client at 1024 × 1536; the card is 4:5,
+   so it keeps the photograph's whole width. Nothing is written over it, so
+   it is not graded. */
+import commercialStreetBlockPortrait from "@/assets/images/commercial-street-block-portrait.jpg";
 import cityNight from "@/assets/images/city-night.jpg";
 import citySunset from "@/assets/images/city-sunset.jpg";
 import cranesSkyline from "@/assets/images/cranes-skyline.jpg";
@@ -98,8 +104,11 @@ import mahanteshNelavagi from "@/assets/images/mahantesh-nelavagi.jpg";
    drawings with the engineer at the site table. */
 import handoverFamilyEngineer from "@/assets/images/handover-family-engineer.jpg";
 import homeDusk from "@/assets/images/home-dusk.jpg";
-import homeScrollEnd from "@/assets/images/home-scroll-end.jpg";
-import homeScrollPoster from "@/assets/images/home-scroll-poster.jpg";
+/* The home hero's two stills, cut from the short walkthrough by the commands
+   in `assets/video-source/README.md`. `home-scroll-end.jpg` and
+   `home-scroll-poster.jpg` are the long cut's, kept for going back to it. */
+import homeScrollEnd from "@/assets/images/home-scroll-short-end.jpg";
+import homeScrollPoster from "@/assets/images/home-scroll-short-poster.jpg";
 import homeLawn from "@/assets/images/home-lawn.jpg";
 import industrialEngineer from "@/assets/images/industrial-engineer.jpg";
 import institutionCampus from "@/assets/images/institution-campus.jpg";
@@ -121,11 +130,17 @@ import interiorLiving from "@/assets/images/interior-living.jpg";
    the other five panels are 2400, so it is the softest of the six on a wide
    window. Replace it with a larger copy of the same scene if one exists. */
 import landscapeGardenPath from "@/assets/images/landscape-garden-path.jpg";
-/* The Our Legacy hero, behind the opening aperture. Supplied by the
-   client: a model of a building being set down on its site plan with a
-   city behind it, which is the page's subject in one frame. See
+/* The Our Legacy hero until 2026-09-11: a model of a building being set
+   down on its site plan with a city behind it. No longer imported by
+   anything — kept so the hero can go back to it by changing one line in
    `LegacyHero`. */
 import legacyModelCity from "@/assets/images/legacy-model-city.jpg";
+/* The Our Legacy hero, behind the opening aperture. Supplied by the
+   client: two men in an office, standing in front of the model of a tower,
+   with its drawings on the desk beside them and the city through the glass.
+   1600 × 900, where a full-screen photograph here is wanted at 3840 — the
+   softest hero on the site on a wide or dense screen. See `LegacyHero`. */
+import legacyHeroOffice from "@/assets/images/legacy-hero-office.jpg";
 import legacyPoster from "@/assets/images/legacy-poster.jpg";
 /* The second stage of a contract on /civil-contracts — the legal and
    statutory check before anything is drawn. Supplied by the client.
@@ -207,6 +222,12 @@ import storyLivingRoom from "@/assets/images/story-living-room.jpg";
    `app/globals.css`. */
 import storyGroundDusk from "@/assets/images/story-ground-dusk.jpg";
 import siteTeam from "@/assets/images/site-team.jpg";
+/* The "Trust You Can Check" panel on /joint-ventures, in place of
+   `familyLivingRoom`: an agreement shaken on at a site, the frame going up
+   behind it. Supplied by the client at 1066 × 1600 — portrait, where the
+   open panel is nearer square, so the crop is the photograph's full width
+   and the `focus` on that page chooses which two-thirds of its height. */
+import siteHandshakePlans from "@/assets/images/site-handshake-plans.jpg";
 import slabDusk from "@/assets/images/slab-dusk.jpg";
 import steelRebar from "@/assets/images/steel-rebar.jpg";
 import towerOccupied from "@/assets/images/tower-occupied.jpg";
@@ -216,6 +237,11 @@ import towerOccupied from "@/assets/images/tower-occupied.jpg";
    uses — so the section no longer shares a photograph with another page.
    1376px on the long edge, where the stock panels are 2400. */
 import villaStreetDusk from "@/assets/images/villa-street-dusk.jpg";
+/* The same house again, upright, for the portrait card in front of that
+   panel. Supplied by the client at 896 × 1200; the card is 4:5, so it keeps
+   the photograph's whole width. Nothing is written over it, so it is not
+   graded. */
+import villaStreetDuskPortrait from "@/assets/images/villa-street-dusk-portrait.jpg";
 import towersGlass from "@/assets/images/towers-glass.jpg";
 /* Vijaya's own — a completed Tudor-framed apartment block, and the one
    picture on the site that is not stock. It carries the arch on
@@ -252,6 +278,7 @@ export const img = {
   cityNight,
   citySunset,
   commercialStreetBlock,
+  commercialStreetBlockPortrait,
   cranesSkyline,
   drawingBoard,
   familyConversation,
@@ -279,6 +306,7 @@ export const img = {
   interiorLiving,
   landscapeGardenPath,
   legacyModelCity,
+  legacyHeroOffice,
   legacyPoster,
   legalVerificationDesk,
   meetingHands,
@@ -305,12 +333,14 @@ export const img = {
   storyCityNight,
   storyLivingRoom,
   storyGroundDusk,
+  siteHandshakePlans,
   siteTeam,
   slabDusk,
   steelRebar,
   towerOccupied,
   towersGlass,
   villaStreetDusk,
+  villaStreetDuskPortrait,
   tudorApartments,
   villaPool,
   warehouseAisle,
@@ -358,7 +388,7 @@ export const alt = {
     "A site crew spreading and levelling fresh concrete across a floor slab, the city behind them",
   heroPoster: "Tower cranes working above a city skyline under construction",
   homeScrollEnd:
-    "The entrance foyer of a completed home, softly out of focus",
+    "The lamplit living room of a completed home, softly out of focus",
   homeScrollPoster:
     "A landscaped residential development of white apartment towers seen from the air",
   haraVijayaConcept:
@@ -392,6 +422,8 @@ export const alt = {
   interiorLiving: "Open-plan living and dining space in a completed apartment",
   landscapeGardenPath:
     "A paved garden path between flowering beds and clipped hedges, frangipani in bloom overhead, with lawn, a lily pond and terraced fields beyond",
+  legacyHeroOffice:
+    "Two men in dark suits standing in an office in front of a scale model of a residential tower, rolled drawings on the desk beside them and the city through the windows behind",
   legacyModelCity:
     "Two hands setting a model of a low glass-fronted building down on its site plan, the model lit from within, a city skyline at sunset behind it",
   legacyPoster: "A building frame and tower crane silhouetted against the sunset",
@@ -440,6 +472,8 @@ export const alt = {
     "A finished contemporary living room, panelled navy feature wall, filament pendants and daylight through sheer curtains",
   storyGroundDusk:
     "A low modern house of glass and stone at dusk, its roof reaching out over a still infinity pool that runs to a lake and distant hills",
+  siteHandshakePlans:
+    "Two colleagues greeting a client with a handshake on a construction site, a concrete frame and tower cranes behind them and drawings, a hard hat and a calculator on the table in front",
   siteTeam: "Site engineers and workers walking a large concrete deck",
   slabDusk:
     "Workers silhouetted at dusk against a pink sky, on the reinforcement cage of a floor going up",
@@ -465,8 +499,8 @@ export const alt = {
 
 /** Background video files (these do live in `public/`, served by URL). */
 export const video = {
-  homeScrollDesktop: "/video/home-scroll.mp4",
-  homeScrollMobile: "/video/home-scroll-mobile.mp4",
+  homeScrollDesktop: "/video/home-scroll-short-hq.mp4",
+  homeScrollMobile: "/video/home-scroll-short-hq-mobile.mp4",
   heroDesktop: "/video/hero.mp4",
   heroMobile: "/video/hero-mobile.mp4",
   legacyDesktop: "/video/legacy.mp4",

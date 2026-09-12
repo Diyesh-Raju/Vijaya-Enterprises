@@ -227,6 +227,17 @@ export function ApertureCta() {
             </div>
           </div>
         </div>
+
+        {/* "Scroll", at the foot of the stage, for as long as there is
+            sequence left to scroll through — it goes with the last move,
+            as the buttons lift into place. See `.aperture__cue` in
+            `globals.css`, including for why it inverts what is behind it.
+            Decorative: it says what the wheel does, which a screen reader
+            has no use for. */}
+        <div className="aperture__cue" aria-hidden="true">
+          <span className="aperture__cue-word">Scroll</span>
+          <span className="aperture__cue-line animate-pulse" />
+        </div>
       </div>
     </ScrollScrub>
   );
