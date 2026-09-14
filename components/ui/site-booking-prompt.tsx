@@ -20,56 +20,34 @@ import { cn } from "@/lib/cn";
  * gives one nod once it has landed. All of that is in `globals.css` under
  * `.speech-bubble`.
  *
- * When it appears is decided by scroll, not by a timer: once the reader is
- * about two fifths of the way down the page, and at least most of a screen
- * in. That is "the middle" of a page for the purpose of asking — past the
- * hero, into the substance, and before the closing call to action that every
- * page already ends on. It fires once per page.
+ * When it appears is decided by scroll, not by a timer, and it appears the
+ * same frame the line is crossed: once the reader is either two fifths of
+ * the way down the page or a screen and a half in, whichever comes first.
+ * The first rule is "the middle" of an ordinary page; the second is for the
+ * long ones — the home page's scrubbed walkthrough, the legacy story — where
+ * two fifths would be a long way to wait. On a page too short to scroll it
+ * shows on arrival. It fires once per page view.
  *
- * Where it appears is decided by the route. The main pages get it; the
- * contact and booking pages do not — the bubble would be asking for what
- * the page already is — and neither do the policies, the brochure readers
- * or a page that is not found. A project's pages get the project's own
+ * It appears on every page. A project's pages get the project's own
  * version: its name in the words, and its own booking page behind the
- * button, so the pass arrives already filled in.
+ * button, so the pass arrives already filled in. On the booking pages
+ * themselves the button scrolls to the pass rather than leaving the page.
  *
- * Dismissing it is remembered for the session, in `sessionStorage`, so a
- * reader who has said "not now" is not asked again on the next page. That
- * is per-tab and gone when the tab closes — the next visit asks once more.
- * Nothing about it is sent anywhere, and no cookie is set; see the note on
- * `CookieNotice`.
+ * Dismissing it lasts for the page it was dismissed on. Nothing is stored,
+ * nothing is sent anywhere, and no cookie is set; the next page asks again,
+ * which is the brief: the bubble is on every page.
  */
 
-const STORAGE_KEY = "vijaya-site-booking-prompt";
-
-/** How far down the page, as a share of what can be scrolled. */
+/** How far down the page, as a share of what can be scrolled… */
 const SHOW_AT = 0.4;
-/** …and never before this much of a screen has gone by, on a short page. */
-const MIN_SCROLL_SCREENS = 0.8;
+/** …or this many screens in, whichever the reader reaches first. */
+const SHOW_AFTER_SCREENS = 1.5;
 
 /** Matches the leave transition in `globals.css`. */
 const LEAVE_MS = 360;
 
-/** Only the main pages. Everything else is opted out by not being here. */
-const SHOW_ON = ["/", "/residential", "/civil-contracts", "/joint-ventures", "/our-legacy", "/faq"];
-
 const PROJECT_PATH = /^\/residential\/([^/]+)(?:\/|$)/;
-
-const readDismissed = () => {
-  try {
-    return window.sessionStorage.getItem(STORAGE_KEY) === "dismissed";
-  } catch {
-    return false;
-  }
-};
-
-const writeDismissed = () => {
-  try {
-    window.sessionStorage.setItem(STORAGE_KEY, "dismissed");
-  } catch {
-    // Nowhere to remember it — the page-long dismissal still stands.
-  }
-};
+const BOOKING_PATH = /^\/site-booking(?:\/|$)/;
 
 type Phase = "armed" | "entering" | "shown" | "leaving" | "done";
 
@@ -86,38 +64,42 @@ export function SiteBookingPrompt() {
     setPhase("armed");
   }
 
-  // Which version of the bubble this page gets, if any.
+  // Which version of the bubble this page gets.
   const projectSlug = pathname.match(PROJECT_PATH)?.[1];
   const project = projectSlug ? projectBySlug(projectSlug) : undefined;
-  const eligible = SHOW_ON.includes(pathname) || Boolean(project);
-  const href = project ? `/site-booking/${project.slug}` : "/site-booking";
+  const onBookingPage = BOOKING_PATH.test(pathname);
+  const href = onBookingPage
+    ? `${pathname}#book`
+    : project
+      ? `/site-booking/${project.slug}`
+      : "/site-booking";
 
   useEffect(() => {
-    if (!eligible || phase !== "armed") return;
-    if (readDismissed()) return;
+    if (phase !== "armed") return;
 
     let fired = false;
     const stop = onScroll(({ y, height }) => {
       if (fired) return;
       const range = document.documentElement.scrollHeight - height;
-      if (range <= 0) return;
-      if (y / range < SHOW_AT || y < height * MIN_SCROLL_SCREENS) return;
+      // A page that cannot scroll, or has scrolled far enough by either rule.
+      const due =
+        range <= 0 ||
+        y >= range * SHOW_AT ||
+        y >= height * SHOW_AFTER_SCREENS;
+      if (!due) return;
 
       fired = true;
-      // Mount hidden, then show a frame later so the transition has a
+      // Mount hidden, then show on the next frame so the transition has a
       // starting state to leave from — the reduced-motion case skips the
       // overshoot in CSS and simply fades.
       setPhase("entering");
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => setPhase("shown")),
-      );
+      requestAnimationFrame(() => setPhase("shown"));
     });
 
     return stop;
-  }, [eligible, phase, pathname]);
+  }, [phase, pathname]);
 
   const dismiss = useCallback(() => {
-    writeDismissed();
     setPhase("leaving");
     window.setTimeout(
       () => setPhase("done"),
@@ -135,7 +117,7 @@ export function SiteBookingPrompt() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [phase, dismiss]);
 
-  if (!eligible || phase === "armed" || phase === "done") return null;
+  if (phase === "armed" || phase === "done") return null;
 
   const visible = phase === "shown";
 
@@ -189,23 +171,27 @@ export function SiteBookingPrompt() {
               Site visits
             </p>
             <h2 className="text-balance-head mt-4 pr-6 font-display text-[1.3125rem] leading-[1.2] text-navy-900 sm:text-[1.4375rem]">
-              {project
-                ? `Want to walk through ${project.name}?`
-                : "Want to see it for yourself?"}
+              {onBookingPage
+                ? "Ready to pick a day?"
+                : project
+                  ? `Want to walk through ${project.name}?`
+                  : "Want to see it for yourself?"}
             </h2>
             <p className="mt-3 text-[0.9375rem] leading-[1.65] text-slate-body">
-              {project
-                ? "Pick a day and a time of day, and someone who built it will meet you at the site."
-                : "Pick a project, a day and a time of day, and we will meet you at the site."}
+              {onBookingPage
+                ? "The pass is just below. Three short steps, and we will call you to confirm."
+                : project
+                  ? "Pick a day and a time of day, and someone who built it will meet you at the site."
+                  : "Pick a project, a day and a time of day, and we will meet you at the site."}
             </p>
 
             <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
               <Link
                 href={href}
-                onClick={writeDismissed}
+                onClick={onBookingPage ? dismiss : undefined}
                 className="group inline-flex items-center gap-2.5 rounded-full bg-navy-900 px-6 py-3 text-[0.8125rem] font-semibold tracking-wide text-white shadow-soft transition-[background-color,transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-navy-800 hover:shadow-lift active:scale-[0.98]"
               >
-                Book a Site Visit
+                {onBookingPage ? "Fill In The Pass" : "Book a Site Visit"}
                 <svg
                   viewBox="0 0 16 16"
                   aria-hidden="true"
