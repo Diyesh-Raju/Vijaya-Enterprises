@@ -62,26 +62,28 @@ import { img, alt } from "@/lib/images";
  * over with the picture it belongs to. One or two short sentences each, and
  * each about the company rather than about the photograph: the band is the
  * first thing on the phone's home page and there is no other copy on it, so
- * these four lines are where a reader who has arrived from a search result
+ * these three lines are where a reader who has arrived from a search result
  * finds out who they are looking at. Written to be read in the two seconds a
  * frame holds — a third sentence does not get read, it gets scrolled past.
  */
-/* Frames three and four were `courtyardHouse` and `vijayaSurya` until
-   2026-09-14, when the client asked for these two instead. Both of the old
-   ones are still in `lib/images.ts` and are now used nowhere, so putting
-   either back is one line here.
+/* What has come off this list, and when, because all of it is one line to
+   put back and none of it is recoverable from the code:
 
-   The two that replaced them are also the first two projects on
-   /joint-ventures, which is deliberate on the client's part rather than an
-   accident to tidy up: they are the pictures they want a phone to open on. */
+   - Frames three and four were `courtyardHouse` and `vijayaSurya` until
+     2026-09-14. The two that replaced them are also the first two projects
+     on /joint-ventures, which is deliberate on the client's part rather
+     than an accident to tidy up: they are the pictures they want a phone
+     to open on.
+   - `towersLawn` led the set until 2026-09-14, when the client asked for it
+     out. Its caption went with it — "Building trust since 1973. Over fifty
+     years of homes across Karnataka, still run by the family that started
+     it." — and it was the only one of the four that said who the company
+     is rather than what it builds. What carries that now is the lockup in
+     the header, which reads "Since 1973" under the wordmark, and the `h1`
+     below, which is read but not seen.
+
+   All three photographs are still in `lib/images.ts` and used nowhere. */
 const FRAMES = [
-  {
-    src: img.towersLawn,
-    alt: alt.towersLawn,
-    position: "50% 50%",
-    caption:
-      "Building trust since 1973. Over fifty years of homes across Karnataka, still run by the family that started it.",
-  },
   {
     src: img.vijayAquaGreen,
     alt: alt.vijayAquaGreen,
@@ -298,7 +300,7 @@ export function HomeHeroPhone() {
             then unmounted — would therefore never fetch one. It is wrong:
             Chrome loads a lazy image that has no layout box at all rather
             than deferring it forever, so rendering these in the markup the
-            server sends had a laptop pulling down all four photographs it
+            server sends had a laptop pulling down every photograph it
             was never going to show. Holding them back until `width` says
             `phone` is what keeps the desktop page exactly as it was. */}
         {width === "phone" &&
