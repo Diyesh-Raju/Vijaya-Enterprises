@@ -13,6 +13,7 @@ import {
   ReasonPanels,
   type ReasonPanel,
 } from "@/components/sections/reason-panels";
+import { Button } from "@/components/ui/button";
 import { Container, Section, SectionHeading } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { img, alt } from "@/lib/images";
@@ -289,6 +290,54 @@ export default function JointVenturesPage() {
               See `ReasonPanels` for the movement. */}
           <div className="mt-14 lg:mt-16">
             <ReasonPanels items={whyPartner} />
+          </div>
+
+          {/* --------------------------------------------------- Closing */}
+          {/* The page's one ask, and the last thing before the footer. It
+              was the only main page ending without one — /civil-contracts
+              closes on a line and a button, /our-legacy on a `CtaBand`, the
+              home page on its two cards — so a reader who got to the end of
+              the reasons had nowhere to go but back up.
+
+              Small, and inside this section rather than a band of its own.
+              A full `CtaBand` here would be a third dark block under six
+              dark panels and immediately above a dark footer, and the page
+              would end on four heavy things in a row. A rule, a line and a
+              button is the whole of it.
+
+              The quote is lifted from the process section higher up the
+              page, word for word — a pull-quote, which is what the device
+              is for. Nothing here claims anything the page has not already
+              said, which is the rule this site's copy is written to.
+
+              The marks are brass and the words navy: quotation marks set in
+              the same ink as the sentence read as punctuation to be
+              skipped, and the point of them is to be seen first. */}
+          <div className="mt-16 border-t border-line pt-14 lg:mt-20 lg:pt-16">
+            <div className="mx-auto max-w-[44rem] text-center">
+              <Reveal>
+                <blockquote className="text-balance-head font-display text-[clamp(1.25rem,2.6vw,1.75rem)] leading-[1.45] text-navy-900">
+                  <span aria-hidden="true" className="text-brass-500">
+                    &ldquo;
+                  </span>
+                  We would rather explain the process honestly than push an
+                  agreement.
+                  <span aria-hidden="true" className="text-brass-500">
+                    &rdquo;
+                  </span>
+                </blockquote>
+              </Reveal>
+              <Reveal delay={120}>
+                {/* `primary` — the navy pill. This is the page's one action
+                    on a light ground, and it is the same button every other
+                    page closes on. */}
+                <div className="mt-9">
+                  <Button href="/contact" variant="primary" size="lg" withArrow>
+                    Contact Us
+                  </Button>
+                </div>
+              </Reveal>
+            </div>
           </div>
         </Container>
       </Section>
