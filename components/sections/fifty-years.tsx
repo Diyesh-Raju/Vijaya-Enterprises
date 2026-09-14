@@ -32,6 +32,10 @@ const COUNT_MS = 2200;
  * same time, so they land together however far each has to climb. The
  * finished figure is what the server sends, so it is on the page without
  * JavaScript and read whole by a screen reader.
+ *
+ * All five on a laptop, that is. The headline 50+ stands still on a phone,
+ * where it is set at 11rem and counting it moves the whole screen — the
+ * four in the cards still run, and still land together.
  */
 const points: {
   icon: (props: { className?: string }) => ReactElement;
@@ -84,7 +88,20 @@ export function FiftyYears() {
             <Reveal>
               <h2 className="text-navy-900">
                 <span className="block font-display text-[clamp(5rem,14vw,11rem)] leading-[0.8]">
-                  <Counter to={50} suffix="+" durationMs={COUNT_MS} />
+                  {/* Still on a phone, asked for by name (2026-09-14). This
+                      is the one figure on the site set at 11rem, and at a
+                      phone's width that is most of the page — a number that
+                      size rolling through four digit shapes before it
+                      settles is not a flourish, it is the whole screen
+                      moving. The three cards beside it still count: they are
+                      figures inside a card rather than the page's headline.
+                      See `countOn` in `Counter`. */}
+                  <Counter
+                    to={50}
+                    suffix="+"
+                    durationMs={COUNT_MS}
+                    countOn="desk"
+                  />
                 </span>
                 <span
                   aria-hidden="true"

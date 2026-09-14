@@ -18,7 +18,24 @@ type CounterProps = {
    * are deliberately written without one ("1200+").
    */
   grouping?: boolean;
+  /**
+   * Where the count actually runs. `desk` holds the figure still on a phone
+   * and counts only on a laptop.
+   *
+   * It is a size question rather than a taste one. A figure set at 11rem on
+   * a 412px screen is most of the width of the page, and a number that large
+   * spinning through four digit shapes before it settles is not a flourish
+   * on a phone, it is the whole screen moving. The same count beside three
+   * cards on a laptop is a detail in a corner of the band.
+   */
+  countOn?: "always" | "desk";
 };
+
+/**
+ * `desk:`'s query, to the character — see the top of `globals.css`. Width
+ * alone would count on a phone held sideways, which is the same phone.
+ */
+const DESK_QUERY = "(min-width: 48rem) and (min-height: 500px)";
 
 /** Ease-out so the number decelerates into place rather than stopping dead. */
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
@@ -48,6 +65,9 @@ const formatter = (decimals: number, grouping: boolean) =>
  * JavaScript, and never missing from the page if reduced motion is requested
  * or the observer is unavailable.
  *
+ * `countOn="desk"` holds the figure still on a phone — the server's value
+ * stands and nothing runs. See the prop.
+ *
  * A screen reader is given the final value on its own and never the count:
  * the moving figure is hidden from it, and a visually hidden copy of the
  * finished one stands in. Otherwise a figure not yet scrolled to reads as
@@ -62,6 +82,7 @@ export function Counter({
   className = "",
   replay = true,
   grouping = false,
+  countOn = "always",
 }: CounterProps) {
   const ref = useRef<HTMLSpanElement | null>(null);
   const final = `${prefix}${formatter(decimals, grouping).format(to)}${suffix}`;
@@ -72,6 +93,13 @@ export function Counter({
 
     const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (reduced || typeof IntersectionObserver === "undefined") return;
+
+    // Out before `write(0)` below, which is the whole point: bailing here
+    // leaves the finished figure the server rendered exactly where it is,
+    // so the phone shows "50+" from the first paint and never a zero. A
+    // window that crosses the boundary after load keeps whichever it got,
+    // which is harmless — the figure is right and readable either way.
+    if (countOn === "desk" && !window.matchMedia(DESK_QUERY).matches) return;
 
     let frame = 0;
     const format = formatter(decimals, grouping);
@@ -115,7 +143,7 @@ export function Counter({
       // Leave the finished value behind if we unmount mid-count.
       write(to);
     };
-  }, [to, durationMs, decimals, prefix, suffix, replay, grouping]);
+  }, [to, durationMs, decimals, prefix, suffix, replay, grouping, countOn]);
 
   return (
     <span className={className}>
