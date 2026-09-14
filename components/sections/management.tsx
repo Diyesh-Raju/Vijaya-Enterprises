@@ -205,7 +205,20 @@ function LeaderCard({
           to become a stadium around a caption to keep it. The role is still
           announced with the portrait — the button's `aria-label` carries
           it — so nothing is lost by it not being pressable. */}
-      <p className="inscribed mt-6 text-center text-[clamp(1.125rem,2vw,1.625rem)] leading-[1.2] tracking-[0.04em] text-navy-900">
+      {/* Bigger and heavier, asked for on 2026-09-14: 22px to 32px against
+          the 18 to 26 it was, at 700 rather than the 500 `.inscribed` sets.
+
+          The 700 is a real cut. Cinzel is a static face and only 500 was
+          loaded, so `font-bold` on its own would have had the browser draw a
+          fake bold — which is the one thing the `.inscribed` class exists to
+          prevent, and it fails silently. `app/layout.tsx` now loads the
+          weight this asks for.
+
+          The tracking opens with the size rather than staying put. These are
+          capitals, and the larger they are set the less air between them
+          they need — 0.04em reads tight on a 32px line where it was right at
+          18. */}
+      <p className="inscribed mt-6 text-center text-[clamp(1.375rem,2.6vw,2rem)] font-bold leading-[1.15] tracking-[0.025em] text-navy-900">
         {leader.role}
       </p>
     </div>

@@ -23,14 +23,23 @@ const manrope = Manrope({
 // Roman face — it has no true lowercase, so its minuscules are drawn as small
 // capitals, which is where that heading's cut-in-stone look comes from.
 //
-// It is loaded for one heading, so keep it to one: it is another font file on
-// every page that uses it, and a second voice in a site that otherwise has
-// exactly one. Reach for `font-display` — Manrope — everywhere else.
+// It is loaded for a handful of headings, so keep it to a handful: it is
+// another font file on every page that uses it, and a second voice in a site
+// that otherwise has exactly one. Reach for `font-display` — Manrope —
+// everywhere else.
+//
+// Two weights rather than one since 2026-09-14, when the roles under the
+// management portraits were asked to read bolder. That is a second file, and
+// it is the honest way to spend it: Cinzel is a static face, so asking for
+// 700 with only 500 loaded does not select a heavier cut — it has the browser
+// smear the one it has, thickening the strokes and closing the counters at
+// exactly the sizes this face is used at. The browser fetches only the
+// weights a page actually sets.
 const cinzel = Cinzel({
   variable: "--font-cinzel",
   subsets: ["latin"],
   display: "swap",
-  weight: ["500"],
+  weight: ["500", "700"],
 });
 
 export const metadata: Metadata = {

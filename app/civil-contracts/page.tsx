@@ -24,6 +24,16 @@ export const metadata: Metadata = {
   alternates: { canonical: "/civil-contracts" },
 };
 
+/* Four of the six carry a `phoneImage` as well: an upright photograph the
+   client supplied on 2026-09-14 for the phone, where the landscape one keeps
+   a band across the middle of a tall frame and loses the building's feet and
+   its sky. `Undertakings` picks between the pair in a `<picture>`, so only
+   one of the two is ever downloaded.
+
+   Their `imageAlt` is written to be true of both pictures, because a
+   `<picture>` carries one alt for every source it can choose between. That
+   is why each pair is the same subject rather than two different ideas of
+   the same heading. */
 const undertakings: Undertaking[] = [
   {
     id: "commercial",
@@ -39,7 +49,9 @@ const undertakings: Undertaking[] = [
       "Renovation, refurbishment and upgrades",
     ],
     image: img.commercialStreetBlock,
-    imageAlt: alt.commercialStreetBlock,
+    phoneImage: img.commercialCornerDuskPhone,
+    imageAlt:
+      "A completed commercial building on a city street, its offices lit behind the glazing and traffic passing in front",
     cardImage: img.commercialStreetBlockPortrait,
   },
   {
@@ -74,7 +86,9 @@ const undertakings: Undertaking[] = [
       "Complete civil construction and execution",
     ],
     image: img.institutionHospital,
-    imageAlt: alt.institutionHospital,
+    phoneImage: img.institutionHospitalDrivePhone,
+    imageAlt:
+      "A hospital seen from its approach road, the entrance canopy ahead and planting either side of the drive",
   },
   {
     id: "residential-contracts",
@@ -91,7 +105,9 @@ const undertakings: Undertaking[] = [
       "External works and site development",
     ],
     image: img.villaStreetDusk,
-    imageAlt: alt.villaStreetDusk,
+    phoneImage: img.villaLitDrivePhone,
+    imageAlt:
+      "A completed private residence at dusk seen from the street, stone and timber with the rooms and the planting lit and a car standing outside",
     cardImage: img.villaStreetDuskPortrait,
   },
   {
@@ -125,7 +141,9 @@ const undertakings: Undertaking[] = [
       "Complete external site development",
     ],
     image: img.landscapeGardenPath,
-    imageAlt: alt.landscapeGardenPath,
+    phoneImage: img.landscapeWallPlantingPhone,
+    imageAlt:
+      "A finished garden: beds of broad-leaved planting in bloom with frangipani above them, mown lawn and paving alongside",
   },
 ];
 

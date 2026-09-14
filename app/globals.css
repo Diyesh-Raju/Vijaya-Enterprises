@@ -3430,6 +3430,31 @@
   clip-path: inset(0% 0% 0% 0%);
 }
 
+/* The blur behind a panel that carries a phone photograph of its own.
+
+   `placeholder="blur"` cannot be used with `getImageProps`, and a `<picture>`
+   is the only way to art-direct one of these for a single download — so
+   `Undertakings` hands the two base64 strings down as custom properties and
+   the ground is painted with whichever belongs to the picture the browser
+   actually chose.
+
+   A panel with no phone photograph sets neither property. An undefined
+   `var()` with no fallback makes the whole declaration invalid at
+   computed-value time, which for `background-image` resolves to `none` —
+   which is exactly right, because those panels still carry Next's own blur
+   placeholder on the `<img>`. */
+.undertake__drift {
+  background-image: var(--blur-phone);
+  background-size: cover;
+  background-position: 50% 50%;
+}
+
+@media (min-width: 48rem) and (min-height: 500px) {
+  .undertake__drift {
+    background-image: var(--blur-wide);
+  }
+}
+
 /* Shade under the description, and the only reason it is readable.
 
    Not a light wash. These six photographs are bright and busy — racking,
@@ -4153,6 +4178,35 @@
 
   .undertake__copy > *:nth-child(4) {
     animation-delay: calc(var(--enter) + 150ms - var(--undertake, 0ms));
+  }
+}
+
+/* ---- No card on a phone ------------------------------------------
+
+   The box standing in front of the photograph comes off below `desk:`,
+   asked for on 2026-09-14.
+
+   It was never really carrying its half of the arrangement here. On a
+   laptop the card sits in the empty left track with the description
+   opposite it, which is the template's whole composition; on a phone there
+   is no empty track — the description runs across the foot of the same
+   screen — so the card simply floated over the middle of the picture with
+   the copy rising into it. `undertakings-copy-height-budget` has the
+   measurements: panels 1 to 3 crossed it by 130 to 160px, which is the
+   overlap in the screenshot that prompted this.
+
+   Placed after the `prefers-reduced-motion: no-preference` block above,
+   which is where the cards are turned on. Same specificity, later in the
+   file, so this wins — the same arrangement the `gooey-demo` phone block
+   relies on and for the same reason.
+
+   The photographs themselves are not fetched twice for it: five of the six
+   cards share the panel's own `srcset`, and the two with a `cardImage` of
+   their own ask for 43vw, which on a phone is a candidate of a couple of
+   hundred pixels. */
+@media (max-width: 767.98px), (max-height: 499.98px) {
+  .undertake__cards {
+    display: none;
   }
 }
 

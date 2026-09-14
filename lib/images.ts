@@ -77,6 +77,14 @@ import blueprintCraft from "@/assets/images/blueprint-craft.jpg";
    there, in line with the other five, and 13:1 under the desktop heading.
    Measure before changing it — see the note on `undertake` in
    `app/globals.css`. */
+/* The four phone photographs for the `Undertakings` panels on
+   /civil-contracts, supplied by the client on 2026-09-14. They are upright
+   where the panel photographs they stand in for are landscape, which is the
+   whole reason they exist: a phone panel is a tall frame, and a 16:9 picture
+   in it keeps a band across the middle and loses the building's feet and its
+   sky. They are never served to a laptop — `Undertakings` picks between the
+   two in a `<picture>` — so they are sized for a phone and no larger. */
+import commercialCornerDuskPhone from "@/assets/images/commercial-corner-dusk-phone.jpg";
 import commercialStreetBlock from "@/assets/images/commercial-street-block.jpg";
 /* The same block again, upright, for the portrait card standing in front of
    that panel — the one place on the section where the card is not a crop of
@@ -120,6 +128,7 @@ import homeLawn from "@/assets/images/home-lawn.jpg";
 import industrialEngineer from "@/assets/images/industrial-engineer.jpg";
 import institutionCampus from "@/assets/images/institution-campus.jpg";
 import institutionHospital from "@/assets/images/institution-hospital.jpg";
+import institutionHospitalDrivePhone from "@/assets/images/institution-hospital-drive-phone.jpg";
 /* The industrial panel on /civil-contracts, in place of the stock
    warehouse aisle: a finished PEB shed, its structure and its floor both
    on show, which is what that panel is about. Supplied by the client at
@@ -137,6 +146,7 @@ import interiorLiving from "@/assets/images/interior-living.jpg";
    the other five panels are 2400, so it is the softest of the six on a wide
    window. Replace it with a larger copy of the same scene if one exists. */
 import landscapeGardenPath from "@/assets/images/landscape-garden-path.jpg";
+import landscapeWallPlantingPhone from "@/assets/images/landscape-wall-planting-phone.jpg";
 /* The Our Legacy hero until 2026-09-11: a model of a building being set
    down on its site plan with a city behind it. No longer imported by
    anything — kept so the hero can go back to it by changing one line in
@@ -248,6 +258,7 @@ import towerOccupied from "@/assets/images/tower-occupied.jpg";
    `homeDusk` there, which the closing call to action on /residential also
    uses — so the section no longer shares a photograph with another page.
    1376px on the long edge, where the stock panels are 2400. */
+import villaLitDrivePhone from "@/assets/images/villa-lit-drive-phone.jpg";
 import villaStreetDusk from "@/assets/images/villa-street-dusk.jpg";
 /* The same house again, upright, for the portrait card in front of that
    panel. Supplied by the client at 896 × 1200; the card is 4:5, so it keeps
@@ -309,6 +320,7 @@ export const img = {
   blueprintCraft,
   cityNight,
   citySunset,
+  commercialCornerDuskPhone,
   commercialStreetBlock,
   commercialStreetBlockPortrait,
   cranesSkyline,
@@ -334,9 +346,11 @@ export const img = {
   industrialShedFloor,
   institutionCampus,
   institutionHospital,
+  institutionHospitalDrivePhone,
   interiorFamily,
   interiorLiving,
   landscapeGardenPath,
+  landscapeWallPlantingPhone,
   legacyModelCity,
   legacyHeroOffice,
   legacyHeroOfficePhone,
@@ -372,6 +386,7 @@ export const img = {
   steelRebar,
   towerOccupied,
   towersGlass,
+  villaLitDrivePhone,
   villaStreetDusk,
   villaStreetDuskPortrait,
   tudorApartments,
@@ -412,6 +427,8 @@ export const alt = {
   bankReception: "Banking hall interior with a curved reception counter",
   blueprintCraft: "Hands marking up a construction drawing at a desk",
   cityNight: "Long-exposure traffic trails running through a city at night",
+  commercialCornerDuskPhone:
+    "A completed commercial building on a street corner at dusk, timber-slatted and glazed with planting up its flank, the offices lit and traffic passing in front",
   commercialStreetBlock:
     "A completed four-storey commercial building in brick, stone and glass on a Bengaluru street, lit offices behind its ground-floor glazing and traffic passing in front",
   citySunset: "City skyline and arterial roads at sunset",
@@ -460,10 +477,14 @@ export const alt = {
   industrialShedFloor:
     "The inside of a completed pre-engineered industrial shed, its steel frame and roof lights overhead and a finished, sealed floor running the length of it",
   institutionHospital: "Hospital building entrance and approach road",
+  institutionHospitalDrivePhone:
+    "A hospital seen from the head of its approach road, the entrance canopy ahead, an ambulance at the kerb and flower beds either side of the drive",
   interiorFamily: "Family living room with a dog resting by the sofa",
   interiorLiving: "Open-plan living and dining space in a completed apartment",
   landscapeGardenPath:
     "A paved garden path between flowering beds and clipped hedges, frangipani in bloom overhead, with lawn, a lily pond and terraced fields beyond",
+  landscapeWallPlantingPhone:
+    "A finished garden bed of broad-leaved planting along a dressed stone wall, lit from the wall, frangipani in bloom above it and mown lawn and paving in front",
   legacyHeroOffice:
     "Two men in dark suits standing in an office in front of a scale model of a residential tower, rolled drawings on the desk beside them and the city through the windows behind",
   legacyHeroOfficePhone:
@@ -524,6 +545,8 @@ export const alt = {
   steelRebar: "Reinforcement steel being placed on an active construction site",
   towerOccupied:
     "A completed apartment block at night with its windows lit, the building in use",
+  villaLitDrivePhone:
+    "A completed private residence at dusk seen from the street, stone and timber with the rooms and the planting lit, and a car standing on the drive",
   villaStreetDusk:
     "A completed private residence at dusk seen from the street: three storeys in stone, timber and glass, the rooms and the planting lit, and a car standing in the porch",
   towersGlass: "Glass office towers seen from street level",

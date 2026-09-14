@@ -1,4 +1,4 @@
-import Image, { type StaticImageData } from "next/image";
+import Image, { getImageProps, type StaticImageData } from "next/image";
 import type { CSSProperties } from "react";
 import { ScrollScrub } from "@/components/ui/scroll-scrub";
 import { UndertakingsNav } from "@/components/sections/undertakings-nav";
@@ -15,6 +15,23 @@ export type Undertaking = {
   /** The card's own photograph, where it should not be a crop of `image`.
    *  Decorative, like every card, so it takes no alt of its own. */
   cardImage?: StaticImageData;
+  /**
+   * The panel's photograph on a phone, where the wide one is the wrong
+   * shape rather than the wrong picture.
+   *
+   * A phone panel is a tall frame and every `image` here is landscape, so
+   * `object-cover` fits one by its width and keeps a band across the
+   * middle — the building loses its feet and its sky and what is left is a
+   * wall. An upright photograph of the same kind of work fills that frame
+   * whole.
+   *
+   * It shares `imageAlt` with the wide one, because a `<picture>` has one
+   * alt for every source it can pick. That is a constraint on how these
+   * pairs are chosen rather than a shortcut: the two have to be the same
+   * subject closely enough that one sentence is true of both, which for
+   * six panels of "a finished building of this kind" they are.
+   */
+  phoneImage?: StaticImageData;
 };
 
 /**
@@ -84,6 +101,78 @@ const PER_SCREEN = 200;
  * caught half wiped in simply freezes. See `ease` in
  * `components/ui/scroll-scrub.tsx`.
  */
+/**
+ * Where the phone photograph gives way to the wide one. `desk:`'s query to
+ * the character — a phone on its side is past the 768 `md:` would ask for,
+ * and it still wants the phone's crop.
+ */
+const WIDE_QUERY = "(min-width: 48rem) and (min-height: 500px)";
+
+/**
+ * A panel's photograph.
+ *
+ * Without a `phoneImage` it is the plain `<Image>` it always was. With one
+ * it becomes a `<picture>`, and that is the one route to art direction that
+ * costs a single download: a second `<Image>` hidden by CSS is still
+ * fetched — Chrome loads a lazy image with no layout box rather than
+ * deferring it forever — and a client-side branch could not be read by the
+ * preload scanner, which matters here because the first of these panels is
+ * the page's own eager photograph.
+ *
+ * `getImageProps` is what puts the optimiser behind a `<source>`. What it
+ * costs is `placeholder="blur"`, which cannot be used with it, so the blur
+ * is handed to the stylesheet as a pair of custom properties and painted as
+ * a background instead — the same trick `LegacyHero` uses, and no extra
+ * request either way since a blur placeholder is a base64 string.
+ */
+function PanelPhoto({
+  item,
+  priority,
+}: {
+  item: Undertaking;
+  priority: boolean;
+}) {
+  if (!item.phoneImage) {
+    return (
+      <Image
+        src={item.image}
+        alt={item.imageAlt}
+        fill
+        quality={85}
+        sizes="100vw"
+        placeholder="blur"
+        priority={priority}
+        className="object-cover"
+      />
+    );
+  }
+
+  const common = { alt: item.imageAlt, fill: true, quality: 85 } as const;
+  const { props: wide } = getImageProps({
+    ...common,
+    src: item.image,
+    sizes: "100vw",
+  });
+  const { props: phone } = getImageProps({
+    ...common,
+    src: item.phoneImage,
+    sizes: "100vw",
+  });
+
+  return (
+    <picture>
+      <source media={WIDE_QUERY} srcSet={wide.srcSet} sizes={wide.sizes} />
+      <img
+        {...phone}
+        alt={item.imageAlt}
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : undefined}
+        className="object-cover"
+      />
+    </picture>
+  );
+}
+
 const EASE = 0.32;
 
 /**
@@ -215,17 +304,18 @@ export function Undertakings({ items }: { items: readonly Undertaking[] }) {
                 different moments: one each, composed by nesting. */}
             <div className="undertake__bg">
               <div className="undertake__zoom">
-                <div className="undertake__drift">
-                  <Image
-                    src={item.image}
-                    alt={item.imageAlt}
-                    fill
-                    quality={85}
-                    sizes="100vw"
-                    placeholder="blur"
-                    priority={index === 0}
-                    className="object-cover"
-                  />
+                <div
+                  className="undertake__drift"
+                  style={
+                    item.phoneImage
+                      ? ({
+                          "--blur-wide": `url("${item.image.blurDataURL}")`,
+                          "--blur-phone": `url("${item.phoneImage.blurDataURL}")`,
+                        } as CSSProperties)
+                      : undefined
+                  }
+                >
+                  <PanelPhoto item={item} priority={index === 0} />
                 </div>
               </div>
 
