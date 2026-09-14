@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import type { CSSProperties } from "react";
 import { img, alt } from "@/lib/images";
 
@@ -9,6 +9,38 @@ import { img, alt } from "@/lib/images";
  * the same step reads as a wipe rather than as words arriving.
  */
 const LOADING_WORDS = ["Vijaya", "Enterprises’", "Legacy"] as const;
+
+/**
+ * Where the upright photograph gives way to the landscape one. The same
+ * query `desk:` is, and the same one the two home heroes branch on — a
+ * phone on its side is past the 768 that `md:` alone would ask for, and it
+ * wants the landscape crop.
+ */
+const WIDE_QUERY = "(min-width: 48rem) and (min-height: 500px)";
+
+const HERO_COMMON = { alt: alt.legacyHeroOffice, quality: 85 };
+
+const { props: wide } = getImageProps({
+  ...HERO_COMMON,
+  src: img.legacyHeroOffice,
+  fill: true,
+  sizes: "100vw",
+});
+
+/* The upright one is the `<img>` itself rather than a second `<source>`, so
+   that a browser too old for `<picture>` — and any crawler reading the
+   markup flat — gets the photograph rather than nothing. */
+const { props: phone } = getImageProps({
+  ...HERO_COMMON,
+  src: img.legacyHeroOfficePhone,
+  fill: true,
+  /* Not 100vw. The frame is taller than 9:16 on most phones, so `cover`
+     fits this one by its height and overflows the width — a 390px-wide
+     frame 844 tall draws the 900 × 1600 source about 475px across and
+     crops the rest. Asking for 100vw serves 390 of those 475 and the
+     picture is soft; 125vw asks for the width it is actually drawn at. */
+  sizes: "125vw",
+});
 
 /**
  * The Our Legacy hero: a load on white paper, then the photograph opening
@@ -82,30 +114,45 @@ export function LegacyHero() {
             boxes because the picture is drawn to the section and the zoom is
             a transform on what is inside it. */}
         <div className="legacy-hero__frame">
-          <div className="legacy-hero__zoom">
-            <Image
-              src={img.legacyHeroOffice}
-              alt={alt.legacyHeroOffice}
-              fill
-              quality={85}
-              sizes="100vw"
-              placeholder="blur"
-              // Held between the two faces rather than the frame's middle.
-              // A landscape window shows the whole width anyway; an upright
-              // phone keeps about a quarter of it, and held here both faces
-              // are in that quarter.
-              style={{ objectPosition: "45% 50%" }}
-              // It is the first thing on the page and it is behind a hole
-              // that opens on it two and a half seconds in. A picture that
-              // has not decoded by then is a white screen with a title on
-              // it. Eager, so the server writes its preload into the head,
-              // and fetched high, so that preload goes to the front of the
-              // queue — `priority` used to mean both and in Next 16 means
-              // only the first.
-              loading="eager"
-              fetchPriority="high"
-              className="object-cover"
-            />
+          {/* Two photographs of the same two men in the same room, one
+              landscape and one upright, and the browser picks. A `<picture>`
+              rather than two `<Image>`s gated by CSS, because a hidden
+              `<img>` is still downloaded — the note at the top of
+              `curtain-photo.tsx` is the long version — and rather than the
+              client-side branch that file uses, because this is the page's
+              LCP and choosing it in JavaScript would not let the preload
+              scanner start the fetch until React had mounted. `<picture>`
+              gets both: one download, chosen in markup the scanner can read.
+
+              `getImageProps` is what makes the optimiser available to a
+              `<source>`; it is Next 16's documented route to art direction.
+              What it costs is `placeholder="blur"`, which it cannot be used
+              with — so the blur is painted by `.legacy-hero__frame` as a
+              background instead, which is the same trick `CurtainPhoto`
+              uses and costs no request either way. */}
+          <div
+            className="legacy-hero__zoom"
+            style={
+              {
+                "--blur-wide": `url("${img.legacyHeroOffice.blurDataURL}")`,
+                "--blur-phone": `url("${img.legacyHeroOfficePhone.blurDataURL}")`,
+              } as CSSProperties
+            }
+          >
+            <picture>
+              <source media={WIDE_QUERY} srcSet={wide.srcSet} />
+              <img
+                {...phone}
+                // It is the first thing on the page and it is behind a hole
+                // that opens on it two and a half seconds in. A picture that
+                // has not decoded by then is a white screen with a title on
+                // it.
+                loading="eager"
+                fetchPriority="high"
+                className="legacy-hero__photo"
+                alt={alt.legacyHeroOffice}
+              />
+            </picture>
           </div>
         </div>
 

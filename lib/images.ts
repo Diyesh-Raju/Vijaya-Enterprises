@@ -18,6 +18,13 @@ import aerialLand from "@/assets/images/aerial-land.jpg";
 import amenitiesGarden from "@/assets/images/amenities-garden.jpg";
 import agreementSigning from "@/assets/images/agreement-signing.jpg";
 import bankReception from "@/assets/images/bank-reception.jpg";
+/* The enquiry form on /contact is set on this: a stone-walled entry court at
+   dusk, lit from the wall. It is chosen for what it does behind glass rather
+   than for what it shows — the frosted panel over it needs something with
+   large, slow areas of tone and one warm light source, because a busy
+   photograph blurred is grey mush and a flat one gives the frost nothing to
+   catch. */
+import backdropCourtyard from "@/assets/images/backdrop-courtyard.jpg";
 import backdropFabric from "@/assets/images/backdrop-fabric.jpg";
 /* The same cloth, for the phone's shape of the residence-finder panel. A
    portrait frame with the fold running corner to corner, where the laptop's
@@ -141,6 +148,11 @@ import legacyModelCity from "@/assets/images/legacy-model-city.jpg";
    1600 × 900, where a full-screen photograph here is wanted at 3840 — the
    softest hero on the site on a wide or dense screen. See `LegacyHero`. */
 import legacyHeroOffice from "@/assets/images/legacy-hero-office.jpg";
+/* The same two men, same room, shot upright — for the phone, where the
+   landscape frame above keeps about a quarter of its width and cuts both of
+   them off at the shin. 900 × 1600, so a tall phone frame takes it whole.
+   `LegacyHero` picks between the two in a `<picture>`. */
+import legacyHeroOfficePhone from "@/assets/images/legacy-hero-office-phone.jpg";
 import legacyPoster from "@/assets/images/legacy-poster.jpg";
 /* The second stage of a contract on /civil-contracts — the legal and
    statutory check before anything is drawn. Supplied by the client.
@@ -284,6 +296,7 @@ export const img = {
   aerialLand,
   amenitiesGarden,
   agreementSigning,
+  backdropCourtyard,
   backdropFabric,
   backdropFabricPhone,
   backdropFooter,
@@ -326,6 +339,7 @@ export const img = {
   landscapeGardenPath,
   legacyModelCity,
   legacyHeroOffice,
+  legacyHeroOfficePhone,
   legacyPoster,
   legalVerificationDesk,
   meetingHands,
@@ -383,6 +397,8 @@ export const alt = {
     "A planted garden walk winding between mature trees and low flowering beds, a pale concrete wall behind",
   agreementSigning:
     "Two people either side of a desk, one signing an agreement while the other holds the papers steady",
+  backdropCourtyard:
+    "A stone-walled entry courtyard at dusk, a tree and planting to one side and a lit passage through to a garden beyond",
   backdropFabric:
     "Soft folds of cream fabric, lit from one side",
   backdropFabricPhone:
@@ -450,6 +466,8 @@ export const alt = {
     "A paved garden path between flowering beds and clipped hedges, frangipani in bloom overhead, with lawn, a lily pond and terraced fields beyond",
   legacyHeroOffice:
     "Two men in dark suits standing in an office in front of a scale model of a residential tower, rolled drawings on the desk beside them and the city through the windows behind",
+  legacyHeroOfficePhone:
+    "Two men in dark suits standing full length in an office, a scale model of a residential tower on the desk behind them, rolled drawings beside it and the city through the windows",
   legacyModelCity:
     "Two hands setting a model of a low glass-fronted building down on its site plan, the model lit from within, a city skyline at sunset behind it",
   legacyPoster: "A building frame and tower crane silhouetted against the sunset",

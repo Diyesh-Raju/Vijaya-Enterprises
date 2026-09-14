@@ -3,6 +3,7 @@ import { Container, Section, Eyebrow } from "@/components/ui/section";
 import { Frame } from "@/components/ui/media";
 import { Counter } from "@/components/ui/counter";
 import { CompassRoseEmblem, CrestEmblem } from "@/components/ui/emblem-icons";
+import { Button } from "@/components/ui/button";
 import {
   BuildingIcon,
   CivicBuildingIcon,
@@ -12,6 +13,7 @@ import {
   HospitalIcon,
   HourglassIcon,
   OfficeTowerIcon,
+  SparkIcon,
 } from "@/components/ui/line-icons";
 import { img, alt } from "@/lib/images";
 import { sectors } from "@/lib/site";
@@ -80,17 +82,17 @@ type Client = {
 const clientsLeft: readonly Client[] = [
   {
     title: "Individuals & Families",
-    body: "Homes and apartments built for the people who will live in them.",
+    body: "Homes built for the people who will live in them.",
     icon: <FamilyHomeIcon />,
   },
   {
     title: "Businesses",
-    body: "Offices, retail and commercial premises, from a single floor upwards.",
+    body: "Offices, retail and commercial premises.",
     icon: <OfficeTowerIcon />,
   },
   {
     title: "Industries",
-    body: "Factories, plants and specialised industrial facilities.",
+    body: "Factories, plants and industrial facilities.",
     icon: <FactoryIcon />,
   },
 ];
@@ -98,17 +100,17 @@ const clientsLeft: readonly Client[] = [
 const clientsRight: readonly Client[] = [
   {
     title: "Educational Institutions",
-    body: "Schools, colleges and campus buildings for long working lives.",
+    body: "Schools, colleges and campus buildings.",
     icon: <GraduationCapIcon />,
   },
   {
     title: "Hospitals & Healthcare",
-    body: "Medical facilities built to demanding standards of finish and service.",
+    body: "Medical facilities built to demanding standards.",
     icon: <HospitalIcon />,
   },
   {
     title: "Government & Public Sector",
-    body: "Defence, banking, public sector organisations and infrastructure.",
+    body: "Defence, banking and public-sector work.",
     icon: <CivicBuildingIcon />,
   },
 ];
@@ -137,6 +139,15 @@ export function WhoWeBuildFor() {
               From Airports to homes
             </h2>
           </Reveal>
+          {/* A rule under the heading rather than in front of it. Every other
+              heading on the site is introduced by the brass hairline that
+              `Eyebrow` carries, which runs alongside the small caps above;
+              this one is answered underneath as well, which is the reference
+              the client set this section from. Short and centred, so it reads
+              as a stop rather than as a divider across the column. */}
+          <Reveal delay={120}>
+            <span aria-hidden="true" className="head-rule" />
+          </Reveal>
           {/* One paragraph, not two. The six lines below name every kind of
               client in full, so the lead only has to make the claim they are
               evidence for — and at this size two paragraphs of it pushed the
@@ -157,7 +168,14 @@ export function WhoWeBuildFor() {
         </div>
 
         {/* ------------------------------------------------------- Showcase */}
-        <div className="mt-14 grid items-center gap-[clamp(2rem,5vw,5.5rem)] xl:mt-20 xl:grid-cols-[1fr_minmax(280px,min(38vw,560px))_1fr]">
+        {/* Below `xl` this is the two-column grid the six client lines sit
+            in, and the arch spans both of its columns. The lines themselves
+            are in two `ul`s — three and three, one for each side of the arch
+            at `xl` — so if each of those laid out its own two columns the
+            phone would get two rows of two and two rows of one. Set to
+            `contents` they hand their items up to this grid instead and the
+            six flow as six. See `ClientColumn`. */}
+        <div className="mt-14 grid grid-cols-2 items-center gap-x-4 gap-y-8 xl:mt-20 xl:grid-cols-[1fr_minmax(280px,min(38vw,560px))_1fr] xl:gap-[clamp(2rem,5vw,5.5rem)]">
           <ClientColumn items={clientsLeft} className="order-2 xl:order-1" />
 
           {/* The arch. `relative` on the reveal rather than on a wrapper of
@@ -170,7 +188,13 @@ export function WhoWeBuildFor() {
               edge at every stacked width, so CSS scales them to exactly half
               and the crown stays a semicircle from a 390px phone up. */}
           <Reveal
-            className="relative order-1 mx-auto w-full max-w-[520px] xl:order-2 xl:max-w-none"
+            /* `order-first`, not `order-1`. Below `xl` the two lists are
+               `display: contents`, so the `order` on each of them no longer
+               applies to anything — their items are grid items here and take
+               the default 0. An `order-1` on the arch put it after all six of
+               them; `order-first` is the only value that still lands in
+               front. */
+            className="relative order-first col-span-2 mx-auto w-full max-w-[520px] xl:order-2 xl:col-span-1 xl:max-w-none"
             variant="fade"
           >
             <Frame
@@ -257,6 +281,36 @@ export function WhoWeBuildFor() {
             delay={210}
           />
         </dl>
+
+        {/* ------------------------------------------------------------ Ask */}
+        {/* The section names six kinds of client and then leaves them there,
+            which is one step short of the thing it is for. The page closes on
+            a `CtaBand` of its own further down; this one is smaller, sits
+            inside the section rather than under it, and asks about the
+            reader's own project rather than about the company — so the two
+            are not the same request made twice. */}
+        <Reveal delay={120}>
+          <div className="mt-[clamp(2.5rem,4vw,3.5rem)] flex flex-col gap-7 rounded-[1.75rem] bg-navy-900 px-[clamp(1.75rem,4vw,3.25rem)] py-[clamp(2rem,3.4vw,2.75rem)] sm:flex-row sm:items-center sm:justify-between sm:gap-10">
+            <div>
+              <p className="font-display text-[clamp(1.375rem,2.2vw,1.75rem)] leading-snug text-white">
+                Ready to start your project?
+              </p>
+              <p className="mt-2 text-[1rem] leading-[1.7] text-navy-100/80">
+                Tell us what you are planning and we will tell you plainly what
+                it takes to build.
+              </p>
+            </div>
+            <Button
+              href="/contact"
+              variant="brass"
+              size="md"
+              withArrow
+              className="flex-none self-start sm:self-auto"
+            >
+              Start A Conversation
+            </Button>
+          </div>
+        </Reveal>
       </Container>
     </Section>
   );
@@ -271,20 +325,50 @@ function ClientColumn({
   className?: string;
 }) {
   return (
-    <ul className={`grid gap-[clamp(2rem,3.4vw,3.2rem)] ${className ?? ""}`}>
+    /* `contents` below `xl`: the list box itself is taken out of the layout
+       and its items become items of the showcase grid above, so both lists'
+       lines flow together as one run of six two to a row. At `xl` it is a
+       real grid again — a column of three beside the arch.
+
+       `role="list"` because `display: contents` removes the element's box,
+       and a `ul` with no box loses its list semantics in some screen
+       readers. The role puts them back; it is inert wherever they were
+       never lost. */
+    <ul
+      role="list"
+      className={`contents xl:grid xl:gap-[clamp(2rem,3.4vw,3.2rem)] ${className ?? ""}`}
+    >
       {items.map((item, index) => (
-        <Reveal as="li" key={item.title} delay={index * 70} className="flex gap-4">
+        <Reveal
+          as="li"
+          key={item.title}
+          delay={index * 70}
+          /* Icon over the words at two to a row, beside them at one. In a
+             half-width cell the tile and the text side by side leave the
+             text about 110px, which breaks every title across three lines. */
+          className="flex flex-col gap-3 xl:flex-row xl:gap-4"
+        >
           {/* The tile is the only thing standing in for the panel the stats
-              used to sit in — a soft mist square rather than a border, so six
-              of them read as a set without ruling the section into boxes. */}
-          <span className="grid h-[46px] w-[46px] flex-none place-items-center rounded-[13px] bg-navy-900/[0.06] text-navy-800 [&>svg]:h-[22px] [&>svg]:w-[22px]">
+              used to sit in — a soft square rather than a border, so six of
+              them read as a set without ruling the section into boxes.
+
+              Brass rather than the navy tint it was: brass is the site's one
+              accent and this is the only mark in the section that carries it,
+              which is what stops six identical squares from reading as
+              furniture. The spark sits off the top-right corner, half on the
+              tile and half off it — see `.tile-spark`. */}
+          <span className="tile-spark relative grid h-[46px] w-[46px] flex-none place-items-center rounded-[13px] border border-brass-500/25 bg-brass-500/[0.12] text-brass-600 [&>svg]:h-[22px] [&>svg]:w-[22px]">
             {item.icon}
+            <SparkIcon className="tile-spark__mark" />
           </span>
-          <div>
-            <h3 className="font-display text-[1.1875rem] leading-snug text-navy-900 sm:text-[1.3125rem]">
+          {/* A size down while two share a row, back up at `xl` where each
+              has a column to itself. `min-w-0` so a long word wraps inside
+              the cell rather than widening the track it is in. */}
+          <div className="min-w-0">
+            <h3 className="font-display text-[1rem] leading-snug text-navy-900 sm:text-[1.0625rem] xl:text-[1.3125rem]">
               {item.title}
             </h3>
-            <p className="mt-1.5 text-[0.9375rem] leading-[1.6] text-slate-body sm:text-[1rem]">
+            <p className="mt-1.5 text-[0.8125rem] leading-[1.55] text-slate-body sm:text-[0.875rem] xl:text-[1rem] xl:leading-[1.6]">
               {item.body}
             </p>
           </div>
@@ -314,13 +398,20 @@ function Stat({
     // a bare `span` between the two and make the list invalid.
     <Reveal
       delay={delay}
-      className="grid justify-items-center gap-1.5 border-t border-line-strong px-2 py-[clamp(1.2rem,2vw,1.8rem)] text-center"
+      className="grid justify-items-center gap-1.5 rounded-[1.5rem] border border-line bg-mist px-3 py-[clamp(1.4rem,2.2vw,2rem)] text-center"
     >
-      <dt className="order-2 text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-slate-muted">
+      {/* The label carries the rule under it rather than the box carrying one
+          across its foot: it is the last thing read in the card and the mark
+          closes it, which is the same job the rule under the heading does for
+          the section. `after` rather than a border, so it is the width of the
+          mark and not the width of the label. */}
+      <dt className="order-2 text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-slate-muted after:mx-auto after:mt-3.5 after:block after:h-px after:w-9 after:bg-brass-500 after:content-['']">
         {label}
       </dt>
-      <dd className="order-1 grid justify-items-center gap-1.5">
-        <span className="text-brass-600">{icon}</span>
+      <dd className="order-1 grid justify-items-center gap-3">
+        <span className="grid h-11 w-11 place-items-center rounded-full bg-brass-500/[0.14] text-brass-600">
+          {icon}
+        </span>
         <span className="font-display text-[clamp(2rem,4vw,3rem)] leading-none text-navy-900">
           {value}
         </span>

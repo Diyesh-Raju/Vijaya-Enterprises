@@ -29,7 +29,7 @@ const undertakings: Undertaking[] = [
     id: "commercial",
     eyebrow: "01 — Commercial Construction",
     title: "Commercial spaces built around your business.",
-    body: "We undertake complete civil construction for offices, commercial buildings and business spaces — from structural work and building services to finishing and final handover. Our focus is on creating durable, functional spaces built for everyday use and long-term performance.",
+    body: "We undertake complete civil construction — from structural work and building services to finishing and final handover. Our focus is on creating durable, functional spaces built for everyday use and long-term performance.",
     points: [
       "Corporate offices and workspaces",
       "Commercial buildings and complexes",
@@ -46,7 +46,7 @@ const undertakings: Undertaking[] = [
     id: "industrial",
     eyebrow: "02 — Industrial Construction",
     title: "Industrial structures built for performance.",
-    body: "Industrial construction demands more than a strong building. It requires careful planning, structural precision and an understanding of how the facility will operate. We undertake civil and structural works for factories, warehouses, production facilities and other industrial requirements.",
+    body: "Industrial construction demands more than a strong building. It requires careful planning, structural precision and an understanding of how the facility will operate.",
     points: [
       "Factories and manufacturing facilities",
       "PEB (Pre-Engineered Building) structures",
@@ -223,6 +223,9 @@ const stages: ContractStage[] = [
     ],
     image: img.slabDusk,
     imageAlt: alt.slabDusk,
+    // The slab at dusk is a pale sky across the whole of its upper half,
+    // and the subtitle and the first line of points sit in it.
+    shade: "deep",
   },
   {
     step: "06",
@@ -303,9 +306,18 @@ export default function CivilContractsPage() {
                       rule in front of it. The hat stands in for that rule and
                       says what the card is about at the same time: it is the
                       company's own crew that does the work. Brass, because
-                      that is what marks an eyebrow everywhere else. */}
-                  <p className="flex items-center gap-2.5 text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-slate-muted">
-                    <HardHatIcon className="h-[1.125rem] w-[1.125rem] flex-none text-brass-600" />
+                      that is what marks an eyebrow everywhere else.
+
+                      It is drawn large and set on its own line rather than
+                      in front of the words: at this size it would dwarf an
+                      11px eyebrow it stood beside, and the card has the room
+                      to let it be the first thing read. The stroke comes
+                      down as the hat goes up so it stays a thin line. */}
+                  <HardHatIcon
+                    className="h-11 w-11 text-brass-600 sm:h-[3.25rem] sm:w-[3.25rem]"
+                    strokeWidth={1.1}
+                  />
+                  <p className="mt-5 text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-slate-muted">
                     In-house execution
                   </p>
                   <p className="mt-6 font-display text-[1.5rem] leading-snug text-navy-900 sm:text-[1.75rem]">
@@ -454,8 +466,9 @@ export default function CivilContractsPage() {
         <Container>
           <div className="mx-auto max-w-[46rem] text-center">
             <Reveal>
-              <h2 className="text-balance-head inscribed text-[clamp(1.625rem,3.3vw,2.5rem)] leading-[1.08]">
-                The project is complete when you are satisfied with the
+              <h2 className="text-balance-head inscribed text-[clamp(1.625rem,3.3vw,2.5rem)] leading-[1.18]">
+                The project is complete when{" "}
+                <span className="mark-navy">you are satisfied</span> with the
                 handover.
               </h2>
             </Reveal>

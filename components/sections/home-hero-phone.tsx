@@ -66,6 +66,14 @@ import { img, alt } from "@/lib/images";
  * finds out who they are looking at. Written to be read in the two seconds a
  * frame holds — a third sentence does not get read, it gets scrolled past.
  */
+/* Frames three and four were `courtyardHouse` and `vijayaSurya` until
+   2026-09-14, when the client asked for these two instead. Both of the old
+   ones are still in `lib/images.ts` and are now used nowhere, so putting
+   either back is one line here.
+
+   The two that replaced them are also the first two projects on
+   /joint-ventures, which is deliberate on the client's part rather than an
+   accident to tidy up: they are the pictures they want a phone to open on. */
 const FRAMES = [
   {
     src: img.towersLawn,
@@ -82,16 +90,21 @@ const FRAMES = [
       "Apartments planned around light, air and the way a family actually lives in a home.",
   },
   {
-    src: img.courtyardHouse,
-    alt: alt.courtyardHouse,
+    src: img.projectTimberCorner,
+    alt: alt.projectTimberCorner,
+    // The band is near enough square on a phone and the source is 3:2, so
+    // `object-cover` keeps the whole height and takes the crop off the
+    // sides — which makes the horizontal figure the only one doing any
+    // work here. 50% lands on the building's corner, which is what the
+    // photograph is of.
     position: "50% 50%",
     caption:
       "Residential, commercial, industrial and institutional work — one standard of building across all four.",
   },
   {
-    src: img.vijayaSurya,
-    alt: alt.vijayaSurya,
-    position: "50% 18%",
+    src: img.projectTudorCourt,
+    alt: alt.projectTudorCourt,
+    position: "50% 50%",
     caption:
       "Every project. Every customer. Like family. That is the whole of how we work.",
   },

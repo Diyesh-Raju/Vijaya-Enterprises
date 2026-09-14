@@ -109,6 +109,11 @@
 
   /* Neutrals ---------------------------------------------------- */
   --color-mist: #f6f8fc;
+  /* The contact page's channel cards sit on this: a warm off-pink, asked for
+     by name (2026-09-14). It is the one ground on the site that is not navy,
+     white or the blue-grey mist, which is why it is a token of its own rather
+     than a shade of one of them. */
+  --color-blush: #f7eef0;
   --color-line: #e5ebf5;
   --color-line-strong: #d3ddec;
   --color-slate-body: #4d5f7a;
@@ -316,6 +321,37 @@
   ::selection {
     background-color: var(--color-navy-900);
     color: #ffffff;
+  }
+
+  /* A phrase lifted out of a heading. It is set the way this page sets a
+     text selection, two rules above — navy ground, white letters — because
+     that is the one mark on the site that already means "these words, and
+     not the ones around them", and a second vocabulary for the same job
+     would only be a second thing to remember.
+
+     Everything is in `em` so the bubble is cut from the type rather than
+     laid over it: at a heading that runs from 26px to 40px a fixed radius
+     is a different shape at each end, and fixed padding is a different
+     amount of air.
+
+     `box-decoration-break: clone` is what makes it a bubble and not a
+     banner. A highlighted phrase that breaks across two lines is one
+     inline box in two fragments, and by default the rounding and the side
+     padding go on the outside of the pair — leaving two square edges
+     facing each other in the middle of the phrase. Cloned, each line gets
+     a whole rounded box of its own.
+
+     The vertical padding is why the heading it is used in is set at 1.18
+     rather than the 1.08 it would be otherwise: padding on an inline box
+     does not push the lines apart, it grows over them, and at 1.08 the
+     navy would cut into the line above. */
+  .mark-navy {
+    background-color: var(--color-navy-900);
+    color: #ffffff;
+    padding: 0.08em 0.3em 0.12em;
+    border-radius: 0.32em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
 
   /* Visible, on-brand focus ring for keyboard users only */
@@ -602,6 +638,41 @@
   }
 }
 
+/* A short rule under a centred heading, answering the brass hairline that
+   `Eyebrow` sets in front of the small caps above it. Block, so it takes the
+   centring from the column it is in rather than needing any of its own. */
+@utility head-rule {
+  display: block;
+  width: clamp(4rem, 7vw, 5.5rem);
+  height: 3px;
+  margin-inline: auto;
+  margin-top: clamp(1.25rem, 2vw, 1.75rem);
+  border-radius: 999px;
+  background-color: var(--color-brass-500);
+}
+
+/* The spark off the corner of an icon tile.
+
+   Positioned against the tile and pushed out by a quarter of itself, so it
+   sits half on the corner and half off it — flush inside, it reads as part
+   of the icon; fully outside, as a stray mark. The tile carries
+   `overflow: visible` by default, and the one thing to keep is `relative` on
+   the tile itself, which the class name is a reminder of.
+
+   Navy rather than brass: the tile is already brass, and a brass spark on a
+   brass tile is a smudge. */
+@utility tile-spark {
+  & > .tile-spark__mark {
+    position: absolute;
+    top: -0.3125rem;
+    right: -0.3125rem;
+    width: 0.8125rem;
+    height: 0.8125rem;
+    color: var(--color-navy-300);
+    pointer-events: none;
+  }
+}
+
 /* Underline that draws in on hover — used on nav + text links */
 @utility link-underline {
   position: relative;
@@ -880,17 +951,22 @@
      renders it, not against the file and not by eye — and measured only in
      the strips of the window the type is in, which is the whole trick. The
      ground is still now, so those strips do not move: the heading's, and
-     the caption's between 63% and 87% down. Scanning every horizontal
-     position a tile can take, the worst patch the size of a line of small
-     type gives mist 5.3:1, and the worst under the heading 4.4:1 against a
-     large-text floor of 3. Bare, the same caption strip gives 2.0 across a
-     quarter of the width — the two lit gate walls — which is what the
-     gradient on `.gooey-demo::before` is there to fix.
+     the caption's, which the caption's drop to the foot of its picture
+     took down the band with it. Scanning every horizontal position a tile
+     can stop at, at 700, 720, 768, 812 and 1080 tall, the worst patch the
+     size of a line gives mist 5.87:1 under `See more` and 4.31:1 under a
+     name — against floors of 4.5 for small type and 3 for large. With a
+     citation open, which lifts the pair by 4rem, the same scan gives
+     4.49:1 under the citation and 3.26:1 under the name. The heading is
+     above all of it, in a strip this grade does not reach, at 4.4:1. Bare,
+     the caption's strip gives 2.0 across a quarter of the width — the two
+     lit gate walls — which is what the gradient on `.gooey-demo::before`
+     is there to fix.
 
-     Re-measure if any of three things move: the photograph, the caption's
-     height on the band, or the ground's stillness. The last one especially
-     — put the drift back and this measurement is void, because then any
-     part of the frame can end up under any word. */
+     Re-measure if any of three things move: the photograph, where the
+     caption sits on the band, or the ground's stillness. The last one
+     especially — put the drift back and this measurement is void, because
+     then any part of the frame can end up under any word. */
   --color-bg: #493f3d;
   --color-text: var(--color-mist);
 
@@ -901,10 +977,11 @@
      `.gooey-demo::before`. */
   --gooey-scrim: linear-gradient(
     to bottom,
-    rgb(4 8 16 / 0) 48%,
-    rgb(4 8 16 / 0.4) 64%,
-    rgb(4 8 16 / 0.6) 78%,
-    rgb(4 8 16 / 0.64) 100%
+    rgb(4 8 16 / 0) 38%,
+    rgb(4 8 16 / 0.3) 50%,
+    rgb(4 8 16 / 0.54) 62%,
+    rgb(4 8 16 / 0.72) 76%,
+    rgb(4 8 16 / 0.78) 100%
   );
 
   /* The band's vertical budget, spent from the top down: the heading's
@@ -994,6 +1071,18 @@
    panel behind the words is the halo that was asked off twice. Darkening
    only the strip the words are in costs the picture its foreground apron,
    which is already the darkest thing in the frame.
+
+   The stops were let down and deepened when the caption dropped to the
+   foot of its picture: the words are lower in the window than they were,
+   and the half of every name that hangs off the frame is over this
+   photograph and nothing else. Deepened rather than merely moved, because
+   a short window is the hard case — the band shrinks with the screen and
+   the type does not, so on a 700px window every line sits higher up the
+   frame than it does on a tall one, and at 44% the lit gate walls were
+   still coming through the names at 2.5:1. Nothing above 38% of the band
+   is touched, which is the sky, the roofline and the lit house; what is
+   deepened below it is the courtyard and the foreground apron, already
+   the darkest things in the frame.
 
    It can be aimed like this only because the ground stopped moving. While
    it drifted, any part of the photograph could end up under any word and
@@ -1487,7 +1576,26 @@
    which is why the gutter is the demo's 20vw again, and never less than
    what hangs outside the frame plus air. */
 @media (min-width: 900px) {
-  .gooey-demo { --accolade-cap: 0rem; }
+  .gooey-demo {
+    --accolade-cap: 0rem;
+
+    /* Where the caption rests, measured up from the foot of its picture.
+       It used to be 16% of the frame's height, which put the name across
+       the middle of the photograph — and the middle is where an award
+       photograph keeps its own words: a lit banner, a poster, a projected
+       title. Two sets of white display type on top of each other is not a
+       contrast problem that any grade can fix, and the measurements said
+       so plainly: the name ran between 1.3:1 and 2.7:1 over four of the
+       five awards, against a floor of 3.
+
+       So it sits on the foot of the frame now, where a caption belongs
+       and where the grade below it is strongest. In rem rather than in
+       percent because the type is: the name's size is set off the
+       window's width and does not change with its height, so a share of
+       the frame would put the caption somewhere different on every
+       screen. */
+    --accolade-name-bottom: 0.6rem;
+  }
 
   .gooey-demo .slideshow-list__el {
     margin-left: max(20vw, calc(var(--accolade-hang) + 3rem));
@@ -1495,7 +1603,7 @@
 
   .gooey-demo .tile__content {
     position: absolute;
-    bottom: 16%;
+    bottom: var(--accolade-name-bottom);
     left: calc(-1 * var(--accolade-hang));
     width: var(--accolade-label);
     margin-top: 0;
@@ -1528,29 +1636,61 @@
     color: var(--color-text);
   }
 
-  /* The corner the name crosses, darkened into the photograph.
-     Bottom-left, because that is where the caption is hung, and reaching
-     about two thirds across and a third up — the name's own footprint,
-     which is `--accolade-label` centred on the frame's left edge.
+  /* The foot the name crosses, darkened into the photograph.
 
-     Sized off the worst case rather than the average: the palest of the
-     five awards runs to 0.71 relative luminance under its name, and at
-     0.8 black over it that comes down far enough for the ink to clear
-     large-text contrast. Over the four dark ones the same gradient is
-     barely visible — they were already darker than it. That is the point
-     of doing it per picture: it costs nothing where nothing is needed,
-     and it holds for whatever award is added next. */
+     Two gradients multiplied, which is the whole design of it: the
+     `background` says how the darkening falls away *up* the picture and
+     the `mask` says how it falls away *across* it. The name's footprint
+     is a rectangle — `--accolade-label` centred on the frame's left edge,
+     two lines of display type on the foot of it — and only a product of
+     two axes covers a rectangle. This was one corner radial before, and
+     an ellipse cast from the corner reaches the name's near end and
+     misses its far one: measured, the top line of the second line of a
+     name sat outside the gradient altogether and took nothing from it.
+
+     The axes are in different units, and deliberately. Up the picture is
+     rem, because that is what the caption is: the same two lines of the
+     same type whatever the window's height, so a share of the frame would
+     cover them on a tall screen and miss them on a short one. Across is
+     percent, because the label's width is a share of the tile. Together
+     they darken exactly what the caption stands on and leave the rest of
+     the photograph — the whole right of it, and everything above the
+     name — as it was given.
+
+     ⚠️ Sized by measurement, not by eye, and measured off the composited
+     frame rather than the files: for each award, the brightest patch the
+     size of a line under the name, at every horizontal position the strip
+     can stop at, at 720, 812 and 1080 tall. The five come out between
+     4.15:1 and 11.5:1 against a large-text floor of 3, and `See more` —
+     which hangs clear of the picture, on the ground — between 4.76:1 and
+     9.2:1 against a small-text floor of 4.5. Before this they were 1.28:1
+     to 3.51:1 and 2.69:1 to 3.95:1.
+
+     Re-measure if an award is added, a photograph replaced, or the
+     caption's size or resting place changed. The harness is a headless
+     Chrome that hides the ink, screenshots the band at each stop, and
+     scans the type's own box for its worst patch. */
   .gooey-demo .tile__link::after {
     content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: radial-gradient(
-      118% 80% at -8% 108%,
-      rgb(0 0 0 / 0.8) 0%,
-      rgb(0 0 0 / 0.52) 40%,
-      rgb(0 0 0 / 0) 74%
+    background: linear-gradient(
+      to top,
+      rgb(0 0 0 / 0.92) 0,
+      rgb(0 0 0 / 0.88) 3rem,
+      rgb(0 0 0 / 0.8) 6rem,
+      rgb(0 0 0 / 0.62) 8.5rem,
+      rgb(0 0 0 / 0.3) 11rem,
+      rgb(0 0 0 / 0) 13.5rem
     );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      #000 0%,
+      #000 64%,
+      transparent 90%
+    );
+    mask-image: linear-gradient(to right, #000 0%, #000 64%, transparent 90%);
   }
 
   /* The certificate is the one tile whose caption does not cross it, and
@@ -1612,14 +1752,40 @@
      so opening one does not walk them up the picture — and out of the flow
      of the tile as well, so the photographs either side of it hold still.
 
-     What it does need is a column of picture under it to open into. A tall
-     screen has that at 16%; a short one does not, and the last lines would
-     be cut off at the foot of the band, which is pinned to the window and
-     has nothing below it. So a tile with its citation open — and only one
-     with it open — lifts its caption by however much of the 11rem is
-     missing, and by nothing at all where the room is already there. */
+     With the caption resting on the foot of the frame it opens onto the
+     ground under the picture rather than into the picture, and the room it
+     has there is the room between the frame and the controls: measured,
+     108px at 812 tall against the 102px the longest citation wants, and
+     87px at 700, where it is short. So the caption lifts by 4rem on open —
+     the least that keeps the longest citation off the arrows at 700, which
+     is the shortest window worth serving, with 6px to spare. It used to
+     lift by 11rem, which is most of a picture: that was the right number
+     when the caption rested across the middle and the citation opened into
+     the frame, and it is the wrong one now. It put the name straight back
+     over the middle of the photograph, which is the one place on it a name
+     cannot be read.
+
+     The grade under the name goes up with it — see the rule below, which
+     is this profile shifted by exactly this lift. */
   .gooey-demo .tile:has(.tile__desc[data-open]) .tile__content {
-    bottom: max(16%, 11rem);
+    bottom: max(var(--accolade-name-bottom), 4rem);
+  }
+
+  /* The same grade, pushed up by the lift above, for as long as the
+     citation is open. Whatever the name stands on has to be dark under it
+     wherever it is, and the alternative — a profile tall enough to cover
+     both places at once — would darken a third of every photograph for a
+     state most readers never open. */
+  .gooey-demo .tile:has(.tile__desc[data-open]) .tile__link::after {
+    background: linear-gradient(
+      to top,
+      rgb(0 0 0 / 0.92) 0,
+      rgb(0 0 0 / 0.9) 6rem,
+      rgb(0 0 0 / 0.8) 9rem,
+      rgb(0 0 0 / 0.62) 11.5rem,
+      rgb(0 0 0 / 0.3) 14rem,
+      rgb(0 0 0 / 0) 16.5rem
+    );
   }
 
   /* The citation itself stays west of the picture's edge, in the half of
@@ -3317,10 +3483,16 @@
   pointer-events: none;
 }
 
+/* 28% rather than the 33% it was set at. The picture is the same size —
+   this is a shift and not a crop — and what the shift is for is the copy
+   beside it: the list there is set large enough that its two columns need
+   nearly 800px, and that width has to come off the left of the copy, which
+   is where the card's right edge is. Full-bleed photograph behind it, so
+   there is nothing at the other end for the card to run out of. */
 @media (min-width: 1024px) {
   .undertake__cards {
     top: 50%;
-    left: 33%;
+    left: 28%;
     width: min(22vw, 46.4svh);
     height: min(27.5vw, 58svh);
   }
@@ -3391,14 +3563,38 @@
   display: grid;
 }
 
+/* Not halves. The picture is `object-cover` and loses nothing but a little
+   crop by being narrower; the copy column has a two-column list in it whose
+   longest points are set by the words in them and not by the layout, and at
+   an even split those points can only be fitted by shrinking the type or by
+   closing the gutter between the two columns to nothing.
+
+   The left track is empty, which is the reason there is room to give: the
+   picture in it is `.undertake__cards`, positioned against the window at
+   `left: 33%` and a width in `vw`, so it neither fills the track nor moves
+   when the track is resized. What the split actually sets is where the
+   copy starts, and 1.32 puts that about 40px to the right of the card
+   rather than about 80. */
 @media (min-width: 1024px) {
   .undertake__grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.32fr);
     gap: clamp(2.5rem, 4vw, 4rem);
   }
 
   .undertake__copy {
     grid-column: 2;
+  }
+}
+
+/* Wider again where there is the window for it, and the one number the
+   largest size of the list depends on: two columns of points at 1.125rem
+   need a little under 800px between them, and 1.72 is what hands the copy
+   that much. Below 1500 the card has not moved far enough clear of the
+   copy for a column this wide, which is the same width the size steps
+   down at — see `.undertake__points`. */
+@media (min-width: 1500px) {
+  .undertake__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.72fr);
   }
 }
 
@@ -3413,16 +3609,19 @@
   max-width: 34rem;
 }
 
-/* The prose keeps its 34rem measure; the list under it is allowed the rest
-   of the column. That is the whole reason a six-point list can set as three
-   and three — at 34rem the second column is too narrow for a line like
+/* The prose keeps its 34rem measure; the list under it is allowed the whole
+   column. That is the whole reason a six-point list can set as three and
+   three — at 34rem the second column is too narrow for a line like
    "Complete civil construction and execution" and every other point would
    wrap, which is both ugly and two rows taller than the panel has room for.
+   The cap is lifted rather than raised to a number because the column is
+   what the list is being measured against: the width is set once, on the
+   grid above, and the list is simply allowed all of it.
    Only from `lg` up: below it the description is across the foot of the
    screen, where a wider block is not a wider column but a longer line. */
 @media (min-width: 1024px) {
   .undertake__copy {
-    max-width: 40rem;
+    max-width: none;
   }
 
   .undertake__copy > *:nth-child(1),
@@ -3441,7 +3640,7 @@
 }
 
 .undertake__copy > *:nth-child(4) {
-  margin-top: 1.75rem;
+  margin-top: 1.5rem;
 }
 
 /* The points, once a list runs past four and goes into two columns.
@@ -3466,6 +3665,39 @@
   display: grid;
   width: 100%;
   gap: 0.5rem 2rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* The points are set at the size the four-point lists are, but only once
+   the two columns have the width to hold a point on one line each. The
+   longest of them runs to about 366px set at this size, and 1400px of
+   window is where the copy column first has room for that twice over with
+   a gutter between. Set larger below it the list does not read bigger, it
+   reads as six points that each wrap — harder to read than the smaller
+   size, and tall enough to push the description down into the count along
+   the foot of the screen.
+
+   1400 rather than a breakpoint because it is not one: it is the window
+   width at which a particular six words stop wrapping, and it moves if
+   those words are rewritten. */
+@media (min-width: 1400px) {
+  .undertake__points {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+}
+
+/* And larger again from 1500, which is where the copy column is widened to
+   carry it. Two steps rather than one because the two things a step needs
+   — the window for a wider column, and the card being clear of it — arrive
+   at different widths, and a size the column cannot hold is not a bigger
+   list, it is a wrapped one. */
+@media (min-width: 1500px) {
+  .undertake__points {
+    font-size: 1.125rem;
+    line-height: 1.55;
+  }
 }
 
 @media (min-width: 640px) {
@@ -3473,12 +3705,42 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-rows: repeat(var(--point-rows), auto);
     grid-auto-flow: column;
+    column-gap: 2rem;
     row-gap: 0.75rem;
   }
 
   .undertake__point--wide {
     grid-row: calc(var(--point-rows) + 1);
     grid-column: 1 / -1;
+  }
+}
+
+/* Where a point fits on one line, the columns are sized to their own
+   longest point rather than to half the block, and `space-between`
+   puts every bit of what is left over into the gutter. Two even columns
+   set the gutter at whatever is spare after the widest point in the list
+   has been fitted twice, which on a list of short points is a hairline —
+   the second column then reads as the tail of the first rather than as a
+   column. Sized to content, the second column instead sits against the
+   right edge of the copy on every panel, and the shorter the list's words
+   the further across it is.
+
+   The first track is `max-content` and the second `minmax(0, max-content)`,
+   so that if a list ever does come up short it is the second column that
+   gives. Two shrinkable tracks share a deficit and both wrap, which is
+   more lines than letting one of them take it — and it is why this is not
+   the arrangement below 1400, where every list is short of width.
+
+   The gap is a floor, not the gutter: `space-between` sets the real one
+   from what is left over, and only the longest list in the six — whose two
+   columns very nearly fill the block on their own — ever comes down to it.
+   Anything wider and that list cannot set one line per point. */
+@media (min-width: 1400px) {
+  .undertake__points {
+    grid-template-columns: max-content minmax(0, max-content);
+    justify-content: space-between;
+    column-gap: 1.5rem;
+    row-gap: 0.8125rem;
   }
 }
 
@@ -3546,6 +3808,125 @@
   background-color: var(--color-brass-400);
 }
 
+/* ---- The two arrows: one panel back, one panel on ---------------- */
+
+/* The six panels arrive on the scroll and on nothing else, which puts the
+   fourth of them four screens away and the second three screens back,
+   through everything in between and in both directions. These are the way
+   to ask for one: a press works out where that panel settles and glides the
+   page there, and the scrub runs the changeovers on the way at the rate a
+   wheel would. Nothing is skipped and nothing plays on a clock of its own.
+   See `components/sections/undertakings-nav.tsx`.
+
+   They stand in the clear strip to the right of the description — whatever
+   the window leaves outside the container, plus the container's own gutter
+   — and are centred in it, so at every width they sit midway between the
+   copy and the edge of the screen rather than coming down on a line of
+   prose. The copy cannot give way to make room for them: its measure is
+   what the panel's height budget is set against, and a narrower column is
+   a taller one (see `--point-rows` above).
+
+   Below `lg` the description moves to the foot of the screen and takes most
+   of it, so the pair goes to the top corner, which the card at 22% leaves
+   clear.
+
+   Hidden unpinned, with the cards and the count: there is no track to step
+   through there, only six ordinary screens in reading order. */
+.undertake__nav {
+  display: none;
+  position: absolute;
+  z-index: 12;
+  top: clamp(1rem, 3vh, 2.25rem);
+  right: clamp(1.25rem, 4vw, 2rem);
+  flex-direction: column;
+  gap: 0.625rem;
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .undertake__nav {
+    /* The strip, and the largest arrow that leaves a little air either side
+       of it. Between 1024 and the container's own 88rem there is nothing
+       outside the container at all and the 3rem gutter is the whole strip,
+       so the clamp is against its floor there and the pair hugs the edge of
+       the screen — which is the only place it can stand without taking
+       width from the copy. */
+    --arrow-clear: calc(max(0px, (100vw - 88rem) / 2) + 3rem);
+    --arrow-size: clamp(2.5rem, calc(var(--arrow-clear) - 0.875rem), 3.5rem);
+
+    top: 24%;
+    bottom: 24%;
+    right: calc((var(--arrow-clear) - var(--arrow-size)) / 2);
+    gap: 0;
+    justify-content: space-between;
+  }
+}
+
+/* One arrow. Dark and translucent rather than clear: these stand on six
+   photographs and nothing else, and over a lit facade a hairline ring on
+   its own disappears. The same treatment as the pair on the accolades band
+   — see `.slideshow__arrow`. */
+.undertake__step {
+  display: grid;
+  place-items: center;
+  width: var(--arrow-size, 2.75rem);
+  height: var(--arrow-size, 2.75rem);
+  flex: none;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.42);
+  background-color: rgb(6 20 49 / 0.34);
+  color: #ffffff;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    background-color 0.4s var(--ease-out-soft),
+    border-color 0.4s var(--ease-out-soft),
+    color 0.4s var(--ease-out-soft),
+    opacity 0.4s var(--ease-out-soft),
+    transform 0.4s var(--ease-out-soft);
+}
+
+.undertake__step-glyph {
+  width: 1.25rem;
+  height: 1.25rem;
+  transition: transform 0.4s var(--ease-out-soft);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .undertake__step:not(:disabled):hover {
+    background-color: #ffffff;
+    border-color: #ffffff;
+    color: var(--color-navy-900);
+  }
+
+  /* Each glyph a little way towards its own direction — the nudge the
+     carousel's arrows take sideways. */
+  .undertake__step--up:not(:disabled):hover .undertake__step-glyph {
+    transform: translateY(-0.15rem);
+  }
+
+  .undertake__step--down:not(:disabled):hover .undertake__step-glyph {
+    transform: translateY(0.15rem);
+  }
+}
+
+.undertake__step:not(:disabled):active {
+  transform: scale(0.94);
+}
+
+.undertake__step:focus-visible {
+  outline: 2px solid var(--color-brass-400);
+  outline-offset: 3px;
+}
+
+/* The ends of the six. Dimmed rather than taken away, so the pair keeps
+   its shape and says which way there is still to go. */
+.undertake__step:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 /* ---- The enhancement: the track, the pin, and the scrub ---------- */
 
 @media (prefers-reduced-motion: no-preference) {
@@ -3558,6 +3939,10 @@
   .undertake__cards,
   .undertake__ticks {
     display: block;
+  }
+
+  .undertake__nav {
+    display: flex;
   }
 
   .undertake__stage {
@@ -4062,6 +4447,45 @@
   }
 }
 
+/* The same shade, carried further up the picture and held heavier on the
+   way. The stops above are written for a photograph that is dark, or at
+   least busy, where the words are: they are gone by two thirds of the way
+   up and only a fifth of the way opaque at the halfway mark. A picture
+   that is pale across its top half — the slab at dusk, whose sky is nearly
+   white — puts the subtitle and the first line of points on bare sky, and
+   white on that is not text, it is a watermark.
+
+   Deeper at the foot as well as taller, because the point is the copy and
+   not the mood: this is the one panel of the six where the shade is doing
+   the reading's work rather than the picture's. */
+.stages__scrim--deep {
+  background-image:
+    linear-gradient(
+      to top,
+      rgb(4 13 32 / 0.96) 0%,
+      rgb(4 13 32 / 0.9) 26%,
+      rgb(4 13 32 / 0.66) 48%,
+      rgb(4 13 32 / 0.34) 72%,
+      rgb(4 13 32 / 0.12) 90%
+    ),
+    linear-gradient(to bottom, rgb(4 13 32 / 0.5) 0%, rgb(4 13 32 / 0.1) 24%);
+}
+
+@media (min-width: 1024px) {
+  .stages__scrim--deep {
+    background-image:
+      linear-gradient(
+        to top,
+        rgb(4 13 32 / 0.95) 0%,
+        rgb(4 13 32 / 0.86) 20%,
+        rgb(4 13 32 / 0.6) 45%,
+        rgb(4 13 32 / 0.3) 70%,
+        rgb(4 13 32 / 0.1) 90%
+      ),
+      linear-gradient(to bottom, rgb(4 13 32 / 0.46) 0%, rgb(4 13 32 / 0.08) 24%);
+  }
+}
+
 /* In flow rather than laid over the panel, so a panel is never shorter
    than the words on it. The badge and the foot are pushed apart by the
    space that is left. */
@@ -4130,7 +4554,7 @@
    is what a display line and a sentence want. */
 @media (min-width: 1024px) {
   .stages__text--wide {
-    max-width: 54rem;
+    max-width: 56rem;
   }
 
   .stages__text--wide > h3,
@@ -4148,6 +4572,18 @@
 .stages__points {
   display: grid;
   gap: 0.5rem 2.5rem;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Larger again where the window has the room, the same step and at the
+   same width as the list in the section above — the two are read one after
+   the other and a difference between them would read as a mistake. */
+@media (min-width: 1500px) {
+  .stages__points {
+    font-size: 1.125rem;
+    line-height: 1.55;
+  }
 }
 
 @media (min-width: 768px) {
@@ -4164,6 +4600,21 @@
   .stages__point--wide {
     grid-row: calc(var(--point-rows) + 1);
     grid-column: 1 / -1;
+  }
+}
+
+/* Sized to their own longest point, with the slack thrown into the gutter,
+   exactly as `.undertake__points` is and for the same reason: these lists
+   have a "Setbacks, FAR/FSI and permissible construction" in one column
+   and an "Identification of potential legal or approval issues" in the
+   other, and splitting the block evenly hands each of them half of it
+   whatever they happen to need. The block is wide enough for both; it was
+   only ever divided wrongly. */
+@media (min-width: 1024px) {
+  .stages__points {
+    grid-template-columns: max-content minmax(0, max-content);
+    justify-content: space-between;
+    column-gap: 1.5rem;
   }
 }
 
@@ -6290,6 +6741,35 @@
   transform: scale(1.3);
   animation: legacy-hero-zoom var(--reveal) both;
   will-change: transform;
+
+  /* The blur placeholder, as a background rather than as `<Image>`'s own.
+     `getImageProps` cannot be used with `placeholder="blur"` — the
+     placeholder would never be taken away — so the two blurs are handed in
+     from the component as custom properties and painted here, switched on
+     the same query the `<picture>` switches on. Next inlines them as
+     base64, so neither costs a request. */
+  background-image: var(--blur-phone);
+  background-size: cover;
+  background-position: 50% 50%;
+}
+
+/* Held between the two faces rather than the frame's middle. The landscape
+   photograph is the one that needs it: a wide window shows the whole of it,
+   but the frame is wider still than 16:9 at some sizes and trims the ends.
+   The upright one is drawn for this frame and sits centred. */
+.legacy-hero__photo {
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+@media (min-width: 48rem) and (min-height: 500px) {
+  .legacy-hero__zoom {
+    background-image: var(--blur-wide);
+  }
+
+  .legacy-hero__photo {
+    object-position: 45% 50%;
+  }
 }
 
 @keyframes legacy-hero-zoom {

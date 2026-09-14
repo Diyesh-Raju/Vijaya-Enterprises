@@ -20,6 +20,12 @@ export type ContractStage = {
   note?: string;
   image: StaticImageData;
   imageAlt: string;
+  /**
+   * `deep` where the standard shade cannot carry white text over the
+   * photograph. It is a property of the picture and not of the stage, so
+   * it moves if the picture is replaced — see `.stages__scrim--deep`.
+   */
+  shade?: "deep";
 };
 
 /**
@@ -60,7 +66,8 @@ export type ContractStage = {
  * What a stage covers, where another stage has a paragraph. Two columns from
  * `md` up, filled top to bottom, with an odd last point across the foot of
  * both — the same arrangement as the section above this one on the page, and
- * for the same reasons. See `Points` in `components/sections/undertakings.tsx`
+ * for the same reasons. The size is set in the stylesheet rather than here,
+ * because it depends on how much width the two columns have to share. See `Points` in `components/sections/undertakings.tsx`
  * and `.stages__points` in `globals.css`.
  */
 function StagePoints({ points }: { points: readonly string[] }) {
@@ -68,7 +75,7 @@ function StagePoints({ points }: { points: readonly string[] }) {
 
   return (
     <ul
-      className="stages__points mt-6 text-[0.9375rem] leading-[1.6]"
+      className="stages__points mt-6"
       style={{ "--point-rows": String(rows) } as CSSProperties}
     >
       {points.map((point, at) => (
@@ -80,7 +87,7 @@ function StagePoints({ points }: { points: readonly string[] }) {
         >
           <span
             aria-hidden="true"
-            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brass-400"
+            className="mt-[0.5625rem] h-[0.4375rem] w-[0.4375rem] shrink-0 rounded-full bg-brass-400"
           />
           {point}
         </li>
@@ -123,7 +130,14 @@ export function ContractStages({
           {/* Shade for the copy. Inside the panel rather than inside the
               clip, so it travels with the words it is there for instead
               of staying behind with the picture. */}
-          <div aria-hidden="true" className="stages__scrim" />
+          <div
+            aria-hidden="true"
+            className={
+              item.shade === "deep"
+                ? "stages__scrim stages__scrim--deep"
+                : "stages__scrim"
+            }
+          />
 
           <div className="stages__copy container-page">
             <p className="stages__badge">{badge}</p>

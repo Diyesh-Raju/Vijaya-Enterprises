@@ -137,10 +137,21 @@ export function ShieldCheckIcon({ className }: { className?: string }) {
  * dome over a brim is a bowl, or a mushroom. The two shoulder arcs stop
  * short of the middle and the crown block stands between them, which is how
  * a hard hat is actually made and how the eye reads one at 18px.
+ *
+ * The card draws it large, as a mark of its own above the label, so the
+ * stroke is overridable: a 1.5 stroke on a 24-grid is a hairline at 18px
+ * and a fat one at 44px, and this set is meant to read as a thin line at
+ * every size.
  */
-export function HardHatIcon({ className }: { className?: string }) {
+export function HardHatIcon({
+  className,
+  strokeWidth,
+}: {
+  className?: string;
+  strokeWidth?: number;
+}) {
   return (
-    <LineIcon className={className}>
+    <LineIcon className={className} strokeWidth={strokeWidth}>
       <path d="M4.6 14.6v-2.4a5.6 5.6 0 0 1 5.4-5.6" />
       <path d="M14 6.6a5.6 5.6 0 0 1 5.4 5.6v2.4" />
       <path d="M10 10.6V5.8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4.8" />
@@ -453,6 +464,26 @@ export function ArrowLeftIcon({ className }: { className?: string }) {
   );
 }
 
+/** One panel back, on the arrows that step through a pinned section. */
+export function ArrowUpIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M12 19V5" />
+      <path d="M18 11l-6-6-6 6" />
+    </LineIcon>
+  );
+}
+
+/** One panel on. The mirror of the one above, to the unit. */
+export function ArrowDownIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <path d="M12 5v14" />
+      <path d="M6 13l6 6 6-6" />
+    </LineIcon>
+  );
+}
+
 /** Open something full screen. */
 export function ExpandIcon({ className }: { className?: string }) {
   return (
@@ -507,6 +538,51 @@ export function DownloadIcon({ className }: { className?: string }) {
       <path d="M12 3.5v11" />
       <path d="m7.5 10 4.5 4.5 4.5-4.5" />
       <path d="M4.5 17.5v1a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1" />
+    </LineIcon>
+  );
+}
+
+/**
+ * The four-pointed spark that sits off the corner of an icon tile.
+ *
+ * Filled rather than stroked, and drawn as one path of four concave arms:
+ * at the 10px it is used at a stroked star closes into a blob, and a
+ * five-pointed one reads as a rating. This is punctuation on a tile, not a
+ * symbol in its own right — see `.tile-spark` in `globals.css`.
+ */
+export function SparkIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M12 1.5c.5 4.6 1.9 6 6.5 6.5-4.6.5-6 1.9-6.5 6.5-.5-4.6-1.9-6-6.5-6.5 4.6-.5 6-1.9 6.5-6.5z" />
+      <path d="M18.6 14.4c.3 2.5 1 3.2 3.4 3.6-2.5.3-3.2 1-3.4 3.5-.3-2.5-1-3.2-3.5-3.5 2.5-.4 3.2-1.1 3.5-3.6z" />
+    </svg>
+  );
+}
+
+/** A day picked off a calendar — the site visit, booked. */
+export function CalendarCheckIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" />
+      <path d="M3.5 9.5h17M8 3.5v3M16 3.5v3" />
+      <path d="m9 14.5 2.2 2.2 4-4.2" />
+    </LineIcon>
+  );
+}
+
+/** A question asked and kept — the FAQ. */
+export function HelpCircleIcon({ className }: { className?: string }) {
+  return (
+    <LineIcon className={className}>
+      <circle cx="12" cy="12" r="8.75" />
+      <path d="M9.6 9.4a2.5 2.5 0 0 1 4.85.85c0 1.7-2.45 2.1-2.45 3.9" />
+      <path d="M12 17.2v.01" />
     </LineIcon>
   );
 }

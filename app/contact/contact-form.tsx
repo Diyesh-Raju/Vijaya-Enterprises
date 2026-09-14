@@ -5,15 +5,25 @@ import { submitEnquiry } from "./actions";
 import { initialEnquiryState, PROJECT_TYPES } from "./enquiry";
 import { cn } from "@/lib/cn";
 
+/**
+ * The form sits on frosted glass over a photograph, so every field is a pane
+ * of the same glass rather than a white box on it — a solid white input would
+ * punch a hole in the frost and the panel would stop reading as one surface.
+ *
+ * The fill is deliberately heavier than the panel's own (18% against 12%):
+ * a field has to look like somewhere to type, which means it has to sit
+ * slightly forward of the thing it is set into, and on glass the only way
+ * forward is lighter.
+ */
 const fieldBase =
-  "w-full rounded-2xl border bg-white px-5 py-4 text-[1rem] text-navy-900 " +
-  "transition-colors duration-300 placeholder:text-slate-muted/70 " +
-  "focus:border-navy-400 focus:outline-none focus-visible:outline-none";
+  "w-full rounded-2xl border bg-white/[0.18] px-5 py-4 text-[1rem] text-white " +
+  "transition-colors duration-300 placeholder:text-white/55 " +
+  "focus:border-white/75 focus:bg-white/[0.24] focus:outline-none focus-visible:outline-none";
 
 function FieldError({ id, children }: { id: string; children?: string }) {
   if (!children) return null;
   return (
-    <p id={id} className="mt-2 text-[0.8125rem] text-red-700">
+    <p id={id} className="mt-2 text-[0.8125rem] text-red-200">
       {children}
     </p>
   );
@@ -50,18 +60,20 @@ export function ContactForm() {
         ref={statusRef}
         tabIndex={-1}
         role="status"
-        className="rounded-[1.75rem] border border-line bg-mist p-9 sm:rounded-[2rem] sm:p-12"
+        // Glass too. This replaces the form inside the frosted panel, so a
+        // mist card here would drop an opaque light box into the middle of it.
+        className="rounded-[1.75rem] border border-white/25 bg-white/[0.1] p-9 backdrop-blur-[18px] sm:rounded-[2rem] sm:p-12"
       >
-        <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-brass-600">
+        <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-brass-400">
           Enquiry received
         </p>
-        <h3 className="mt-6 font-display text-[1.75rem] leading-snug text-navy-900 sm:text-[2rem]">
+        <h3 className="mt-6 font-display text-[1.75rem] leading-snug text-white sm:text-[2rem]">
           Thank you. We will be in touch.
         </h3>
-        <p className="mt-5 text-[1rem] leading-relaxed text-slate-body">
+        <p className="mt-5 text-[1rem] leading-relaxed text-white/85">
           {state.message}
         </p>
-        <p className="mt-5 text-[0.9375rem] leading-relaxed text-slate-muted">
+        <p className="mt-5 text-[0.9375rem] leading-relaxed text-white/60">
           If your requirement is urgent, please call us directly — you will reach
           someone who can help.
         </p>
@@ -94,7 +106,7 @@ export function ContactForm() {
           ref={statusRef}
           tabIndex={-1}
           role="alert"
-          className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-[0.9375rem] text-red-800"
+          className="rounded-2xl border border-red-300/60 bg-red-950/40 px-5 py-4 text-[0.9375rem] text-red-100 backdrop-blur-[12px]"
         >
           {state.message}
         </div>
@@ -104,9 +116,9 @@ export function ContactForm() {
         <div>
           <label
             htmlFor={`${uid}-name`}
-            className="mb-2.5 block text-[0.8125rem] font-semibold text-navy-900"
+            className="mb-2.5 block text-[0.8125rem] font-semibold text-white"
           >
-            Your name <span className="text-brass-600">*</span>
+            Your name <span className="text-brass-400">*</span>
           </label>
           <input
             id={`${uid}-name`}
@@ -118,7 +130,7 @@ export function ContactForm() {
             defaultValue={values.name}
             aria-invalid={Boolean(errors.name)}
             aria-describedby={errors.name ? `${uid}-name-error` : undefined}
-            className={cn(fieldBase, errors.name ? "border-red-300" : "border-line-strong")}
+            className={cn(fieldBase, errors.name ? "border-red-300" : "border-white/30")}
             placeholder="Full name"
           />
           <FieldError id={`${uid}-name-error`}>{errors.name}</FieldError>
@@ -127,9 +139,9 @@ export function ContactForm() {
         <div>
           <label
             htmlFor={`${uid}-email`}
-            className="mb-2.5 block text-[0.8125rem] font-semibold text-navy-900"
+            className="mb-2.5 block text-[0.8125rem] font-semibold text-white"
           >
-            Email <span className="text-brass-600">*</span>
+            Email <span className="text-brass-400">*</span>
           </label>
           <input
             id={`${uid}-email`}
@@ -141,7 +153,7 @@ export function ContactForm() {
             defaultValue={values.email}
             aria-invalid={Boolean(errors.email)}
             aria-describedby={errors.email ? `${uid}-email-error` : undefined}
-            className={cn(fieldBase, errors.email ? "border-red-300" : "border-line-strong")}
+            className={cn(fieldBase, errors.email ? "border-red-300" : "border-white/30")}
             placeholder="you@example.com"
           />
           <FieldError id={`${uid}-email-error`}>{errors.email}</FieldError>
@@ -150,9 +162,9 @@ export function ContactForm() {
         <div>
           <label
             htmlFor={`${uid}-phone`}
-            className="mb-2.5 block text-[0.8125rem] font-semibold text-navy-900"
+            className="mb-2.5 block text-[0.8125rem] font-semibold text-white"
           >
-            Phone <span className="text-brass-600">*</span>
+            Phone <span className="text-brass-400">*</span>
           </label>
           <input
             id={`${uid}-phone`}
@@ -165,7 +177,7 @@ export function ContactForm() {
             defaultValue={values.phone}
             aria-invalid={Boolean(errors.phone)}
             aria-describedby={errors.phone ? `${uid}-phone-error` : undefined}
-            className={cn(fieldBase, errors.phone ? "border-red-300" : "border-line-strong")}
+            className={cn(fieldBase, errors.phone ? "border-red-300" : "border-white/30")}
             placeholder="+91"
           />
           <FieldError id={`${uid}-phone-error`}>{errors.phone}</FieldError>
@@ -174,7 +186,7 @@ export function ContactForm() {
         <div>
           <label
             htmlFor={`${uid}-projectType`}
-            className="mb-2.5 block text-[0.8125rem] font-semibold text-navy-900"
+            className="mb-2.5 block text-[0.8125rem] font-semibold text-white"
           >
             What is this about?
           </label>
@@ -189,11 +201,16 @@ export function ContactForm() {
             className={cn(
               fieldBase,
               "appearance-none bg-[length:1rem] bg-[right_1.25rem_center] bg-no-repeat pr-12",
-              errors.projectType ? "border-red-300" : "border-line-strong",
+              // The closed control is glass with white type; the open list is
+              // drawn by the browser and inherits none of that, so each option
+              // is given the panel's colours explicitly. Without it the list
+              // comes up white-on-white in most browsers.
+              "[&>option]:bg-navy-950 [&>option]:text-white",
+              errors.projectType ? "border-red-300" : "border-white/30",
             )}
             style={{
               backgroundImage:
-                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%234d5f7a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E\")",
+                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E\")",
             }}
           >
             <option value="">Please choose…</option>
@@ -212,9 +229,9 @@ export function ContactForm() {
       <div>
         <label
           htmlFor={`${uid}-message`}
-          className="mb-2.5 block text-[0.8125rem] font-semibold text-navy-900"
+          className="mb-2.5 block text-[0.8125rem] font-semibold text-white"
         >
-          Tell us about your project <span className="text-brass-600">*</span>
+          Tell us about your project <span className="text-brass-400">*</span>
         </label>
         <textarea
           id={`${uid}-message`}
@@ -228,7 +245,7 @@ export function ContactForm() {
           className={cn(
             fieldBase,
             "resize-y",
-            errors.message ? "border-red-300" : "border-line-strong",
+            errors.message ? "border-red-300" : "border-white/30",
           )}
           placeholder="Where is the site, what would you like to build, and what stage are you at?"
         />
@@ -236,13 +253,16 @@ export function ContactForm() {
       </div>
 
       <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-[0.8125rem] leading-relaxed text-slate-muted">
+        <p className="text-[0.8125rem] leading-relaxed text-white/60">
           We use your details only to respond to this enquiry.
         </p>
         <button
           type="submit"
           disabled={pending}
-          className="group inline-flex shrink-0 items-center justify-center gap-2.5 rounded-full bg-navy-900 px-9 py-4 text-[0.9375rem] font-semibold text-white shadow-soft transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-navy-800 hover:shadow-lift active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+          // White, inverting to black — not the site's navy pill. On glass
+          // over a photograph the navy read as a third colour competing with
+          // the picture; white and black are the two the glass already has.
+          className="group inline-flex shrink-0 items-center justify-center gap-2.5 rounded-full bg-white px-9 py-4 text-[0.9375rem] font-semibold text-black shadow-soft transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black hover:text-white hover:shadow-lift active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Sending…" : "Send Enquiry"}
           {!pending && (

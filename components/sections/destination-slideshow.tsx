@@ -47,12 +47,15 @@ const useIsomorphicLayoutEffect =
  * The caption is hung across the picture's lower left, which is the demo's own
  * arrangement: the name centred on the frame's edge, half of it outside and
  * half over the photograph, `See more` under it. Both are set in the band's
- * one light ink. The name is the only part that crosses the picture, and the
- * corner it crosses is darkened under it — see `.tile__link::after` in
- * `globals.css`, which is what lets one ink hold over the night ground and
- * over five photographs that agree on nothing. On a narrow screen there is no
- * room beside the picture for any of it, and the caption goes back under the
- * photograph, where it is over the ground and needs none of that.
+ * one light ink. It rests on the foot of the frame rather than across the
+ * middle of it — an award photograph carries its own words in its middle, a
+ * banner or a projected title, and a name laid over those is unreadable at
+ * any contrast. The foot it stands on is darkened under it — see
+ * `.tile__link::after` in `globals.css`, which is what lets one ink hold over
+ * the night ground and over five photographs that agree on nothing. On a
+ * narrow screen there is no room beside the picture for any of it, and the
+ * caption goes back under the photograph, where it is over the ground and
+ * needs none of that.
  */
 
 type Accolade = {

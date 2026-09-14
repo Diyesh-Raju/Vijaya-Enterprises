@@ -1,6 +1,7 @@
 import Image, { type StaticImageData } from "next/image";
 import type { CSSProperties } from "react";
 import { ScrollScrub } from "@/components/ui/scroll-scrub";
+import { UndertakingsNav } from "@/components/sections/undertakings-nav";
 
 export type Undertaking = {
   /** Anchor for the deep links into this section (`#industrial`, …). */
@@ -87,7 +88,9 @@ const EASE = 0.32;
 
 /**
  * A panel's points. One column of four or fewer, as they always were; past
- * that, two columns and a step down in size with them.
+ * that, two columns. The size of a two-column list is set in the
+ * stylesheet rather than here, because it depends on how much width the
+ * two columns have to share — see `.undertake__points`.
  *
  * Six or seven points in one column would put the last of them under the
  * count along the foot of the screen. Three and three fit the panel, and
@@ -108,9 +111,7 @@ function Points({ points }: { points: readonly string[] }) {
   return (
     <ul
       className={
-        rows
-          ? "undertake__points text-[0.875rem] leading-[1.6]"
-          : "grid gap-2.5 text-[0.9375rem]"
+        rows ? "undertake__points" : "grid gap-2.5 text-[0.9375rem]"
       }
       style={
         rows ? ({ "--point-rows": String(rows) } as CSSProperties) : undefined
@@ -125,7 +126,7 @@ function Points({ points }: { points: readonly string[] }) {
         >
           <span
             aria-hidden="true"
-            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brass-400"
+            className="mt-[0.5625rem] h-[0.4375rem] w-[0.4375rem] shrink-0 rounded-full bg-brass-400"
           />
           {point}
         </li>
@@ -312,6 +313,18 @@ export function Undertakings({ items }: { items: readonly Undertaking[] }) {
             </div>
           ))}
         </div>
+
+        {/* Two arrows, one panel back and one panel on. At stage level with
+            the count and for the same reason: what they step through
+            outlasts any one panel. The clock goes with them — a press has
+            to know where a panel settles, and that is the arithmetic the
+            whole section is timed on. See `UndertakingsNav`. */}
+        <UndertakingsNav
+          count={items.length}
+          slot={slot}
+          hold={HOLD}
+          span={span}
+        />
 
         {/* Six rules across the foot of the screen, one per picture, in
             place of the template's `01 / 06`. They are here at stage level

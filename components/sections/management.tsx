@@ -394,9 +394,27 @@ function LeaderDialog({
                     aria-hidden="true"
                     className="mt-7 block h-px w-12 bg-brass-500/70"
                   />
-                  <div className="mt-7 space-y-5 text-[1rem] leading-[1.8] text-navy-100/85 sm:text-[1.0625rem]">
+                  {/* The colour goes on the paragraphs, not on this wrapper.
+                      `globals.css` sets `p { color: var(--color-slate-body) }`
+                      as a base rule, and a rule that names the element beats
+                      a colour inherited from its parent however the parent is
+                      styled — so a `text-*` class out here is simply not
+                      applied to the text inside. It read as slate on navy,
+                      which is about 2.8:1 and the reason the bios looked
+                      washed out against the sheet.
+
+                      The weight is 500 rather than the 400 body copy is set
+                      at everywhere else, and that is the only lever left for
+                      how bright this reads: the colour is already #fff at
+                      full opacity, so "brighter" can only mean more ink.
+                      White on navy at 400 renders thin — the strokes are what
+                      carries the light, not the hue — and Manrope is loaded
+                      variable, so 500 costs nothing to reach for. */}
+                  <div className="mt-7 space-y-5 text-[1rem] leading-[1.8] sm:text-[1.0625rem]">
                     {leader.bio.map((para) => (
-                      <p key={para}>{para}</p>
+                      <p key={para} className="font-medium text-white">
+                        {para}
+                      </p>
                     ))}
                   </div>
                 </div>

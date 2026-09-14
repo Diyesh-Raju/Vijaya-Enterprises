@@ -8,6 +8,12 @@ import { cn } from "@/lib/cn";
 import { Logo } from "@/components/layout/logo";
 import { img, alt } from "@/lib/images";
 import { navLinks, site } from "@/lib/site";
+import {
+  ArrowUpRightIcon,
+  CalendarCheckIcon,
+  HelpCircleIcon,
+} from "@/components/ui/line-icons";
+import type { ReactNode } from "react";
 
 /**
  * The full-screen menu: photograph down the left, links down the right,
@@ -33,7 +39,7 @@ import { navLinks, site } from "@/lib/site";
  * Privacy Policy is deliberately not on this list. The page is still there
  * and still reachable — the footer links it on every page, the cookie policy
  * links it in its own text, and it is in the sitemap — it is just not one of
- * the places this menu offers to take you. A menu is the seven things a
+ * the places this menu offers to take you. A menu is the handful of places a
  * visitor came for; the policy is something they go looking for when they
  * want it, which is what the footer is for.
  */
@@ -41,8 +47,36 @@ const MENU_LINKS = [
   { href: "/", label: "Home" },
   ...navLinks.map(({ href, label }) => ({ href, label })),
   { href: "/contact", label: "Contact Us" },
-  { href: "/site-booking", label: "Site Booking" },
-  { href: "/faq", label: "FAQ" },
+];
+
+/**
+ * The two that are not places on the site so much as things to do on it, set
+ * apart at the foot of the panel as a pair of cards.
+ *
+ * They were the last two rows of the list above, and they read badly there:
+ * a menu is a set of destinations and these are a booking form and a
+ * reference page, so six equal rows ended on two that were not the same kind
+ * of thing. Given their own shape they stop competing with the list, and the
+ * list gets to be the six places the site goes.
+ *
+ * The second line is the whole reason they can be cards rather than more
+ * rows — a destination needs no explanation, an action does. Keep it to
+ * three or four words: the pair sit side by side from `sm` up, which leaves
+ * each about 160px of text column between the mark and the arrow.
+ */
+const MENU_ACTIONS = [
+  {
+    href: "/site-booking",
+    label: "Site Booking",
+    hint: "Book a day to visit",
+    icon: <CalendarCheckIcon />,
+  },
+  {
+    href: "/faq",
+    label: "FAQ",
+    hint: "Questions, answered",
+    icon: <HelpCircleIcon />,
+  },
 ];
 
 /** Slow enough to watch. The blind is the whole gesture, so it gets the time. */
@@ -163,15 +197,15 @@ export function SiteMenu({
           )}
         >
           <div className="flex items-center justify-between">
-            {/* The lockup, on a phone only.
+            {/* The lockup, at every width.
 
-                The laptop menu has the photograph filling its left half and
-                the links its right, and the mark is already on screen in the
-                header behind it — a second one at the top of the panel would
-                be the same artwork twice in one view. A phone gets no
-                photograph and no header while the sheet is down, so without
-                this the panel opens on a bare navy field with an X in the
-                corner and nothing saying whose menu it is.
+                It was on a phone only, the argument being that a laptop
+                already has the header's mark on screen behind the sheet, so a
+                second one was the same artwork twice in one view. In practice
+                the sheet covers the right half of the window and the header
+                mark sits in the left, behind the photograph — so the panel
+                opened on a bare navy field with an X in the corner and
+                nothing at the top of it at all.
 
                 `reversed` is the artwork drawn for a dark ground — white
                 wordmark, the Ganesha mark relit to hold its blue against
@@ -181,7 +215,22 @@ export function SiteMenu({
                 below it, at four times the size, and a second route to the
                 same page — one that would also have to close the sheet on
                 the way — is a second thing to get wrong for no gain. */}
-            <Logo reversed width={200} className="h-11 shrink-0 desk:hidden" />
+            {/* Sized to the header's own lockup rather than to something
+                smaller. At the 44px it was, the wordmark's tracking and the
+                "Since 1973" line under it are below the size the artwork is
+                legible at — the mark read as a smudge of blue. The header
+                draws it at 64–80 and this panel stands in for the header
+                while it is down, so it is drawn at the same weight.
+
+                No `width` override either. The header asks for the default
+                400, so leaving it alone here means both placements resolve
+                to the same generated file and the second one costs nothing
+                to fetch — a narrower override would have been a second
+                download of the same artwork. */}
+            <Logo
+              reversed
+              className="h-14 shrink-0 sm:h-16 lg:h-[4.5rem]"
+            />
 
             <button
               type="button"
@@ -262,10 +311,13 @@ export function SiteMenu({
                         // when there is not enough of it. Both terms grew when
                         // the contact block came out from under the list and
                         // handed its room back. The vh term tracks the number
-                        // of rows: it gave a share back (4.8 → 4.2, ×7/8) when
-                        // Privacy Policy made the list eight, and takes it
-                        // again now that Privacy Policy has come off and the
-                        // list is seven rows.
+                        // of rows, and it is left at 4.8 on six rows rather
+                        // than raised to the 5.6 the arithmetic alone would
+                        // ask for now that Site Booking and FAQ have become
+                        // the pair of cards at the foot. The slack that
+                        // leaves under the list is the gap between the six
+                        // destinations and the two actions, and it is doing
+                        // the work of telling them apart.
                         //
                         // The air between the lines is leading rather than
                         // padding, so it stays in proportion as the type
@@ -298,23 +350,127 @@ export function SiteMenu({
             </ul>
           </nav>
 
-          {/* All that is left down here is the line of record. The phone,
-              the email and the CTA used to sit above it; the list is the menu,
-              and three more things under it only competed with it. */}
+          {/* The two actions and the line of record, arriving together after
+              the list has finished. The phone, the email and the CTA used to
+              sit here too; the list is the menu, and three more things under
+              it only competed with it. */}
           <div
             className={cn(
-              "mt-auto pt-[clamp(2rem,6vh,3.5rem)] transition-[transform,opacity] duration-700",
+              "mt-auto pt-[clamp(1.5rem,4vh,2.5rem)] transition-[transform,opacity] duration-700",
               ease,
               open ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0",
             )}
             style={{ transitionDelay: open ? `${SHEET_MS - 160}ms` : "0ms" }}
           >
-            <p className="border-t border-white/10 pt-5 text-[0.8125rem] text-white/40">
+            <div className="grid gap-3 sm:grid-cols-2">
+              {MENU_ACTIONS.map((action) => (
+                <MenuAction
+                  key={action.href}
+                  {...action}
+                  onClick={action.href === pathname ? onClose : undefined}
+                  current={isActive(action.href)}
+                />
+              ))}
+            </div>
+
+            <p className="mt-[clamp(1.25rem,3vh,2rem)] border-t border-white/10 pt-5 text-[0.8125rem] text-white/40">
               © {new Date().getFullYear()} {site.legalName}. {site.tagline}.
             </p>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * One of the two actions at the foot of the menu.
+ *
+ * The hover is the menu's own, translated from type to a surface: the links
+ * above light from behind on the way in and trail off on the way out, so the
+ * card brightens its ground, warms its edge to brass and lifts a millimetre,
+ * with the same asymmetry — instant in, 260ms out. A card that faded in over
+ * a quarter-second would light nothing when the cursor ran across both.
+ *
+ * The mark is a `grid` of one cell with the icon and the arrow stacked in it
+ * rather than two boxes side by side: the arrow replaces the icon on hover,
+ * and anything that changed the width of the row would shift the label
+ * under the cursor.
+ */
+function MenuAction({
+  href,
+  label,
+  hint,
+  icon,
+  onClick,
+  current,
+}: {
+  href: string;
+  label: string;
+  hint: string;
+  icon: ReactNode;
+  onClick?: () => void;
+  current: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      aria-current={current ? "page" : undefined}
+      className={cn(
+        // Both radii are written out rather than taken from the scale:
+        // this project overrides Tailwind's, where `rounded-2xl` is 2.5rem
+        // and would draw a 78px-tall card as a stadium, and `rounded-xl` is
+        // 2rem, which is past half of a 44px mark and draws a circle. 1.25rem
+        // here and 13px on the mark are the shapes actually wanted — the
+        // second is the radius the client tiles in `who-we-build-for` use.
+        "group/act flex items-center gap-4 rounded-[1.25rem] border px-4 py-3.5 sm:px-5 sm:py-4",
+        "transition-[background-color,border-color,box-shadow,transform] duration-[260ms]",
+        "ease-[cubic-bezier(0.22,1,0.36,1)] hover:duration-0",
+        "hover:-translate-y-0.5 hover:border-brass-500/70 hover:bg-white/[0.09]",
+        "hover:shadow-[0_0_0_1px_rgba(201,169,110,0.18),0_18px_40px_-18px_rgba(0,0,0,0.9)]",
+        current
+          ? "border-white/30 bg-white/[0.09]"
+          : "border-white/15 bg-white/[0.04]",
+      )}
+    >
+      {/* Blue, where every other accent mark on the site is brass. It is the
+          one blue thing in the panel besides the lockup at the top of it, and
+          that is the point — the Ganesha mark is lit the same way against the
+          same navy, so the two read as belonging to each other down the
+          length of the sheet.
+
+          The card's edge and arrow stay brass on hover. Two accents rather
+          than one, but they are the brand's two, and a blue mark inside a
+          blue-edged card on a blue ground would have nothing to sit against. */}
+      <span
+        className={cn(
+          "grid h-11 w-11 flex-none place-items-center rounded-[13px]",
+          "bg-navy-400/[0.32] text-navy-100 transition-colors duration-[260ms]",
+          "group-hover/act:bg-navy-300 group-hover/act:text-navy-950 group-hover/act:duration-0",
+          "[&>svg]:h-[22px] [&>svg]:w-[22px]",
+        )}
+      >
+        {icon}
+      </span>
+
+      <span className="min-w-0 flex-1">
+        <span className="block font-sans text-[1.0625rem] font-semibold leading-tight text-white">
+          {label}
+        </span>
+        <span className="mt-0.5 block text-[0.8125rem] leading-snug text-white/45">
+          {hint}
+        </span>
+      </span>
+
+      <ArrowUpRightIcon
+        className={cn(
+          "h-4 w-4 flex-none text-white/30 transition-[color,transform] duration-[260ms]",
+          "ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "group-hover/act:translate-x-0.5 group-hover/act:-translate-y-0.5",
+          "group-hover/act:text-brass-400 group-hover/act:duration-0",
+        )}
+      />
+    </Link>
   );
 }
