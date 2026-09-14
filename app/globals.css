@@ -837,6 +837,26 @@
   .trusted-tile-row { --logo-scale: 0.56; }
 }
 
+/* And the pace of that row on a phone, which is the same argument the bare
+   row above makes and a different sum.
+
+   It is not that this row travels slowly — at 68s it crosses about 35px a
+   second, which is what the boxes row was tuned to and near enough what the
+   laptop does. It is that the thing travelling is a 216px card. A mark in a
+   100px box clears its own width in under three seconds and three of them
+   are on screen at once, so the row reads as moving; a card this size takes
+   six, with barely two in view, and the same speed reads as stalled.
+
+   34s puts a card's own width at about three seconds — the boxes row's
+   figure, arrived at from the card rather than from the pixel. `!important`
+   for the reason given above: `Marquee` writes the duration inline, and no
+   amount of specificity beats that. */
+@media (max-width: 767.98px), (max-height: 499.98px) {
+  .trusted-tile-row .animate-marquee {
+    animation-duration: 34s !important;
+  }
+}
+
 /* ---- The horizon under that band ---------------------------------
 
    A white ellipse twice the page wide, laid over the glow so only a crescent
