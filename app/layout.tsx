@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope, Cinzel } from "next/font/google";
+import { Manrope, Cinzel, Noto_Sans_Kannada } from "next/font/google";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SamePageLinks } from "@/components/layout/same-page-links";
 import { SiteBookingPrompt } from "@/components/ui/site-booking-prompt";
+import { LanguageGate } from "@/components/layout/language-gate";
 import { site, contact } from "@/lib/site";
 import "./globals.css";
 
@@ -40,6 +41,25 @@ const cinzel = Cinzel({
   subsets: ["latin"],
   display: "swap",
   weight: ["500", "700"],
+});
+
+// The third face, and the only one a laptop never loads: Kannada, for the
+// phone-only translation (see `lib/language.ts`). Manrope has no Kannada
+// glyphs at all, so without this the translated site falls back to whatever
+// the handset happens to ship — which on Android is Noto and on iOS is a
+// face drawn for a different weight of page.
+//
+// `preload: false` is the point of it. The @font-face still ships in the
+// stylesheet on every page, but nothing links a preload and no browser
+// fetches the file until a Kannada glyph is actually on screen — so an
+// English reader, which is every laptop and every phone that picks English,
+// pays nothing for it. Only the `kannada` subset is asked for: the Latin in
+// a translated page is still set in Manrope.
+const notoKannada = Noto_Sans_Kannada({
+  variable: "--font-kannada",
+  subsets: ["kannada"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -140,9 +160,50 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // changes unless this attribute is present — without it every navigation
       // would animate a long scroll to the top.
       data-scroll-behavior="smooth"
-      className={`${manrope.variable} ${cinzel.variable}`}
+      // The inline script below writes `data-lang-state` — and, for a
+      // Kannada reader, `data-lang` and `lang` — onto this element while the
+      // document is still parsing, which is a page's worth of attributes
+      // React did not render and would otherwise report as a hydration
+      // mismatch on every phone load. Suppression reaches this element's own
+      // attributes and no further, which is exactly the span in question.
+      suppressHydrationWarning
+      className={`${manrope.variable} ${cinzel.variable} ${notoKannada.variable}`}
     >
       <head>
+        {/* Which language this phone reads the site in, settled before the
+            first pixel.
+
+            It has to run here, blocking, rather than in a component: the
+            stored choice lives in `localStorage`, the server cannot see it,
+            and anything that waited for React would paint the English page
+            to a reader who asked for Kannada and then swap it under them.
+            What this writes is one attribute; `globals.css` does the rest,
+            and `LanguageGate` picks the state up when it mounts.
+
+            Every branch ends in an attribute, including the failure ones —
+            with no attribute at all (scripting off, storage throwing) the
+            site simply renders in English, which is what it is written in.
+            See `lib/language.ts` for what the three states mean. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              '(function(){var r=document.documentElement;try{' +
+              // The site's laptop breakpoint. Four copies of this string now;
+              // all of them have to agree. See `lib/language.ts`.
+              'if(window.matchMedia("(min-width: 48rem) and (min-height: 500px)").matches){' +
+              'r.setAttribute("data-lang-state","ready");return}' +
+              'var v=localStorage.getItem("ve-language");' +
+              'if(v==="kn"){r.setAttribute("data-lang","kn");' +
+              'r.setAttribute("data-lang-state","veil");' +
+              // The dead man's handle. A dictionary that never arrives must
+              // cost a pause and not the page.
+              'setTimeout(function(){if(r.getAttribute("data-lang-state")==="veil")' +
+              'r.setAttribute("data-lang-state","ready")},2500)}' +
+              'else{r.setAttribute("data-lang-state",v==="en"?"ready":"gate")}' +
+              '}catch(e){r.setAttribute("data-lang-state","ready")}})()',
+          }}
+        />
+
         {/* Scroll reveals start hidden and are switched on by an observer.
             With scripting off that would hide real content, so neutralise
             the animation entirely in that case. */}
@@ -164,6 +225,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Skip to content
         </a>
+        {/* Before the site, on a phone: which language? Renders nothing at
+            all once that is answered — and nothing on a laptop ever. */}
+        <LanguageGate />
         <SiteHeader />
         {/* The logo, Home, and any other link to the page you are on: back
             to the top of it rather than nothing at all. */}

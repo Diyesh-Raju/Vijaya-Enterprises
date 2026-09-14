@@ -8092,3 +8092,318 @@
     transition-duration: 0.01ms;
   }
 }
+
+/* ------------------------------------------------------------------
+   Language — the chooser, the splash, and the toggle in the menu
+
+   A phone-only feature, top to bottom: a handset is asked which of the two
+   languages it wants before it is shown the site, and a laptop is never
+   asked and never leaves English. The machinery is in `lib/language.ts`;
+   what is here is the three things it puts on screen.
+
+   Everything keys off two attributes on `<html>`, both written by the inline
+   script in `app/layout.tsx` before the first paint and updated afterwards
+   by `lib/language.ts`:
+
+     data-lang-state   gate | veil | ready   — what is covering the page
+     data-lang         kn                    — absent while reading English
+
+   Written this way round on purpose. The states that have to be settled
+   before React runs cannot be React's to decide: the choice lives in
+   `localStorage`, the server has never seen it, and a component that waited
+   for hydration to find out would paint the English page to a reader who
+   asked for Kannada and then swap it under them. An attribute set during
+   parsing and a stylesheet that reads it is the only way to have the right
+   thing on screen at the first paint.
+
+   With no attribute at all — scripting off, storage throwing, a crawler —
+   nothing below matches, and the site is the English page it was written as.
+------------------------------------------------------------------- */
+
+/* The chooser ------------------------------------------------------ */
+
+.lang-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  /* Not `display: none`, because it has to be able to fade out: a gate that
+     vanished would take the whole screen with it in one frame, and this is
+     the reader's first impression of the site. Held off-screen and
+     unclickable instead, and only the state below brings it in. */
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 2rem 1.75rem calc(2rem + env(safe-area-inset-bottom));
+  /* The site's navy, lifted from behind the lockup so the field reads as lit
+     rather than as a flat fill — the same move the dark sections make. */
+  background:
+    radial-gradient(118% 78% at 50% 16%, rgba(63, 108, 180, 0.24), transparent 62%),
+    var(--color-navy-950);
+  transition:
+    opacity 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 620ms;
+}
+
+html[data-lang-state="gate"] .lang-gate {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+/* On the way out, and only on the way out: the page underneath is already
+   in the chosen language by the time this runs, so what lifts is a cover
+   over a finished page rather than a curtain on a change. */
+.lang-gate[data-leaving] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lang-gate__inner {
+  display: flex;
+  width: 100%;
+  max-width: 24rem;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  /* Lifts the group out of dead centre so the lockup sits high on the
+     screen, which is where a mark belongs when it is the first thing on it.
+     A margin rather than `justify-content: flex-start` with a top offset, so
+     that on a short screen — a handset on its side — the group re-centres
+     itself instead of running off the bottom. */
+  margin-bottom: 15vh;
+}
+
+.lang-gate__logo {
+  height: clamp(4.5rem, 16vh, 7.5rem);
+  max-width: 100%;
+  width: auto;
+}
+
+/* The small line under it. Brass, and faded at both ends so it reads as a
+   rule drawn under the mark rather than as a border on something. */
+.lang-gate__rule {
+  margin-top: 1.625rem;
+  height: 1px;
+  width: 3.5rem;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-brass-500),
+    transparent
+  );
+}
+
+.lang-gate__lede {
+  margin-top: 1.5rem;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.lang-gate__choices {
+  margin-top: 2.25rem;
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.875rem;
+}
+
+/* Two white pills, side by side, identical in every respect. The site's
+   brass would have been the obvious accent for one of them, and that is
+   exactly why neither gets it: this is a question, not a recommendation, and
+   the moment one of the two is dressed as the primary action the other reads
+   as the fallback. */
+.lang-gate__choice {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #ffffff;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-navy-900);
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.7);
+  transition:
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 300ms linear;
+}
+
+/* Set in the face the translated site is set in, so the word the reader is
+   looking for is drawn the way it will be drawn everywhere after they tap
+   it. Kannada first in the stack here because the label is nothing else. */
+.lang-gate__choice--kn {
+  font-family: var(--font-kannada), var(--font-sans);
+  /* A shade larger than its neighbour, to land at the same optical weight.
+     Kannada's x-height sits low against Manrope's at a common size, so the
+     two labels set at one size do not read as one pair. */
+  font-size: 1.1875rem;
+  /* Kannada's vowel signs sit above the line and its conjuncts below it, so
+     the label needs more room than a Latin one of the same size. */
+  line-height: 1.6;
+}
+
+.lang-gate__choice:active {
+  transform: scale(0.975);
+  background: var(--color-navy-50);
+}
+
+.lang-gate__choice:disabled {
+  opacity: 0.55;
+}
+
+/* The splash ------------------------------------------------------- */
+
+/* Shown to a returning Kannada reader for the beat between the English HTML
+   painting and the dictionary landing on it. It is the same navy the chooser
+   stands on, so a visit that starts here and a visit that starts at the
+   chooser open on the same screen. */
+.lang-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 210;
+  display: none;
+  place-items: center;
+  background: var(--color-navy-950);
+}
+
+html[data-lang-state="veil"] .lang-veil {
+  display: grid;
+}
+
+.lang-veil__logo {
+  height: clamp(3.5rem, 12vh, 5.5rem);
+  max-width: min(100%, 18rem);
+  width: auto;
+  animation: lang-veil-breathe 1800ms ease-in-out infinite;
+}
+
+@keyframes lang-veil-breathe { 0%, 100% { opacity: 0.55 } 50% { opacity: 1 } }
+
+@media (prefers-reduced-motion: reduce) {
+  .lang-veil__logo { animation: none; opacity: 1 }
+  .lang-gate { transition-duration: 0.01ms }
+}
+
+/* Nothing scrolls under either of them. Set here rather than on `body.style`
+   so it lifts with the attribute and never has to be unwound — the header
+   writes an inline `overflow` of its own for the menu, and two owners of one
+   property is how a page ends up permanently locked. */
+html[data-lang-state="gate"] body,
+html[data-lang-state="veil"] body {
+  overflow: hidden;
+}
+
+/* The toggle in the menu ------------------------------------------- */
+
+/* Sized by what the row has left after the lockup and the close button, at
+   360px — the narrowest width this has to hold at. See the note in
+   `language-switch.tsx` for why there is no mark in front of the label. */
+.lang-switch {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.8);
+  transition:
+    border-color 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.lang-switch:hover {
+  border-color: rgba(201, 169, 110, 0.7);
+  background: rgba(255, 255, 255, 0.09);
+  color: #ffffff;
+}
+
+.lang-switch:active {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* The pill draws at 29px tall, which is the right weight beside a 56px
+   lockup and well under the 44px a thumb wants. So the target is grown
+   without the pill being grown: eight pixels of reach above and below, and
+   none at the sides — the close button is seven pixels to its right at the
+   narrowest width this has to work at, and a horizontal inset here would
+   put the two hit areas on top of each other. */
+.lang-switch::after {
+  content: "";
+  position: absolute;
+  inset: -0.5rem 0;
+  border-radius: inherit;
+}
+
+/* Both labels ship; the attribute picks one. See the note in
+   `language-switch.tsx` for why this is CSS and not a ternary. */
+.lang-switch__label--en {
+  display: none;
+}
+
+html[data-lang="kn"] .lang-switch__label--kn {
+  display: none;
+}
+
+html[data-lang="kn"] .lang-switch__label--en {
+  display: inline;
+}
+
+/* `desk:`, spelled out — the laptop menu is exactly what it was. */
+@media (min-width: 48rem) and (min-height: 500px) {
+  .lang-switch {
+    display: none;
+  }
+}
+
+/* Reading in Kannada ----------------------------------------------- */
+
+/* Manrope has no Kannada glyphs, so the face is appended to each stack
+   rather than substituted into it: Latin — the company's name, the figures,
+   BHK, every client's name — stays in Manrope, and the browser falls through
+   to Noto for the syllables it cannot draw. One override, and every
+   `font-sans`, `font-display` and `font-serif` on the site follows. */
+html[data-lang="kn"] {
+  --font-sans: var(--font-manrope), var(--font-kannada), ui-sans-serif,
+    system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: var(--font-cinzel), var(--font-kannada), Georgia,
+    "Times New Roman", serif;
+  --font-system: system-ui, -apple-system, "Segoe UI", Roboto,
+    var(--font-kannada), sans-serif;
+}
+
+/* `data-kn` is put on the parent of every text node the translator has
+   actually written Kannada into, and taken off again on the way back to
+   English — so these rules reach translated words and nothing else. A
+   blanket `html[data-lang="kn"] *` would also catch the Latin that stays
+   Latin: the project names, the figures, the client list.
+
+   Letter-spacing is the one that matters. A great deal of the type on this
+   site is tracked out — eyebrows at 0.2em, buttons at `tracking-wide` — and
+   Kannada is a syllabic script whose consonant clusters are drawn as single
+   joined shapes. Tracking prises those shapes apart, so a tracked-out
+   Kannada line does not read as spaced, it reads as broken. */
+[data-kn] {
+  letter-spacing: normal;
+  word-spacing: normal;
+}

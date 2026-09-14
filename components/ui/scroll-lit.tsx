@@ -1,7 +1,13 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import {
+  useEffect,
+  useRef,
+  useSyncExternalStore,
+  type CSSProperties,
+} from "react";
 import { onScroll, prefersReducedMotion } from "@/lib/scroll";
+import { onLanguageChange, translateString } from "@/lib/language";
 import { cn } from "@/lib/cn";
 
 type ScrollLitProps = {
@@ -57,7 +63,31 @@ export function ScrollLit({
   to = 0.55,
 }: ScrollLitProps) {
   const ref = useRef<HTMLParagraphElement | null>(null);
-  const words = children.split(/\s+/).filter(Boolean);
+
+  /**
+   * The sentence, in whichever language the site is being read in.
+   *
+   * This is the one paragraph on the site the phone's translator cannot
+   * touch. It is rendered a word to a span so each can light in turn, and
+   * there is no such thing as translating a sentence a word at a time —
+   * Kannada neither keeps English's word order nor its word count. So the
+   * paragraph opts out of the walk (`data-no-translate` below) and asks for
+   * the whole sentence instead, then splits whatever comes back. The
+   * lighting is arithmetic over the span count, so it works out the same on
+   * a line of any length.
+   *
+   * Read through the store rather than held in state, so the server
+   * snapshot is the English it was given — which is what the server
+   * rendered — and nothing here can mismatch on hydration. See
+   * `lib/language.ts`.
+   */
+  const text = useSyncExternalStore(
+    onLanguageChange,
+    () => translateString(children),
+    () => children,
+  );
+
+  const words = text.split(/\s+/).filter(Boolean);
 
   useEffect(() => {
     const el = ref.current;
@@ -89,6 +119,7 @@ export function ScrollLit({
   return (
     <p
       ref={ref}
+      data-no-translate
       className={cn("scroll-lit", className)}
       style={
         {

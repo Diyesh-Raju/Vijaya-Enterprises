@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, type CSSProperties } from "react";
 import { cn } from "@/lib/cn";
 import { Logo } from "@/components/layout/logo";
+import { LanguageSwitch } from "@/components/layout/language-switch";
 import { img, alt } from "@/lib/images";
 import { navLinks, site } from "@/lib/site";
 import {
@@ -227,10 +228,32 @@ export function SiteMenu({
                 to the same generated file and the second one costs nothing
                 to fetch — a narrower override would have been a second
                 download of the same artwork. */}
-            <Logo
-              reversed
-              className="h-14 shrink-0 sm:h-16 lg:h-[4.5rem]"
-            />
+            {/* The lockup and the toggle travel together, in a box of their
+                own, so the row still has the two children `justify-between`
+                and the close button's `ml-auto` were written against. Three
+                loose children would have spaced themselves out evenly and
+                left the toggle stranded in the middle of the row instead of
+                beside the mark. */}
+            <div className="flex min-w-0 items-center gap-2.5">
+              <Logo
+                reversed
+                className="h-14 shrink-0 sm:h-16 lg:h-[4.5rem]"
+              />
+
+              {/* Beside the lockup: the language toggle, on a phone only.
+
+                  Here rather than on the header bar because the bar has no
+                  room for it — at 390px the lockup and the word "Menu" with
+                  its ring already take all of it — and because this is the
+                  one screen on the site that is *about* getting somewhere
+                  rather than reading something, which is when a reader who
+                  has landed in the wrong language goes looking for the way
+                  out of it.
+
+                  It is held back at `desk:` in `globals.css`, along with
+                  the rest of the feature. See `language-switch.tsx`. */}
+              <LanguageSwitch />
+            </div>
 
             <button
               type="button"
