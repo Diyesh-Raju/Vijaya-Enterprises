@@ -220,7 +220,7 @@ export default function JointVenturesPage() {
         <Container>
           <SectionHeading
             eyebrow="Our Projects"
-            title="What the partnership builds."
+            title="Completed projects"
             lead="Residential buildings Vijaya has designed and built in and around Bengaluru. Step through them with the arrows."
           />
         </Container>
