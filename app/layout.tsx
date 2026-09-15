@@ -174,9 +174,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             the first pixel.
 
             It has to run here, blocking, rather than in a component: the
-            stored choice lives in `localStorage`, the server cannot see it,
-            and anything that waited for React would paint the English page
-            to a reader who asked for Kannada and then swap it under them.
+            stored choice lives in `sessionStorage`, the server cannot see
+            it, and anything that waited for React would paint the English
+            page to a reader who asked for Kannada and then swap it under
+            them.
+
+            `sessionStorage`, so the chooser comes back with every new tab —
+            the long version is on `STORAGE_KEY` in `lib/language.ts`, and
+            the key and the storage are spelled out by hand here because
+            this runs before any import does. Change one, change both.
             What this writes is one attribute; `globals.css` does the rest,
             and `LanguageGate` picks the state up when it mounts.
 
@@ -188,7 +194,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           dangerouslySetInnerHTML={{
             __html:
               '(function(){var r=document.documentElement;try{' +
-              'var v=localStorage.getItem("ve-language");' +
+              'var v=sessionStorage.getItem("ve-language");' +
               'if(v==="kn"){r.setAttribute("data-lang","kn");' +
               'r.setAttribute("data-lang-state","veil");' +
               // The dead man's handle. A dictionary that never arrives must

@@ -17,9 +17,11 @@ export const metadata: Metadata = {
  *
  * Like the privacy policy, every claim here is checked against the code
  * rather than a template: there is no analytics script, no ad pixel, no
- * third-party embed anywhere on the site, and the one thing the notice on
- * the contact page stores (`components/ui/cookie-notice.tsx`) is a
- * `localStorage` entry, not a cookie. If any of that changes, this page
+ * third-party embed anywhere on the site, and neither of the two things the
+ * browser is asked to keep is a cookie: the contact page's dismissed notice
+ * (`components/ui/cookie-notice.tsx`) is a `localStorage` entry, and the
+ * language choice (`STORAGE_KEY` in `lib/language.ts`) is a `sessionStorage`
+ * one the browser empties with the tab. If any of that changes, this page
  * changes in the same commit — the "If this ever changes" section below is
  * a promise to that effect.
  *
@@ -71,7 +73,7 @@ const sections: readonly PolicySection[] = [
   },
   {
     id: "what-your-browser-remembers",
-    title: "The one thing your browser remembers",
+    title: "What your browser remembers",
     body: (
       <>
         <p>
@@ -89,6 +91,14 @@ const sections: readonly PolicySection[] = [
         <p className="mt-4">
           Clearing your browsing data clears it, and the note will simply
           introduce itself again.
+        </p>
+        <p className="mt-4">
+          The other is the language you choose to read the site in. That one
+          is kept only for as long as the tab is open — in session storage,
+          which your browser empties the moment the tab is closed. Open the
+          site again, in that tab or a new one, and it will ask which
+          language you would like. Neither note is a cookie, neither is sent
+          anywhere, and neither tells us anything about you.
         </p>
       </>
     ),

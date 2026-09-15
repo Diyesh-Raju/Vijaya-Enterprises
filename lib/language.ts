@@ -4,8 +4,10 @@
  * The language the site is read in, and the machinery that swaps it.
  *
  * Every visitor is met by a chooser before the site itself
- * (`LanguageGate`), and whichever of the two they pick is remembered for
- * every later visit.
+ * (`LanguageGate`), and whichever of the two they pick holds for as long as
+ * that tab is open.
+ *
+ * Asked once per tab, not once per visitor — see `STORAGE_KEY`.
  *
  * It was a phone-only feature when it was built, on 2026-09-14, and stopped
  * being one the next day. Nothing here asks how wide the window is any more:
@@ -40,7 +42,35 @@
 /** The two the site is offered in. */
 export type Language = "en" | "kn";
 
-/** Where the choice is kept between visits. */
+/**
+ * Where the choice is kept, and for how long.
+ *
+ * `sessionStorage`, deliberately, which is the whole of the policy: it is
+ * scoped to the one tab and the browser empties it when that tab is closed.
+ * So every new tab is met by the chooser, and so is the same tab reopened
+ * after being closed — asked for by name (2026-09-15).
+ *
+ * It is not `localStorage`, which is what this was until that date. That
+ * survives the tab, the window and the browser restart, so a visitor was
+ * asked exactly once and never again — and there was no way back to the
+ * chooser except the toggle in the menu or clearing site data.
+ *
+ * What `sessionStorage` still holds on to is the rest of the tab: a reload,
+ * a back button, and every click through to another page keep the answer.
+ * That part matters as much as the forgetting. Per page load — no storage
+ * at all — would put the chooser in front of someone who has already
+ * answered it, on every link they follow.
+ *
+ * Two places will not re-ask, and both are the browser's own doing rather
+ * than something this can reach: duplicating a tab copies its
+ * `sessionStorage`, and so does restoring a session after a crash or a
+ * "reopen closed tab". Both are the same tab continuing, which is arguably
+ * the right answer anyway.
+ *
+ * ⚠️ Keep the inline script in `app/layout.tsx` in step with this. It reads
+ * the same key, by hand, before React exists — the key and the storage it
+ * reads are written out twice and there is no import between them.
+ */
 const STORAGE_KEY = "ve-language";
 
 /**
@@ -48,7 +78,7 @@ const STORAGE_KEY = "ve-language";
  *
  * It is an attribute rather than React state because the first two states
  * have to be settled *before* React runs — the inline script in `app/layout`
- * sets it from `localStorage` while the document is still parsing, and CSS
+ * sets it from `sessionStorage` while the document is still parsing, and CSS
  * takes it from there. React cannot help with that: the server has no idea
  * which language this reader chose, so anything keyed off it in a render
  * would have to hydrate one way and then flip.
@@ -79,10 +109,14 @@ export function onLanguageChange(listener: (language: Language) => void) {
   };
 }
 
-/** What was chosen last time, if anything. `null` means "never asked". */
+/**
+ * What was chosen in this tab, if anything. `null` means "not asked yet in
+ * this tab", which is a fresh tab, a reopened one, or storage being
+ * unavailable — all three get the chooser.
+ */
 export function storedLanguage(): Language | null {
   try {
-    const value = localStorage.getItem(STORAGE_KEY);
+    const value = sessionStorage.getItem(STORAGE_KEY);
     return value === "kn" || value === "en" ? value : null;
   } catch {
     // Private mode, or storage disabled. The reader gets asked again.
@@ -91,7 +125,7 @@ export function storedLanguage(): Language | null {
 }
 
 /**
- * Switch the site into a language and remember it.
+ * Switch the site into a language and remember it for the rest of the tab.
  *
  * Resolves once the page is actually in that language, so a caller can wait
  * before lifting a veil over it.
@@ -99,10 +133,10 @@ export function storedLanguage(): Language | null {
 export async function setLanguage(language: Language, { remember = true } = {}) {
   if (remember) {
     try {
-      localStorage.setItem(STORAGE_KEY, language);
+      sessionStorage.setItem(STORAGE_KEY, language);
     } catch {
-      // Nothing to do — the choice holds for this visit and is asked for
-      // again on the next one.
+      // Private mode, or storage disabled. Nothing to do: the choice holds
+      // for this page and the chooser comes back on the next one.
     }
   }
 
