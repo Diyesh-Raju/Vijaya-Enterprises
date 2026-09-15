@@ -21,7 +21,7 @@ export async function generateMetadata({
 
   return {
     title: project.name,
-    description: `${project.name} — ${project.projectType}, ${project.layout}, ${project.totalUnits} across ${project.devSize} in ${project.locality}.`,
+    description: `${project.name} — ${project.projectType}, ${project.layout}, ${project.totalUnits} in ${project.locality}.`,
     alternates: { canonical: `/residential/${project.slug}` },
   };
 }
@@ -46,8 +46,8 @@ export default async function ProjectAboutPage({
                     filling a frame, so the wrapper has to as well. */}
                 <ImageReveal fill={false}>
                   <Image
-                    src={img.haraVijayaConcept}
-                    alt={alt.haraVijayaConcept}
+                    src={project.conceptImage ?? img.haraVijayaConcept}
+                    alt={project.conceptAlt ?? alt.haraVijayaConcept}
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     className="h-auto w-full"
                   />
@@ -78,6 +78,15 @@ export default async function ProjectAboutPage({
                   </div>
                 ))}
               </dl>
+              {/* Where the project is promoted under another name — the
+                  brochure says so on its cover and its back page, and so
+                  does this. */}
+              {project.promoter && (
+                <p className="mt-6 text-center text-[0.8125rem] leading-relaxed text-slate-muted lg:pl-6">
+                  Promoted and developed by {project.promoter}, a sister
+                  concern of Vijaya Enterprises.
+                </p>
+              )}
             </Reveal>
           </div>
         </Container>

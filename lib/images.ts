@@ -109,6 +109,18 @@ import haraVijayaConcept from "@/assets/images/hara-vijaya-concept.jpg";
 import haraVijayaHeights from "@/assets/images/hara-vijaya-heights.jpg";
 import haraVijayaHeightsHero from "@/assets/images/hara-vijaya-heights-hero.jpg";
 import haraVijayaVision from "@/assets/images/hara-vijaya-vision.jpg";
+/* Vijaya Luxo, Rajarajeshwari Nagar. The dusk render was supplied by the
+   client on its own, at 1600px, for the Residential page's hero — it is the
+   opening frame there and the project's card and page hero besides. The
+   night view is cut from the brochure's closing page (see `lib/brochures.ts`
+   for how the leaves were rendered), with the approval seals that sit in
+   the sky on that page cropped away. */
+import vijayaLuxoDusk from "@/assets/images/vijaya-luxo-dusk.jpg";
+import vijayaLuxoNight from "@/assets/images/vijaya-luxo-night.jpg";
+/* Vijaya Aquagreen, Somshettyhalli. The architect's render off the
+   brochure's "perfect balance" spread; the finished building itself is
+   `vijayAquaGreen`, further down. */
+import vijayaAquagreenRender from "@/assets/images/vijaya-aquagreen-render.jpg";
 /* The two management portraits on /our-legacy — the founder and the
    managing director. Vijaya's own, like `tudorApartments`; see
    `Management`. */
@@ -335,6 +347,9 @@ export const img = {
   haraVijayaHeights,
   haraVijayaHeightsHero,
   haraVijayaVision,
+  vijayaLuxoDusk,
+  vijayaLuxoNight,
+  vijayaAquagreenRender,
   hbShivakumar,
   handoverFamilyEngineer,
   mahanteshNelavagi,
@@ -458,6 +473,12 @@ export const alt = {
     "Hara Vijaya Heights seen from the landscaped frontage, its towers stepping back behind mature trees",
   haraVijayaHeightsHero:
     "Architectural view of Hara Vijaya Heights, with the tree-lined approach to the entrance lobby",
+  vijayaLuxoDusk:
+    "Vijaya Luxo at dusk: a four-storey white block with timber-clad and black stone panels, glass-railed balconies lit from within, the name on a timber fin at the corner and cars on the wet road in front",
+  vijayaLuxoNight:
+    "Vijaya Luxo at night, every window lit, the timber fin carrying the name and the planted compound wall below",
+  vijayaAquagreenRender:
+    "Architectural view of Vijaya Aquagreen: three low blocks in white and timber stepping back along the road behind a planted verge, the entrance gate in the foreground",
   hbShivakumar:
     "Sri H. B. Shivakumar, founder of Vijaya Enterprises, in a dark suit and striped tie",
   mahanteshNelavagi:

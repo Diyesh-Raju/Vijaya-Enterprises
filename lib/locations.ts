@@ -29,6 +29,18 @@ export type ProjectLocations = {
   office: MapLocation;
 };
 
+/** The one office, the same on every project's page. */
+const office: MapLocation = {
+  title: "Location of the Office",
+  address: "Vijaya Enterprises, Basavanagudi, Bengaluru",
+  body: "The office is where every enquiry is answered and every drawing is talked through in person. Come by to see plans, discuss a layout, or arrange a visit to the site itself. We would rather show you the work than describe it.",
+  query: "Vijaya Enterprises",
+  // Taken from the company's own Maps listing, so the pin is this office
+  // and not one of the other businesses sharing the name.
+  center: "12.9446071,77.5679966",
+  link: "https://maps.app.goo.gl/16Vp8ebWMc7ECVRN7",
+};
+
 export const locationsBySlug: Record<string, ProjectLocations> = {
   "hara-vijaya-heights": {
     project: {
@@ -40,16 +52,29 @@ export const locationsBySlug: Record<string, ProjectLocations> = {
       // Maps link if there is one and it will drop on the exact plot.
       query: "Hara Vijaya Heights, Kanakapura Road, Talaghattapura, Bengaluru",
     },
-    office: {
-      title: "Location of the Office",
-      address: "Vijaya Enterprises, Basavanagudi, Bengaluru",
-      body: "The office is where every enquiry is answered and every drawing is talked through in person. Come by to see plans, discuss a layout, or arrange a visit to the site itself. We would rather show you the work than describe it.",
-      query: "Vijaya Enterprises",
-      // Taken from the company's own Maps listing, so the pin is this office
-      // and not one of the other businesses sharing the name.
-      center: "12.9446071,77.5679966",
-      link: "https://maps.app.goo.gl/16Vp8ebWMc7ECVRN7",
+    office,
+  },
+  "vijaya-luxo": {
+    project: {
+      title: "Location of the Project",
+      address: "Rajarajeshwari Nagar, off Rajarajeshwarinagar Main Road",
+      body: "Vijaya Luxo stands in the heart of Rajarajeshwari Nagar, a street in from the main road — a kilometre from the Nimishamba and Rajarajeshwari temples and two from the Mysore Road junction, with the Rajarajeshwari Nagar Metro station on that road. Global Village tech park, BGS Hospital, the RNS and JSS colleges and Gopalan Mall are all within a short drive.",
+      // ⚠️ The pin is a name-and-address search. Send the project's own Google
+      // Maps link if there is one and it will drop on the exact plot.
+      query: "Vijaya Luxo, Rajarajeshwari Nagar, Bengaluru",
     },
+    office,
+  },
+  "vijaya-aquagreen": {
+    project: {
+      title: "Location of the Project",
+      address: "Somshettyhalli, near Chikkabanavara, North Bengaluru",
+      body: "Vijaya Aquagreen is at Somshettyhalli, a fast-growing and well-planned locale in North Bengaluru. Chikkabanavara railway station is two kilometres away; BEL Circle, the Bengaluru–Pune highway at Tumkur Road and the Dasarahalli Metro station are each six. Yeshwanthpur station is ten kilometres, the City station fifteen, and the airport thirty-five.",
+      // ⚠️ The pin is a name-and-address search. Send the project's own Google
+      // Maps link if there is one and it will drop on the exact plot.
+      query: "Vijaya Aquagreen, Somshettyhalli, Chikkabanavara, Bengaluru",
+    },
+    office,
   },
 };
 

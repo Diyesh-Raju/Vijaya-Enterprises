@@ -10,6 +10,27 @@ import penthouseType1 from "@/assets/floor-plans/penthouse-type-1.jpg";
 import penthouseType2 from "@/assets/floor-plans/penthouse-type-2.jpg";
 import penthouseType3 from "@/assets/floor-plans/penthouse-type-3.jpg";
 
+/* Vijaya Luxo: the six unit plans off the brochure's typical-plan pages,
+   cut from a 3600px render of each page. The red keyplan pointers that sit
+   beside three of the drawings on the page were painted out with the
+   page's own ground; nothing on the drawings themselves was touched. */
+import luxoUnit101 from "@/assets/floor-plans/vijaya-luxo/unit-101.jpg";
+import luxoUnit102 from "@/assets/floor-plans/vijaya-luxo/unit-102.jpg";
+import luxoUnit103 from "@/assets/floor-plans/vijaya-luxo/unit-103.jpg";
+import luxoUnit104 from "@/assets/floor-plans/vijaya-luxo/unit-104.jpg";
+import luxoUnit105 from "@/assets/floor-plans/vijaya-luxo/unit-105.jpg";
+import luxoUnit106 from "@/assets/floor-plans/vijaya-luxo/unit-106.jpg";
+
+/* Vijaya Aquagreen: the seven types, one drawing to a half-spread, cut the
+   same way. */
+import aquaType1 from "@/assets/floor-plans/vijaya-aquagreen/type-1.jpg";
+import aquaType2 from "@/assets/floor-plans/vijaya-aquagreen/type-2.jpg";
+import aquaType3 from "@/assets/floor-plans/vijaya-aquagreen/type-3.jpg";
+import aquaType4 from "@/assets/floor-plans/vijaya-aquagreen/type-4.jpg";
+import aquaType5 from "@/assets/floor-plans/vijaya-aquagreen/type-5.jpg";
+import aquaType6 from "@/assets/floor-plans/vijaya-aquagreen/type-6.jpg";
+import aquaType7 from "@/assets/floor-plans/vijaya-aquagreen/type-7.jpg";
+
 /**
  * Unit plans, grouped the way the Floor Plans page lists them.
  *
@@ -223,7 +244,240 @@ const haraVijayaHeights: readonly FloorPlanGroup[] = [
   },
 ];
 
+/**
+ * Vijaya Luxo. One block, six units to a floor, three floors of them: the
+ * brochure draws each unit once and names the floors it repeats on, which
+ * is what `label` carries. Facing and area are the title of each drawing;
+ * where a floor differs in area the area statement says so and so does
+ * `facing`.
+ */
+const vijayaLuxo: readonly FloorPlanGroup[] = [
+  {
+    title: "1 BHK",
+    residence: "1 Bedroom Residence",
+    types: [
+      {
+        label: "Unit 105",
+        facing: "West facing · Units 105, 205 and 305",
+        area: "510 sq ft",
+        features: [
+          { icon: "bed", label: "1 Bedroom" },
+          { icon: "bath", label: "1 Toilet" },
+          { icon: "living", label: "Living & Kitchen" },
+          { icon: "balcony", label: "Balcony" },
+        ],
+        image: luxoUnit105,
+        alt: "1 BHK west facing unit plan of 510 square feet: a bedroom with a balcony off it, one toilet, and a living room with the kitchen along one wall",
+      },
+    ],
+  },
+  {
+    title: "2 BHK",
+    residence: "2 Bedroom Residence",
+    types: [
+      {
+        label: "Unit 101",
+        facing: "East facing · Units 101, 201 and 301",
+        area: "1,150 sq ft",
+        features: [
+          { icon: "bed", label: "2 Bedroom" },
+          { icon: "bath", label: "2 Toilets" },
+          { icon: "living", label: "Living & Dining" },
+          { icon: "kitchen", label: "Kitchen & Utility" },
+          { icon: "balcony", label: "Two Balconies" },
+        ],
+        image: luxoUnit101,
+        alt: "2 BHK east facing unit plan of 1,150 square feet: master bedroom with its own toilet and balcony, a second bedroom, a second toilet, living, dining, kitchen, utility and a balcony off the living room",
+      },
+      {
+        label: "Unit 102",
+        facing: "East facing · Units 102, 202 and 302",
+        area: "1,125 sq ft",
+        features: [
+          { icon: "bed", label: "2 Bedroom" },
+          { icon: "bath", label: "2 Toilets" },
+          { icon: "living", label: "Living & Dining" },
+          { icon: "kitchen", label: "Kitchen & Utility" },
+          { icon: "balcony", label: "Balcony" },
+        ],
+        image: luxoUnit102,
+        alt: "2 BHK east facing unit plan of 1,125 square feet: master bedroom with a balcony, a second bedroom, two toilets, living, dining, kitchen and utility",
+      },
+      {
+        label: "Unit 103",
+        // The second floor's copy of this unit is drawn fifteen square feet
+        // smaller on the area statement — 1,250 — and the row says so.
+        facing: "East facing · Units 103 and 303 (Unit 203: 1,250 sq ft)",
+        area: "1,265 sq ft",
+        features: [
+          { icon: "bed", label: "2 Bedroom" },
+          { icon: "bath", label: "2 Toilets" },
+          { icon: "living", label: "Living & Dining" },
+          { icon: "kitchen", label: "Kitchen & Utility" },
+          { icon: "balcony", label: "Two Balconies" },
+        ],
+        image: luxoUnit103,
+        alt: "2 BHK east facing unit plan of 1,265 square feet: master bedroom with a balcony and its own toilet, a second bedroom with a balcony, a second toilet, living, dining, kitchen and utility",
+      },
+    ],
+  },
+  {
+    title: "3 BHK",
+    residence: "3 Bedroom Residence",
+    types: [
+      {
+        label: "Unit 104",
+        facing: "North facing · Units 104, 204 and 304",
+        area: "1,500 sq ft",
+        features: [
+          { icon: "bed", label: "3 Bedroom" },
+          { icon: "bath", label: "3 Toilets" },
+          { icon: "living", label: "Living & Dining" },
+          { icon: "kitchen", label: "Kitchen & Utility" },
+          { icon: "balcony", label: "Three Balconies" },
+        ],
+        image: luxoUnit104,
+        alt: "3 BHK north facing unit plan of 1,500 square feet: master bedroom with its own toilet, two further bedrooms each opening to a balcony, two more toilets, living, dining with a balcony, kitchen and utility",
+      },
+      {
+        label: "Unit 106",
+        facing: "North facing · Units 106 and 306 (Unit 206: 1,550 sq ft)",
+        area: "1,525 sq ft",
+        features: [
+          { icon: "bed", label: "3 Bedroom" },
+          { icon: "bath", label: "3 Toilets" },
+          { icon: "living", label: "Living & Dining" },
+          { icon: "kitchen", label: "Kitchen & Utility" },
+          { icon: "balcony", label: "Three Balconies" },
+        ],
+        image: luxoUnit106,
+        alt: "3 BHK north facing unit plan of 1,525 square feet: master bedroom with a balcony and its own toilet, two further bedrooms, two more toilets, living, dining with a balcony, kitchen and utility",
+      },
+    ],
+  },
+];
+
+/**
+ * Vijaya Aquagreen. Seven types across the six blocks, drawn one to a page
+ * with a north point but no stated facing — so `facing` names the type the
+ * drawing is titled with instead, and nothing is read off the compass.
+ */
+const vijayaAquagreen: readonly FloorPlanGroup[] = [
+  {
+    title: "1 BHK",
+    residence: "1 Bedroom Residence",
+    types: [
+      {
+        label: "Type 3",
+        facing: "1 BHK · Type 3",
+        area: "615 sq ft",
+        features: [
+          { icon: "bed", label: "1 Bedroom" },
+          { icon: "bath", label: "1 Toilet" },
+          { icon: "living", label: "Living & Dining" },
+          { icon: "kitchen", label: "Kitchen" },
+          { icon: "balcony", label: "Balcony" },
+        ],
+        image: aquaType3,
+        alt: "1 BHK type 3 unit plan of 615 square feet: a bedroom, a common toilet, living and dining with a balcony, kitchen, and an open-to-sky shaft",
+      },
+      {
+        label: "Type 4",
+        facing: "1 BHK · Type 4",
+        area: "650 sq ft",
+        features: [
+          { icon: "bed", label: "1 Bedroom" },
+          { icon: "bath", label: "1 Toilet" },
+          { icon: "living", label: "Living & Dining" },
+          { icon: "kitchen", label: "Kitchen & Utility" },
+          { icon: "balcony", label: "Balcony" },
+        ],
+        image: aquaType4,
+        alt: "1 BHK type 4 unit plan of 650 square feet: master bedroom, a common toilet, living and dining with a balcony, kitchen, utility and an open-to-sky shaft",
+      },
+      {
+        label: "Type 5",
+        facing: "1 BHK · Type 5",
+        area: "680 sq ft",
+        features: [
+          { icon: "bed", label: "1 Bedroom" },
+          { icon: "bath", label: "1 Toilet" },
+          { icon: "living", label: "Living & Dining" },
+          { icon: "kitchen", label: "Kitchen" },
+          { icon: "balcony", label: "Balcony" },
+        ],
+        image: aquaType5,
+        alt: "1 BHK type 5 unit plan of 680 square feet: a bedroom, a common toilet, a separate living room and dining room, kitchen and a balcony off the dining",
+      },
+      {
+        label: "Type 6",
+        facing: "1 BHK · Type 6",
+        area: "650 sq ft",
+        features: [
+          { icon: "bed", label: "1 Bedroom" },
+          { icon: "bath", label: "1 Toilet" },
+          { icon: "living", label: "Living & Dining" },
+          { icon: "kitchen", label: "Kitchen" },
+          { icon: "balcony", label: "Balcony" },
+        ],
+        image: aquaType6,
+        alt: "1 BHK type 6 unit plan of 650 square feet: a bedroom, a common toilet, a separate living room and dining room, kitchen and a balcony off the dining",
+      },
+      {
+        label: "Type 7",
+        facing: "1 BHK · Type 7",
+        area: "650 sq ft",
+        features: [
+          { icon: "bed", label: "1 Bedroom" },
+          { icon: "bath", label: "1 Toilet" },
+          { icon: "living", label: "Living & Dining" },
+          { icon: "kitchen", label: "Kitchen & Utility" },
+          { icon: "balcony", label: "Balcony" },
+        ],
+        image: aquaType7,
+        alt: "1 BHK type 7 unit plan of 650 square feet: master bedroom, a common toilet, living and dining with a balcony, kitchen, utility and an open-to-sky shaft",
+      },
+    ],
+  },
+  {
+    title: "2 BHK",
+    residence: "2 Bedroom Residence",
+    types: [
+      {
+        label: "Type 1",
+        facing: "2 BHK · Type 1",
+        area: "880 sq ft",
+        features: [
+          { icon: "bed", label: "2 Bedroom" },
+          { icon: "bath", label: "2 Toilets" },
+          { icon: "living", label: "Living & Dining" },
+          { icon: "kitchen", label: "Kitchen & Utility" },
+          { icon: "balcony", label: "Balcony" },
+        ],
+        image: aquaType1,
+        alt: "2 BHK type 1 unit plan of 880 square feet: master bedroom with an attached toilet, a second bedroom, a common toilet, living and dining with a balcony, kitchen, utility and an open-to-sky shaft",
+      },
+      {
+        label: "Type 2",
+        facing: "2 BHK · Type 2",
+        area: "880 sq ft",
+        features: [
+          { icon: "bed", label: "2 Bedroom" },
+          { icon: "bath", label: "2 Toilets" },
+          { icon: "living", label: "Living & Dining" },
+          { icon: "kitchen", label: "Kitchen & Utility" },
+          { icon: "balcony", label: "Balcony" },
+        ],
+        image: aquaType2,
+        alt: "2 BHK type 2 unit plan of 880 square feet: master bedroom with an attached toilet, a second bedroom, a common toilet, living and dining with a balcony, kitchen and utility",
+      },
+    ],
+  },
+];
+
 /** Keyed by project slug, so a project page can look up its own plans. */
 export const floorPlansBySlug: Record<string, readonly FloorPlanGroup[]> = {
   "hara-vijaya-heights": haraVijayaHeights,
+  "vijaya-luxo": vijayaLuxo,
+  "vijaya-aquagreen": vijayaAquagreen,
 };

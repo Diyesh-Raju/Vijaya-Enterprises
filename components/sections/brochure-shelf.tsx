@@ -10,8 +10,9 @@ import { readAhead, readingOrder, sparing, type Reader } from "@/lib/read-ahead"
 import { observeReveal } from "@/lib/scroll";
 
 /**
- * The two printed brochures, standing where the vision and mission cards
- * used to, on the navy band of the legacy page.
+ * The printed brochures, standing where the vision and mission cards used
+ * to, on the navy band of the legacy page. Three of them now: one to a
+ * column on a laptop, and one under the other on a phone.
  *
  * They are deliberately small. The reference this was drawn from gives one
  * book half a screen and a paragraph beside it; here two of them share the
@@ -92,7 +93,7 @@ export function BrochureShelf() {
   return (
     <div
       ref={shelf}
-      className="mx-auto mt-10 grid max-w-5xl gap-12 sm:mt-12 sm:grid-cols-2 sm:gap-10"
+      className="mx-auto mt-10 grid max-w-6xl gap-12 sm:mt-12 sm:grid-cols-2 sm:gap-10 lg:grid-cols-3"
     >
       {brochures.map((brochure, index) => (
         <Reveal key={brochure.slug} delay={index * 110} className="flex justify-center">
