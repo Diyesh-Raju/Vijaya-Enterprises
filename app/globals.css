@@ -8096,10 +8096,12 @@
 /* ------------------------------------------------------------------
    Language — the chooser, the splash, and the toggle in the menu
 
-   A phone-only feature, top to bottom: a handset is asked which of the two
-   languages it wants before it is shown the site, and a laptop is never
-   asked and never leaves English. The machinery is in `lib/language.ts`;
-   what is here is the three things it puts on screen.
+   Every visitor is asked which of the two languages they want before they
+   are shown the site. It was phone-only when it was built on 2026-09-14 and
+   stopped being so the next day; what is left of that split is the one
+   `desk:` block below, which grows the chooser where there is room for it
+   and decides nothing about whether it runs. The machinery is in
+   `lib/language.ts`; what is here is the three things it puts on screen.
 
    Everything keys off two attributes on `<html>`, both written by the inline
    script in `app/layout.tsx` before the first paint and updated afterwards
@@ -8126,14 +8128,19 @@
   position: fixed;
   inset: 0;
   z-index: 200;
-  /* Not `display: none`, because it has to be able to fade out: a gate that
-     vanished would take the whole screen with it in one frame, and this is
-     the reader's first impression of the site. Held off-screen and
-     unclickable instead, and only the state below brings it in. */
+  /* `display: none` until it is wanted, and that is about a font rather than
+     about tidiness. The chooser's own ಕನ್ನಡ button is in the HTML of every
+     page — the server cannot know who has already answered — and a browser
+     fetches the face for a glyph inside a `visibility: hidden` subtree just
+     as it would for a visible one, because the element is still laid out. So
+     every English reader was downloading the Kannada font to render a button
+     they were never shown. Nothing is fetched for a `display: none` subtree,
+     and the two rules below put it back for the only two moments it is on
+     screen: while it is being answered, and while it is lifting away. */
+  display: none;
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
-  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -8149,6 +8156,11 @@
     visibility 0s linear 620ms;
 }
 
+html[data-lang-state="gate"] .lang-gate,
+.lang-gate[data-leaving] {
+  display: flex;
+}
+
 html[data-lang-state="gate"] .lang-gate {
   visibility: visible;
   opacity: 1;
@@ -8158,8 +8170,11 @@ html[data-lang-state="gate"] .lang-gate {
 
 /* On the way out, and only on the way out: the page underneath is already
    in the chosen language by the time this runs, so what lifts is a cover
-   over a finished page rather than a curtain on a change. */
+   over a finished page rather than a curtain on a change. It keeps its
+   `display` through the fade — see above — and the component unmounts it
+   once the fade has run. */
 .lang-gate[data-leaving] {
+  visibility: visible;
   opacity: 0;
   pointer-events: none;
 }
@@ -8262,6 +8277,75 @@ html[data-lang-state="gate"] .lang-gate {
 
 .lang-gate__choice:disabled {
   opacity: 0.55;
+}
+
+/* At laptop sizes the same composition, drawn larger. Sized off the width
+   as well as the height — a 384px stack centred in a 1440px field reads as a
+   phone screenshot someone left on a desktop, and the mark is the first thing
+   this screen is for. `min()` against vh is what keeps it honest on a short
+   laptop window, where width alone would ask for a lockup taller than the
+   room above the buttons.
+
+   The query is `desk:` written out, the same one the rest of the site splits
+   on. It is the only place this feature asks about width at all, and it asks
+   about presentation rather than about whether to run — the chooser itself is
+   offered at every size. */
+@media (min-width: 48rem) and (min-height: 500px) {
+  .lang-gate__inner {
+    max-width: 32rem;
+    /* Less of a lift than a phone gets. A handset is tall enough that dead
+       centre leaves the mark low; a laptop window is not, and the group
+       reads as deliberately placed nearer the middle. */
+    margin-bottom: 7vh;
+  }
+
+  .lang-gate__logo {
+    height: clamp(6rem, min(11vw, 20vh), 11rem);
+  }
+
+  .lang-gate__rule {
+    margin-top: 2.25rem;
+    width: 5rem;
+  }
+
+  .lang-gate__lede {
+    margin-top: 1.75rem;
+    font-size: 1.1875rem;
+  }
+
+  .lang-gate__choices {
+    margin-top: 2.5rem;
+    gap: 1rem;
+  }
+
+  .lang-gate__choice {
+    min-height: 4rem;
+    font-size: 1.1875rem;
+  }
+
+  .lang-gate__choice--kn {
+    font-size: 1.3125rem;
+  }
+
+  .lang-veil__logo {
+    height: clamp(4.5rem, min(8vw, 15vh), 8rem);
+    max-width: min(100%, 26rem);
+  }
+}
+
+/* A pointer can rest on these, and until the chooser reached the desktop
+   nothing here answered one. Lift and a deeper shadow rather than a colour
+   change: the pair have to stay identical to each other, and the only thing
+   left that can move is the card itself. */
+@media (hover: hover) and (pointer: fine) {
+  .lang-gate__choice:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 46px -14px rgba(0, 0, 0, 0.8);
+  }
+
+  .lang-gate__choice:active:hover {
+    transform: scale(0.975);
+  }
 }
 
 /* The splash ------------------------------------------------------- */
@@ -8367,13 +8451,6 @@ html[data-lang="kn"] .lang-switch__label--kn {
 
 html[data-lang="kn"] .lang-switch__label--en {
   display: inline;
-}
-
-/* `desk:`, spelled out — the laptop menu is exactly what it was. */
-@media (min-width: 48rem) and (min-height: 500px) {
-  .lang-switch {
-    display: none;
-  }
 }
 
 /* Reading in Kannada ----------------------------------------------- */

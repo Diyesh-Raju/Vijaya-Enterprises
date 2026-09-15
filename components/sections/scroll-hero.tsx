@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { onScroll } from "@/lib/scroll";
+import { onLanguageChange, translateString } from "@/lib/language";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/cn";
 import { img, alt, video } from "@/lib/images";
@@ -187,6 +188,39 @@ export function ScrollHero() {
   const src = failed ? null : downloaded;
   /** The cue stops counting when there is a clip to scrub — or none coming. */
   const loaded = ready || failed;
+
+  /**
+   * The loading cue, in whichever language the site is being read in.
+   *
+   * It is composed here rather than swapped in the DOM because the counting
+   * line is built from a number: "Loading 42%" is one text node, and a
+   * dictionary keyed on rendered copy would need a hundred and one entries to
+   * cover it. So the *pattern* is the entry — `Loading {percent}%` — and the
+   * figure goes in afterwards, which also lets Kannada put the number where
+   * Kannada puts it rather than where English does. The paragraph carries
+   * `data-no-translate` so the walker leaves all three of these alone.
+   *
+   * Read through the store, like `ScrollLit`, so the server snapshot is the
+   * English the server rendered and hydration cannot mismatch.
+   */
+  const cue = useSyncExternalStore(
+    onLanguageChange,
+    () =>
+      loaded
+        ? translateString("Scroll to Discover")
+        : percent === null
+          ? translateString("Loading")
+          : translateString("Loading {percent}%").replace(
+              "{percent}",
+              String(percent),
+            ),
+    () =>
+      loaded
+        ? "Scroll to Discover"
+        : percent === null
+          ? "Loading"
+          : `Loading ${percent}%`,
+  );
 
   /** Show the clip, and give iOS the one play it needs to paint a frame. */
   const reveal = (el: HTMLVideoElement) => {
@@ -712,17 +746,14 @@ export function ScrollHero() {
           {mounted && (
             <>
               <p
+                data-no-translate
                 className="whitespace-nowrap pl-[0.45em] text-base font-light uppercase tabular-nums tracking-[0.45em] text-white sm:pl-[0.55em] sm:text-xl sm:tracking-[0.55em] md:text-2xl"
                 style={{
                   textShadow:
                     "0 2px 14px rgba(0,0,0,0.75), 0 0 28px rgba(183,110,121,0.28)",
                 }}
               >
-                {loaded
-                  ? "Scroll to Discover"
-                  : percent === null
-                    ? "Loading"
-                    : `Loading ${percent}%`}
+                {cue}
               </p>
               <span
                 className={cn(

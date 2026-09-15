@@ -240,7 +240,7 @@ export function SiteMenu({
                 className="h-14 shrink-0 sm:h-16 lg:h-[4.5rem]"
               />
 
-              {/* Beside the lockup: the language toggle, on a phone only.
+              {/* Beside the lockup: the language toggle, at every width.
 
                   Here rather than on the header bar because the bar has no
                   room for it — at 390px the lockup and the word "Menu" with
@@ -248,10 +248,10 @@ export function SiteMenu({
                   one screen on the site that is *about* getting somewhere
                   rather than reading something, which is when a reader who
                   has landed in the wrong language goes looking for the way
-                  out of it.
+                  out of it. A laptop has the room, but it gets the toggle in
+                  the same place: one home for it, not two.
 
-                  It is held back at `desk:` in `globals.css`, along with
-                  the rest of the feature. See `language-switch.tsx`. */}
+                  See `language-switch.tsx`. */}
               <LanguageSwitch />
             </div>
 

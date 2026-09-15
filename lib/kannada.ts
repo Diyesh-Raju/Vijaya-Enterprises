@@ -1,5 +1,5 @@
 /**
- * The Kannada the site is read in on a phone.
+ * The Kannada the site is read in, when a reader asks for it.
  *
  * Keyed on the English exactly as it renders, with runs of whitespace
  * collapsed to single spaces and the ends trimmed — that is the form
@@ -48,6 +48,50 @@
  */
 export const kannada: Readonly<Record<string, string>> = {
 
+  // ── What only a laptop renders ─────────────────────────────────────────
+  // The chooser was phone-only for a day, and this block is what the second
+  // day cost. These are the strings the wider layout brings with it and the
+  // narrow one never renders: the home page's scroll-scrubbed walkthrough in
+  // place of the phone's hero band, the residential page's aperture panel,
+  // and the brochure reader's two-page spread. Found by walking every route
+  // at 1440 and 1280 in Kannada and reading `__missingTranslations()` — the
+  // same way the rest of this file was, and the reason the phone pass alone
+  // did not find them.
+
+  // The walkthrough's loading cue. `Loading {percent}%` is a pattern, not a
+  // rendered string — the only one in this file. It is composed in
+  // `scroll-hero.tsx` because the line is built from a number, and keying it
+  // literally would mean a hundred and one entries. The placeholder is
+  // substituted after the lookup, so the figure can sit where Kannada puts
+  // it rather than where English does.
+  "Loading": "ಲೋಡ್ ಆಗುತ್ತಿದೆ",
+  "Loading {percent}%": "{percent}% ಲೋಡ್ ಆಗುತ್ತಿದೆ",
+  "Scroll to Discover": "ನೋಡಲು ಸ್ಕ್ರಾಲ್ ಮಾಡಿ",
+  "Scroll": "ಸ್ಕ್ರಾಲ್ ಮಾಡಿ",
+  "One trusted partner for construction and development": "ನಿರ್ಮಾಣ ಮತ್ತು ಅಭಿವೃದ್ಧಿಗೆ ಒಬ್ಬ ವಿಶ್ವಾಸಾರ್ಹ ಪಾಲುದಾರ",
+  "See less": "ಕಡಿಮೆ ತೋರಿಸಿ",
+
+  // The aperture panel on /residential. The heading is two lines, each with
+  // its own rise, so the pair is written to read top to bottom in Kannada's
+  // order — "from a conversation" above "let us begin" — rather than
+  // translated clause for clause.
+  "So let’s start": "ಒಂದು ಮಾತುಕತೆಯಿಂದ",
+  "with a conversation.": "ಆರಂಭಿಸೋಣ.",
+  "What you tell us": "ನೀವು ನಮಗೆ ಹೇಳುವುದು",
+  "What we tell you": "ನಾವು ನಿಮಗೆ ಹೇಳುವುದು",
+  "Where you want to live, how much room your family needs, and what you are working with.": "ನೀವು ಎಲ್ಲಿ ವಾಸಿಸಬಯಸುತ್ತೀರಿ, ನಿಮ್ಮ ಕುಟುಂಬಕ್ಕೆ ಎಷ್ಟು ಜಾಗ ಬೇಕು, ಮತ್ತು ನಿಮ್ಮ ಕೈಯಲ್ಲಿ ಏನಿದೆ.",
+  "Honestly, what is possible on that — and what it takes to build it well.": "ಅದರಲ್ಲಿ ಏನು ಸಾಧ್ಯ ಎಂಬುದನ್ನು ಪ್ರಾಮಾಣಿಕವಾಗಿ — ಮತ್ತು ಅದನ್ನು ಚೆನ್ನಾಗಿ ಕಟ್ಟಲು ಏನು ಬೇಕು ಎಂಬುದನ್ನೂ.",
+  "Tell us where you want to live, what you need and what you are working with. We will tell you honestly what is possible — and what it takes to build it well.": "ನೀವು ಎಲ್ಲಿ ವಾಸಿಸಬಯಸುತ್ತೀರಿ, ನಿಮಗೆ ಏನು ಬೇಕು ಮತ್ತು ನಿಮ್ಮ ಕೈಯಲ್ಲಿ ಏನಿದೆ ಎಂದು ತಿಳಿಸಿ. ಏನು ಸಾಧ್ಯ — ಮತ್ತು ಅದನ್ನು ಚೆನ್ನಾಗಿ ಕಟ್ಟಲು ಏನು ಬೇಕು — ಎಂಬುದನ್ನು ನಾವು ಪ್ರಾಮಾಣಿಕವಾಗಿ ಹೇಳುತ್ತೇವೆ.",
+
+  // The brochure reader, which is a two-page spread on a laptop and a single
+  // face on a phone.
+  "Cover": "ಮುಖಪುಟ",
+  "Click the cover, or use the arrows": "ಮುಖಪುಟವನ್ನು ಒತ್ತಿ, ಅಥವಾ ಬಾಣದ ಗುರುತುಗಳನ್ನು ಬಳಸಿ",
+
+  // Alt text carried by the wider layouts.
+  "A landscaped residential development of white apartment towers seen from the air": "ಮೇಲಿನಿಂದ ಕಾಣುವ, ಉದ್ಯಾನವಿರುವ ಬಿಳಿ ಅಪಾರ್ಟ್‌ಮೆಂಟ್ ಗೋಪುರಗಳ ವಸತಿ ಯೋಜನೆ",
+  "Contemporary family home with a landscaped lawn": "ಉದ್ಯಾನ ಹುಲ್ಲುಹಾಸಿನೊಂದಿಗೆ ಆಧುನಿಕ ಕುಟುಂಬದ ಮನೆ",
+
   // Shell — the header, the menu, the footer, the cookie note
   "Skip to content": "ವಿಷಯಕ್ಕೆ ಹೋಗಿ",
   "Menu": "ಮೆನು",
@@ -63,7 +107,7 @@ export const kannada: Readonly<Record<string, string>> = {
   "Site Booking": "ಸೈಟ್ ಬುಕಿಂಗ್",
   "Site visits": "ಸೈಟ್ ಭೇಟಿಗಳು",
   "FAQ": "ಪ್ರಶ್ನೋತ್ತರ",
-  "Book a day to visit": "ಭೇಟಿ ನೀಡಲು ಒಂದು ದಿನ ಕಾಯ್ದಿರಿಸಿ",
+  "Book a day to visit": "ಭೇಟಿಗೆ ದಿನ ಕಾಯ್ದಿರಿಸಿ",
   "Questions, answered": "ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರ",
   "Primary": "ಮುಖ್ಯ",
   "Pages": "ಪುಟಗಳು",

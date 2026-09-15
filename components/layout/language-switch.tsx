@@ -25,8 +25,10 @@ import { getLanguage, setLanguage, type Language } from "@/lib/language";
  * label already says exactly what it does in five words. Measured at 360,
  * 375 and 390 with both labels; the longer one is the English.
  *
- * Phone only, like the rest of this feature; `globals.css` holds it back at
- * `desk:` so a laptop's menu is exactly what it was.
+ * It is drawn at one size at every width. A laptop has room to spare here —
+ * the pill sits in a menu panel half a screen wide — but the control is the
+ * same control, and growing it on a desktop would only make the narrow case
+ * look like the compromise it no longer is.
  */
 export function LanguageSwitch() {
   const [busy, setBusy] = useState(false);

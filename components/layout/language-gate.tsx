@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Logo } from "@/components/layout/logo";
 import {
-  isPhone,
   prefetchDictionary,
   restoreLanguage,
   setLanguage,
@@ -12,8 +11,8 @@ import {
 } from "@/lib/language";
 
 /**
- * The chooser a phone meets before the site, and the splash it gets instead
- * on every visit after that.
+ * The chooser every visitor meets before the site, and the splash they get
+ * instead on every visit after that.
  *
  * Both are in the served HTML and both are shown or hidden by CSS, off the
  * `data-lang-state` attribute the inline script in `app/layout` sets while
@@ -43,10 +42,10 @@ export function LanguageGate() {
     restoreLanguage().then((stored) => {
       if (!alive) return;
 
-      // A laptop, or a phone that has chosen before: there is no question to
-      // ask. `restoreLanguage` has already put the page into the stored
-      // language and cleared the veil, so this is only the tidy-up.
-      if (stored !== null || !isPhone()) {
+      // Chosen before, so there is no question to ask. `restoreLanguage` has
+      // already put the page into the stored language and cleared the veil,
+      // so this is only the tidy-up.
+      if (stored !== null) {
         setLanguageState("ready");
         setSettled(true);
         return;
@@ -80,6 +79,38 @@ export function LanguageGate() {
     window.setTimeout(() => setSettled(true), FADE_MS);
   };
 
+  /**
+   * Keep the keyboard inside the chooser while it is up.
+   *
+   * `aria-modal` tells a screen reader to ignore what is behind the dialog,
+   * but it does nothing about Tab: the page underneath is a whole site of
+   * links, and on a laptop — where this now runs, and where people actually
+   * use Tab — a second press walked straight off the chooser into a header
+   * nobody could see. The cover is opaque, so focus would have been on a
+   * control that was not on screen.
+   *
+   * The dialog holds exactly two controls, so the cycle is arithmetic on a
+   * list of two rather than anything cleverer. Escape is deliberately not
+   * handled: there is no way past this screen except by answering it, and a
+   * dismissable language chooser would leave the reader in whichever
+   * language they had not chosen.
+   */
+  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "Tab") return;
+
+    const choices = [...(gateRef.current?.querySelectorAll("button") ?? [])];
+    if (choices.length === 0) return;
+
+    const here = choices.indexOf(document.activeElement as HTMLButtonElement);
+    const step = event.shiftKey ? -1 : 1;
+    // `here` is -1 when focus is still on the dialog itself, which lands the
+    // first Tab on the first button and Shift+Tab on the last.
+    const next = (here + step + choices.length) % choices.length;
+
+    event.preventDefault();
+    choices[next].focus();
+  };
+
   return (
     <>
       {/* ------------------------------------------------- The chooser */}
@@ -89,6 +120,7 @@ export function LanguageGate() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="lang-gate-lede"
+        onKeyDown={onKeyDown}
         // Its own words are the one place on the site where both languages
         // are on screen at once, and neither may be swapped for the other.
         data-no-translate

@@ -3,11 +3,16 @@
 /**
  * The language the site is read in, and the machinery that swaps it.
  *
- * This is a phone-only feature. A visitor arriving on a handset is met by a
- * chooser before the site itself (`LanguageGate`), and whichever of the two
- * they pick is remembered for every later visit; a laptop never sees the
- * chooser and never leaves English. See `DESK_QUERY` below for where that
- * line is drawn — it is the site's usual one.
+ * Every visitor is met by a chooser before the site itself
+ * (`LanguageGate`), and whichever of the two they pick is remembered for
+ * every later visit.
+ *
+ * It was a phone-only feature when it was built, on 2026-09-14, and stopped
+ * being one the next day. Nothing here asks how wide the window is any more:
+ * there is no width at which the site is only offered in English, and the
+ * chooser, the toggle in the menu and the translation itself all behave the
+ * same on a handset and on a desktop. If it is ever narrowed again, the line
+ * would want drawing in one place — not the four it used to be spread over.
  *
  * ── Why the swap happens in the DOM ──────────────────────────────────────
  *
@@ -39,19 +44,6 @@ export type Language = "en" | "kn";
 const STORAGE_KEY = "ve-language";
 
 /**
- * The site's laptop breakpoint, repeated here rather than imported because
- * every other copy is a local constant too — see `home-hero-phone.tsx`,
- * `legacy-hero.tsx`, `counter.tsx`, and the `desk:` variant at the top of
- * `globals.css`. All of them must agree; width alone cannot tell a phone on
- * its side from a laptop, which is what the height term is for.
- */
-const DESK_QUERY = "(min-width: 48rem) and (min-height: 500px)";
-
-/** Phone, or a phone turned sideways. The negation of `desk:`. */
-export const isPhone = () =>
-  typeof window !== "undefined" && !window.matchMedia(DESK_QUERY).matches;
-
-/**
  * What the page is doing about language, as an attribute on `<html>`.
  *
  * It is an attribute rather than React state because the first two states
@@ -61,7 +53,7 @@ export const isPhone = () =>
  * which language this reader chose, so anything keyed off it in a render
  * would have to hydrate one way and then flip.
  *
- *  - `gate`  — first visit on a phone: the chooser is up, page locked.
+ *  - `gate`  — a first visit: the chooser is up and the page is locked.
  *  - `veil`  — a return visit in Kannada: brand splash while the dictionary
  *              loads and the first pass runs, so no English is ever painted.
  *  - `ready` — the site, in whichever language. Also what a laptop gets
@@ -139,9 +131,9 @@ let loading: Promise<Dictionary> | null = null;
  * Fetch the Kannada, once.
  *
  * Deliberately a dynamic import: the dictionary is the single largest string
- * asset on the site, and an English reader — every laptop, and every phone
- * that picks English — must never pay for it. Split out this way it is a
- * chunk of its own that is only ever requested by someone reading Kannada.
+ * asset on the site, and a reader who picks English must never pay for it.
+ * Split out this way it is a chunk of its own that is only ever requested by
+ * someone reading Kannada.
  */
 export function loadDictionary(): Promise<Dictionary> {
   if (dictionary) return Promise.resolve(dictionary);
@@ -421,9 +413,9 @@ async function apply(language: Language) {
 export async function restoreLanguage() {
   const stored = storedLanguage();
 
-  if (!isPhone() || stored === null) {
-    // A laptop, or a phone that has not chosen yet. Either way the page is
-    // English and the gate decides whether to ask.
+  if (stored === null) {
+    // Never asked. The page is the English it was served as, and the gate
+    // takes it from here.
     return stored;
   }
 

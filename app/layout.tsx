@@ -43,18 +43,17 @@ const cinzel = Cinzel({
   weight: ["500", "700"],
 });
 
-// The third face, and the only one a laptop never loads: Kannada, for the
-// phone-only translation (see `lib/language.ts`). Manrope has no Kannada
-// glyphs at all, so without this the translated site falls back to whatever
-// the handset happens to ship — which on Android is Noto and on iOS is a
-// face drawn for a different weight of page.
+// The third face, and the only one an English reader never loads: Kannada,
+// for the translation (see `lib/language.ts`). Manrope has no Kannada glyphs
+// at all, so without this the translated site falls back to whatever the
+// device happens to ship — which on Android is Noto, on iOS a face drawn for
+// a different weight of page, and on a Windows desktop often nothing at all.
 //
 // `preload: false` is the point of it. The @font-face still ships in the
 // stylesheet on every page, but nothing links a preload and no browser
-// fetches the file until a Kannada glyph is actually on screen — so an
-// English reader, which is every laptop and every phone that picks English,
-// pays nothing for it. Only the `kannada` subset is asked for: the Latin in
-// a translated page is still set in Manrope.
+// fetches the file until a Kannada glyph is actually on screen — so a reader
+// who stays in English pays nothing for it. Only the `kannada` subset is
+// asked for: the Latin in a translated page is still set in Manrope.
 const notoKannada = Noto_Sans_Kannada({
   variable: "--font-kannada",
   subsets: ["kannada"],
@@ -170,8 +169,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${manrope.variable} ${cinzel.variable} ${notoKannada.variable}`}
     >
       <head>
-        {/* Which language this phone reads the site in, settled before the
-            first pixel.
+        {/* Which language this visitor reads the site in, settled before
+            the first pixel.
 
             It has to run here, blocking, rather than in a component: the
             stored choice lives in `localStorage`, the server cannot see it,
@@ -188,10 +187,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           dangerouslySetInnerHTML={{
             __html:
               '(function(){var r=document.documentElement;try{' +
-              // The site's laptop breakpoint. Four copies of this string now;
-              // all of them have to agree. See `lib/language.ts`.
-              'if(window.matchMedia("(min-width: 48rem) and (min-height: 500px)").matches){' +
-              'r.setAttribute("data-lang-state","ready");return}' +
               'var v=localStorage.getItem("ve-language");' +
               'if(v==="kn"){r.setAttribute("data-lang","kn");' +
               'r.setAttribute("data-lang-state","veil");' +
@@ -225,8 +220,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Skip to content
         </a>
-        {/* Before the site, on a phone: which language? Renders nothing at
-            all once that is answered — and nothing on a laptop ever. */}
+        {/* Before the site: which language? Renders nothing at all once
+            that is answered. */}
         <LanguageGate />
         <SiteHeader />
         {/* The logo, Home, and any other link to the page you are on: back
