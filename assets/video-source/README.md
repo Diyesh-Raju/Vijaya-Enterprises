@@ -1,26 +1,98 @@
 # Home hero source clips
 
-The two originals behind `public/video/home-scroll*.mp4`, kept out of
-`public/` so a quarter of a gigabyte of source never ships in the deployment —
-and out of git (see `.gitignore`) so it never lands in the history either. They
-live on whoever holds the renders; ask before assuming a clone has them.
+The originals behind `public/video/home-scroll*.mp4`, kept out of `public/`
+so a quarter of a gigabyte of source never ships in the deployment — and out
+of git (see `.gitignore`) so it never lands in the history either. They live
+on whoever holds the renders; ask before assuming a clone has them.
 
 | File                                 | Source                | Shot                         |
 | ------------------------------------ | --------------------- | ---------------------------- |
 | `walkthrough-exterior-to-living.mp4` | 3524×2352, 7.02s, 60p | towers from the air → living |
 | `walkthrough-living-to-foyer.mp4`    | 3988×2162, 4.00s, 60p | living → entrance foyer      |
+| `walkthrough-towers.mp4`             | 3840×2160, 7.04s, 24p | towers → balcony → living    |
 
-Both are Topaz upscales of the original 24p renders, which are kept alongside
-them as `*-24p.mp4`. The upscales are what the build uses: they arrive at 60fps
-with the intermediate frames already synthesised, which is both better and
-cheaper than the `minterpolate` pass the 24p files used to need.
+The first two are the long cut, and are Topaz upscales of the original 24p
+renders, which are kept alongside them as `*-24p.mp4`. The upscales are what
+that build uses: they arrive at 60fps with the intermediate frames already
+synthesised, which is both better and cheaper than the `minterpolate` pass the
+24p files used to need. `walkthrough-living-to-foyer.mp4` opens on the same
+living room `walkthrough-exterior-to-living.mp4` ends in, and the two run in
+that order with the join hidden across half a second.
 
-The second clip opens on the same living room the first one ends in, and the
-two run in that order with the join hidden across half a second.
+`walkthrough-towers.mp4` is the one the hero plays now, on its own and with no
+join. It is 24p with no upscale, so it takes the `minterpolate` pass — the
+section below is the whole of its build.
 
-## The short cut — what the hero plays now
+## The towers cut — what the hero plays now
 
-Since 2026-09-12 the hero plays `public/video/home-scroll-short-hq.mp4` rather
+Since 2026-09-15 the hero plays `public/video/home-scroll-towers-hq.mp4`:
+one render, `walkthrough-towers.mp4`, which opens on a landscaped block of
+white apartment towers from the air, pushes down the facade past a planted
+balcony and ends inside a lamplit living room. Same arc as the short cut it
+replaces — exterior, through the glass, interior — so the two stills either
+end of the scrub still describe it and `alt` did not change.
+
+It arrives already 16:9 (3840×2160) and carries no render mark, so unlike
+both earlier cuts there is **no crop window**: the whole frame is used, and
+the poster and the clip cannot drift out of framing with each other because
+neither is cropped. `cropdetect` over the first 48 frames returns
+`3840:2160:0:0`, and the bottom corners are clean at native resolution.
+
+Everything else is the settings the two cuts before it were built to — 60fps,
+a keyframe every second frame, no B-frames, crf 28, 3200×1800 and 1920×1080.
+The render is 24p and there is no 60p upscale of it, so `minterpolate`
+synthesises the frames in between, into a near-lossless 60p master both files
+are encoded from. That pass is the slow one: about four minutes.
+
+Measured on the shipped encode (Apple M5, Chrome headless with the Metal
+backend, 80 off-keyframe seeks on a fully buffered file):
+
+| | size | keyframes | SSIM vs master | median seek | p95 | max |
+| --- | ------- | ------- | ----- | ---- | ---- | ---- |
+| desktop 3200×1800 | 27.8 MB | 209 / 418 | 0.970 | 13.4 | 15.7 | 16.7 |
+| mobile 1920×1080 | 14.3 MB | 209 / 418 | — | — | — | — |
+
+Every seek lands inside a single 60fps frame (16.7ms), which is the bar the
+section below sets, and the file is 2.3 MB smaller than the cut it replaces.
+Read those against the short cut's own row — 14.2 median, 15.3 p95 — rather
+than against the software-decoder tables further down.
+
+The poster registers against the clip's first frame at SSIM 0.893, where the
+same comparison with one 10px horizontal offset gives 0.508. The gap is the
+check; the absolute figure is low only because the poster comes off the
+uncompressed render and the clip is crf 28.
+
+```sh
+SRC=assets/video-source/walkthrough-towers.mp4
+MI="minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1"
+
+# ~4 minutes. No crop: the render is already 16:9 edge to edge.
+ffmpeg -y -i $SRC -vf "scale=3200:1800:flags=lanczos,$MI" \
+  -an -c:v libx264 -preset fast -crf 8 -pix_fmt yuv420p /tmp/towers-60p-master.mp4
+
+ffmpeg -y -i /tmp/towers-60p-master.mp4 -vf format=yuv420p \
+  -an -c:v libx264 -preset slow -crf 28 -g 2 -keyint_min 2 -sc_threshold 0 -bf 0 \
+  -profile:v high -level 5.2 -movflags +faststart public/video/home-scroll-towers-hq.mp4
+
+ffmpeg -y -i /tmp/towers-60p-master.mp4 -vf "scale=1920:1080:flags=lanczos,format=yuv420p" \
+  -an -c:v libx264 -preset slow -crf 28 -g 2 -keyint_min 2 -sc_threshold 0 -bf 0 \
+  -profile:v high -level 4.2 -movflags +faststart public/video/home-scroll-towers-hq-mobile.mp4
+
+# The poster is the render's own first frame, full size and uncompressed:
+# it is the home page's largest-contentful paint.
+ffmpeg -y -i $SRC -frames:v 1 -q:v 3 assets/images/home-scroll-towers-poster.jpg
+# The end still is the frame the scrub stops on — `duration - 0.05` in `ScrollHero`.
+ffmpeg -y -ss 6.9167 -i /tmp/towers-60p-master.mp4 -frames:v 1 \
+  -vf "scale=1280:720:flags=lanczos,gblur=sigma=6" -q:v 4 assets/images/home-scroll-towers-end.jpg
+```
+
+## The short cut — what the hero played from 2026-09-12 to 2026-09-15
+
+Its files are all still in `public/video/` and `assets/images/`, as the long
+cut's are. Going back to either is the two imports and the two paths in
+`lib/images.ts`, and nothing else.
+
+Between those dates the hero played `public/video/home-scroll-short-hq.mp4` rather
 than the two-clip build below: one render, `walkthrough-short.mp4`
 (3524×2352, 7.04s, 24p, a Kling 3.0 render), which runs from the towers in
 through a window to the living room and stops there — no foyer, and so no

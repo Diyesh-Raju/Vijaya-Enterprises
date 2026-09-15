@@ -131,11 +131,17 @@ import mahanteshNelavagi from "@/assets/images/mahantesh-nelavagi.jpg";
    drawings with the engineer at the site table. */
 import handoverFamilyEngineer from "@/assets/images/handover-family-engineer.jpg";
 import homeDusk from "@/assets/images/home-dusk.jpg";
-/* The home hero's two stills, cut from the short walkthrough by the commands
-   in `assets/video-source/README.md`. `home-scroll-end.jpg` and
-   `home-scroll-poster.jpg` are the long cut's, kept for going back to it. */
-import homeScrollEnd from "@/assets/images/home-scroll-short-end.jpg";
-import homeScrollPoster from "@/assets/images/home-scroll-short-poster.jpg";
+/* The home hero's two stills, cut from the towers walkthrough by the commands
+   in `assets/video-source/README.md`, and always from the same render as the
+   clip beside them — they are cross-faded against it on the page, so a still
+   cut from a different take would show as a jump.
+
+   The two earlier cuts' stills are all still here: `home-scroll-short-*.jpg`
+   for the short cut this replaced, `home-scroll-*.jpg` for the long one
+   before it. Going back to either is this pair of imports and the two paths
+   in `video` below. */
+import homeScrollEnd from "@/assets/images/home-scroll-towers-end.jpg";
+import homeScrollPoster from "@/assets/images/home-scroll-towers-poster.jpg";
 import homeLawn from "@/assets/images/home-lawn.jpg";
 import industrialEngineer from "@/assets/images/industrial-engineer.jpg";
 import institutionCampus from "@/assets/images/institution-campus.jpg";
@@ -601,8 +607,17 @@ export const alt = {
 
 /** Background video files (these do live in `public/`, served by URL). */
 export const video = {
-  homeScrollDesktop: "/video/home-scroll-short-hq.mp4",
-  homeScrollMobile: "/video/home-scroll-short-hq-mobile.mp4",
+  /* The towers walkthrough, since 2026-09-15. Built to the settings in
+     `assets/video-source/README.md` — 60fps, a keyframe every second frame,
+     no B-frames — because `ScrollHero` seeks to an arbitrary time on every
+     animation frame and the keyframe interval is what decides whether the
+     scrub feels attached to the wheel.
+
+     New names rather than overwriting the cut they replace: `/video/` is
+     served with a 30-day `max-age` (`next.config.ts`), so a browser holding
+     the old file would go on showing it. */
+  homeScrollDesktop: "/video/home-scroll-towers-hq.mp4",
+  homeScrollMobile: "/video/home-scroll-towers-hq-mobile.mp4",
   heroDesktop: "/video/hero.mp4",
   heroMobile: "/video/hero-mobile.mp4",
   legacyDesktop: "/video/legacy.mp4",
