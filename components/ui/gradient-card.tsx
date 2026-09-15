@@ -48,6 +48,13 @@ export function GradientCard({
     <div
       className={cn(
         "relative isolate overflow-hidden rounded-[1.5rem] bg-navy-1000 p-6 ring-1 ring-white/10 sm:rounded-[1.75rem] sm:p-8",
+        // The hairline warms under the pointer, and that is the whole
+        // interaction. No lift: a lift is the site's way of saying a card
+        // leads somewhere — `ProjectCard` and `PearlCard` both rise, and both
+        // are links — and these three are figures, with nothing to open.
+        // Brass rather than a brighter white, so it reads as the card's own
+        // gradient catching rather than as a border being switched on.
+        "transition-[box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:ring-brass-300/30",
         className,
       )}
     >

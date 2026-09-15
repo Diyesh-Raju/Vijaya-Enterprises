@@ -22,7 +22,19 @@ export type Project = {
 
   /** Set once the project has real details. */
   slug?: string;
+  /**
+   * How the project reads on its own card — "Luxury Apartments", "Premium
+   * Residences". Prose, and deliberately not what anything filters on: three
+   * projects here are apartment developments and all three word it
+   * differently. `category` is the filterable half.
+   */
   projectType?: string;
+  /**
+   * The kind of development, in the words the home page's search panel
+   * offers. Matched against that panel's Project Type menu, so it has to be
+   * one of those strings exactly — see `tabs` in `find-residences.tsx`.
+   */
+  category?: "Apartment" | "Villa" | "Plotted Development";
   /** How the layouts read on the card, e.g. "2, 3 & 4 BHK". */
   layout?: string;
   devSize?: string;
@@ -61,6 +73,7 @@ export const projects: readonly Project[] = [
     name: "Hara Vijaya Heights",
     slug: "hara-vijaya-heights",
     projectType: "Premium Residences",
+    category: "Apartment",
     layout: "2, 3 & 4 BHK",
     devSize: "3.5 Acres",
     totalUnits: "242 Units",
@@ -99,6 +112,7 @@ export const projects: readonly Project[] = [
     name: "Vijaya Luxo",
     slug: "vijaya-luxo",
     projectType: "Luxury Apartments",
+    category: "Apartment",
     layout: "1, 2 & 3 BHK",
     devSize: "Single Block",
     totalUnits: "18 Units",
@@ -132,6 +146,7 @@ export const projects: readonly Project[] = [
     name: "Vijaya Aquagreen",
     slug: "vijaya-aquagreen",
     projectType: "Garden Apartments",
+    category: "Apartment",
     layout: "1 & 2 BHK",
     devSize: "2 Acres",
     totalUnits: "196 Units",

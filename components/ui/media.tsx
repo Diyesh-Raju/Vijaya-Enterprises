@@ -69,7 +69,9 @@ export function Frame({
       alt={alt}
       fill
       sizes={sizes}
-      priority={priority}
+      // Next 16 renamed `<Image priority>` to `preload`; the prop on this
+      // component keeps its own name.
+      preload={priority}
       placeholder="blur"
       className={cn(
         "object-cover",

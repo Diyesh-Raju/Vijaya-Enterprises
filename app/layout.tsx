@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SamePageLinks } from "@/components/layout/same-page-links";
 import { SiteBookingPrompt } from "@/components/ui/site-booking-prompt";
+import { MobileActionBar } from "@/components/ui/mobile-action-bar";
 import { LanguageGate } from "@/components/layout/language-gate";
 import { site, contact } from "@/lib/site";
 import "./globals.css";
@@ -234,6 +235,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* The site-visit speech bubble. Mounted once, here; it decides for
             itself which pages it speaks on — see the component. */}
         <SiteBookingPrompt />
+        {/* The phone's call/WhatsApp bar, on every page. It owns the bottom
+            edge and the bubble above clears it — see `--action-bar-h`. */}
+        <MobileActionBar />
         <OrganizationJsonLd />
       </body>
     </html>

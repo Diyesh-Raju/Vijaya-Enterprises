@@ -142,7 +142,7 @@ export function ProjectCarousel({ items }: { items: readonly CarouselProject[] }
                   // every card at every width.
                   sizes="(max-width: 640px) 92vw, (max-width: 1280px) 70vw, 60rem"
                   className="object-cover"
-                  priority={index === 0}
+                  preload={index === 0}
                 />
               </div>
               <figcaption className="projects__label">{item.label}</figcaption>

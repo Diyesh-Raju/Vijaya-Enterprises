@@ -612,7 +612,7 @@ export function ScrollHero() {
             src={img.homeScrollPoster}
             alt={alt.homeScrollPoster}
             fill
-            priority
+            preload
             sizes="100vw"
             placeholder="blur"
             className={cn(

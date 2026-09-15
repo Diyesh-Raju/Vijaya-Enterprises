@@ -261,6 +261,38 @@
     }
   }
 
+  /* The phone's action bar, the way `--header-h` is the bar at the top: the
+     source of the height rather than a copy of it. `MobileActionBar` sizes
+     its row from this, the site-visit bubble clears it by reading it, and the
+     page gets the same amount of room at its foot so the last line of the
+     footer is not sat on.
+
+     Zero everywhere by default, and only real on a phone. The query is the
+     exact complement of `desk:` — see the top of this file — written out
+     rather than negated, because `not (a and b)` is Media Queries 4 and this
+     has to hold wherever the bar does. Keep the two in step: the bar is
+     `desk:hidden`, and a breakpoint that disagreed with this would either
+     leave a gap at the foot of the page or put the bar over the footer.
+
+     The safe-area inset is the bar's own business and is added by the bar,
+     not here, so this stays the height of the row itself. */
+  :root {
+    --action-bar-h: 0rem;
+  }
+
+  @media (max-width: 47.9375rem), (max-height: 499px) {
+    :root {
+      --action-bar-h: 4.5rem;
+    }
+
+    body {
+      /* Fixed, so it overlays rather than displaces — the page has to give
+         back the room itself. Bottom padding only: nothing else about the
+         layout changes. */
+      padding-bottom: calc(var(--action-bar-h) + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
   body {
     background-color: #ffffff;
     color: var(--color-ink);

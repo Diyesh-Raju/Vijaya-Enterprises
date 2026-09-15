@@ -141,7 +141,7 @@ function PanelPhoto({
         quality={85}
         sizes="100vw"
         placeholder="blur"
-        priority={priority}
+        preload={priority}
         className="object-cover"
       />
     );

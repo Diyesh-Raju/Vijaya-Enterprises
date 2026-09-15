@@ -209,6 +209,18 @@ export const kannada: Readonly<Record<string, string>> = {
   "Upcoming": "ಮುಂಬರುವ",
   "Sold Out": "ಮಾರಾಟವಾಗಿದೆ",
 
+  // The results the search panel lays out under itself
+  "Matching residences": "ಹೊಂದಾಣಿಕೆಯಾಗುವ ಮನೆಗಳು",
+  "No residences match these preferences": "ಈ ಆದ್ಯತೆಗಳಿಗೆ ಹೊಂದುವ ಮನೆಗಳು ಯಾವುದೂ ಇಲ್ಲ",
+  "Vijaya has built across Bengaluru for fifty years, and more is on the way. Widen a preference, or tell us what you are looking for and we will come back to you.": "ವಿಜಯಾ ಎಂಟರ್‌ಪ್ರೈಸಸ್ ಐದು ದಶಕಗಳಿಂದ ಬೆಂಗಳೂರಿನಾದ್ಯಂತ ಕಟ್ಟಿದೆ, ಇನ್ನಷ್ಟು ಮುಂದೆ ಬರುತ್ತಿದೆ. ಒಂದು ಆದ್ಯತೆಯನ್ನು ವಿಸ್ತರಿಸಿ, ಅಥವಾ ನೀವು ಏನನ್ನು ಹುಡುಕುತ್ತಿದ್ದೀರಿ ಎಂದು ತಿಳಿಸಿ, ನಾವು ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸುತ್ತೇವೆ.",
+  "Show all residences": "ಎಲ್ಲ ಮನೆಗಳನ್ನೂ ತೋರಿಸಿ",
+  "See all residential projects": "ಎಲ್ಲ ವಸತಿ ಯೋಜನೆಗಳನ್ನೂ ನೋಡಿ",
+
+  // The phone's bottom action bar
+  "Call Sales": "ಮಾರಾಟ ವಿಭಾಗಕ್ಕೆ ಕರೆ ಮಾಡಿ",
+  "WhatsApp": "ವಾಟ್ಸಾಪ್",
+  "Call or message us": "ನಮಗೆ ಕರೆ ಮಾಡಿ ಅಥವಾ ಸಂದೇಶ ಕಳುಹಿಸಿ",
+
   // Awards — the captions under the accolade photographs
   "Vijayavani International Award 2025": "ವಿಜಯವಾಣಿ ಇಂಟರ್‌ನ್ಯಾಶನಲ್ ಪ್ರಶಸ್ತಿ 2025",
   "IIB Engineering Excellence Award 2022": "IIB ಎಂಜಿನಿಯರಿಂಗ್ ಎಕ್ಸಲೆನ್ಸ್ ಪ್ರಶಸ್ತಿ 2022",

@@ -9,8 +9,16 @@ import {
   HeartIcon,
 } from "@/components/ui/line-icons";
 
-/** Long enough to watch the lakhs roll over; the same for all five. */
-const COUNT_MS = 2200;
+/**
+ * The same for all five figures in the band.
+ *
+ * 1.5s, asked for by name (2026-09-15). It was 2200ms, which was set so
+ * there was time to watch the lakhs roll over on the Sq. Ft. card — that
+ * is the one figure here with seven digits, and it is the one this
+ * shortening costs the most. Raise this first if the roll starts reading
+ * as a flicker rather than a count.
+ */
+const COUNT_MS = 1500;
 
 /**
  * The band directly under the hero: the headline figure on the left, three

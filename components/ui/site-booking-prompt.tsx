@@ -129,7 +129,10 @@ export function SiteBookingPrompt() {
       // The wrapper spans the bottom edge but only the bubble is real.
       className="pointer-events-none fixed inset-x-0 bottom-0 z-40"
     >
-      <div className="container-page flex justify-end pb-5 sm:pb-8">
+      {/* Clear of the phone's action bar rather than behind it: the bar
+          owns the bottom edge, and `--action-bar-h` is 0 wherever it is not
+          shown, so this is the same 1.25rem it always was on a laptop. */}
+      <div className="container-page flex justify-end pb-[calc(1.25rem+var(--action-bar-h))] sm:pb-[calc(2rem+var(--action-bar-h))]">
         <div
           className={cn(
             "speech-bubble pointer-events-auto relative w-full max-w-[22rem] sm:max-w-[23.5rem]",

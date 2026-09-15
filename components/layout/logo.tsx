@@ -51,7 +51,7 @@ export function Logo({
         src={logoFull}
         alt=""
         {...size}
-        priority={priority && !reversed}
+        preload={priority && !reversed}
         // `logo-art--*` are hooks, not styling: the header's phone-only
         // transparent state has to swap which artwork shows, and it does
         // that in CSS because React does not know the window's width at
@@ -62,7 +62,7 @@ export function Logo({
         src={logoReversed}
         alt=""
         {...size}
-        priority={priority && reversed}
+        preload={priority && reversed}
         className={`logo-art logo-art--reversed absolute left-0 top-0 h-full w-auto ${fade} ${
           reversed ? "opacity-100" : "opacity-0"
         }`}
