@@ -607,17 +607,27 @@ export const alt = {
 
 /** Background video files (these do live in `public/`, served by URL). */
 export const video = {
-  /* The towers walkthrough, since 2026-09-15. Built to the settings in
-     `assets/video-source/README.md` — 60fps, a keyframe every second frame,
-     no B-frames — because `ScrollHero` seeks to an arbitrary time on every
-     animation frame and the keyframe interval is what decides whether the
-     scrub feels attached to the wheel.
+  /* The towers walkthrough, since 2026-09-15, as the ladder `ScrollHero`
+     climbs: the bridge is on screen first, in seconds; the other two are
+     brought up behind it and shown only once this machine has proved it can
+     seek them inside a frame. All three are cut from the same 60fps master
+     with a keyframe every second frame and no B-frames, because the hero
+     seeks to an arbitrary time on every animation frame and the keyframe
+     interval is what decides whether the scrub feels attached to the wheel.
+     `assets/video-source/README.md` has the settings and the measurements.
 
-     New names rather than overwriting the cut they replace: `/video/` is
-     served with a 30-day `max-age` (`next.config.ts`), so a browser holding
-     the old file would go on showing it. */
-  homeScrollDesktop: "/video/home-scroll-towers-hq.mp4",
-  homeScrollMobile: "/video/home-scroll-towers-hq-mobile.mp4",
+     There is no phone file. The phone unmounts the hero altogether
+     (`HomeHeroPhone`), so the `-mobile` encodes the earlier cuts carry were
+     never played by anything.
+
+     New names rather than overwriting: `/video/` is served with a 30-day
+     `max-age` (`next.config.ts`), so a browser holding an old file would
+     go on showing it. */
+  homeScrollTiers: {
+    bridge: "/video/home-scroll-towers-720.mp4",
+    mid: "/video/home-scroll-towers-1080.mp4",
+    hq: "/video/home-scroll-towers-3200.mp4",
+  },
   heroDesktop: "/video/hero.mp4",
   heroMobile: "/video/hero-mobile.mp4",
   legacyDesktop: "/video/legacy.mp4",

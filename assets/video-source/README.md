@@ -25,12 +25,12 @@ section below is the whole of its build.
 
 ## The towers cut — what the hero plays now
 
-Since 2026-09-15 the hero plays `public/video/home-scroll-towers-hq.mp4`:
-one render, `walkthrough-towers.mp4`, which opens on a landscaped block of
-white apartment towers from the air, pushes down the facade past a planted
-balcony and ends inside a lamplit living room. Same arc as the short cut it
-replaces — exterior, through the glass, interior — so the two stills either
-end of the scrub still describe it and `alt` did not change.
+Since 2026-09-15 the hero plays the towers walkthrough: one render,
+`walkthrough-towers.mp4`, which opens on a landscaped block of white apartment
+towers from the air, pushes down the facade past a planted balcony and ends
+inside a lamplit living room. Same arc as the short cut it replaces —
+exterior, through the glass, interior — so the two stills either end of the
+scrub still describe it and `alt` did not change.
 
 It arrives already 16:9 (3840×2160) and carries no render mark, so unlike
 both earlier cuts there is **no crop window**: the whole frame is used, and
@@ -38,29 +38,127 @@ the poster and the clip cannot drift out of framing with each other because
 neither is cropped. `cropdetect` over the first 48 frames returns
 `3840:2160:0:0`, and the bottom corners are clean at native resolution.
 
-Everything else is the settings the two cuts before it were built to — 60fps,
-a keyframe every second frame, no B-frames, crf 28, 3200×1800 and 1920×1080.
 The render is 24p and there is no 60p upscale of it, so `minterpolate`
-synthesises the frames in between, into a near-lossless 60p master both files
-are encoded from. That pass is the slow one: about four minutes.
+synthesises the frames in between, into a near-lossless 60p master every
+file below is encoded from. That pass is the slow one: about four minutes.
+The master was checked for what interpolation can do wrong — a duplicated
+frame where scene-change detection gives up, a spike where a motion vector
+goes astray — and has neither: 418 frames, no frame under 12% of the median
+frame-to-frame difference, no spike over 2.2× it. The 24→60 cadence leaves a
+mild 3-2-3-2 alternation in the size of each step (consecutive-step ratio
+p50 0.99, p95 1.35), which at five or six pixels of scroll a frame is below
+anything a scrub can show.
 
-Measured on the shipped encode (Apple M5, Chrome headless with the Metal
-backend, 80 off-keyframe seeks on a fully buffered file):
+### The ladder — three encodes, since 2026-09-16
 
-| | size | keyframes | SSIM vs master | median seek | p95 | max |
-| --- | ------- | ------- | ----- | ---- | ---- | ---- |
-| desktop 3200×1800 | 27.8 MB | 209 / 418 | 0.970 | 13.4 | 15.7 | 16.7 |
-| mobile 1920×1080 | 14.3 MB | 209 / 418 | — | — | — | — |
+The hero used to play one 3200×1800 file, for everyone, from the start —
+which meant a visitor on an ordinary connection watched a still poster and a
+percentage for ten to forty seconds before the film would move, and a
+machine decoding H.264 in software got a seek that took two to five frames
+and a scrub that lagged the wheel. Both read as "it freezes". So there are
+three files now, cut from the same master, and `ScrollHero` climbs them:
 
-Every seek lands inside a single 60fps frame (16.7ms), which is the bar the
-section below sets, and the file is 2.3 MB smaller than the cut it replaces.
-Read those against the short cut's own row — 14.2 median, 15.3 p95 — rather
-than against the software-decoder tables further down.
+| | file | size | GOP | crf | level | for |
+| --- | --- | --- | --- | --- | --- | --- |
+| bridge | `home-scroll-towers-720.mp4`, 1280×720 | 8.3 MB | 2 | 28 | 4.2 | on screen first, in seconds |
+| mid | `home-scroll-towers-1080.mp4`, 1920×1080 | 21.9 MB | 1 | 24 | 4.2 | the ceiling for a software decoder |
+| hq | `home-scroll-towers-3200.mp4`, 3200×1800 | 34.0 MB | 2 | 26 | 5.2 | hardware decoders — most laptops |
 
-The poster registers against the clip's first frame at SSIM 0.893, where the
-same comparison with one 10px horizontal offset gives 0.508. The gap is the
-check; the absolute figure is low only because the poster comes off the
-uncompressed render and the clip is crf 28.
+The bridge is read in and counted ("Loading 42%"); the moment it is in, the
+cue says "Scroll to Discover" and the scrub works. The larger files are then
+fetched behind it, attached in a second `<video>` out of sight, and **timed
+on sixteen seeks** that follow the same route a scrub does (after two
+unscored warm-up seeks), at a moment when nothing has scrolled for a third
+of a second — probed *under* a scrub, a file reads slow for the wrong
+reason. It is promoted only if the median lands inside a 60fps frame (16ms)
+and the 95th percentile inside two (33ms); a file that misses is asked
+twice more, a couple of seconds apart, and only then dropped, the reader
+keeping what they have. The promotion itself is a same-frame opacity swap
+taken the frame both elements come to rest on the same picture — judged
+before that frame's seeks go out, so it lands within a few frames even
+mid-scrub — and nothing blinks; it never cross-fades, because a cross-fade
+between two copies of one frame at different sharpness is half a second of
+the picture going soft.
+
+Which of the two larger files is tried first is the browser's call
+(`MediaCapabilities.decodingInfo` — `powerEfficient` is its word for a
+hardware decoder), and a screen that already has a third more source pixels
+than it can show stops the climb — a 1× laptop up to about 1280 wide gets
+the 1080p file and no more. The component's comments are the long version.
+
+There is no phone file. The phone unmounts the hero altogether
+(`HomeHeroPhone`, since 401e977), so the `-mobile` encodes the earlier cuts
+carry were never played by anything; the towers cut's has been removed and
+the older ones are dead weight in `public/video/`.
+
+#### Why these three, measured
+
+Seek cost per file, off-keyframe, on a fully buffered blob, 80 seeks × 3
+rounds, median round. "scrub" follows a scrub's route (steps of 3–5 frames
+either way with two flick-sized jumps); "random" jumps across the clip.
+Hardware is Chrome 152 on an Apple M5 with the Metal backend; software is the
+same Chrome with `--disable-gpu`, which also rasterises in software and so
+is *pessimistic* — a real machine with a GPU but no H.264 decoder sits
+somewhere between the two columns.
+
+| file | hardware, scrub p50 / p95 | software, scrub p50 / p95 | software, random p50 |
+| --- | --- | --- | --- |
+| 3200×1800 GOP 2 crf 28 (was shipped) | 13.6 / 15.4 | 60.8 / 74.4 | 55.4 |
+| 3200×1800 GOP 1 crf 28 | 15.4 / 16.3 | 50.0 / 56.6 | 47.6 |
+| 3200×1800 GOP 2 crf 24 | 14.8 / 17.6 | 88.9 / 362 | 68.3 |
+| **3200×1800 GOP 2 crf 26 → hq** | **13.7 / 15.0** | 72.5 / 92.4 | 59.9 |
+| 2560×1440 GOP 2 crf 26 | 8.6 / 9.6 | 41.9 / 55.5 | 38.2 |
+| **1920×1080 GOP 1 crf 24 → mid** | **5.6 / 5.8** | **24.4 / 28.7** | 21.0 |
+| 1920×1080 GOP 2 crf 24 | 5.4 / 6.6 | 29.0 / 35.4 | 23.4 |
+| 1280×720 GOP 2 crf 27 | 2.6 / 3.2 | 17.3 / 21.9 | 14.1 |
+| 1280×720 GOP 2 crf 30 | 2.3 / 2.5 | 16.2 / 27.4 | 11.6 |
+
+What the table decided:
+
+- **crf 26 for the top file, not 24.** On hardware 26 seeks as fast as 28
+  and lands its p95 inside a frame; 24 pushes p95 past one and costs 40 MB.
+  SSIM against the master: 0.9738 at 28, 0.9768 at 26.
+- **All-intra only where it pays.** A keyframe every frame is *slower* on a
+  hardware decoder (15.4 vs 13.6 at 3200) and faster on a software one
+  (24.4 vs 29.0 at 1080p). So the 1080p file — the one software decoders
+  end up on — is all-intra and the others keep the two-frame GOP.
+- **3200 is for hardware only.** No 3200 encode gets under three frames a
+  seek in software, whatever the crf. 1080p is the ceiling there.
+- **The bridge at crf 28** splits the two measured: 8.3 MB, three and a half
+  seconds at 20 Mbps.
+
+In the page itself, with the file in memory and the hero scrubbed through
+and back at three speeds, through the close and back, and after leaving the
+page for a screen and a half and returning (instant scrolling — see the
+note below), the hardware path shows **no stalls** at any speed: seeks p50
+8.4ms, p95 10.3, zero long animation frames, zero dropped frames, no
+degradation across cycles, no `load()` ever called. The 933ms "hold" a
+naive count reports on the way back up is the close, where the film is
+parked on its last frame by design.
+
+#### Colour
+
+Every file in the chain — render, master, both earlier cuts — was untagged:
+`color_range`, `color_space`, `color_transfer` and `color_primaries` all
+unknown. Chrome assumes BT.709 limited for an untagged HD stream, and a
+canvas test confirmed it draws the untagged file and a BT.709-tagged one
+pixel for pixel the same; Safari and Firefox do not promise the same
+assumption. So every file now says so explicitly, twice — in the SPS VUI
+that x264 writes and in the container's `colr` atom that AVFoundation reads
+first — and the pixels are untouched (decoded frame 100 of the tagged 3200
+file is byte-identical to the untagged encode).
+
+The ffmpeg CLI in this build takes `-colorspace` and `-color_range` into the
+stream parameters but *not* `-color_primaries` or `-color_trc`, so with
+`+write_colr` the muxer writes a `colr` atom that says primaries and
+transfer are unspecified while x264's VUI says BT.709 — and ffprobe reports
+the atom. The seven payload bytes are patched in place after encoding; the
+atom's size does not change, so no offset in the file moves.
+
+The render itself is not flat, crushed or clipped: across the clip the
+darkest 10% of pixels sit at Y 19–44 and the brightest 10% at 141–198, with
+true black and white both present. No grade is applied — a grade on a
+client-supplied render is the client's decision.
 
 ```sh
 SRC=assets/video-source/walkthrough-towers.mp4
@@ -70,13 +168,36 @@ MI="minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1"
 ffmpeg -y -i $SRC -vf "scale=3200:1800:flags=lanczos,$MI" \
   -an -c:v libx264 -preset fast -crf 8 -pix_fmt yuv420p /tmp/towers-60p-master.mp4
 
-ffmpeg -y -i /tmp/towers-60p-master.mp4 -vf format=yuv420p \
+# In zsh, write the option lists out rather than expanding a variable: an
+# unquoted $COL is one word there, and ffmpeg rejects it.
+ffmpeg -y -i /tmp/towers-60p-master.mp4 -vf "scale=1280:720:flags=lanczos,format=yuv420p" \
   -an -c:v libx264 -preset slow -crf 28 -g 2 -keyint_min 2 -sc_threshold 0 -bf 0 \
-  -profile:v high -level 5.2 -movflags +faststart public/video/home-scroll-towers-hq.mp4
-
+  -profile:v high -level 4.2 -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+  -x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709 \
+  -movflags +faststart+write_colr public/video/home-scroll-towers-720.mp4
 ffmpeg -y -i /tmp/towers-60p-master.mp4 -vf "scale=1920:1080:flags=lanczos,format=yuv420p" \
-  -an -c:v libx264 -preset slow -crf 28 -g 2 -keyint_min 2 -sc_threshold 0 -bf 0 \
-  -profile:v high -level 4.2 -movflags +faststart public/video/home-scroll-towers-hq-mobile.mp4
+  -an -c:v libx264 -preset slow -crf 24 -g 1 -keyint_min 1 -sc_threshold 0 -bf 0 \
+  -profile:v high -level 4.2 -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+  -x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709 \
+  -movflags +faststart+write_colr public/video/home-scroll-towers-1080.mp4
+ffmpeg -y -i /tmp/towers-60p-master.mp4 -vf format=yuv420p \
+  -an -c:v libx264 -preset slow -crf 26 -g 2 -keyint_min 2 -sc_threshold 0 -bf 0 \
+  -profile:v high -level 5.2 -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+  -x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709 \
+  -movflags +faststart+write_colr public/video/home-scroll-towers-3200.mp4
+
+# The colr atom: primaries, transfer, matrix as u16 each, then a flags byte.
+python3 - <<'EOF'
+import pathlib
+for f in ("720", "1080", "3200"):
+    p = pathlib.Path(f"public/video/home-scroll-towers-{f}.mp4"); d = bytearray(p.read_bytes())
+    i = d.find(b"colrnclx"); assert i > 0 and d[i+8:i+15] == bytes.fromhex("00020002000100")
+    d[i+8:i+15] = bytes.fromhex("00010001000100"); p.write_bytes(d)
+EOF
+# Check both agree: the container, and the SPS on its own.
+ffprobe -v error -select_streams v:0 -show_entries stream=color_range,color_space,color_transfer,color_primaries -of csv=p=0 public/video/home-scroll-towers-3200.mp4
+ffmpeg -v error -i public/video/home-scroll-towers-3200.mp4 -c copy -bsf:v h264_mp4toannexb -f h264 - | \
+  ffprobe -v error -f h264 -show_entries stream=color_range,color_space,color_transfer,color_primaries -of csv=p=0 -i pipe:0
 
 # The poster is the render's own first frame, full size and uncompressed:
 # it is the home page's largest-contentful paint.
@@ -85,6 +206,30 @@ ffmpeg -y -i $SRC -frames:v 1 -q:v 3 assets/images/home-scroll-towers-poster.jpg
 ffmpeg -y -ss 6.9167 -i /tmp/towers-60p-master.mp4 -frames:v 1 \
   -vf "scale=1280:720:flags=lanczos,gblur=sigma=6" -q:v 4 assets/images/home-scroll-towers-end.jpg
 ```
+
+The poster registers against the clip's first frame at SSIM 0.893, where the
+same comparison with one 10px horizontal offset gives 0.508. The gap is the
+check; the absolute figure is low only because the poster comes off the
+uncompressed render and the clip is crf 26.
+
+#### Measuring it, and two ways the harness lies
+
+Time seeks on `seeked`, on a blob, after one `play()`/`pause()`, with the
+machine otherwise idle — a parallel encode inflates software-decode seeks
+several-fold. Scroll with `scrollTo({top, behavior: "instant"})`: the site
+sets `scroll-behavior: smooth`, so a plain `scrollTo(0, y)` is animated, and
+a "leave the hero and come back" step written that way never actually
+arrives — the hero then looks hidden and frozen for the whole return pass,
+which is an artefact. And close a headless Chrome's old page targets between
+runs: each keeps its blob and its animation loop, and after a few the next
+run hangs on `canplay`.
+
+### The first encode of this cut, 2026-09-15 to 2026-09-16
+
+One file, `home-scroll-towers-hq.mp4` (3200×1800, GOP 2, crf 28, 27.8 MB,
+untagged), played for everyone from the start, with a `-mobile` sibling
+nothing used. Removed with the ladder; its master is the same one the ladder
+is cut from.
 
 ## The short cut — what the hero played from 2026-09-12 to 2026-09-15
 
