@@ -116,7 +116,7 @@ export function ApertureCta() {
             <div className="aperture__copy">
               <h3>What we tell you</h3>
               <p>
-                Honestly, what is possible on that — and what it takes to build
+                Honestly, what is possible on that, and what it takes to build
                 it well.
               </p>
             </div>
@@ -220,8 +220,8 @@ export function ApertureCta() {
                 </h2>
                 <p className="mt-6 max-w-xl text-[1.0625rem] leading-[1.75] text-navy-100/85">
                   Tell us where you want to live, what you need and what you
-                  are working with. We will tell you honestly what is possible
-                  — and what it takes to build it well.
+                  are working with. We will tell you honestly what is possible,
+                  and what it takes to build it well.
                 </p>
               </div>
             </div>

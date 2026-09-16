@@ -59,11 +59,11 @@ export async function submitBooking(
   if (!gate.ok) {
     switch (gate.reason) {
       case "honeypot":
-        return { status: "success", message: "Thank you — we will be in touch." };
+        return { status: "success", message: "Thank you, we will be in touch." };
       case "too-fast":
         return {
           status: "error",
-          message: "That was too quick — please try again.",
+          message: "That was too quick, please try again.",
           values,
         };
       case "rate-limited":
@@ -88,7 +88,7 @@ export async function submitBooking(
   } else if (!isIsoDate(values.preferredDate)) {
     errors.preferredDate = "Please enter a valid date.";
   } else if (values.preferredDate < today) {
-    errors.preferredDate = "That day has passed — please pick a day from today onwards.";
+    errors.preferredDate = "That day has passed, please pick a day from today onwards.";
   } else if (values.preferredDate > addDays(today, MAX_DAYS_AHEAD)) {
     errors.preferredDate = "Please pick a day within the next year.";
   }
@@ -117,7 +117,7 @@ export async function submitBooking(
     email: values.email,
     phone: values.phone,
     source: LEAD_SOURCE,
-    subject: `Site visit request — ${values.name} (${values.project})`,
+    subject: `Site visit request, ${values.name} (${values.project})`,
     // `projectType` first, as the enquiry form sends it, so the two kinds
     // of lead sit side by side in the CRM's panel with the same first row.
     details: [
@@ -147,7 +147,7 @@ export async function submitBooking(
         return {
           status: "success",
           message:
-            "Thank you. (Development mode: the booking was logged to the server console — no delivery channel is configured yet.)",
+            "Thank you. (Development mode: the booking was logged to the server console, no delivery channel is configured yet.)",
         };
       }
 

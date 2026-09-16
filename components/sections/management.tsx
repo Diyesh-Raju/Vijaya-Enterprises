@@ -100,7 +100,7 @@ export function Management() {
         <SectionHeading
           eyebrow="Management"
           title="The people behind the name."
-          lead="Two generations of the same standard — the man who started the company in 1973, and the one running it now. Press a portrait to read about them."
+          lead="Two generations of the same standard, the man who started the company in 1973, and the one running it now. Press a portrait to read about them."
           align="center"
           className="mx-auto"
         />

@@ -146,7 +146,7 @@ const steps: ProcessStep[] = [
   {
     step: "02",
     title: ["Feasibility", "and planning"],
-    body: "We look at what the site can realistically support — approvals, planning, cost and demand — and share what we find.",
+    body: "We look at what the site can realistically support, approvals, planning, cost and demand, and share what we find.",
     image: img.designReviewMeeting,
     imageAlt: alt.designReviewMeeting,
   },
@@ -198,7 +198,7 @@ export default function JointVenturesPage() {
         </p>
         <p>
           Bringing land, construction expertise and development capability
-          together is what makes a joint venture work — and what makes it worth
+          together is what makes a joint venture work, and what makes it worth
           doing for everyone involved.
         </p>
       </HandshakeReveal>
@@ -344,8 +344,8 @@ export default function JointVenturesPage() {
               </Reveal>
               <Reveal delay={160}>
                 <p className="mx-auto mt-7 max-w-[34rem] text-[1.0625rem] leading-[1.75] text-slate-body">
-                  A first conversation — about the land, its ownership and what
-                  you would like to see happen — carries no obligation and no
+                  A first conversation, about the land, its ownership and what
+                  you would like to see happen, carries no obligation and no
                   pressure. We say plainly what we think the site can support,
                   and no one commits before every party understands the
                   arrangement.

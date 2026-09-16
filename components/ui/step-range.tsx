@@ -106,7 +106,7 @@ export function StepRange({
           {format(stops[low])}
         </span>
         <span aria-hidden="true" className="text-[0.625rem] text-slate-muted">
-          —
+          to
         </span>
         <span className="text-[0.6875rem] font-semibold text-navy-900 desk:text-[0.75rem]">
           {format(stops[high])}

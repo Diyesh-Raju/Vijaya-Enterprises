@@ -30,19 +30,19 @@ export const metadata: Metadata = {
 const faqs: readonly DisclosureItem[] = [
   {
     title: "What does Vijaya Enterprises build?",
-    body: "Residential, commercial, industrial and institutional work — apartments, villas and plotted developments, offices and commercial buildings, warehouses and factories, and institutional buildings. We also develop land jointly with the people who own it. It has been all of those since 1973, which is why the standard is one standard rather than one per sector.",
+    body: "Residential, commercial, industrial and institutional work, apartments, villas and plotted developments, offices and commercial buildings, warehouses and factories, and institutional buildings. We also develop land jointly with the people who own it. It has been all of those since 1973, which is why the standard is one standard rather than one per sector.",
   },
   {
     title: "Where do you build?",
-    body: "Karnataka, and Bengaluru in particular — every project on our books today is in and around the city. Five decades of building here is also five decades of knowing what each locality asks for.",
+    body: "Karnataka, and Bengaluru in particular, every project on our books today is in and around the city. Five decades of building here is also five decades of knowing what each locality asks for.",
   },
   {
     title: "Do you have homes available right now?",
-    body: "Availability moves. The Residential page lists our projects with each one's standing marked — ongoing, completed or sold out — so it is the honest answer at any given moment. Tell us what you are looking for and we will tell you plainly what is available and what is coming.",
+    body: "Availability moves. The Residential page lists our projects with each one's standing marked, ongoing, completed or sold out, so it is the honest answer at any given moment. Tell us what you are looking for and we will tell you plainly what is available and what is coming.",
   },
   {
     title: "How does a project start?",
-    body: `Start with a conversation. Call, write or send the enquiry form and we listen first — what you want to build, or what you want in a home. Then we give you an honest view of what is possible, what it involves and roughly what it costs. If it goes ahead, one team is responsible from planning through to handover. We are reachable ${contact.hours.toLowerCase()}.`,
+    body: `Start with a conversation. Call, write or send the enquiry form and we listen first, what you want to build, or what you want in a home. Then we give you an honest view of what is possible, what it involves and roughly what it costs. If it goes ahead, one team is responsible from planning through to handover. We are reachable ${contact.hours.toLowerCase()}.`,
   },
   {
     title: "I own land. What is a joint venture, in practice?",
@@ -50,15 +50,15 @@ const faqs: readonly DisclosureItem[] = [
   },
   {
     title: "Are your homes planned to vastu?",
-    body: "Yes. Orientation, entrances, kitchens, pooja rooms and master bedrooms are placed to vastu — without giving up the light, ventilation or usable area that make a plan work. Vastu is settled inside the layout rather than applied on top of it.",
+    body: "Yes. Orientation, entrances, kitchens, pooja rooms and master bedrooms are placed to vastu, without giving up the light, ventilation or usable area that make a plan work. Vastu is settled inside the layout rather than applied on top of it.",
   },
   {
     title: "What does your standard of quality actually mean?",
-    body: "Specification, supervision and finish held to one standard, whatever the sector — materials and workmanship we would accept in a home built for our own family. We build what we plan: execution is not handed down a chain of subcontractors.",
+    body: "Specification, supervision and finish held to one standard, whatever the sector, materials and workmanship we would accept in a home built for our own family. We build what we plan: execution is not handed down a chain of subcontractors.",
   },
   {
     title: "Who have you built for?",
-    body: "Bharat Electronics, HAL, ISRO, Indian Oil, Union Bank and Canara Bank are among the organisations that have put their construction in our hands, alongside the families who have bought homes from us since 1973. Ask us for the reference — that is what it is for.",
+    body: "Bharat Electronics, HAL, ISRO, Indian Oil, Union Bank and Canara Bank are among the organisations that have put their construction in our hands, alongside the families who have bought homes from us since 1973. Ask us for the reference, that is what it is for.",
   },
 ];
 

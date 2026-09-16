@@ -155,7 +155,7 @@ const vijayaLuxo: readonly AmenityGroup[] = [
         name: "Party Hall",
         icon: "party-hall",
         description:
-          "A hall for the occasions a flat cannot hold — birthdays, pujas, a gathering of the whole family.",
+          "A hall for the occasions a flat cannot hold, birthdays, pujas, a gathering of the whole family.",
       },
       {
         name: "Indoor Play Area",
@@ -333,7 +333,7 @@ const vijayaSpringwoods: readonly AmenityGroup[] = [
         name: "Party Hall",
         icon: "party-hall",
         description:
-          "A hall for the occasions a flat cannot hold — birthdays, pujas, a gathering of the whole family.",
+          "A hall for the occasions a flat cannot hold, birthdays, pujas, a gathering of the whole family.",
       },
       {
         name: "Auditorium",
@@ -415,9 +415,9 @@ export const amenitiesIntroBySlug: Record<string, string> = {
   "hara-vijaya-heights":
     "Hara Vijaya Heights offers a host of neat spaces for recreation and relaxation alike. A state-of-the-art clubhouse and a multi-purpose hall provide an ideal place to get together with loved ones. The landscaped garden and park area are perfect for a stroll by yourself.",
   "vijaya-luxo":
-    "Surround yourself with plush amenities. We believe there are no boundaries for quality — from the quality of material and of finish to the architectural design and the add-ons, everything at Vijaya Luxo has been given the highest care, including vastu compliance.",
+    "Surround yourself with plush amenities. We believe there are no boundaries for quality, from the quality of material and of finish to the architectural design and the add-ons, everything at Vijaya Luxo has been given the highest care, including vastu compliance.",
   "vijaya-aquagreen":
-    "Vijaya Aquagreen is not only a home — it is a dream with all modern amenities. Planned to make sure there is excellent cross ventilation and comfortable living for the modern family, with a clubhouse and pool at the heart of the grounds.",
+    "Vijaya Aquagreen is not only a home, it is a dream with all modern amenities. Planned to make sure there is excellent cross ventilation and comfortable living for the modern family, with a clubhouse and pool at the heart of the grounds.",
   "vijaya-springwoods":
-    "Fully loaded amenities and exclusive features give you the comfort and feeling of living in an independent home. The apartments are planned so that there are no common walls between homes — no knocking through from the other side, and three sides of natural light and fresh air for every flat.",
+    "Fully loaded amenities and exclusive features give you the comfort and feeling of living in an independent home. The apartments are planned so that there are no common walls between homes, no knocking through from the other side, and three sides of natural light and fresh air for every flat.",
 };

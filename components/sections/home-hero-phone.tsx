@@ -101,7 +101,7 @@ const FRAMES = [
     // photograph is of.
     position: "50% 50%",
     caption:
-      "Residential, commercial, industrial and institutional work — one standard of building across all four.",
+      "Residential, commercial, industrial and institutional work, one standard of building across all four.",
   },
   {
     src: img.projectTudorCourt,
@@ -278,7 +278,7 @@ export function HomeHeroPhone() {
           it closes on; there is no lockup here and nothing is laid over the
           pictures, so this one is read rather than seen. */}
       <h1 className="sr-only">
-        Vijaya Enterprises — building trust since 1973
+        Vijaya Enterprises, building trust since 1973
       </h1>
 
       {/* The opening frame's own blur placeholder, as a background rather

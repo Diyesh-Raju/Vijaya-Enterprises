@@ -272,7 +272,7 @@ export function ReasonPanels({ items }: { items: readonly ReasonPanel[] }) {
               <div className="w-full lg:w-[21rem] xl:w-[30rem]">
                 <p className="font-display text-[0.6875rem] font-semibold uppercase tabular-nums tracking-[0.35em] text-brass-400">
                   {String(index + 1).padStart(2, "0")}
-                  <span className="mx-2 text-brass-400/60">—</span>
+                  <span className="mx-2 text-brass-400/60">/</span>
                   {total}
                 </p>
 

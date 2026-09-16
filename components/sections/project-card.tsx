@@ -191,7 +191,7 @@ export function ProjectCard({ project }: { project: Project }) {
   return (
     <Link
       href={`/residential/${project.slug}`}
-      aria-label={`${project.name} — project details`}
+      aria-label={`${project.name}, project details`}
       className="block h-full rounded-[1.5rem] sm:rounded-[1.75rem]"
     >
       {card}

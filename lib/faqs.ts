@@ -71,7 +71,7 @@ export const faqsBySlug: Record<string, readonly Faq[]> = {
     {
       question: "What layouts are available at Vijaya Aquagreen?",
       answer:
-        "One and two bedroom homes — 196 of them across six blocks on two acres. The 1 BHKs run from 615 to 680 sq ft and the 2 BHKs are 880 sq ft. Every plan, with its built-up area, is on the Floor Plans page.",
+        "One and two bedroom homes, 196 of them across six blocks on two acres. The 1 BHKs run from 615 to 680 sq ft and the 2 BHKs are 880 sq ft. Every plan, with its built-up area, is on the Floor Plans page.",
     },
     {
       question: "Where exactly is the project?",
@@ -103,7 +103,7 @@ export const faqsBySlug: Record<string, readonly Faq[]> = {
     {
       question: "Where exactly is the project?",
       answer:
-        "At Singasandra, off Hosur Road at Begur — 1.2 kilometres in from Hosur Road, 3.2 from Electronic City and 6 from the Silk Board junction, facing a sixty-foot main road. The Location page has a live map, and we will gladly meet you at the site.",
+        "At Singasandra, off Hosur Road at Begur, 1.2 kilometres in from Hosur Road, 3.2 from Electronic City and 6 from the Silk Board junction, facing a sixty-foot main road. The Location page has a live map, and we will gladly meet you at the site.",
     },
     {
       question: "What is included in the development?",

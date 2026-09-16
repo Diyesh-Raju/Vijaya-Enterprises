@@ -31,7 +31,9 @@ const channels = [
     label: "Call us",
     value: contact.phoneDisplay,
     href: contact.phoneHref,
-    hint: contact.hours,
+    // The other three lines, then the hours: a caller who gets no answer
+    // on the first has the rest in front of them.
+    hint: `Also ${contact.otherPhones.map((line) => line.display).join(", ")}. ${contact.hours}.`,
     mark: <PhoneAppMark aria-hidden="true" className="h-full w-full" />,
   },
   {
@@ -56,7 +58,7 @@ export default function ContactPage() {
       <PageHero
         eyebrow="Contact Us"
         title={<>Let&rsquo;s talk about what you want to build.</>}
-        lead="Whether it is a home for your family, a contract to construct, or land you are considering developing — start with a conversation."
+        lead="Whether it is a home for your family, a contract to construct, or land you are considering developing, start with a conversation."
         image={img.meetingHands}
         imageAlt={alt.meetingHands}
       />

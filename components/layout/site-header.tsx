@@ -188,7 +188,7 @@ export function SiteHeader() {
             {/* Left — the lockup, unchanged, and it still goes home */}
             <Link
               href="/"
-              aria-label="Vijaya Enterprises — home"
+              aria-label="Vijaya Enterprises, home"
               className="inline-flex shrink-0 rounded-2xl"
             >
               {/* Keyed to `scrolled` rather than `light`: while the panel is

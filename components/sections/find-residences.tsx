@@ -73,19 +73,14 @@ const tabs = [
 ] as const;
 
 /**
- * The stock the panel can show: the projects whose real details have come in.
- * `ProjectCard` needs `projectType` and a photograph to draw a full card, and
- * `category` is what the Project Type menu matches on.
- *
- * Entries 4-8 in `lib/projects.ts` are still placeholders, and they are left
- * out rather than returned as blank tiles under a search somebody just ran —
- * an unnamed card is fine in the listing grid, where it reads as "more to
- * come", and misleading as a search result. They join the moment they are
- * filled in; nothing here needs editing.
+ * The stock the panel can show: every project on file, the same list the
+ * listing page draws, so a search here and a search there agree. Asked for
+ * by name (2026-09-16); until then the placeholders were left out. A card
+ * with a page of its own is a link to it, and `category` is what the
+ * Project Type menu matches on, so a placeholder without one only comes up
+ * under "Any".
  */
-const searchable = projects.filter(
-  (project) => Boolean(project.image) && Boolean(project.category),
-);
+const searchable = projects;
 
 /**
  * Taken from the stock above rather than from every record, so the menu never

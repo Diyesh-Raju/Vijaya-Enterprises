@@ -9,6 +9,16 @@ import {
   type Viewport,
 } from "@/lib/scroll";
 
+/**
+ * The windows the reveal runs on: the site's `desk` breakpoint, exactly as
+ * `globals.css` declares it. Below it the four steps are simply there, one
+ * under the other with their photographs open — asked for by name
+ * (2026-09-16): on a phone the pinned screens and the cuts opening on the
+ * thumb read as four pictures that would not arrive, and the finished band
+ * is what the markup already describes.
+ */
+const RUNS_ON = "(min-width: 48rem) and (min-height: 500px)";
+
 export type ProcessStep = {
   step: string;
   /**
@@ -289,6 +299,7 @@ export function ProcessReveal({ items }: { items: readonly ProcessStep[] }) {
     if (!band) return;
 
     if (prefersReducedMotion()) return;
+    if (!window.matchMedia(RUNS_ON).matches) return;
 
     const panels: Panel[] = [];
     const tracks = band.querySelectorAll<HTMLLIElement>(".process-panel");

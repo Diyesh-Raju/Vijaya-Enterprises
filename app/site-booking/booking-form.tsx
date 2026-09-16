@@ -122,7 +122,7 @@ function Pill({
   );
 }
 
-/** One line on the stub: a small label over the value, or a dash until chosen. */
+/** One line on the stub: a small label over the value, or a note until chosen. */
 function StubRow({ label, value }: { label: string; value?: string }) {
   return (
     <div>
@@ -135,7 +135,7 @@ function StubRow({ label, value }: { label: string; value?: string }) {
           value ? "font-semibold text-white" : "text-white/35",
         )}
       >
-        {value ?? "—"}
+        {value ?? "Not chosen"}
       </dd>
     </div>
   );

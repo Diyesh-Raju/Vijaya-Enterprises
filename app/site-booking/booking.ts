@@ -33,7 +33,7 @@ export const TIME_SLOT_VALUES = TIME_SLOTS.map((slot) => slot.value) as TimeSlot
  * the site has no page for yet. Named so it reads sensibly in the CRM's
  * Lead Details panel on its own.
  */
-export const OTHER_PROJECT = "Not sure yet — help me choose";
+export const OTHER_PROJECT = "Not sure yet, help me choose";
 
 /**
  * What the project picker offers: every project with a page of its own, then

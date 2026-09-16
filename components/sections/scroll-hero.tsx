@@ -1324,7 +1324,7 @@ export function ScrollHero() {
         <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center">
           <h1 ref={markRef} className="m-0 leading-none opacity-0">
             <span className="sr-only">
-              Vijaya Enterprises — building trust since 1973
+              Vijaya Enterprises, building trust since 1973
             </span>
             {/* Nudged left of, and up from, the centre its box sits on.
                 Percentages of the lockup's own width and height, so both

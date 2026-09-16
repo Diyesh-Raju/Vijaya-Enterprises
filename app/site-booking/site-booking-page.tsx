@@ -58,7 +58,7 @@ export function SiteBookingPage({ project }: { project?: Project & { slug: strin
         lead={
           project
             ? `Book a visit to ${project.name} in ${project.locality}. Pick a day and a time of day, and we will meet you there.`
-            : "A home is not chosen from a screen. Book a site visit to any of our projects — pick a day and a time, and we will meet you there."
+            : "A home is not chosen from a screen. Book a site visit to any of our projects, pick a day and a time, and we will meet you there."
         }
         image={project?.heroImage ?? img.residentialTowers}
         imageAlt={project?.heroAlt ?? alt.residentialTowers}
@@ -178,7 +178,7 @@ export function SiteBookingPage({ project }: { project?: Project & { slug: strin
               </Reveal>
               <Reveal delay={160}>
                 <p className="mt-6 text-[1.0625rem] leading-[1.8] text-slate-body">
-                  Pricing, layouts, possession, what is around the site — call
+                  Pricing, layouts, possession, what is around the site, call
                   or message us and you will reach someone who can answer. Or
                   send an enquiry and we will come back to you the same working
                   day.

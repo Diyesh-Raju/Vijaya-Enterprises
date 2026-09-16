@@ -59,7 +59,7 @@ const awards = [
     year: "2022",
     level: "platinum" as const,
     title: "Icons of Indian Business",
-    subtitle: "IIB Best Builders & Land Developers — Engineering Excellence",
+    subtitle: "IIB Best Builders & Land Developers, Engineering Excellence",
     description:
       "Awarded on Engineers' Day, in memory of Bharat Ratna Sir M Vishweshwarayya.",
   },
@@ -112,7 +112,7 @@ const whyForYourHome = [
     title: "Vastu Compliant",
     body: "Homes planned to vastu principles, from the entrance through to the pooja room.",
     detail:
-      "Orientation, entrances, kitchens, pooja rooms and master bedrooms placed to vastu — without giving up the light, ventilation or usable area that make a plan work.",
+      "Orientation, entrances, kitchens, pooja rooms and master bedrooms placed to vastu, without giving up the light, ventilation or usable area that make a plan work.",
   },
 ];
 
@@ -245,7 +245,7 @@ export default function ResidentialPage() {
                         <p>
                           A house is finished in months. A home is lived in for
                           generations. That difference is what we have spent five
-                          decades learning — how a family actually uses a room, which
+                          decades learning, how a family actually uses a room, which
                           materials still look right after twenty years, and where the
                           shortcuts show up later.
                         </p>
@@ -351,10 +351,13 @@ export default function ResidentialPage() {
         <div className="relative z-10 bg-white">
           <Reviews />
 
-          {/* One ending, two shapes. The scrubbed aperture from `desk:` up;
-              below it, the two buttons a project page closes on. Each hides
-              itself at the other's widths and unmounts once the width is
-              settled, so only one of them is ever really on the page. */}
+          {/* The ending, in two parts. The scrubbed aperture from `desk:`
+              up, which hides itself on a phone; then the two buttons a
+              project page closes on, which both widths now get — on a
+              phone they are the whole ending, and on a laptop they are
+              what the aperture has spent five screens arguing for
+              (2026-09-16). Before that a laptop reached the end of the
+              page with nothing to press. */}
           <ApertureCta />
           <ResidentialCtaPhone />
         </div>

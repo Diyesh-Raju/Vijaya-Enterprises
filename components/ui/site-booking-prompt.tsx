@@ -31,7 +31,11 @@ import { cn } from "@/lib/cn";
  *
  * It speaks up once per visit. The first page that is scrolled far enough —
  * two fifths of the way down, or a screen and a half in, whichever comes
- * first, on the very frame that line is crossed — gets the balloon. It stays
+ * first, on the very frame that line is crossed — gets the balloon. The
+ * home page is the exception: its walkthrough pins the screen for several
+ * screens of scroll, and a balloon over that is a balloon over a film, so
+ * there it waits until the walkthrough has been scrolled right through —
+ * asked for by name (2026-09-16). See `walkthroughEnd`. It stays
  * for a while and then folds away, or folds when it is dismissed, and what
  * is left is the badge: a small round button in the corner that is on every
  * page from then on and opens the balloon again when pressed. That "once"
@@ -59,6 +63,19 @@ const LEAVE_MS = 360;
 const SEEN_KEY = "vijaya-site-booking-prompt";
 
 const PROJECT_PATH = /^\/residential\/([^/]+)(?:\/|$)/;
+
+/**
+ * Where the home page's pinned walkthrough lets go of the screen, in
+ * document pixels: the foot of its track less one screen, which is the
+ * scroll position at which the last frame has played and the page below
+ * starts to rise. `null` where there is no walkthrough — every other page,
+ * and a phone, whose home hero is a short strip that does not pin.
+ */
+const walkthroughEnd = (height: number) => {
+  const track = document.querySelector<HTMLElement>("section.h-hero-track");
+  if (!track || track.offsetHeight === 0) return null;
+  return track.offsetTop + track.offsetHeight - height;
+};
 const BOOKING_PATH = /^\/site-booking(?:\/|$)/;
 
 const readSeen = () => {
@@ -162,11 +179,15 @@ export function SiteBookingPrompt() {
     const stop = onScroll(({ y, height }) => {
       if (fired) return;
       const range = document.documentElement.scrollHeight - height;
-      // A page that cannot scroll, or has scrolled far enough by either rule.
+      const walkthrough = pathname === "/" ? walkthroughEnd(height) : null;
+      // A page that cannot scroll, or has scrolled far enough by either rule
+      // — or, on the home page, all the way through the walkthrough.
       const due =
-        range <= 0 ||
-        y >= range * SHOW_AT ||
-        y >= height * SHOW_AFTER_SCREENS;
+        walkthrough !== null
+          ? y >= walkthrough
+          : range <= 0 ||
+            y >= range * SHOW_AT ||
+            y >= height * SHOW_AFTER_SCREENS;
       if (!due) return;
 
       fired = true;

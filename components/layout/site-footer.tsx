@@ -113,7 +113,7 @@ export function SiteFooter() {
                 high rather than aligned. */}
             <Link
               href="/"
-              aria-label="Vijaya Enterprises — home"
+              aria-label="Vijaya Enterprises, home"
               className="mt-3 inline-flex rounded-2xl sm:mt-5 lg:mt-7"
             >
               <Logo reversed className="h-20 sm:h-24 lg:h-28" />

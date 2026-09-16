@@ -200,7 +200,9 @@ function Points({ points }: { points: readonly string[] }) {
   return (
     <ul
       className={
-        rows ? "undertake__points" : "grid gap-2.5 text-[0.9375rem]"
+        rows
+          ? "undertake__points undertake__list"
+          : "undertake__list grid gap-2.5 text-[0.9375rem]"
       }
       style={
         rows ? ({ "--point-rows": String(rows) } as CSSProperties) : undefined
@@ -273,6 +275,11 @@ export function Undertakings({ items }: { items: readonly Undertaking[] }) {
             key={item.id}
             id={item.id}
             aria-hidden="true"
+            // Which panel this anchor belongs to. Only read on a phone,
+            // where the six are stepped by the arrows rather than by the
+            // scroll and a deep link has no travel to land in — see
+            // `UndertakingsNav`.
+            data-index={index}
             className="undertake__anchor"
             style={
               {

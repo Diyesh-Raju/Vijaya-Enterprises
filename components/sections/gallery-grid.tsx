@@ -187,7 +187,7 @@ export function GalleryGrid({ section }: { section: GallerySection }) {
           key={item.alt}
           image={item.image}
           alt={item.alt}
-          caption={`${section.title} — ${item.alt}`}
+          caption={`${section.title}, ${item.alt}`}
           open={open === index}
           onClose={() => setOpen(null)}
         />

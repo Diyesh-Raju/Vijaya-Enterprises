@@ -18,8 +18,8 @@ export async function generateMetadata({
   if (!brochure) return {};
 
   return {
-    title: `${brochure.title} — Brochure`,
-    description: `The printed brochure for ${brochure.title}, ${brochure.place} — all ${brochure.pages.length} pages, and the PDF to keep.`,
+    title: `${brochure.title}, Brochure`,
+    description: `The printed brochure for ${brochure.title}, ${brochure.place}, all ${brochure.pages.length} pages, and the PDF to keep.`,
     alternates: { canonical: `/brochures/${brochure.slug}` },
   };
 }

@@ -4077,6 +4077,99 @@
 
 /* The ends of the six. Dimmed rather than taken away, so the pair keeps
    its shape and says which way there is still to go. */
+/* ---- On a phone: the description out, the title under the list --- */
+
+/* Three changes to the panel, all asked for by name (2026-09-16), and all
+   of them the same argument: on a phone the photograph is the panel, and
+   the copy over it had grown until there was no photograph left to see.
+
+   The description goes. It says in a paragraph what the list under it
+   says in six lines, and on a phone the list is the half that survives a
+   small screen — every point is a line, and a line is scannable where a
+   sentence over a picture is not. The block is hidden rather than dropped
+   from the markup: a laptop still reads it, and `nth-child` is what the
+   scrub lifts these four in on, so removing one would put the other three
+   on the wrong beat.
+
+   The list comes down a size, which is the rest of the picture given back.
+
+   And the title goes under the list. It is the tallest thing in the block
+   and it was sitting across the middle of the building; underneath, the
+   panel reads photograph first and name last, and the name lands next to
+   the count and the arrows that step it. */
+@media (max-width: 47.9375rem), (max-height: 499px) {
+  .undertake__copy > *:nth-child(3) {
+    display: none;
+  }
+
+  /* The list first, then the title. `order` rather than a second markup
+     order, so the DOM a screen reader meets is still eyebrow, title,
+     description, list. */
+  .undertake__copy > *:nth-child(4) {
+    order: 1;
+    margin-top: 1.25rem;
+  }
+
+  .undertake__copy > *:nth-child(2) {
+    order: 2;
+    margin-top: 1.25rem;
+  }
+
+  .undertake__list {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    gap: 0.4375rem 1.25rem;
+  }
+
+  .undertake__copy > *:nth-child(2) {
+    font-size: 1.375rem;
+    line-height: 1.15;
+  }
+
+  /* The arrows come down off the top corner and stand under the six rules,
+     centred — the count says which of the six you are on and the pair
+     under it is how you move, so the two read as one control. The rules
+     move up by exactly what the pair and its gap take.
+
+     Both clear the phone's action bar, which owns the bottom edge of the
+     window: `--action-bar-h` is 0 wherever the bar is not shown, so this
+     is the plain offset everywhere else. */
+  .undertake {
+    /* What the foot of the screen is spending: the gap under the arrows,
+       the arrows themselves, and the gap between them and the rules. The
+       rules are padded up by it, and the copy above is held clear of the
+       whole stack — three things that have to agree, so it is one number.
+
+       `--action-bar-h` is the phone's Call/WhatsApp bar, which owns the
+       bottom edge of the window; it is 0 wherever the bar is not shown. */
+    --undertake-foot: calc(
+      clamp(1rem, 3vh, 1.75rem) + var(--action-bar-h, 0px) + 2.5rem + 1rem
+    );
+  }
+
+  .undertake__nav {
+    --arrow-size: 2.5rem;
+    top: auto;
+    right: 0;
+    left: 0;
+    bottom: calc(clamp(1rem, 3vh, 1.75rem) + var(--action-bar-h, 0px));
+    flex-direction: row;
+    justify-content: center;
+    gap: 1.25rem;
+  }
+
+  .undertake__ticks {
+    padding-bottom: var(--undertake-foot);
+  }
+
+  /* And the copy stops above all of it. Without this the title, which is
+     now the last thing in the block, sets straight through the rules and
+     the arrows under them. */
+  .undertake__copy-layer {
+    padding-bottom: calc(var(--undertake-foot) + 1.25rem);
+  }
+}
+
 .undertake__step:disabled {
   opacity: 0.3;
   cursor: default;
@@ -4105,6 +4198,26 @@
     top: var(--header-h);
     height: calc(100svh - var(--header-h));
     overflow: hidden;
+  }
+
+  /* ---- On a phone: stepped, not scrolled ------------------------- */
+
+  /* One screen tall, so the page scrolls past the section the way it
+     scrolls past any other and the six panels change on the arrows alone.
+     The stage keeps its `sticky`, which with no travel under it has
+     nothing to do.
+
+     After the track's own height above, which it has to beat: the two
+     rules are the same weight, so this one only wins by coming second.
+
+     `ScrollScrub` still writes `--undertake` on the track and, with no
+     travel, writes 0 on every frame. The arrows write their own value on
+     the stage instead, which wins for everything inside it — see
+     `UndertakingsNav`. */
+  @media (max-width: 47.9375rem), (max-height: 499px) {
+    .undertake {
+      height: calc(100svh - var(--header-h));
+    }
   }
 
   /* Pinned, the anchors are the only thing in the track that still has a
@@ -4799,6 +4912,44 @@
     grid-template-columns: max-content minmax(0, max-content);
     justify-content: space-between;
     column-gap: 1.5rem;
+  }
+}
+
+/* On a phone, the copy comes down a size across the board — asked for by
+   name (2026-09-16), and for the same reason as the section above it: the
+   panel is a photograph of the work being described, and the words had
+   grown to cover the people in it. Small enough that the picture is the
+   panel again, and no smaller than the body size the rest of the site
+   reads at over a photograph.
+
+   Set here rather than on the classes in the markup because every one of
+   these is a `clamp()` whose floor is what a phone gets — lowering the
+   floor would take the laptop's size down with it. */
+@media (max-width: 47.9375rem), (max-height: 499px) {
+  .stages__text > h3 {
+    font-size: 1.375rem;
+    line-height: 1.15;
+  }
+
+  .stages__text > p {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+
+  .stages__points {
+    margin-top: 1rem;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    gap: 0.4375rem 1.25rem;
+  }
+
+  .stages__count > span:first-child {
+    font-size: 1.75rem;
+  }
+
+  .stages__count > span:last-child {
+    font-size: 0.8125rem;
   }
 }
 

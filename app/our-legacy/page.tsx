@@ -13,7 +13,7 @@ import { img, alt } from "@/lib/images";
 export const metadata: Metadata = {
   title: "Our Legacy",
   description:
-    "Building trust since 1973. Five decades of residential, commercial, industrial and institutional construction in Karnataka — and the values that have not changed.",
+    "Building trust since 1973. Five decades of residential, commercial, industrial and institutional construction in Karnataka, and the values that have not changed.",
   alternates: { canonical: "/our-legacy" },
 };
 
@@ -47,7 +47,7 @@ const story: readonly Chapter[] = [
   {
     marker: "Growing",
     title: "Years of construction experience.",
-    body: "Growing through projects, partnerships and relationships — and through every change in materials, methods and technology the industry went through.",
+    body: "Growing through projects, partnerships and relationships, and through every change in materials, methods and technology the industry went through.",
     image: img.storySteelWelder,
     imageAlt: alt.storySteelWelder,
   },

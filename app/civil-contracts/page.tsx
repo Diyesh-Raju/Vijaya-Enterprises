@@ -37,9 +37,9 @@ export const metadata: Metadata = {
 const undertakings: Undertaking[] = [
   {
     id: "commercial",
-    eyebrow: "01 — Commercial Construction",
+    eyebrow: "01 · Commercial Construction",
     title: "Commercial spaces built around your business.",
-    body: "We undertake complete civil construction — from structural work and building services to finishing and final handover. Our focus is on creating durable, functional spaces built for everyday use and long-term performance.",
+    body: "We undertake complete civil construction, from structural work and building services to finishing and final handover. Our focus is on creating durable, functional spaces built for everyday use and long-term performance.",
     points: [
       "Corporate offices and workspaces",
       "Commercial buildings and complexes",
@@ -56,7 +56,7 @@ const undertakings: Undertaking[] = [
   },
   {
     id: "industrial",
-    eyebrow: "02 — Industrial Construction",
+    eyebrow: "02 · Industrial Construction",
     title: "Industrial structures built for performance.",
     body: "Industrial construction demands more than a strong building. It requires careful planning, structural precision and an understanding of how the facility will operate.",
     points: [
@@ -73,7 +73,7 @@ const undertakings: Undertaking[] = [
   },
   {
     id: "institutional",
-    eyebrow: "03 — Institutional Construction",
+    eyebrow: "03 · Institutional Construction",
     title: "Buildings that serve people for generations.",
     body: "Institutional buildings demand reliability, safety and careful execution because they are used by large numbers of people every day. We undertake civil construction and infrastructure works for institutions where quality, durability and dependable project execution are essential.",
     points: [
@@ -92,9 +92,9 @@ const undertakings: Undertaking[] = [
   },
   {
     id: "residential-contracts",
-    eyebrow: "04 — Residential Construction",
+    eyebrow: "04 · Residential Construction",
     title: "Homes built around the way you want to live.",
-    body: "We undertake residential construction for individual homeowners, developers and builders — from foundation and structural work to finishing and final handover. Whether it is a private residence or a larger residential development, we bring the same attention to quality, workmanship and execution.",
+    body: "We undertake residential construction for individual homeowners, developers and builders, from foundation and structural work to finishing and final handover. Whether it is a private residence or a larger residential development, we bring the same attention to quality, workmanship and execution.",
     points: [
       "Independent homes and villas",
       "Residential buildings and apartments",
@@ -112,8 +112,8 @@ const undertakings: Undertaking[] = [
   },
   {
     id: "renovation",
-    eyebrow: "05 — Renovation, Expansion & Redevelopment",
-    title: "Upgrade, expand or rebuild — without starting from scratch.",
+    eyebrow: "05 · Renovation, Expansion & Redevelopment",
+    title: "Upgrade, expand or rebuild, without starting from scratch.",
     body: "Not every project begins construction on an empty site. We undertake additions, extensions, renovations and redevelopment of existing buildings, working around the structure and conditions already on site. Our experience allows us to approach such projects with practical planning, careful execution and minimal disruption.",
     points: [
       "Building extensions and additional floors",
@@ -128,8 +128,8 @@ const undertakings: Undertaking[] = [
   },
   {
     id: "landscaping",
-    eyebrow: "06 — Landscaping & Site Development",
-    title: "From the building to the landscape — we complete the whole site.",
+    eyebrow: "06 · Landscaping & Site Development",
+    title: "From the building to the landscape, we complete the whole site.",
     body: "We undertake landscaping and external development works to transform unfinished sites into functional, well-planned outdoor environments. Our scope covers both hardscape and softscape works, coordinated with the building and site requirements.",
     points: [
       "Landscape design execution",
@@ -158,7 +158,7 @@ const undertakings: Undertaking[] = [
 const stages: ContractStage[] = [
   {
     step: "01",
-    title: "01 — Site & Project Assessment",
+    title: "01 · Site & Project Assessment",
     subtitle: "We start by understanding the project.",
     points: [
       "Site inspection and existing-condition assessment",
@@ -173,7 +173,7 @@ const stages: ContractStage[] = [
   },
   {
     step: "02",
-    title: "02 — Legal & Statutory Verification",
+    title: "02 · Legal & Statutory Verification",
     subtitle: "Before we draw, we make sure the project can proceed.",
     points: [
       "Property and ownership documentation",
@@ -185,13 +185,13 @@ const stages: ContractStage[] = [
       "Required NOCs and statutory clearances",
       "Identification of potential legal or approval issues",
     ],
-    note: "We identify requirements early — before they become construction problems.",
+    note: "We identify requirements early, before they become construction problems.",
     image: img.legalVerificationDesk,
     imageAlt: alt.legalVerificationDesk,
   },
   {
     step: "03",
-    title: "03 — Drawings & Detailed Estimate",
+    title: "03 · Drawings & Detailed Estimate",
     subtitle: "Every part of the project is defined before construction.",
     points: [
       "Architectural and structural drawings",
@@ -208,8 +208,8 @@ const stages: ContractStage[] = [
   },
   {
     step: "04",
-    title: "04 — Agreement & Construction Schedule",
-    subtitle: "Scope, cost and timelines — clearly agreed.",
+    title: "04 · Agreement & Construction Schedule",
+    subtitle: "Scope, cost and timelines, clearly agreed.",
     points: [
       "Final scope of work",
       "Detailed specifications",
@@ -226,7 +226,7 @@ const stages: ContractStage[] = [
   },
   {
     step: "05",
-    title: "05 — In-House Execution & Site Management",
+    title: "05 · In-House Execution & Site Management",
     subtitle: "Our team takes the project from plans to completion.",
     points: [
       "Civil and structural construction",
@@ -247,7 +247,7 @@ const stages: ContractStage[] = [
   },
   {
     step: "06",
-    title: "06 — Handover & After Completion",
+    title: "06 · Handover & After Completion",
     subtitle: "We stay involved until the project is properly handed over.",
     points: [
       "Final inspection",
@@ -393,7 +393,7 @@ export default function CivilContractsPage() {
                   above body copy, which is the point of it, but plainly
                   second to the line above. */}
               <ScrollLit className="mt-8 text-[clamp(1.0625rem,1.7vw,1.3125rem)] leading-[1.75]">
-                {`A contract with Vijaya covers the building itself — foundation
+                {`A contract with Vijaya covers the building itself, foundation
                   to finishes, on your land, to your drawings or ours. No share
                   and no stake: what is built stays entirely yours, and we are
                   paid to construct it properly. Any size, anywhere in and
@@ -493,7 +493,7 @@ export default function CivilContractsPage() {
             <Reveal delay={80}>
               <p className="mx-auto mt-6 max-w-[38rem] text-[1.0625rem] leading-[1.8] text-slate-body">
                 Bring us the plot, the drawings and a budget. We will tell you
-                plainly what it will take to build — item by item, before
+                plainly what it will take to build, item by item, before
                 anything is signed.
               </p>
             </Reveal>

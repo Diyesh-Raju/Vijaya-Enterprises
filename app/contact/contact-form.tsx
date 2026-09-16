@@ -74,7 +74,7 @@ export function ContactForm() {
           {state.message}
         </p>
         <p className="mt-5 text-[0.9375rem] leading-relaxed text-white/60">
-          If your requirement is urgent, please call us directly — you will reach
+          If your requirement is urgent, please call us directly, you will reach
           someone who can help.
         </p>
       </div>

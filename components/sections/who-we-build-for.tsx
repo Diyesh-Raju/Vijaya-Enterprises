@@ -161,7 +161,7 @@ export function WhoWeBuildFor() {
             <p className="mx-auto mt-7 max-w-[42rem] font-system text-[clamp(1.0625rem,1.5vw,1.375rem)] leading-[1.6] text-slate-body">
               Few builders work across every kind of project. We have handed over
               homes and apartments, factories, campuses, hospitals and public
-              buildings — and that breadth is the thing we are most confident
+              buildings, and that breadth is the thing we are most confident
               about.
             </p>
           </Reveal>

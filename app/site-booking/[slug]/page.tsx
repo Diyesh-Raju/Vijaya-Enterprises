@@ -21,7 +21,7 @@ export async function generateMetadata({
   if (!project) return {};
 
   return {
-    title: `Book a Site Visit — ${project.name}`,
+    title: `Book a Site Visit, ${project.name}`,
     description: `Book a site visit to ${project.name} in ${project.locality}. Pick a day and a time of day, and we will meet you at the site.`,
     alternates: { canonical: `/site-booking/${project.slug}` },
   };

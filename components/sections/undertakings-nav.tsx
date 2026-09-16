@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowDownIcon, ArrowUpIcon } from "@/components/ui/line-icons";
 import { glideTo } from "@/lib/glide";
 import { onScroll, prefersReducedMotion } from "@/lib/scroll";
@@ -43,6 +43,34 @@ const STEP_MS = 560;
  * broken, which is exactly what they did.
  */
 const SLACK = 2;
+
+/**
+ * Where the section stops being scrolled through and starts being stepped:
+ * anything that is not a laptop-shaped window, which is `desk:`'s query
+ * turned around.
+ *
+ * On a phone the six panels no longer ride a track. The section is one
+ * screen tall, the page scrolls past it like any other, and these two
+ * arrows are the only way through the six — asked for by name
+ * (2026-09-16). Four screens of pinned track is a long drag with a thumb
+ * for someone who only wanted to get to the next section, and it took the
+ * arrows' own purpose away: on a phone they were a shortcut through
+ * scrolling that the reader was doing anyway.
+ *
+ * What a press does instead is write the scrub's own clock. Every
+ * changeover in `globals.css` is an animation held at
+ * `var(--undertake)`, so handing it a new time plays exactly the same
+ * move the wheel would have scrubbed — the same wipes, the same pan, the
+ * same rules filling along the foot. Nothing about the section's
+ * appearance is a second implementation; only what moves the clock is.
+ */
+const STEPPED_QUERY = "(max-width: 47.9375rem), (max-height: 499px)";
+
+/** How the clock is written when it is not the page writing it. */
+const CLOCK_VAR = "--undertake";
+
+/** Eased like everything else that arrives on this site. */
+const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
 /**
  * Where the panels rest, and which one the page is on.
@@ -103,6 +131,12 @@ function geometry(track: HTMLElement, { count, slot, hold, span }: Clock) {
 export function UndertakingsNav(clock: Clock) {
   const { count, slot, hold, span } = clock;
   const navRef = useRef<HTMLDivElement>(null);
+  /** Whether this window steps the six rather than scrolling through them. */
+  const [stepped, setStepped] = useState(false);
+  /** Which panel is up, while stepping. The scroll pass owns it otherwise. */
+  const at = useRef(0);
+  /** The tween in flight, so a second press takes over rather than fighting. */
+  const tween = useRef(0);
   /**
    * Where the last press was headed, and until when that is still the
    * answer. Timed rather than asked: a press cancels the glide already
@@ -117,7 +151,57 @@ export function UndertakingsNav(clock: Clock) {
    *  on all but the six frames of a section where the answer changes. */
   const shown = useRef(ends);
 
+  /**
+   * Writes the clock straight onto the stage, easing from wherever it is
+   * to where the asked-for panel rests.
+   *
+   * On the stage rather than on the track, which is what keeps the two
+   * writers apart: `ScrollScrub` owns `--undertake` on the track, and with
+   * no travel under it on a phone it writes 0 on every frame. A custom
+   * property set on a descendant wins for everything inside it, so the
+   * stage's value is the one the panels actually read and neither has to
+   * know about the other.
+   */
+  const glideClock = useCallback(
+    (to: number) => {
+      const stage = navRef.current?.closest<HTMLElement>(".undertake__stage");
+      if (!stage) return;
+
+      const target = to * slot;
+      const from =
+        parseFloat(stage.style.getPropertyValue(CLOCK_VAR)) || at.current * slot;
+      at.current = to;
+
+      cancelAnimationFrame(tween.current);
+      if (prefersReducedMotion()) {
+        stage.style.setProperty(CLOCK_VAR, `${target}ms`);
+        return;
+      }
+
+      const started = performance.now();
+      const run = (now: number) => {
+        const t = Math.min((now - started) / STEP_MS, 1);
+        const value = from + (target - from) * easeOut(t);
+        stage.style.setProperty(CLOCK_VAR, `${value}ms`);
+        if (t < 1) tween.current = requestAnimationFrame(run);
+      };
+      tween.current = requestAnimationFrame(run);
+    },
+    [slot],
+  );
+
   const step = (delta: number) => {
+    // Stepped: the panel on screen is the one we last moved to, and a press
+    // simply asks for its neighbour. No geometry — there is no track under
+    // this, and nothing to measure against.
+    if (stepped) {
+      const to = at.current + delta;
+      if (to < 0 || to > count - 1) return;
+      glideClock(to);
+      setEnds({ first: to === 0, last: to === count - 1 });
+      return;
+    }
+
     const track = navRef.current?.closest<HTMLElement>(".undertake");
     if (!track) return;
 
@@ -146,9 +230,47 @@ export function UndertakingsNav(clock: Clock) {
     headed.current = { index: to, until: performance.now() + ms };
   };
 
+  // Which of the two the window is, kept live: a phone turned on its side
+  // is a laptop-shaped window by this measure, and the section has to
+  // change hands with it.
+  useEffect(() => {
+    const query = window.matchMedia(STEPPED_QUERY);
+    const sync = () => setStepped(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+
+  // Stepped, the section opens on the first panel — or on the one a deep
+  // link asked for, since `#industrial` and its neighbours have no travel
+  // to land in here and would otherwise all come out at the first.
+  useEffect(() => {
+    if (!stepped) return;
+
+    const hash = window.location.hash.slice(1);
+    const anchor = hash ? document.getElementById(hash) : null;
+    const asked = Number(anchor?.dataset.index);
+    const opening = Number.isInteger(asked) ? Math.min(asked, count - 1) : 0;
+
+    at.current = opening;
+    glideClock(opening);
+
+    // Which arrow is dimmed follows on the next frame rather than in the
+    // body of the effect: the answer is read off the document, and the
+    // pair cannot be pressed before it has been painted anyway.
+    const settle = requestAnimationFrame(() =>
+      setEnds({ first: opening === 0, last: opening === count - 1 }),
+    );
+
+    return () => {
+      cancelAnimationFrame(settle);
+      cancelAnimationFrame(tween.current);
+    };
+  }, [stepped, count, glideClock]);
+
   useEffect(() => {
     const track = navRef.current?.closest<HTMLElement>(".undertake");
-    if (!track || prefersReducedMotion()) return;
+    if (!track || stepped || prefersReducedMotion()) return;
 
     return onScroll(() => {
       const { index, moving } = geometry(track, { count, slot, hold, span });
@@ -161,7 +283,7 @@ export function UndertakingsNav(clock: Clock) {
       shown.current = next;
       setEnds(next);
     });
-  }, [count, slot, hold, span]);
+  }, [count, slot, hold, span, stepped]);
 
   return (
     <div ref={navRef} className="undertake__nav">

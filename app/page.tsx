@@ -23,7 +23,7 @@ import { VideoBackdrop } from "@/components/ui/video-backdrop";
 import { img, alt, video } from "@/lib/images";
 
 export const metadata: Metadata = {
-  title: "Vijaya Enterprises — Building Trust Since 1973",
+  title: "Vijaya Enterprises, Building Trust Since 1973",
   description:
     "A diversified construction and development company since 1973. Residential, commercial, industrial and institutional projects across Karnataka, built with experience, care and quality.",
   alternates: { canonical: "/" },
@@ -91,7 +91,7 @@ export default function HomePage() {
         id="what-we-build"
         eyebrow="What We Build"
         title="One Construction Partner. Many Possibilities."
-        subtitle="Vijaya Enterprises is a diversified construction and development company — not only a residential developer. Whatever the sector, the standard is the same."
+        subtitle="Vijaya Enterprises is a diversified construction and development company, not only a residential developer. Whatever the sector, the standard is the same."
         services={buildTypes}
       />
 
@@ -167,7 +167,7 @@ export default function HomePage() {
                     <p>
                       Buying a home is one of the biggest decisions a family makes.
                       That is why our residential developments focus on what matters
-                      beyond the walls — quality, location, functionality, value and
+                      beyond the walls, quality, location, functionality, value and
                       peace of mind.
                     </p>
                     <p>
@@ -178,7 +178,7 @@ export default function HomePage() {
                   </div>
                   <p className="desk:hidden">
                     Buying a home is one of the biggest decisions a family makes.
-                    Ours are planned around what matters beyond the walls — quality,
+                    Ours are planned around what matters beyond the walls, quality,
                     location, value and peace of mind.
                   </p>
                 </div>
@@ -290,7 +290,7 @@ export default function HomePage() {
               <PearlCard
                 href="/contact"
                 title="Your project. Our experience."
-                description="Homes, offices, warehouses, institutional work — and five decades of building behind it."
+                description="Homes, offices, warehouses, institutional work, and five decades of building behind it."
               />
             </Reveal>
             <Reveal delay={160}>
