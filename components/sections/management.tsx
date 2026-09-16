@@ -192,12 +192,6 @@ function LeaderCard({
       </button>
 
       {/* The role, under the circle rather than inside it (2026-09-12).
-          Set in Cinzel, which the head of "Who we build for" further down
-          this page already loads — it has no true lowercase, so "Founder"
-          comes out as a capital F over small capitals without anything here
-          having to uppercase it. That is also why there is no
-          `text-transform`: forcing caps would flatten the two sizes into one
-          and throw away the reason for using the face.
 
           It is outside the `<button>` on purpose. The button is round and
           clips to its own circle, so a line inside it would be cut off at
@@ -205,20 +199,26 @@ function LeaderCard({
           to become a stadium around a caption to keep it. The role is still
           announced with the portrait — the button's `aria-label` carries
           it — so nothing is lost by it not being pressable. */}
-      {/* Bigger and heavier, asked for on 2026-09-14: 22px to 32px against
-          the 18 to 26 it was, at 700 rather than the 500 `.inscribed` sets.
+      {/* Manrope, tracked capitals, and a hairline under it — asked to read
+          cleaner and neater, and underlined, on 2026-09-16. Until then it
+          was Cinzel at 700, 22px to 32px, the one place the site set that
+          face bold; the bold cut is unloaded again with it (see
+          `app/layout.tsx`), so the page is back to one Cinzel file.
 
-          The 700 is a real cut. Cinzel is a static face and only 500 was
-          loaded, so `font-bold` on its own would have had the browser draw a
-          fake bold — which is the one thing the `.inscribed` class exists to
-          prevent, and it fails silently. `app/layout.tsx` now loads the
-          weight this asks for.
+          The setting is the open panel's own role label, grown: the same
+          face, weight and case it puts over the leader's name, so the two
+          places the role appears read as one thing. Sized to keep the
+          presence the bigger serif had — capitals at 17px to 21px stand
+          about as tall on the page as Cinzel's small capitals did at 22 to
+          32 — and tracked out, as capitals want to be.
 
-          The tracking opens with the size rather than staying put. These are
-          capitals, and the larger they are set the less air between them
-          they need — 0.04em reads tight on a 32px line where it was right at
-          18. */}
-      <p className="inscribed mt-6 text-center text-[clamp(1.375rem,2.6vw,2rem)] font-bold leading-[1.15] tracking-[0.025em] text-navy-900">
+          The underline is `text-decoration` rather than a border on the
+          block: "Managing Director & CEO" breaks to two lines on a laptop,
+          and a decoration follows each line where a border would run once
+          under the pair. Brass, like every rule on the site, and set a
+          little below the baseline so it reads as a rule under the word
+          rather than a strike through its feet. */}
+      <p className="text-balance-head mt-6 text-center text-[clamp(1.0625rem,1.7vw,1.3125rem)] font-semibold uppercase leading-[1.5] tracking-[0.18em] text-navy-900 underline decoration-brass-500 decoration-[1.5px] underline-offset-[0.5em]">
         {leader.role}
       </p>
     </div>

@@ -30,18 +30,19 @@ const manrope = Manrope({
 // that otherwise has exactly one. Reach for `font-display` — Manrope —
 // everywhere else.
 //
-// Two weights rather than one since 2026-09-14, when the roles under the
-// management portraits were asked to read bolder. That is a second file, and
-// it is the honest way to spend it: Cinzel is a static face, so asking for
-// 700 with only 500 loaded does not select a heavier cut — it has the browser
-// smear the one it has, thickening the strokes and closing the counters at
-// exactly the sizes this face is used at. The browser fetches only the
-// weights a page actually sets.
+// One weight. It was two from 2026-09-14, when the roles under the
+// management portraits were set in this face at 700, until 2026-09-16, when
+// they moved to Manrope; nothing sets Cinzel bold now, so the second file
+// went with them. If something asks for it again, load it here rather than
+// writing `font-bold`: Cinzel is a static face, so asking for 700 with only
+// 500 loaded does not select a heavier cut — it has the browser smear the
+// one it has, thickening the strokes and closing the counters at exactly the
+// sizes this face is used at.
 const cinzel = Cinzel({
   variable: "--font-cinzel",
   subsets: ["latin"],
   display: "swap",
-  weight: ["500", "700"],
+  weight: ["500"],
 });
 
 // The third face, and the only one an English reader never loads: Kannada,
