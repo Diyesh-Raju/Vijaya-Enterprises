@@ -45,6 +45,11 @@ import luxoPlanRouteMap from "@/assets/gallery/vijaya-luxo/plan-route-map.jpg";
 import aquaExteriorRender from "@/assets/gallery/vijaya-aquagreen/exterior-render.jpg";
 import aquaPlanMaster from "@/assets/gallery/vijaya-aquagreen/plan-master.jpg";
 import aquaPlanLocationMap from "@/assets/gallery/vijaya-aquagreen/plan-location-map.jpg";
+
+/* Vijaya Springwoods: the master plan and the location map off the back of
+   its two-page brochure. The render is in `lib/images.ts`. */
+import springPlanMaster from "@/assets/gallery/vijaya-springwoods/plan-master.jpg";
+import springPlanLocationMap from "@/assets/gallery/vijaya-springwoods/plan-location-map.jpg";
 import { img, alt } from "@/lib/images";
 
 /**
@@ -65,7 +70,7 @@ export type GalleryImage = {
 
 export type GallerySection = {
   title: string;
-  layout: "exterior" | "amenities" | "renders" | "interiors" | "plans";
+  layout: "exterior" | "amenities" | "renders" | "interiors" | "single" | "plans";
   images: readonly GalleryImage[];
 };
 
@@ -286,9 +291,37 @@ const vijayaAquagreen: readonly GallerySection[] = [
   },
 ];
 
+const vijayaSpringwoods: readonly GallerySection[] = [
+  {
+    title: "Exterior",
+    layout: "single",
+    images: [
+      {
+        image: img.vijayaSpringwoodsRender,
+        alt: alt.vijayaSpringwoodsRender,
+      },
+    ],
+  },
+  {
+    title: "Master Plan",
+    layout: "plans",
+    images: [
+      {
+        image: springPlanMaster,
+        alt: "Master plan: a row of 3 BHK flats along the top and a row of 2 BHK flats along the bottom, either side of a central driveway, with parking along the boundary, the pool and clubhouse at the road end and the 60-foot road beside them",
+      },
+      {
+        image: springPlanLocationMap,
+        alt: "Location map placing the project off Hosur Road at Begur, 1.2 kilometres in from the Hosur Road junction near Manipal County Resort, with Silk Board, Electronic City and the NICE corridor marked and the distances to each listed",
+      },
+    ],
+  },
+];
+
 /** Keyed by project slug, so a project page can look up its own gallery. */
 export const galleryBySlug: Record<string, readonly GallerySection[]> = {
   "hara-vijaya-heights": haraVijayaHeights,
   "vijaya-luxo": vijayaLuxo,
   "vijaya-aquagreen": vijayaAquagreen,
+  "vijaya-springwoods": vijayaSpringwoods,
 };

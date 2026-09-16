@@ -121,6 +121,13 @@ import vijayaLuxoNight from "@/assets/images/vijaya-luxo-night.jpg";
    brochure's "perfect balance" spread; the finished building itself is
    `vijayAquaGreen`, further down. */
 import vijayaAquagreenRender from "@/assets/images/vijaya-aquagreen-render.jpg";
+/* Vijaya Springwoods, Singasandra. Both are the one render on the front of
+   the brochure — a two-page fold, scanned — cut from a 4800px render of the
+   page: the whole elevation for the hero and the card, cropped in under the
+   BBMP seal that sits in its sky, and the entrance corner for the concept
+   panel. */
+import vijayaSpringwoodsRender from "@/assets/images/vijaya-springwoods-render.jpg";
+import vijayaSpringwoodsCorner from "@/assets/images/vijaya-springwoods-corner.jpg";
 /* The two management portraits on /our-legacy — the founder and the
    managing director. Vijaya's own, like `tudorApartments`; see
    `Management`. */
@@ -356,6 +363,8 @@ export const img = {
   vijayaLuxoDusk,
   vijayaLuxoNight,
   vijayaAquagreenRender,
+  vijayaSpringwoodsRender,
+  vijayaSpringwoodsCorner,
   hbShivakumar,
   handoverFamilyEngineer,
   mahanteshNelavagi,
@@ -485,6 +494,10 @@ export const alt = {
     "Vijaya Luxo at night, every window lit, the timber fin carrying the name and the planted compound wall below",
   vijayaAquagreenRender:
     "Architectural view of Vijaya Aquagreen: three low blocks in white and timber stepping back along the road behind a planted verge, the entrance gate in the foreground",
+  vijayaSpringwoodsRender:
+    "Architectural view of Vijaya Springwoods: a long five-storey block in white with terracotta panels and stone-clad piers, balconies running the length of it, lawn and a road in front",
+  vijayaSpringwoodsCorner:
+    "The entrance corner of Vijaya Springwoods, the name on a terracotta panel above the glazed lobby and planting up the stone piers",
   hbShivakumar:
     "Sri H. B. Shivakumar, founder of Vijaya Enterprises, in a dark suit and striped tie",
   mahanteshNelavagi:

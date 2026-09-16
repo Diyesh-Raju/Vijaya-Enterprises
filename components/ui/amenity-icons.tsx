@@ -356,6 +356,18 @@ function Stp({ className }: { className?: string }) {
   );
 }
 
+/** Auditorium: rows of seats rising towards a screen. */
+function Auditorium({ className }: { className?: string }) {
+  return (
+    <Amenity className={className}>
+      <rect x="8" y="7" width="32" height="14" rx="1.5" />
+      <path d="M12 30h6v5h-6zM21 30h6v5h-6zM30 30h6v5h-6z" />
+      <path d="M10 35h10v5H10zM19 35h10v5h-10zM28 35h10v5h-10z" />
+      <path d="M14 27h5M22 27h5M29 27h5" />
+    </Amenity>
+  );
+}
+
 export const amenityIcons = {
   clubhouse: Clubhouse,
   "swimming-pool": SwimmingPool,
@@ -380,6 +392,7 @@ export const amenityIcons = {
   "party-hall": PartyHall,
   "organic-waste-composter": OrganicWasteComposter,
   stp: Stp,
+  auditorium: Auditorium,
 } as const;
 
 export type AmenityIconName = keyof typeof amenityIcons;

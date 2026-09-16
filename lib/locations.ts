@@ -76,6 +76,17 @@ export const locationsBySlug: Record<string, ProjectLocations> = {
     },
     office,
   },
+  "vijaya-springwoods": {
+    project: {
+      title: "Location of the Project",
+      address: "#81 Singasandra Main Road, off Hosur Road, Begur, Bengaluru 560 068",
+      body: "Vijaya Springwoods faces a sixty-foot main road at Singasandra, 1.2 kilometres in from Hosur Road and 400 metres from Manipal County Resort. Electronic City is 3.2 kilometres on, the NICE Road 2.5, Bannerghatta Road 5 and the Silk Board junction 6 — with supermarkets, colleges, the bus terminal and restaurants along the same stretch.",
+      // ⚠️ The pin is a name-and-address search. Send the project's own Google
+      // Maps link if there is one and it will drop on the exact plot.
+      query: "Vijaya Springwoods, 81 Singasandra Main Road, Begur, Bengaluru 560068",
+    },
+    office,
+  },
 };
 
 /** The framed map. `output=embed` is the keyless embed Google serves. */

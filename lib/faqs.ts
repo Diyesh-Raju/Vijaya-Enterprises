@@ -94,4 +94,31 @@ export const faqsBySlug: Record<string, readonly Faq[]> = {
         "Yes, and we would rather you did. Photographs and drawings only go so far: come and see the finish, the light in the rooms and what is around the site. Get in touch and we will arrange a time that suits you.",
     },
   ],
+  "vijaya-springwoods": [
+    {
+      question: "What layouts are available at Vijaya Springwoods?",
+      answer:
+        "Two and three bedroom homes: the 2 BHK is 1,040 sq ft and the 3 BHK is 1,370 sq ft, each with every room dimensioned on the Floor Plans page. No two homes share a wall, so every flat has three sides of natural light and air.",
+    },
+    {
+      question: "Where exactly is the project?",
+      answer:
+        "At Singasandra, off Hosur Road at Begur — 1.2 kilometres in from Hosur Road, 3.2 from Electronic City and 6 from the Silk Board junction, facing a sixty-foot main road. The Location page has a live map, and we will gladly meet you at the site.",
+    },
+    {
+      question: "What is included in the development?",
+      answer:
+        "A pool, a gymnasium, a clubhouse, a party hall, a twenty-seat auditorium and a children's play area, with more than half the site kept open and landscaped. Security with intercom runs around the clock, there is visitors' parking, an automatic lift with power backup for it and the common areas, and rain water harvesting.",
+    },
+    {
+      question: "Is the project approved?",
+      answer:
+        "Yes. Vijaya Springwoods is BBMP approved, and each flat has its own independent electricity meter and a 24-hour water supply from overhead tanks and sumps.",
+    },
+    {
+      question: "Can I visit before deciding?",
+      answer:
+        "Yes, and we would rather you did. Photographs and drawings only go so far: come and see the finish, the light in the rooms and what is around the site. Get in touch and we will arrange a time that suits you.",
+    },
+  ],
 };

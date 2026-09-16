@@ -130,6 +130,11 @@ import aqua18 from "@/assets/brochures/vijaya-aquagreen/18.webp";
 import aqua19 from "@/assets/brochures/vijaya-aquagreen/19.webp";
 import aqua20 from "@/assets/brochures/vijaya-aquagreen/20.webp";
 
+import spring01 from "@/assets/brochures/vijaya-springwoods/01.webp";
+import spring02 from "@/assets/brochures/vijaya-springwoods/02.webp";
+import spring03 from "@/assets/brochures/vijaya-springwoods/03.webp";
+import spring04 from "@/assets/brochures/vijaya-springwoods/04.webp";
+
 import haraS01 from "@/assets/brochures/hara-vijaya-heights/small/01.webp";
 import haraS02 from "@/assets/brochures/hara-vijaya-heights/small/02.webp";
 import haraS03 from "@/assets/brochures/hara-vijaya-heights/small/03.webp";
@@ -191,6 +196,11 @@ import aquaS17 from "@/assets/brochures/vijaya-aquagreen/small/17.webp";
 import aquaS18 from "@/assets/brochures/vijaya-aquagreen/small/18.webp";
 import aquaS19 from "@/assets/brochures/vijaya-aquagreen/small/19.webp";
 import aquaS20 from "@/assets/brochures/vijaya-aquagreen/small/20.webp";
+
+import springS01 from "@/assets/brochures/vijaya-springwoods/small/01.webp";
+import springS02 from "@/assets/brochures/vijaya-springwoods/small/02.webp";
+import springS03 from "@/assets/brochures/vijaya-springwoods/small/03.webp";
+import springS04 from "@/assets/brochures/vijaya-springwoods/small/04.webp";
 
 export type Brochure = {
   slug: string;
@@ -321,6 +331,29 @@ export const brochures: readonly Brochure[] = [
       aquaS11, aquaS12, aquaS13, aquaS14, aquaS15,
       aquaS16, aquaS17, aquaS18, aquaS19, aquaS20,
     ],
+  },
+  {
+    // A single sheet folded once, scanned as two landscape pages: the
+    // outside (back cover, front cover) and the inside. Cut down the fold
+    // into four portrait leaves — the one book here that is not square,
+    // which the reader takes from the cover file's own shape.
+    slug: "vijaya-springwoods",
+    volume: "Volume IV",
+    title: "Vijaya Springwoods",
+    place: "Singasandra, off Hosur Road",
+    quote: "No common walls. Magnificent yet affordable.",
+    blurb:
+      "One sheet, folded: the elevation on the front, the project and its specifications inside with the two typical plans, and the master plan and the roads in from Hosur Road on the back. BBMP approved, off Hosur Road at Begur.",
+    pdf: "/brochures/vijaya-springwoods.pdf",
+    pdfSize: "1.9 MB",
+    // Charcoal at the head and the foot alike, 72 across the top row and
+    // 77 across the bottom, the name in the top third and the render's
+    // lawn running out over charcoal below: centred, the extra stock is
+    // shared above and below and reads as more of the same card.
+    coverPaper: "#484848",
+    coverHold: "50% 50%",
+    pages: [spring01, spring02, spring03, spring04],
+    small: [springS01, springS02, springS03, springS04],
   },
 ];
 
