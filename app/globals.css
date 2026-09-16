@@ -162,6 +162,10 @@
      a second that reads as a snap followed by a wait. This lands without
      ever appearing to stop, which is what makes a long reveal watchable. */
   --ease-reveal: cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* How long a photograph takes to grow under the pointer, and to settle
+     back once it has gone — read by `zoom-hover`, and by anything that has
+     to list `scale` beside a transition of its own. */
+  --zoom-duration: 1.1s;
 
   /* The default pace. A row that needs another one sets `animation-duration`
      on the animating element (see `Marquee`'s `speed`) — a custom property
@@ -629,11 +633,22 @@
 
 /* Everything below applies only once the component has said so, so a reader
    with no JavaScript or with reduced motion gets the plain photograph rather
-   than one left behind a brass panel. */
+   than one left behind a brass panel.
+
+   Longhands, with `scale` listed beside `transform`. The hover zoom
+   (`zoom-hover`, below) moves `scale` on this same element, and the
+   shorthand this used to be reset the element's transition list to
+   `transform` alone — so every uncovered photograph on the site snapped to
+   its zoom instead of easing into it (2026-09-16). Each property keeps its
+   own pace: the settle its 1.5s and the grid's stagger, the zoom the site's
+   one zoom pace and no stagger, since a pointer should never wait on a
+   delay meant for scrolling. */
 .img-reveal[data-img] > :is(img, picture, video) {
   transform: scale(1.2);
-  transition: transform 1.5s var(--ease-reveal);
-  transition-delay: var(--reveal-delay, 0ms);
+  transition-property: transform, scale;
+  transition-duration: 1.5s, var(--zoom-duration);
+  transition-timing-function: var(--ease-reveal);
+  transition-delay: var(--reveal-delay, 0ms), 0ms;
 }
 
 .img-reveal[data-img="on"] > :is(img, picture, video) {
@@ -660,6 +675,33 @@
 
 .img-reveal[data-img="on"]::after {
   transform: scaleY(0);
+}
+
+/* ------------------------------------------------------------------
+   The hover zoom — every photograph on the site
+------------------------------------------------------------------- */
+
+/* The pace of the zoom, in one place: how a photograph grows under the
+   pointer, and how it settles back when the pointer leaves. The amount stays
+   on the picture as a `group-hover:scale-*`, since a drawing fitted whole
+   wants less of it than a crop, and the picture's frame — whatever carries
+   `group` — does the hovering.
+
+   Matched to the reference the client brought (2026-09-16): 1.1s on
+   `--ease-reveal`, the curve every arrival on the site is eased on. This was
+   1.4s on `--ease-out-soft`, which over that long reads as a jump and then a
+   creep — see the note on the curve.
+
+   Only `scale` is listed, so a picture that is also settling out of its
+   reveal on `transform` (see `img-reveal` above) or panning on
+   `object-position` keeps those on their own pace. A picture that carries a
+   transition list of its own cannot take this class — one list replaces the
+   other — and writes `scale` into that list at this same pace instead, as
+   `ReasonPanels` does. */
+@utility zoom-hover {
+  transition-property: scale;
+  transition-duration: var(--zoom-duration);
+  transition-timing-function: var(--ease-reveal);
 }
 
 @utility text-balance-head {

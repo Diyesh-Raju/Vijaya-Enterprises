@@ -167,9 +167,18 @@ export function ReasonPanels({ items }: { items: readonly ReasonPanel[] }) {
                 // for a hover zoom to do but cut its edges off.
                 !item.whole &&
                   "group-hover:scale-[1.04] motion-reduce:group-hover:scale-100",
-                "transition-[transform,object-position] duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                // Longhands, because the pan and the zoom share this element
+                // and want different paces: `object-position` moves with the
+                // panel, `scale` at the site's one zoom pace — the list
+                // `zoom-hover` would set has no room for the pan. (This was
+                // `transition-[transform,object-position]`, which never
+                // covered `scale` at all, so the zoom snapped.)
+                "[transition-property:object-position,scale]",
+                "[transition-timing-function:var(--ease-out-soft),var(--ease-reveal)]",
                 // The pan has to finish with the panel, not 300ms after it.
-                item.focusClosed && "duration-[900ms]",
+                item.focusClosed
+                  ? "[transition-duration:900ms,var(--zoom-duration)]"
+                  : "[transition-duration:1200ms,var(--zoom-duration)]",
               )}
             />
             </div>

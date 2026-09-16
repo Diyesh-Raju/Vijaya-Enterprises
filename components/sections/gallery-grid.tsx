@@ -109,7 +109,7 @@ function Tile({
       fill
       sizes={sizes}
       className={cn(
-        "transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "zoom-hover",
         contain
           ? "object-contain p-1 group-hover/tile:scale-[1.02]"
           : "object-cover group-hover/tile:scale-[1.04]",

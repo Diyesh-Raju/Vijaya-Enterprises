@@ -99,16 +99,17 @@ export function ProjectCard({ project }: { project: Project }) {
       >
         {project.image ? (
           // Uncovered rather than faded in — see `ImageReveal`. The hover
-          // moves `scale` and the reveal moves `transform`, and Tailwind's
-          // `transition-transform` covers both, so a card can be settling
-          // out of its crop and following the pointer at the same time.
+          // moves `scale`, at the site's one zoom pace (`zoom-hover`), and
+          // the reveal moves `transform` and lists `scale` beside it, so a
+          // card can be settling out of its crop and following the pointer
+          // at the same time.
           <ImageReveal>
             <Image
               src={project.image}
               alt={project.imageAlt ?? ""}
               fill
               sizes="(max-width: 640px) 100vw, 50vw"
-              className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+              className="object-cover zoom-hover group-hover:scale-[1.04]"
             />
           </ImageReveal>
         ) : (

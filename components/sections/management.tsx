@@ -155,7 +155,7 @@ function LeaderCard({
             // The same slow settle every other photograph on the site has on
             // hover. `alt=""` because the button already carries the name: read
             // out, the portrait would otherwise announce it twice.
-            className="object-cover transition-transform duration-[1.4s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            className="object-cover zoom-hover group-hover:scale-[1.05] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
           {/* The name sits on the photograph, so it needs a ground. Both
               portraits are lit from above against a pale backdrop and go dark at
