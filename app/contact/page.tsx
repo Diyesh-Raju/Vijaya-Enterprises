@@ -50,24 +50,6 @@ const channels = [
   },
 ];
 
-const nextSteps = [
-  {
-    step: "01",
-    title: "We listen",
-    body: "Tell us what you want to build, or what you are looking for in a home. No obligation.",
-  },
-  {
-    step: "02",
-    title: "We tell you what it takes",
-    body: "An honest view of what is possible, what it involves and roughly what it costs.",
-  },
-  {
-    step: "03",
-    title: "We build it properly",
-    body: "If it goes ahead, one team is responsible from planning through to handover.",
-  },
-];
-
 export default function ContactPage() {
   return (
     <>
@@ -176,39 +158,11 @@ export default function ContactPage() {
                   Tell us what you want to build.
                 </h2>
               </Reveal>
+              {/* Straight from the heading to the addresses. The paragraph
+                  and the three numbered steps that used to sit between them
+                  were taken out, asked for by name (2026-09-16). */}
               <Reveal delay={160}>
-                <p className="mt-6 text-[1.0625rem] leading-[1.8] text-white/80">
-                  We&rsquo;ll help you understand what it takes to build it. Share
-                  as much or as little as you like — we will come back to you with
-                  the right questions.
-                </p>
-              </Reveal>
-
-              <Reveal delay={240}>
-                <ol className="mt-12 space-y-8">
-                  {nextSteps.map((item) => (
-                    <li key={item.step} className="flex gap-5">
-                      <span
-                        aria-hidden="true"
-                        className="mt-0.5 font-display text-[0.9375rem] tabular-nums text-brass-400"
-                      >
-                        {item.step}
-                      </span>
-                      <span>
-                        <span className="block font-display text-[1.125rem] text-white">
-                          {item.title}
-                        </span>
-                        <span className="mt-2 block text-[0.9375rem] leading-relaxed text-white/75">
-                          {item.body}
-                        </span>
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              </Reveal>
-
-              <Reveal delay={320}>
-                <div className="mt-12 space-y-6">
+                <div className="mt-10 space-y-6">
                   {offices.map((office) => (
                     <address key={office.label} className="not-italic">
                       <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-white/55">
