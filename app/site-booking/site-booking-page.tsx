@@ -3,6 +3,7 @@ import { PageHero } from "@/components/sections/page-hero";
 import { CookieNotice } from "@/components/ui/cookie-notice";
 import { Container, Section, Eyebrow } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
+import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
 import { img, alt } from "@/lib/images";
 import { contact } from "@/lib/site";
@@ -66,23 +67,45 @@ export function SiteBookingPage({ project }: { project?: Project & { slug: strin
       {/* ------------------------------------------------------ How it works */}
       <Section tone="white" size="md">
         <Container>
+          {/* Three cards, and a line in each gap between them (2026-09-16),
+              so the row reads as one sequence rather than three boxes. The
+              line is a pseudo-element on every card after the first, drawn
+              backwards into the gap before it: a hairline across the gap at
+              half the card's height while the cards sit in a row, and one
+              down the gap above it once they stack on a phone. Each is
+              exactly the gap's length, so it touches both borders.
+
+              It sits on the `<li>`, and the card's face is a child of it,
+              because the face lifts on hover — a line drawn on the face
+              would lift with it and come away from its neighbour, where the
+              `<li>` never moves. The grid stretches the three to one height,
+              so half of each is the same line across all of them. Brass,
+              like the step numbers; and since the `<li>` is the reveal, the
+              line arrives with the card it leads to. */}
           <ol className="grid gap-4 sm:grid-cols-3 sm:gap-5">
             {howItWorks.map((item, index) => (
               <Reveal
                 key={item.step}
                 as="li"
                 delay={index * 80}
-                className="rounded-[1.5rem] border border-line bg-white p-8 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-navy-200 hover:shadow-lift sm:rounded-[1.75rem]"
+                className={cn(
+                  "relative",
+                  index > 0 &&
+                    "before:absolute before:left-1/2 before:top-0 before:h-4 before:w-px before:-translate-y-full before:bg-brass-500 before:content-[''] " +
+                      "sm:before:left-0 sm:before:top-1/2 sm:before:h-px sm:before:w-5 sm:before:-translate-x-full sm:before:translate-y-0",
+                )}
               >
-                <span className="font-display text-[0.9375rem] tabular-nums text-brass-600">
-                  {item.step}
-                </span>
-                <span className="mt-5 block font-display text-[1.25rem] leading-snug text-navy-900">
-                  {item.title}
-                </span>
-                <span className="mt-3 block text-[0.9375rem] leading-relaxed text-slate-body">
-                  {item.body}
-                </span>
+                <div className="h-full rounded-[1.5rem] border border-line bg-white p-8 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-navy-200 hover:shadow-lift sm:rounded-[1.75rem]">
+                  <span className="font-display text-[0.9375rem] tabular-nums text-brass-600">
+                    {item.step}
+                  </span>
+                  <span className="mt-5 block font-display text-[1.25rem] leading-snug text-navy-900">
+                    {item.title}
+                  </span>
+                  <span className="mt-3 block text-[0.9375rem] leading-relaxed text-slate-body">
+                    {item.body}
+                  </span>
+                </div>
               </Reveal>
             ))}
           </ol>
