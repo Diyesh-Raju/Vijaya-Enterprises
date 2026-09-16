@@ -138,17 +138,20 @@ import mahanteshNelavagi from "@/assets/images/mahantesh-nelavagi.jpg";
    drawings with the engineer at the site table. */
 import handoverFamilyEngineer from "@/assets/images/handover-family-engineer.jpg";
 import homeDusk from "@/assets/images/home-dusk.jpg";
-/* The home hero's two stills, cut from the towers walkthrough by the commands
-   in `assets/video-source/README.md`, and always from the same render as the
-   clip beside them — they are cross-faded against it on the page, so a still
-   cut from a different take would show as a jump.
+/* The home hero's three stills, cut from the towers walkthrough by
+   `assets/video-source/build-hero-frames.mjs`, from the same master and the
+   same colour conversion as the frames in `frames.homeScroll` below — the
+   poster is painted first and the canvas then draws frame 0 over it, so a
+   still cut any other way would show as a jump. The soft start plate is what
+   the loader stands on; the soft end plate is what the close fades to.
 
    The two earlier cuts' stills are all still here: `home-scroll-short-*.jpg`
-   for the short cut this replaced, `home-scroll-*.jpg` for the long one
-   before it. Going back to either is this pair of imports and the two paths
-   in `video` below. */
+   for the short cut before the towers, `home-scroll-*.jpg` for the long one
+   before that. Those cuts only ever existed as video, so going back to
+   either is no longer a swap of paths: `ScrollHero` draws frames now. */
 import homeScrollEnd from "@/assets/images/home-scroll-towers-end.jpg";
 import homeScrollPoster from "@/assets/images/home-scroll-towers-poster.jpg";
+import homeScrollStartSoft from "@/assets/images/home-scroll-towers-start-soft.jpg";
 import homeLawn from "@/assets/images/home-lawn.jpg";
 import industrialEngineer from "@/assets/images/industrial-engineer.jpg";
 import institutionCampus from "@/assets/images/institution-campus.jpg";
@@ -372,6 +375,7 @@ export const img = {
   homeLawn,
   homeScrollEnd,
   homeScrollPoster,
+  homeScrollStartSoft,
   industrialEngineer,
   industrialShedFloor,
   institutionCampus,
@@ -620,34 +624,43 @@ export const alt = {
 
 /** Background video files (these do live in `public/`, served by URL). */
 export const video = {
-  /* The towers walkthrough, since 2026-09-15, as the ladder `ScrollHero`
-     climbs: the bridge is on screen first, in seconds; the others are
-     brought up behind it and shown only once this machine has proved it can
-     seek them inside a frame. All four are cut from the same 60fps master
-     with a keyframe every second frame and no B-frames, because the hero
-     seeks to an arbitrary time on every animation frame and the keyframe
-     interval is what decides whether the scrub feels attached to the wheel.
-     The top one is the render at its own 3840×2160 (since 2026-09-16); the
-     3200 file below it was the top until then and stays as the step a
-     hardware decoder that cannot seek 4K in time is given instead.
-     `assets/video-source/README.md` has the settings and the measurements.
-
-     There is no phone file. The phone unmounts the hero altogether
-     (`HomeHeroPhone`), so the `-mobile` encodes the earlier cuts carry were
-     never played by anything.
-
-     New names rather than overwriting: `/video/` is served with a 30-day
-     `max-age` (`next.config.ts`), so a browser holding an old file would
-     go on showing it. */
-  homeScrollTiers: {
-    bridge: "/video/home-scroll-towers-720.mp4",
-    mid: "/video/home-scroll-towers-1080.mp4",
-    hq: "/video/home-scroll-towers-3200.mp4",
-    uhd: "/video/home-scroll-towers-2160.mp4",
-  },
   heroDesktop: "/video/hero.mp4",
   heroMobile: "/video/hero-mobile.mp4",
   legacyDesktop: "/video/legacy.mp4",
   legacyMobile: "/video/legacy-mobile.mp4",
   craft: "/video/craft.mp4",
+} as const;
+
+/**
+ * Frame sequences — the home hero's walkthrough, as stills (`public/frames/`).
+ *
+ * The towers walkthrough, 209 frames at 30 a second, cut from the render by
+ * `assets/video-source/build-hero-frames.mjs` in three sizes. `ScrollHero`
+ * waits for the smallest before the page opens, then brings up whichever
+ * larger set this screen can use and this machine can decode fast enough.
+ * The README beside the script has the sizes, and why these three.
+ *
+ * The directory carries a version because the frames are served immutable
+ * (`next.config.ts`): new bytes need a new path, or a browser holding the old
+ * frames would go on drawing them. Bump `VERSION` in the script and here
+ * together.
+ */
+const homeScrollBase = "/frames/home-towers-v1";
+const homeScrollSet = (width: number, height: number) => ({
+  width,
+  height,
+  url: (index: number) =>
+    `${homeScrollBase}/${width}/${String(index).padStart(3, "0")}.webp`,
+});
+
+export const frames = {
+  homeScroll: {
+    count: 209,
+    /** Smallest first. The first is the one the loader waits for. */
+    sets: [
+      homeScrollSet(1280, 720),
+      homeScrollSet(1920, 1080),
+      homeScrollSet(2560, 1440),
+    ],
+  },
 } as const;

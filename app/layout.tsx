@@ -212,7 +212,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             the key and the storage are spelled out by hand here because
             this runs before any import does. Change one, change both.
             What this writes is one attribute; `globals.css` does the rest,
-            and `LanguageGate` picks the state up when it mounts.
+            and `LanguageGate` picks the state up when it mounts. (The
+            second block, at the end, is the home walkthrough's loader and
+            is the same trick for the same reason.)
 
             Every branch ends in an attribute, including the failure ones —
             with no attribute at all (scripting off, storage throwing) the
@@ -230,7 +232,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               'setTimeout(function(){if(r.getAttribute("data-lang-state")==="veil")' +
               'r.setAttribute("data-lang-state","ready")},2500)}' +
               'else{r.setAttribute("data-lang-state",v==="en"?"ready":"gate")}' +
-              '}catch(e){r.setAttribute("data-lang-state","ready")}})()',
+              '}catch(e){r.setAttribute("data-lang-state","ready")}' +
+              // The home walkthrough's loader, on a laptop-shaped window —
+              // the same query as `WIDE_QUERY` in `ScrollHero` and the
+              // `desk:` variant. Up from the first paint, so the page is
+              // never seen and then covered. `ScrollHero` writes "js" into
+              // the attribute when it takes over; if it never does — the
+              // bundle failed, or is still crawling in — the handle lets the
+              // page go rather than leave it locked behind a count that is
+              // not counting.
+              'try{if(location.pathname==="/"&&matchMedia("(min-width: 48rem) and (min-height: 500px)").matches){' +
+              'r.setAttribute("data-hero-loading","");' +
+              'setTimeout(function(){if(r.getAttribute("data-hero-loading")==="")' +
+              'r.removeAttribute("data-hero-loading")},15000)}}catch(e){}' +
+              "})()",
           }}
         />
 

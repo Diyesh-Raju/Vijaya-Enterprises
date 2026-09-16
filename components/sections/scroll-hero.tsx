@@ -1,12 +1,26 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { onScroll } from "@/lib/scroll";
 import { onLanguageChange, translateString } from "@/lib/language";
 import { Logo } from "@/components/layout/logo";
+import { HeroLoader } from "@/components/sections/hero-loader";
 import { cn } from "@/lib/cn";
-import { img, alt, video } from "@/lib/images";
+import { img, alt, frames } from "@/lib/images";
+import {
+  FrameSequence,
+  glidePath,
+  isDownloaded,
+  type DrawableFrame,
+  type FrameSetSpec,
+} from "@/lib/frame-sequence";
 
 /**
  * Screens of scroll the walkthrough plays over. Set by the pace, not picked:
@@ -31,7 +45,7 @@ const TRACK_SCREENS = 1 + SCRUB_SCREENS + CLOSE_SCREENS;
 const at = (screens: number) => screens / (SCRUB_SCREENS + CLOSE_SCREENS);
 
 /**
- * Where the clip reaches its last frame. Everything after this point happens
+ * Where the film reaches its last frame. Everything after this point happens
  * to a still — the walkthrough plays out in full first, and only then does
  * the picture soften and the lockup arrive. Nothing overlaps the film.
  */
@@ -51,204 +65,145 @@ const TAG_START = at(SCRUB_SCREENS + 0.65);
 const TAG_END = at(SCRUB_SCREENS + 1.25);
 
 /**
- * The loading cue at the foot of the film stays for most of the walkthrough
- * and gives way near its end — gone before the lockup starts to rise, so the
- * two are never on the screen together.
+ * The cue at the foot of the film stays for most of the walkthrough and gives
+ * way near its end — gone before the lockup starts to rise, so the two are
+ * never on the screen together.
  */
 const CUE_FADE_START = at(SCRUB_SCREENS - 0.6);
 const CUE_FADE_END = at(SCRUB_SCREENS + 0.1);
 
 /**
- * How fast the played position converges on the scroll position, per second.
+ * How fast the drawn position converges on the scroll position, per second.
  * 6 is a time constant of about 170ms: quick enough to feel attached to the
- * wheel, slow enough to carry through a flick instead of snapping.
+ * wheel, slow enough to carry a flick, a notched wheel or a jittery trackpad
+ * through as one glide instead of a series of jumps.
  */
 const EASE_RATE = 6;
 
-/** Under a frame at 60fps: closer than this and a seek is pointless. */
-const SEEK_EPSILON = 0.01;
+/** The walkthrough as frames: 209 of them, in three sizes. See `lib/images.ts`. */
+const FILM = frames.homeScroll;
+const SETS: readonly FrameSetSpec[] = FILM.sets;
+const LAST_FRAME = FILM.count - 1;
 
-/** One frame of the clip. Every file in the ladder is 60fps. */
-const FRAME_S = 1 / 60;
-
-/**
- * A seek still outstanding after this long gets nudged; after twice it, the
- * decoder is treated as gone. Generous on purpose: seeking is held inside the
- * buffer, so a slow one means a struggling machine, not a wedged one, and
- * reloading under a machine that is merely slow would make things worse.
- */
-const SEEK_TIMEOUT_MS = 1500;
-
-/** Floor between reload attempts, so a genuinely broken file cannot spin. */
-const RECOVER_COOLDOWN_MS = 5000;
-
-/** `HTMLMediaElement.HAVE_CURRENT_DATA` — there is a frame to draw. */
-const HAVE_CURRENT_DATA = 2;
+/** The set the loader waits for, and the one every machine can fall back to. */
+const BASE = 0;
 
 /**
- * The ladder of encodes the hero climbs, smallest first. Same master, same
- * duration, same frame rate; only the pixels differ. `lib/images.ts` says
- * where each lives and `assets/video-source/README.md` how each is built.
- *
- *  - `bridge` (1280×720, ~9MB) is what the reader scrubs first. It is the
- *    whole reason the ladder exists: the top file is 43MB, and a visitor
- *    on an ordinary connection was looking at a still poster and a
- *    percentage for ten, twenty, forty seconds before anything moved — a
- *    "freeze" before the film had even started. The bridge is on screen in
- *    a few seconds and the upgrades happen behind it.
- *  - `mid` (1920×1080) is the ceiling for a machine decoding in software.
- *    Timed on this site's own files, a software decoder lands a 1080p seek
- *    inside a frame and a 3200×1800 one two to nine frames late; the README
- *    has the table. Sharp enough to pass for the real thing on a laptop.
- *  - `hq` (3200×1800) is for hardware decoders, which is most laptops, and
- *    was the top of the ladder until 2026-09-16. It stays as the step
- *    below the top: what a machine that decodes in hardware but cannot
- *    seek the 4K file fast enough is shown instead, and the ceiling for a
- *    screen that could not show the 4K file's pixels anyway.
- *  - `uhd` (3840×2160) is the render at its own size — the source is 4K,
- *    and the 3200 file is a 0.83× resample of it. Its seeks cost half
- *    again what the 3200 file's do on the same hardware decoder (about
- *    20ms against 14 on the probe, whatever the crf: the cost tracks
- *    pixels, not bits), which is what set the probe's bar where it is —
- *    see `PROBE_P50_MS`.
- *
- * Which of the upper tiers a machine gets is decided twice: once by asking
- * the browser (`MediaCapabilities`, see `climbOrder`), and then by trying —
- * the candidate is fetched, attached out of sight, and timed on sixteen
- * seeks before it is allowed on screen. A machine that cannot land those
- * inside a frame never sees the file, and is tried on the next one down.
- * That second check is what turns "smooth on most machines" into "never
- * lags on any": the browser's answer is a prediction, the probe is a
- * measurement.
+ * How far along the glide the decoders are asked to work, in display frames
+ * past the time a decode takes here: a fifth of a second. The plan is made
+ * again on every frame the picture moves, so there is nothing to gain from
+ * reaching further, and much to lose — every frame asked for is held in
+ * memory, and a long reach fills the budget with frames the reader may never
+ * scroll to. Past the path, the frames either side of where the glide will
+ * settle — `SETTLE_RADIUS` of them — are what is worth having ready: the next
+ * small scroll in either direction lands on them.
  */
-const TIERS = {
-  bridge: { src: video.homeScrollTiers.bridge, rank: 0, width: 1280, height: 720, bitrate: 9_500_000 },
-  mid: { src: video.homeScrollTiers.mid, rank: 1, width: 1920, height: 1080, bitrate: 25_000_000 },
-  hq: { src: video.homeScrollTiers.hq, rank: 2, width: 3200, height: 1800, bitrate: 39_000_000 },
-  uhd: { src: video.homeScrollTiers.uhd, rank: 3, width: 3840, height: 2160, bitrate: 51_000_000 },
-} as const;
-type Tier = (typeof TIERS)[keyof typeof TIERS];
+const PATH_TICKS = 12;
+const SETTLE_RADIUS = 6;
 
 /**
- * A file is only worth climbing to if the screen can show its pixels. The
- * panel is drawn `object-cover` at the window's width, so what it needs
- * from a source is about its width in device pixels, and a little over for
- * the few percent the cover crop trims.
- *
- * "Can show" is read generously, on purpose. A source with more pixels
- * than the screen is not wasted the moment it exceeds the screen: scaled
- * down, its compression artefacts shrink with it, and a 3200 file on a
- * 1650-wide 1× laptop is visibly cleaner on the railings than the 1920 one
- * even though both are sharper than the panel. So a tier is only treated
- * as the ceiling once it carries a third again more pixels than the screen
- * — past that the next file up is a 43MB download for nothing. In practice
- * that stops the climb on 1× laptops up to about 1280 wide, holds a 1×
- * screen up to about 2250 wide at the 3200 file, and lets every larger or
- * denser screen have the best file the machine can seek.
+ * How far the decoders are sent past where the scroll is now, while it is
+ * still moving. A steady scroll's target keeps going, and the picture chasing
+ * it moves faster than a glide towards a target that has stopped — plan for
+ * the stopped one, and every frame asked for is one the picture has passed
+ * by the time it is decoded. So the path is worked out against a target
+ * carried on at the scroll's own speed, up to this many frames on. Capped,
+ * so a flick does not send the decoders to the far end of the film.
  */
-const DISPLAY_MARGIN = 1.05;
-const OVERSAMPLE = 1.35;
+const LOOKAHEAD_FRAMES = 24;
 
 /**
- * A tier described for `MediaCapabilities.decodingInfo`. `avc1.640034` is
- * High profile, level 5.2, which both files above 1080p are (the two
- * below are level 4.2, and are never asked about). `powerEfficient` is the
- * browser's word for a hardware decoder — Chrome, Safari and Firefox all
- * answer it — and it is the difference between a seek that costs eight
- * milliseconds and one that costs thirty.
+ * Downloads at once. The base set is what the reader is waiting on, so it
+ * asks for more; the browser caps what actually goes out per connection
+ * anyway. The larger sets load behind a page that is already usable, and
+ * leave room for everything else it fetches.
  */
-const decodingOf = (tier: Tier): MediaDecodingConfiguration => ({
-  type: "file",
-  video: {
-    contentType: 'video/mp4; codecs="avc1.640034"',
-    width: tier.width,
-    height: tier.height,
-    bitrate: tier.bitrate,
-    framerate: 60,
-  },
-});
+const BASE_CONCURRENCY = 8;
+const UPGRADE_CONCURRENCY = 4;
 
 /**
- * The probe: how many seeks a candidate is timed on before it may be shown,
- * and what it has to manage. Sixteen is enough for a median that means
- * something and costs under half a second on any machine that will pass.
- *
- * The bar is a 60fps frame, as the reader gets it. The scrub issues one
- * seek an animation frame; a file whose seeks take longer than a frame
- * presents a new picture every second frame at best, and that is what the
- * reader calls lag — the README records a 19.6ms median as "visibly lagged
- * the wheel".
- *
- * The probe reads high, and by a known amount. It times seeks one at a
- * time — set `currentTime`, wait for `seeked`, set the next — where the
- * scrub sets the next before the last has landed and the decoder
- * pipelines them. Measured in the page on the machine this was built on,
- * the same seeks cost six to seven tenths under the scrub of what they
- * cost on the probe: 8.7ms against 14.1 for the 3200 file, 14.3 against
- * 19.3 for the 4K one. So the bar on the probe's own figure is 24ms — a
- * frame and a half on the probe, a frame as shown at the median. It was
- * 16, a frame on the probe itself, until the 4K file arrived: no hardware
- * decoder measured here gets a 4K seek under 16 on the probe, and at 16
- * the ladder would have thrown the file away on the very machines it was
- * cut for. The odd slow seek still has to land inside two frames.
- *
- * What the wider bar admits, knowingly, is a file whose slower seeks miss
- * the odd tick: at 4K on the machine this was built on the scrub presents
- * a new picture on three ticks in four, where at 3200 it did on every one
- * — the README has the run. That is the price of the render at its own
- * size, and `PROBE_P50_MS = 16` is the one-line way back to a ladder that
- * stops at 3200 if it ever reads as lag.
+ * The loader's failsafes. A load where nothing has arrived for twenty
+ * seconds is a connection that has gone, not a slow one — the loader lifts,
+ * the film scrubs on whatever frames it has (the canvas draws the nearest)
+ * and the rest keep coming in behind, counted at the foot of the screen. And
+ * a film missing more than one frame in twenty is given up: the poster
+ * stands in, and the close still plays over it.
  */
-const PROBE_P50_MS = 24;
-const PROBE_P95_MS = 33;
+const STALL_MS = 20_000;
+const MAX_MISSING = 0.05;
 
 /**
- * The probe's route through the clip, in frames from wherever it starts:
- * mostly the small steps forward and back that a scrub makes, and two jumps
- * of the size a flick makes. Sixteen cold jumps to random places would
- * measure a decoder restarting sixteen times, which is not what the reader
- * does — timed both ways on the 3200 file, random seeks cost half again what
- * a scrub's do. Every landing is pushed onto an odd frame, off the keyframe,
- * so the probe never scores the easy case. The first two are a warm-up and
- * are not scored: the first seeks on a freshly attached element carry the
- * decoder's start-up, which the reader pays once and never again.
+ * Once every frame is in, the loader waits for the one under it — the frame
+ * for wherever the page is scrolled to — to be on the canvas before it
+ * lifts, so what it uncovers is the finished picture. Bounded, because what
+ * it is waiting for is a decode, and a decode that never comes must not keep
+ * the page shut.
  */
-const PROBE_STEPS = [3, 3, 3, 3, 3, -3, 5, 3, 121, 3, 3, -3, 3, -201, 3, 3, 5, 3];
+const FIRST_DRAW_TIMEOUT_MS = 4000;
+
+/** The loader's fade; matches `.hero-loader[data-leaving]` in `globals.css`. */
+const LOADER_FADE_MS = 700;
+
+/**
+ * The climb to a sharper set, and the test a machine has to pass to be given
+ * one. The first `PROBE_FRAMES` of the candidate are downloaded and pushed
+ * through every decoder at once; the machine must turn out at least
+ * `MIN_DECODES_PER_S` of them a second. That is a 60Hz scrub with a quarter
+ * to spare — the most frames a glide can ever put on screen in a second — so
+ * a machine that passes never has the picture trail the wheel for want of a
+ * decode, and one that fails stays on the smaller set, which it can keep up
+ * with. Asked at a still moment (a probe run under a scrub is timed against
+ * decoders busy with the scrub) and up to three times, a couple of seconds
+ * apart, before a set is given up.
+ */
+const PROBE_FRAMES = 14;
 const PROBE_WARMUP = 2;
-
-/**
- * The probe waits for the reader to be still. A candidate probed *while*
- * the film on screen is being scrubbed is timed against a decoder that is
- * busy with the other file, and reads slow for it: on the machine this was
- * built on, the 3200 file measures 12ms idle and 16ms under a hard scrub —
- * which is the difference between passing and being thrown away. So the
- * probe holds until nothing has moved for a third of a second, and a
- * candidate that still fails is given two more goes, a couple of seconds
- * apart, before it is dropped: what it is measuring is the machine, and a
- * machine does not get slower for being asked again — but the moment it
- * was asked can be a bad one.
- */
+const MIN_DECODES_PER_S = 75;
 const PROBE_IDLE_MS = 300;
 const PROBE_ATTEMPTS = 3;
 const PROBE_RETRY_MS = 2000;
 
 /**
- * How long a candidate that has passed its probe is given to land on the
- * same frame as the file it is replacing before the swap is called off. It
- * is chasing the same target every frame with a decoder just proven fast
- * enough, and lands within a few frames even under a hard scrub — see
- * `promote`, and the order of things in `tick` — so this is only ever
- * reached by something going wrong. Generous, because what it costs to
- * give up is a download the reader has already paid for.
+ * A set that has passed and arrived in full is swapped in the frame it has
+ * the picture on screen decoded — the same frame, sharper, so nothing blinks.
+ * It is only asked for while the reader is still (a decode of a big frame
+ * mid-scrub would take a decoder away from the frames the scrub needs), and
+ * given this long of stillness before the swap is called off.
  */
 const PROMOTE_TIMEOUT_MS = 8000;
+
+/**
+ * Cross-fading between neighbouring frames, and when to stop.
+ *
+ * The film is 30 frames a second, so a slow scroll can sit between two
+ * frames for several display frames. Drawing the next one over the last at
+ * the fraction between them turns those steps into a continuous move; at
+ * speed (a frame or more per display frame) there is nothing between to
+ * show, and the nearest frame is drawn alone.
+ *
+ * It is a second full-screen draw, which is nothing to a GPU and something
+ * to a canvas the browser has had to put on the CPU. So it is watched: while
+ * the picture is moving, a display frame that arrives more than 1.7× the
+ * screen's own interval late counts against it, an on-time one counts back a
+ * quarter, and a dozen net late frames turn the cross-fade off for the rest
+ * of the visit. A machine that can afford it never notices; one that cannot
+ * gets back the frame it was spending.
+ */
+const BLEND_LATE_FACTOR = 1.7;
+const BLEND_GIVE_UP = 12;
+
+/** The largest canvas every browser here is sure to allocate (Safari's cap). */
+const MAX_CANVAS_PIXELS = 16_777_216;
+
+const MB = 1024 * 1024;
 
 /**
  * When the walkthrough runs at all: a laptop-shaped window, not merely a
  * wide one. The height is what keeps a phone turned on its side — 932
  * pixels across and 430 down — from being handed a five-screen scrubbed
- * video. Same string as `HomeHeroPhone` and the same pair of dimensions as
- * the `desk:` variant in `globals.css`; all three have to agree.
+ * film. Same string as `HomeHeroPhone`, the `desk:` variant in
+ * `globals.css` and the loader's line in `app/layout.tsx`; all four have to
+ * agree.
  */
 const WIDE_QUERY = "(min-width: 48rem) and (min-height: 500px)";
 
@@ -274,73 +229,74 @@ const ramp = (value: number, from: number, to: number) => {
 };
 
 /**
- * The two places a clip can be mounted. One is on screen; the other is where
- * the next file up the ladder is brought up behind it, and the two swap
- * roles on promotion — so a slot is a fixture, and which file it holds
- * changes. See `roles`.
+ * How much decoded film this machine may hold. `deviceMemory` is Chrome's
+ * rounded guess at the RAM in GB, capped at 8; 48 MB a GB of it, between 160
+ * and 384 MB. Without it (Safari, Firefox) 320 MB. At the top set's 14 MB a
+ * frame, 384 MB is 26 frames — the two on screen, the handful either side of
+ * where the glide will settle, and a stretch of the path ahead, which is
+ * what a scrub draws from.
  */
-type Slot = "a" | "b";
+function decodeBudget() {
+  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+  if (!memory) return 320 * MB;
+  return Math.min(384, Math.max(160, memory * 48)) * MB;
+}
 
 /**
- * Read a file in whole and hand back a blob URL for it.
- *
- * Left to itself, a `<video>` fetches what it needs as it goes, and a reader
- * who scrolls ahead of the download is asking for frames that are not there
- * yet — the walkthrough holds whatever it last drew until the range request
- * comes back. Reading all of it first makes every seek after that a seek
- * into memory.
- *
- * `fetch`, so the count comes off the stream as it arrives and a repeat
- * visit is answered from the HTTP cache, counting to a hundred at once.
- * `onProgress` is only wired for the bridge — it is the one file the reader
- * is shown waiting for.
+ * Decoders: half the cores, between one and four. The other half are the
+ * page's, the compositor's and the GPU process's, which is where a smooth
+ * scroll actually happens.
  */
-async function readIn(
-  src: string,
-  signal: AbortSignal,
-  onProgress?: (percent: number | null) => void,
-): Promise<string> {
-  const response = await fetch(src, { signal });
-  if (!response.ok || !response.body) throw new Error(response.statusText);
-  const total = Number(response.headers.get("content-length")) || 0;
-  if (!total) onProgress?.(null);
+function decoderCount() {
+  const cores = navigator.hardwareConcurrency || 4;
+  return Math.min(4, Math.max(1, Math.floor(cores / 2)));
+}
 
-  const reader = response.body.getReader();
-  const chunks: Uint8Array<ArrayBuffer>[] = [];
-  let received = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
-    received += value.byteLength;
-    // Held at 99 until the stream actually ends: a server compressing on
-    // the way out reports the smaller size, and the count would overrun.
-    // Same-number updates are dropped by React, so this is a hundred
-    // renders at most, not one per chunk.
-    if (total) onProgress?.(Math.min(99, Math.floor((received / total) * 100)));
+/**
+ * Where the film is, as far as the reader is concerned.
+ *
+ *  - `loading`: the loader is up, and the base set is coming in under it.
+ *  - `partial`: the load stalled; the loader has lifted anyway and the film
+ *    scrubs on what it has while the rest arrives.
+ *  - `ready`: every frame of the base set is in and on offer.
+ *  - `failed`: too much of the film is missing; the poster stands in.
+ */
+type Phase = "loading" | "partial" | "ready" | "failed";
+
+/**
+ * The best set already downloaded in this tab, if any — the home page
+ * reached again by a link, or the window brought back to a laptop's shape.
+ * That film opens at once, with no loader. Never anything on the server, or
+ * on the first load of a tab, so hydration always starts from the loader.
+ */
+function warmSet() {
+  if (typeof window === "undefined") return null;
+  for (let set = SETS.length - 1; set >= BASE; set--) {
+    if (isDownloaded(SETS[set], FILM.count)) return set;
   }
-  return URL.createObjectURL(new Blob(chunks, { type: "video/mp4" }));
+  return null;
 }
 
-/**
- * One timed seek: how long from asking to `seeked`. A seek that never lands
- * is scored as the timeout rather than waited on for ever, which is the
- * right answer for a probe — a file that can hang a seek has failed it.
- */
-function timedSeek(el: HTMLVideoElement, to: number, timeoutMs: number) {
-  return new Promise<number>((resolve) => {
-    const started = performance.now();
-    let timer = 0;
-    const done = () => {
-      window.clearTimeout(timer);
-      el.removeEventListener("seeked", done);
-      resolve(performance.now() - started);
-    };
-    timer = window.setTimeout(done, timeoutMs);
-    el.addEventListener("seeked", done);
-    el.currentTime = to;
-  });
-}
+/** Keys the reader could use to move or act on the page behind the loader. */
+const HELD_KEYS = new Set([
+  "Tab",
+  "Enter",
+  " ",
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "PageUp",
+  "PageDown",
+  "Home",
+  "End",
+]);
+
+/** Whether the language chooser (or its veil) is over everything, loader included. */
+const languageIsAsking = () => {
+  const state = document.documentElement.getAttribute("data-lang-state");
+  return state === "gate" || state === "veil";
+};
 
 /**
  * The home page hero: one walkthrough — the towers from the air, in through
@@ -351,119 +307,116 @@ function timedSeek(el: HTMLVideoElement, to: number, timeoutMs: number) {
  * white to hold on, and no grade sits on it.
  *
  * The section is a tall *track*; the panel inside it is `sticky`, so it pins
- * to the viewport while the track scrolls past underneath. How far the track
- * has travelled is the clip's `currentTime`, so scrolling down runs the
- * walkthrough forward and scrolling back up runs it in reverse, identically.
+ * to the whole viewport while the track scrolls past underneath — fixed for
+ * exactly as long as the hero lasts, and in the page's flow either side of
+ * it. How far the track has travelled is how far into the film the canvas
+ * is, so scrolling down runs the walkthrough forward and scrolling back up
+ * runs it in reverse, identically.
  *
- * Everything below is about it never getting stuck, on any machine:
+ * The film is not a `<video>`. It is 209 still frames drawn onto a
+ * `<canvas>`, because seeking a video on every animation frame is only fast
+ * on a machine that decodes it in hardware, and a great many Windows laptops
+ * do not — the walkthrough trailed the wheel there by two to five frames a
+ * seek. `lib/frame-sequence.ts` has the long version. What that buys, and
+ * how it is kept that way:
  *
- *   • Every file carries a keyframe every second frame and no B-frames, so
- *     seeking to an arbitrary time decodes one frame, or two.
- *     `assets/video-source/README.md` covers how they are built, and why a
- *     wider interval was tried and lagged.
- *   • The reader is given a small file first and a large one later — the
- *     ladder above `TIERS`. Nothing waits on a 43MB download before the
- *     film will move, and no machine is shown a file it cannot seek inside
- *     a frame, because each step up is timed before it is taken.
- *   • Stepping up never blinks. The next file is brought up in a second
- *     element behind the first, both are driven to the same frame, and the
- *     two swap opacity in the same animation frame — the picture on screen
- *     does not change at the moment of the swap, only its sharpness after.
- *   • The position is read inside the animation frame rather than from scroll
- *     events, so nothing depends on how a browser batches or throttles those.
- *   • Convergence is integrated over elapsed *time*, so a 120Hz display and a
- *     60Hz one behave the same, and a loop resuming after a gap eases in
- *     rather than lurching.
- *   • A seek is only issued when the element is not already seeking, and only
- *     when it is measurably away from where it should be — measured against
- *     the element's own `currentTime`, never against what we last asked for.
- *     A request that the browser quietly dropped is therefore reissued on the
- *     next frame instead of being remembered as done.
- *   • Coming back from a background tab, another app, or the bfcache, the
- *     decoder may have been torn down while we were away. The element is
- *     checked on every such wake and reloaded if it has nothing to draw.
- *   • Nothing here opts a visitor out of the clip — no Data Saver check, no
+ *   • Every frame is downloaded before the page opens. The loader stands
+ *     over the page and counts them in; nothing can be scrolled until the
+ *     smallest set is all here. Sharper sets follow behind a page already
+ *     in use, and each is taken only if this screen can show it and this
+ *     machine can decode it fast enough — measured, not guessed.
+ *   • Frames are decoded in workers, ahead of where the glide is heading,
+ *     into a cache with a memory budget. Drawing one is a single
+ *     `drawImage`; nothing on the main thread ever waits for a decode. A
+ *     frame that is not ready is drawn as its nearest neighbour that is.
+ *   • The drawn position chases the scroll position, integrated over *time*,
+ *     so a 120Hz display and a 60Hz one behave the same, and a mouse wheel's
+ *     notches, a trackpad's jitter and a violent flick all come out as one
+ *     glide. Between two frames, the second is cross-faded over the first.
+ *   • The canvas's backing store matches the screen's device pixels — read
+ *     exactly where the browser reports them, so a 125% Windows display is
+ *     not rounded — but is never given more pixels than the frame has to
+ *     fill it, so a dense screen is not asked to fill four times the pixels
+ *     for nothing. Where the frame has fewer pixels than the screen, the
+ *     canvas is drawn 1:1 and the compositor does the one upscale. Resizing
+ *     the window, or moving it to a screen of a different density, redraws
+ *     at the new size in the same frame; the frame is always cropped to
+ *     cover, never stretched.
+ *   • The position is read inside the animation frame rather than from
+ *     scroll events, so nothing depends on how a browser batches those.
+ *   • Nothing here opts a visitor out of the film — no Data Saver check, no
  *     `prefers-reduced-motion` check. Those quietly turned the hero into a
  *     still photograph on the machines that set them, which reads as a bug;
  *     and not a frame of this moves that the reader did not scroll themselves.
  *
  * The close cross-fades to a pre-blurred still of the last frame rather than
- * running a CSS `filter: blur()` over live video. A full-screen blur on a
- * video layer is the most expensive thing this page could ask a GPU to do,
- * and the first thing to drop frames on an integrated graphics laptop. The
- * still is 33KB and costs nothing anywhere.
+ * running a CSS `filter: blur()` over the canvas. A full-screen blur on a
+ * layer that changes every frame is the most expensive thing this page could
+ * ask a GPU to do. The still is a few tens of KB and costs nothing anywhere.
  */
 export function ScrollHero() {
   const trackRef = useRef<HTMLElement | null>(null);
   const mediaRef = useRef<HTMLDivElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const softRef = useRef<HTMLDivElement | null>(null);
   const veilRef = useRef<HTMLDivElement | null>(null);
   const markRef = useRef<HTMLHeadingElement | null>(null);
   const tagRef = useRef<HTMLParagraphElement | null>(null);
   const cueRef = useRef<HTMLDivElement | null>(null);
 
-  /** The two slots' elements. Null until that slot has a file. */
-  const elA = useRef<HTMLVideoElement | null>(null);
-  const elB = useRef<HTMLVideoElement | null>(null);
-  /** What each slot is holding, by file URL — the fallback needs to know. */
-  const tierOf = useRef<Record<Slot, string | null>>({ a: null, b: null });
+  /** The frames, while the laptop hero is mounted. */
+  const engineRef = useRef<FrameSequence | null>(null);
   /**
-   * Which slot is on screen and which is being brought up behind it. Kept
-   * in a ref rather than state because the animation loop reads it every
-   * frame and the swap happens inside that loop, on the frame both files
-   * land on the same picture.
+   * Which set the canvas draws from, and which one is waiting to take over.
+   * A ref rather than state: the loop reads it every frame, and the swap is
+   * made inside the loop, on the frame the new set has the picture ready.
    */
-  const roles = useRef<{ active: Slot | null; pending: Slot | null; pendingSince: number }>({
+  const setsRef = useRef<{ active: number | null; pending: number | null; pendingSince: number }>({
     active: null,
     pending: null,
     pendingSince: 0,
   });
-  /**
-   * The ladder's promises, resolved from event handlers and the loop: a slot
-   * reaching `canplay`, a slot failing outright, and a promotion landing or
-   * being given up on.
-   */
-  const waiting = useRef<{
-    canplay: Partial<Record<Slot, () => void>>;
-    failed: Partial<Record<Slot, () => void>>;
-    promoted: (() => void) | null;
-    abandoned: (() => void) | null;
-  }>({ canplay: {}, failed: {}, promoted: null, abandoned: null });
-  const primed = useRef<Record<Slot, boolean>>({ a: false, b: false });
-  /** Whether the hero is currently culled — applied to a slot the moment it mounts. */
+  /** Promises the loading effect waits on and the loop resolves. */
+  const waiting = useRef<{ drawn: (() => void) | null; promoted: ((landed: boolean) => void) | null }>({
+    drawn: null,
+    promoted: null,
+  });
+  /** Whether the canvas is showing the frame the scroll position asks for. */
+  const exact = useRef(false);
+  /** Whether the hero is currently culled — see `cull` in the loop. */
   const culled = useRef(false);
   /**
-   * When the scroll position last moved, as the loop saw it. The probe
-   * reads this to wait for a still moment; a loop that has stopped because
-   * the hero is off screen leaves it old, which counts as still.
+   * When the scroll position last moved, as the loop saw it. The probe reads
+   * this to wait for a still moment; a loop that has stopped because the
+   * hero is off screen leaves it old, which counts as still.
    */
   const lastMoveAt = useRef(0);
 
-  /** Each slot's file, as the element's `src`. A blob URL, or the file's own URL when streaming it. */
-  const [srcA, setSrcA] = useState<string | null>(null);
-  const [srcB, setSrcB] = useState<string | null>(null);
-  const [ready, setReady] = useState(false);
-  const [failed, setFailed] = useState(false);
-  /** How much of the bridge has arrived, 0–100; `null` if the server never said how big it is. */
-  const [percent, setPercent] = useState<number | null>(0);
+  const [phase, setPhase] = useState<Phase>(() => (warmSet() === null ? "loading" : "ready"));
+  /** How much of the base set has arrived, 0–100. */
+  const [percent, setPercent] = useState(0);
+  /** Whether the canvas has drawn anything yet; until it has, the poster shows. */
+  const [drawn, setDrawn] = useState(false);
+  /** Set once the loader has finished fading out, to unmount it — or at once, if it was never needed. */
+  const [loaderGone, setLoaderGone] = useState(() => warmSet() !== null);
 
-  // `"ssr"` until mounted: the video is never rendered on the server, so a
-  // phone never sees the desktop file in the markup.
-  const width = useSyncExternalStore(
-    subscribeToWidth,
-    getWidth,
-    () => "ssr" as const,
-  );
+  // `"ssr"` until mounted: the canvas is never rendered on the server, so a
+  // phone never sees it in the markup.
+  const width = useSyncExternalStore(subscribeToWidth, getWidth, () => "ssr" as const);
 
   // The tall track is added after mount too. A visitor whose JavaScript never
   // arrives would otherwise get nearly four screens of dead scroll past a hero
-  // that cannot move. It grows at hydration, below the fold, so nothing shifts.
+  // that cannot move. It grows at hydration, under the loader, so nothing is
+  // seen to shift.
   const mounted = width !== "ssr";
-  /** The cue stops counting when there is a clip to scrub — or none coming. */
-  const loaded = ready || failed;
+  const wide = width === "wide";
+  const loaderUp = phase === "loading";
+  /** The cue stops counting when there is a film to scrub — or none coming. */
+  const complete = phase === "ready" || phase === "failed";
 
   /**
-   * The loading cue, in whichever language the site is being read in.
+   * The cue at the foot of the film, in whichever language the site is being
+   * read in.
    *
    * It is composed here rather than swapped in the DOM because the counting
    * line is built from a number: "Loading 42%" is one text node, and a
@@ -471,7 +424,10 @@ export function ScrollHero() {
    * cover it. So the *pattern* is the entry — `Loading {percent}%` — and the
    * figure goes in afterwards, which also lets Kannada put the number where
    * Kannada puts it rather than where English does. The paragraph carries
-   * `data-no-translate` so the walker leaves all three of these alone.
+   * `data-no-translate` so the walker leaves all of these alone.
+   *
+   * It only counts where the loader has lifted without everything in — a
+   * stalled connection — since the loader does the counting otherwise.
    *
    * Read through the store, like `ScrollLit`, so the server snapshot is the
    * English the server rendered and hydration cannot mismatch.
@@ -479,135 +435,93 @@ export function ScrollHero() {
   const cue = useSyncExternalStore(
     onLanguageChange,
     () =>
-      loaded
+      complete
         ? translateString("Scroll to Discover")
-        : percent === null
-          ? translateString("Loading")
-          : translateString("Loading {percent}%").replace(
-              "{percent}",
-              String(percent),
-            ),
-    () =>
-      loaded
-        ? "Scroll to Discover"
-        : percent === null
-          ? "Loading"
-          : `Loading ${percent}%`,
+        : translateString("Loading {percent}%").replace("{percent}", String(percent)),
+    () => (complete ? "Scroll to Discover" : `Loading ${percent}%`),
   );
 
-  const elOf = (slot: Slot) => (slot === "a" ? elA : elB).current;
-  const setSrcOf = (slot: Slot, src: string | null) =>
-    (slot === "a" ? setSrcA : setSrcB)(src);
-
-  /**
-   * A slot has a frame to show. For the first file that means the hero is
-   * live: it goes on screen and the poster fades. For a candidate it only
-   * means the ladder may go on to the probe — showing it is the loop's call,
-   * on the frame it lands. Either way, iOS gets the one play it needs to
-   * paint a frame, once per element.
+  /*
+   * Hold the page while the loader is up: the attribute that shows the loader
+   * and stops the page scrolling, plus the two things that attribute does not
+   * cover everywhere — a touch scroll on an iPad, and the keyboard, which can
+   * still reach a link that had focus before the loader came up. All of it
+   * stands aside while the language chooser is asking, which sits over the
+   * loader and needs both.
+   *
+   * A layout effect, so on a client-side visit to the home page the loader
+   * is there in the same paint as the page.
    */
-  const reveal = (slot: Slot, el: HTMLVideoElement) => {
-    if (roles.current.active === null) {
-      roles.current.active = slot;
-      el.style.opacity = "1";
-      setReady(true);
-    }
-    if (!primed.current[slot]) {
-      primed.current[slot] = true;
-      void el
-        .play()
-        .then(() => el.pause())
-        .catch(() => {});
-    }
-    const resolve = waiting.current.canplay[slot];
-    if (resolve) {
-      delete waiting.current.canplay[slot];
-      resolve();
-    }
-  };
-
-  /**
-   * A slot the page refuses to play. A blob it will not play — a policy that
-   * does not allow `blob:` media, say — is retried as the file's own URL,
-   * streamed the old way. If that fails too, the first file gives the clip
-   * up altogether and the hero is a poster; a candidate is simply dropped,
-   * and the reader goes on with the file they already have.
-   */
-  const onSlotError = (slot: Slot, el: HTMLVideoElement) => {
-    const tier = tierOf.current[slot];
-    const src = el.getAttribute("src") ?? "";
-    if (tier && src !== tier) {
-      setSrcOf(slot, tier);
+  useLayoutEffect(() => {
+    if (width === "ssr") return;
+    const root = document.documentElement;
+    if (!wide || !loaderUp) {
+      root.removeAttribute("data-hero-loading");
       return;
     }
-    if (roles.current.active === null || roles.current.active === slot) {
-      setFailed(true);
+
+    root.setAttribute("data-hero-loading", "js");
+    if (!languageIsAsking() && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
     }
-    const reject = waiting.current.failed[slot];
-    if (reject) {
-      delete waiting.current.failed[slot];
-      reject();
-    }
-  };
+
+    const holdTouch = (event: TouchEvent) => {
+      if (!languageIsAsking() && event.cancelable) event.preventDefault();
+    };
+    const holdKeys = (event: KeyboardEvent) => {
+      if (languageIsAsking() || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (HELD_KEYS.has(event.key)) event.preventDefault();
+    };
+    document.addEventListener("touchmove", holdTouch, { passive: false });
+    document.addEventListener("keydown", holdKeys, true);
+
+    return () => {
+      root.removeAttribute("data-hero-loading");
+      document.removeEventListener("touchmove", holdTouch);
+      document.removeEventListener("keydown", holdKeys, true);
+    };
+  }, [width, wide, loaderUp]);
+
+  // Unmount the loader once its fade has run.
+  useEffect(() => {
+    if (loaderUp) return;
+    const timer = window.setTimeout(() => setLoaderGone(true), LOADER_FADE_MS);
+    return () => window.clearTimeout(timer);
+  }, [loaderUp]);
 
   /*
-   * Climb the ladder: the bridge first, on screen as soon as it is in; then
-   * whichever of the larger files this machine can afford, brought up behind
-   * it and swapped in when it has proved itself.
+   * Load the film: the base set under the loader, then whichever larger set
+   * this screen can use and this machine can decode fast enough, brought up
+   * behind a page that is already open.
    *
    * Only for the laptop hero — a phone unmounts this section, and must not
-   * pay for a file it will never be shown.
+   * pay for frames it will never be shown.
    */
   useEffect(() => {
-    if (width !== "wide") return;
-    const controller = new AbortController();
-    /** Every blob URL made here, so all are released whatever the path out. */
-    const urls = new Set<string>();
+    if (!wide) return;
+    const engine = new FrameSequence({
+      sets: SETS,
+      count: FILM.count,
+      budgetBytes: decodeBudget(),
+      decoders: decoderCount(),
+    });
+    engineRef.current = engine;
+    // The canvas draws from the base set from its first frame in: the loop
+    // is running under the loader, so the picture is ready when it lifts. A
+    // set already downloaded this visit is drawn from instead, and there is
+    // no loader to lift.
+    const warm = warmSet();
+    const first = warm ?? BASE;
+    setsRef.current = { active: first, pending: null, pendingSince: 0 };
     let cancelled = false;
 
-    const read = async (tier: Tier, onProgress?: (p: number | null) => void) => {
-      const url = await readIn(tier.src, controller.signal, onProgress);
-      urls.add(url);
-      return url;
-    };
+    // For the headless harness in a dev build: which set is on screen, and
+    // how long a decode takes. Never in production.
+    const debug = window as Window & { __heroFrames?: unknown };
+    if (process.env.NODE_ENV === "development") {
+      debug.__heroFrames = { engine, sets: () => ({ ...setsRef.current }) };
+    }
 
-    /** Mount a file in a slot and wait until it has a frame to show. */
-    const attach = (slot: Slot, tier: Tier, url: string) =>
-      new Promise<HTMLVideoElement>((resolve, reject) => {
-        waiting.current.canplay[slot] = () => {
-          delete waiting.current.failed[slot];
-          const el = elOf(slot);
-          if (el) resolve(el);
-          else reject(new Error("slot lost"));
-        };
-        waiting.current.failed[slot] = () => {
-          delete waiting.current.canplay[slot];
-          reject(new Error("slot failed"));
-        };
-        tierOf.current[slot] = tier.src;
-        setSrcOf(slot, url);
-      });
-
-    /** Empty a slot and release what it held. */
-    const release = (slot: Slot) => {
-      const el = elOf(slot);
-      const src = el?.getAttribute("src");
-      tierOf.current[slot] = null;
-      primed.current[slot] = false;
-      delete waiting.current.canplay[slot];
-      delete waiting.current.failed[slot];
-      setSrcOf(slot, null);
-      if (src && urls.has(src)) {
-        urls.delete(src);
-        URL.revokeObjectURL(src);
-      }
-    };
-
-    /**
-     * Time a candidate on seeks that land off-keyframe — odd frames, plus
-     * half a frame so the target is never on a boundary — spread over the
-     * clip. Its answer is whether this machine may be shown the file.
-     */
     const pause = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
 
     /** Resolves once nothing has scrolled for `PROBE_IDLE_MS`. */
@@ -617,198 +531,253 @@ export function ScrollHero() {
       }
     };
 
-    const probeOnce = async (el: HTMLVideoElement) => {
-      const frames = Math.floor(el.duration / FRAME_S);
-      if (!frames) return false;
-      const times: number[] = [];
-      let frame = 61;
-      for (const [i, step] of PROBE_STEPS.entries()) {
-        frame = ((((frame + step) % frames) + frames) % frames) | 1;
-        const to = Math.min(el.duration - 0.05, frame * FRAME_S + FRAME_S / 2);
-        const ms = await timedSeek(el, to, SEEK_TIMEOUT_MS);
-        if (cancelled) return false;
-        if (i >= PROBE_WARMUP) times.push(ms);
-      }
-      times.sort((x, y) => x - y);
-      const p50 = times[Math.floor(times.length / 2)];
-      const p95 = times[Math.floor(times.length * 0.95)];
-      return p50 <= PROBE_P50_MS && p95 <= PROBE_P95_MS;
-    };
+    /**
+     * Resolves once the canvas shows the frame for the current position — at
+     * once if the hero is not on screen at all (a reload further down the
+     * page), where the loop is not drawing and there is nothing to uncover.
+     */
+    const untilDrawn = () =>
+      new Promise<void>((resolve) => {
+        const box = trackRef.current?.getBoundingClientRect();
+        const away = !box || box.bottom <= 0 || box.top >= window.innerHeight;
+        if (exact.current || away) {
+          resolve();
+          return;
+        }
+        const done = () => {
+          window.clearTimeout(timer);
+          waiting.current.drawn = null;
+          resolve();
+        };
+        const timer = window.setTimeout(done, FIRST_DRAW_TIMEOUT_MS);
+        waiting.current.drawn = done;
+      });
 
-    /** The probe proper: at a still moment, up to `PROBE_ATTEMPTS` times. */
-    const probe = async (el: HTMLVideoElement) => {
-      for (let attempt = 0; attempt < PROBE_ATTEMPTS; attempt++) {
-        if (attempt > 0) await pause(PROBE_RETRY_MS);
-        await untilStill();
-        if (cancelled) return false;
-        if (await probeOnce(el)) return true;
-      }
-      return false;
+    /** The film is not going to work here: the poster stands in. */
+    const giveUp = () => {
+      engine.dispose();
+      engineRef.current = null;
+      setsRef.current = { active: null, pending: null, pendingSince: 0 };
+      if (canvasRef.current) canvasRef.current.style.opacity = "0";
+      setDrawn(false);
+      setPhase("failed");
     };
 
     /**
-     * Which files to try after the bridge, in order.
+     * The sets worth trying after the base, best first.
      *
-     * First the screen: a tier already carrying a third more pixels across
-     * than the panel needs is the ceiling, and nothing above it is worth
-     * the download or the slower seek — see `OVERSAMPLE`. Then the browser
-     * is asked, for each hardware tier the screen can use, whether it
-     * decodes that file in hardware:
-     *
-     *  - yes to the 4K file: try it; if the probe disagrees, the 3200 file;
-     *    if that disagrees too, the middle.
-     *  - yes to the 3200 file only: that, then the middle.
-     *  - no: the middle, and stop there — a software decoder was never going
-     *    to seek 3200×1800 inside a frame, and 34MB is a lot to download to
-     *    confirm it.
-     *  - no answer (an old browser): the middle, and then each file up only
-     *    if the one below it passed.
-     *
-     * The rule that walks it: after a failure only step *down* from what
-     * failed, after a success only step *up* from what is shown. See `run`.
+     * The panel is drawn cropped to cover, so what it needs from a set is
+     * the width of source it shows, in device pixels — its own width, or its
+     * height at the film's shape if the window is taller than 16:9. The
+     * smallest set with nine tenths of that is the ceiling: a set a tenth
+     * short is upscaled by an amount nobody can see in a moving picture,
+     * and the next one up would cost half again the memory and the decode
+     * for it. So a 1366-wide laptop at 1× stays on the base set, a 1536-wide
+     * one at 125% (1920 device pixels) gets the middle set, and a Retina
+     * MacBook or a 4K monitor gets the top. A set that fails is followed by
+     * the one below it.
      */
-    const climbOrder = async (): Promise<Tier[]> => {
-      const panel = mediaRef.current?.clientWidth || window.innerWidth;
-      const needed = panel * (window.devicePixelRatio || 1) * DISPLAY_MARGIN;
-      const ceiling = (tier: Tier) => tier.width >= needed * OVERSAMPLE;
-      if (ceiling(TIERS.bridge)) return [];
-      if (ceiling(TIERS.mid)) return [TIERS.mid];
-      // The hardware tiers this screen can use, best first.
-      const tops: Tier[] = ceiling(TIERS.hq) ? [TIERS.hq] : [TIERS.uhd, TIERS.hq];
+    const climbOrder = () => {
+      const panel = canvasRef.current;
+      const dpr = window.devicePixelRatio || 1;
+      const w = (panel?.clientWidth || window.innerWidth) * dpr;
+      const h = (panel?.clientHeight || window.innerHeight) * dpr;
+      const shape = SETS[BASE].width / SETS[BASE].height;
+      const needed = Math.max(w, h * shape) * 0.9;
+      let ceiling = SETS.findIndex((set) => set.width >= needed);
+      if (ceiling === -1) ceiling = SETS.length - 1;
+      const order: number[] = [];
+      for (let set = ceiling; set > BASE; set--) order.push(set);
+      return order;
+    };
 
-      const inHardware = async (tier: Tier) => {
-        const info = await navigator.mediaCapabilities.decodingInfo(decodingOf(tier));
-        return info.supported && info.smooth && info.powerEfficient;
-      };
-      try {
-        const answers = await Promise.all(tops.map(inHardware));
-        return [...tops.filter((_, i) => answers[i]), TIERS.mid];
-      } catch {
-        return [TIERS.mid, ...[...tops].reverse()];
+    /** Set once the base set is in and on offer; past that, nothing is fatal. */
+    let usable = false;
+
+    const loadBase = async () => {
+      // The base set, counted in under the loader.
+      let lastArrival = performance.now();
+      const stall = window.setInterval(() => {
+        if (performance.now() - lastArrival < STALL_MS) return;
+        window.clearInterval(stall);
+        if (!cancelled) setPhase((p) => (p === "loading" ? "partial" : p));
+      }, 1000);
+      const base = await engine.load(BASE, {
+        concurrency: BASE_CONCURRENCY,
+        priority: "high",
+        onSettle: () => {
+          lastArrival = performance.now();
+          const p = engine.progressOf(BASE);
+          if (!cancelled) setPercent(Math.floor((p.settled / p.total) * 100));
+        },
+      });
+      window.clearInterval(stall);
+      if (cancelled) return;
+      if (base.failed > base.total * MAX_MISSING) {
+        giveUp();
+        return;
+      }
+      usable = true;
+      await untilDrawn();
+      if (cancelled) return;
+      setPhase("ready");
+    };
+
+    const climb = async () => {
+      // Best first; after a failure, the next one down. Nothing at or below
+      // the set already on screen.
+      for (const set of climbOrder()) {
+        if (set <= first) break;
+        await engine.load(set, {
+          to: PROBE_FRAMES,
+          concurrency: UPGRADE_CONCURRENCY,
+          priority: "low",
+        });
+        if (cancelled) return;
+
+        const sample = Array.from({ length: PROBE_FRAMES }, (_, i) => i);
+        let passed = false;
+        for (let attempt = 0; attempt < PROBE_ATTEMPTS && !passed; attempt++) {
+          if (attempt > 0) await pause(PROBE_RETRY_MS);
+          await untilStill();
+          if (cancelled) return;
+          passed = (await engine.throughput(set, sample, PROBE_WARMUP)) >= MIN_DECODES_PER_S;
+          if (cancelled) return;
+        }
+        if (!passed) {
+          engine.drop(set);
+          continue;
+        }
+
+        await engine.load(set, { concurrency: UPGRADE_CONCURRENCY, priority: "low" });
+        if (cancelled) return;
+        // A set with a hole in it is not swapped in: mid-scrub, the hole
+        // would be drawn from the smaller set, and the picture would go
+        // soft for a frame and come back.
+        if (!engine.complete(set)) {
+          engine.drop(set);
+          continue;
+        }
+
+        const landed = await new Promise<boolean>((resolve) => {
+          waiting.current.promoted = resolve;
+          setsRef.current.pending = set;
+          setsRef.current.pendingSince = performance.now();
+        });
+        waiting.current.promoted = null;
+        if (cancelled) return;
+        if (landed) {
+          // Everything below the set on screen is dead weight now.
+          for (let below = BASE; below < set; below++) engine.drop(below);
+          return;
+        }
+        engine.drop(set);
       }
     };
 
     const run = async () => {
-      // The bridge. Read in and counted; streamed from its own URL if reading
-      // it in fails for any reason.
-      let url: string;
-      try {
-        url = await read(TIERS.bridge, setPercent);
-      } catch {
+      if (warm !== null) {
+        await engine.load(warm, { concurrency: BASE_CONCURRENCY, priority: "high" });
         if (cancelled) return;
-        url = TIERS.bridge.src;
+        usable = true;
+        setPercent(100);
+        setPhase("ready");
+      } else {
+        await loadBase();
+        if (cancelled || !usable) return;
       }
-      if (cancelled) return;
-      setPercent(100);
-      try {
-        await attach("a", TIERS.bridge, url);
-      } catch {
-        return;
-      }
-      let held: Tier = TIERS.bridge;
-
-      const order = await climbOrder();
-      if (cancelled) return;
-
-      // Never a file below the one shown; and after a failure, only files
-      // below the one that failed. (Until 2026-09-16 the second test was
-      // made against the file *shown*, which after any failure was still
-      // the bridge — so the first file to fail its probe ended the climb,
-      // and a machine that could not seek the 3200 file was left on 720p
-      // rather than handed the 1080p one.)
-      let failed: Tier | null = null;
-      for (const tier of order) {
-        if (tier.rank <= held.rank) break;
-        if (failed && tier.rank >= failed.rank) break;
-
-        // A candidate that will not download is not the reader's problem:
-        // they have a film already.
-        let candidate: string;
-        try {
-          candidate = await read(tier);
-        } catch {
-          return;
-        }
-        if (cancelled) return;
-
-        const slot: Slot = roles.current.active === "a" ? "b" : "a";
-        let el: HTMLVideoElement;
-        try {
-          el = await attach(slot, tier, candidate);
-        } catch {
-          release(slot);
-          failed = tier;
-          continue;
-        }
-        if (cancelled) return;
-
-        const passed = await probe(el);
-        if (cancelled) return;
-        if (!passed) {
-          release(slot);
-          failed = tier;
-          continue;
-        }
-
-        // Proven. Hand it to the loop, which drives both files to the same
-        // frame and swaps them there.
-        const landed = await new Promise<boolean>((resolve) => {
-          waiting.current.promoted = () => resolve(true);
-          waiting.current.abandoned = () => resolve(false);
-          roles.current.pending = slot;
-          roles.current.pendingSince = performance.now();
-        });
-        waiting.current.promoted = null;
-        waiting.current.abandoned = null;
-        if (cancelled) return;
-
-        if (landed) {
-          release(slot === "a" ? "b" : "a");
-          held = tier;
-        } else {
-          release(slot);
-          failed = tier;
-        }
-      }
+      await climb();
     };
 
-    void run();
+    run().catch(() => {
+      // Anything thrown past the base set leaves the reader with the base
+      // set, which is fine. Anything before it leaves them with nothing.
+      if (cancelled) return;
+      if (usable) setPhase("ready");
+      else giveUp();
+    });
 
     return () => {
       cancelled = true;
-      controller.abort();
-      for (const url of urls) URL.revokeObjectURL(url);
-      urls.clear();
+      delete debug.__heroFrames;
+      waiting.current.promoted?.(false);
+      waiting.current.drawn?.();
+      waiting.current = { drawn: null, promoted: null };
+      engine.dispose();
+      engineRef.current = null;
       // Back to the start, so a window resized out of the laptop layout and
-      // back in climbs the ladder again rather than pointing a slot at a
-      // blob URL that no longer exists.
-      roles.current = { active: null, pending: null, pendingSince: 0 };
-      tierOf.current = { a: null, b: null };
-      primed.current = { a: false, b: false };
-      waiting.current = { canplay: {}, failed: {}, promoted: null, abandoned: null };
-      setSrcA(null);
-      setSrcB(null);
+      // back in loads again rather than drawing from a disposed cache — or,
+      // with the frames still in hand, opens again at once.
+      setsRef.current = { active: null, pending: null, pendingSince: 0 };
+      exact.current = false;
+      const reopen = warmSet() !== null;
+      setPhase(reopen ? "ready" : "loading");
       setPercent(0);
-      setReady(false);
+      setDrawn(false);
+      setLoaderGone(reopen);
     };
-  }, [width]);
+  }, [wide]);
 
   useEffect(() => {
-    if (!mounted) return;
+    if (!wide) return;
     const track = trackRef.current;
     const media = mediaRef.current;
+    const canvas = canvasRef.current;
     const soft = softRef.current;
     const veil = veilRef.current;
     const mark = markRef.current;
     const tag = tagRef.current;
     const cue = cueRef.current;
-    if (!track || !media || !soft || !veil || !mark || !tag || !cue) return;
+    if (!track || !media || !canvas || !soft || !veil || !mark || !tag || !cue) return;
+    // Opaque: the compositor can skip blending the canvas with what is under
+    // it. It starts black, which is why it is at opacity 0 until drawn.
+    const ctx = canvas.getContext("2d", { alpha: false });
+    if (!ctx) return;
 
     let frame = 0;
     let current = 0;
+    /**
+     * The film's own eased position, in frames — chasing the scroll like
+     * `current` does, but aimed at the nearest whole frame rather than the
+     * exact point between two. While the page moves the aim moves on and the
+     * glide carries through the frames, cross-fading as it goes; when the
+     * page stops, the picture settles *on* a frame. Aimed at the exact point,
+     * it would settle between two and hold the cross-fade there — a double
+     * exposure of every window frame for as long as the reader looked.
+     */
+    let filmAt = 0;
     let last = 0;
     let painted = -1;
     let lastTarget = -1;
+
+    /** The drawn position last frame, in frames of film. */
+    let lastPosition = -1;
+    /** The scroll position last frame, in frames of film, and how fast it has been moving (frames a second). */
+    let lastAim = -1;
+    let aimVelocity = 0;
+    /** What the decoders were last asked for, packed — see `plan`. */
+    let plannedFor = -1;
+    /** What is on the canvas: two frames and the second's weight, in 64ths. */
+    let shownA: DrawableFrame | null = null;
+    let shownB: DrawableFrame | null = null;
+    let shownWeight = -1;
+    let firstDrawn = false;
+
+    /** The panel in device pixels, and whether the backing store needs fitting to it. */
+    let deviceW = 0;
+    let deviceH = 0;
+    let layoutDirty = true;
+
+    let blendAllowed = true;
+    let vsync = Infinity;
+    let lateness = 0;
+
+    // The harness's other reading, in a dev build: where the picture should be.
+    const hook = (window as Window & { __heroFrames?: Record<string, unknown> }).__heroFrames;
+    if (process.env.NODE_ENV === "development" && hook) {
+      hook.position = () => lastPosition;
+      hook.blend = () => blendAllowed;
+    }
 
     /**
      * The bar over the film. While the panel is pinned, `<html>` carries
@@ -825,21 +794,6 @@ export function ScrollHero() {
       else document.documentElement.removeAttribute("data-hero-film");
     };
 
-    /**
-     * Per element, since two can be chasing at once: when its outstanding
-     * seek was issued, where to, and when it was last reloaded. Keyed on the
-     * element so a slot remounting with a new file starts clean.
-     */
-    const seeks = new WeakMap<HTMLVideoElement, { seekAt: number; seekTo: number; recoveredAt: number }>();
-    const stateOf = (el: HTMLVideoElement) => {
-      let s = seeks.get(el);
-      if (!s) {
-        s = { seekAt: 0, seekTo: 0, recoveredAt: 0 };
-        seeks.set(el, s);
-      }
-      return s;
-    };
-
     /** Cached by the shared loop and refreshed on resize — see `lib/scroll.ts`. */
     let viewportHeight = window.innerHeight;
 
@@ -850,105 +804,13 @@ export function ScrollHero() {
       return clamp01(-rect.top / distance);
     };
 
-    const active = () => (roles.current.active ? elOf(roles.current.active) : null);
-    const pending = () => (roles.current.pending ? elOf(roles.current.pending) : null);
-
-    /**
-     * Reloading is the only way back from a decoder the browser has thrown
-     * away. It is cheap — the bytes are in memory — but rate-limited anyway,
-     * so a file that is genuinely broken cannot spin on it. The position is
-     * handed straight back after the reload, before the metadata is in:
-     * that is the spec's "default playback start position", and it means the
-     * element comes back on the frame it left rather than on frame zero and
-     * then seeking — one black frame instead of half a dozen.
-     */
-    const recover = (el: HTMLVideoElement, now: number) => {
-      const s = stateOf(el);
-      if (now - s.recoveredAt < RECOVER_COOLDOWN_MS) return;
-      s.recoveredAt = now;
-      s.seekAt = 0;
-      painted = -1;
-      if (roles.current.active) primed.current[roles.current.active] = false;
-      el.load();
-      el.currentTime = s.seekTo;
-    };
-
-    const seek = (el: HTMLVideoElement, progress: number, now: number) => {
-      const { duration } = el;
-      if (!duration || !Number.isFinite(duration)) return;
-      const s = stateOf(el);
-
-      if (el.seeking) {
-        // A seek that never lands would otherwise wedge the clip on one frame
-        // for good — the freeze this whole block exists to prevent. Asking
-        // again is almost always enough, and is re-armed rather than tried
-        // once: a browser can drop several in a row under a hard scroll.
-        //
-        // Reloading is reserved for `HAVE_NOTHING`, where the decoder really
-        // has been taken away. It is not a remedy for a *slow* seek — a
-        // reload empties the buffer, and the clip would then crawl forward
-        // from the beginning as it refilled, which is worse than waiting.
-        if (s.seekAt && now - s.seekAt > SEEK_TIMEOUT_MS) {
-          s.seekAt = now;
-          if (el.readyState === 0) recover(el, now);
-          else el.currentTime = s.seekTo;
-        }
-        return;
-      }
-      s.seekAt = 0;
-
-      // Only the fallback, which streams the file, can seek into a part that
-      // has not arrived yet — and that is fine: the browser range-requests it
-      // and keeps the last decoded frame on screen meanwhile, so the
-      // walkthrough lags rather than blanking. Stop a frame short of the end,
-      // though — the very last one is not always seekable,
-      // and asking for it can leave `seeking` true indefinitely.
-      const wanted = clamp01(progress / CLIP_END) * (duration - 0.05);
-      if (Math.abs(el.currentTime - wanted) < SEEK_EPSILON) return;
-      s.seekAt = now;
-      s.seekTo = wanted;
-      el.currentTime = wanted;
-    };
-
-    /**
-     * The swap. Both files have been driven to the same target; the moment
-     * neither is mid-seek and both sit on the same frame, the candidate goes
-     * to full opacity and the incumbent to none, in this frame — the reader
-     * is looking at the same picture before and after, one of them sharper.
-     * No transition: a cross-fade between two copies of the same frame at
-     * different sharpness is a half-second of the picture going soft and
-     * coming back, which is the blink this is arranged to avoid.
-     */
-    const promote = (now: number) => {
-      const from = active();
-      const to = pending();
-      if (!from || !to || !roles.current.pending) return;
-      const settled =
-        !from.seeking &&
-        !to.seeking &&
-        to.readyState >= HAVE_CURRENT_DATA &&
-        Math.abs(to.currentTime - from.currentTime) < FRAME_S;
-      if (settled) {
-        to.style.opacity = "1";
-        from.style.opacity = "0";
-        roles.current.active = roles.current.pending;
-        roles.current.pending = null;
-        waiting.current.promoted?.();
-        return;
-      }
-      if (now - roles.current.pendingSince > PROMOTE_TIMEOUT_MS) {
-        roles.current.pending = null;
-        waiting.current.abandoned?.();
-      }
-    };
-
     const paint = (progress: number) => {
       if (Math.abs(progress - painted) < 0.00005) return;
       painted = progress;
 
       // Shade pools under the middle of the picture, where the lockup lands,
       // and the edges of the shot stay as they were. The soft plate is the
-      // same frame the clip ends on, so this reads as the picture drifting
+      // same frame the film ends on, so this reads as the picture drifting
       // out of focus rather than as a cut to another image.
       const pool = ramp(progress, POOL_START, FINALE_END);
       veil.style.opacity = String(pool);
@@ -972,6 +834,274 @@ export function ScrollHero() {
       cue.style.transform = cueOut > 0 ? `translate3d(0, ${cueOut * 12}px, 0)` : "";
     };
 
+    /**
+     * Size the backing store for `spec`'s frames on the panel as it now is.
+     *
+     * Where the frame has at least the panel's device pixels, the canvas
+     * gets exactly the panel's, and the frame is drawn down into them.
+     * Where it has fewer, the canvas gets the frame's own pixels in the
+     * dimension that decides the crop — and the panel's shape in the other —
+     * so the frame is drawn 1:1, unfiltered, and the compositor makes the
+     * one upscale to the screen. Either way the canvas is CSS-sized to the
+     * panel, so its shape is the panel's and nothing is stretched.
+     *
+     * Setting a canvas's size clears it and resets its state, so this
+     * returns whether it did, and the caller redraws in the same frame.
+     */
+    const fit = (spec: FrameSetSpec) => {
+      if (!deviceW || !deviceH) {
+        const dpr = window.devicePixelRatio || 1;
+        deviceW = Math.round(canvas.clientWidth * dpr);
+        deviceH = Math.round(canvas.clientHeight * dpr);
+      }
+      if (!deviceW || !deviceH) return;
+
+      const scaleW = deviceW / spec.width;
+      const scaleH = deviceH / spec.height;
+      const cover = Math.max(scaleW, scaleH);
+      let w: number;
+      let h: number;
+      if (cover <= 1) {
+        const room = Math.min(1, Math.sqrt(MAX_CANVAS_PIXELS / (deviceW * deviceH)));
+        w = Math.round(deviceW * room);
+        h = Math.round(deviceH * room);
+      } else if (scaleW >= scaleH) {
+        w = spec.width;
+        h = Math.min(spec.height, Math.round(deviceH / cover));
+      } else {
+        h = spec.height;
+        w = Math.min(spec.width, Math.round(deviceW / cover));
+      }
+      w = Math.max(1, w);
+      h = Math.max(1, h);
+
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+      }
+      // Reset with the size, and after a lost context; cheap to say again.
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "medium";
+    };
+
+    /** One frame, cropped to cover the canvas and centred. */
+    const place = (item: DrawableFrame, alpha: number) => {
+      const cw = canvas.width;
+      const ch = canvas.height;
+      let s = Math.max(cw / item.width, ch / item.height);
+      // A frame that covers the canvas at its own size is drawn at it, so
+      // its pixels land on pixels and nothing is filtered.
+      if (Math.abs(s - 1) < 0.002 && item.width >= cw && item.height >= ch) s = 1;
+      const w = item.width * s;
+      const h = item.height * s;
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(item.image, Math.round((cw - w) / 2), Math.round((ch - h) / 2), w, h);
+    };
+
+    /**
+     * What the decoders should be working on, most urgent first.
+     *
+     * When the picture is moving slowly or not at all, the two frames either
+     * side of it come first — they are what is drawn. When it is moving fast,
+     * those will be behind it by the time they are decoded, so the glide's
+     * own path comes first, starting as far ahead as a decode takes here,
+     * and followed on past the scroll position while the page is still
+     * moving (`LOOKAHEAD_FRAMES`). Then the frames around where the glide
+     * will settle, the side it is heading first. And, when the reader is
+     * still, the picture's two frames in the set waiting to take over, so it
+     * can.
+     *
+     * `stride` is how many frames apart the path is sampled. On a machine
+     * whose decoders cannot keep up with the film at the speed it is being
+     * scrubbed, asking for every frame means each one arrives after the
+     * picture has passed it, and the canvas trails the wheel; asking for
+     * every second or third keeps the picture with the wheel, at a lower
+     * frame rate, which is the better of the two to look at.
+     */
+    const plan = (
+      engine: FrameSequence,
+      position: number,
+      aim: number,
+      velocity: number,
+      active: number,
+      pending: number | null,
+      slow: boolean,
+      blend: boolean,
+      stride: number,
+    ) => {
+      const pairs: [number, number][] = [];
+      const low = Math.floor(position);
+      const onScreen: [number, number][] = [
+        [active, low],
+        [active, low + 1],
+        [active, Math.round(position)],
+      ];
+
+      if (slow) pairs.push(...onScreen);
+      if (pending !== null) pairs.push([pending, low], [pending, low + 1]);
+
+      const lead = Math.min(10, Math.round(engine.latencyMs / 16.7));
+      const path = glidePath(
+        position,
+        aim,
+        EASE_RATE,
+        60,
+        lead + PATH_TICKS,
+        velocity,
+        LOOKAHEAD_FRAMES,
+      );
+      let picked = Number.NaN;
+      for (let s = lead; s < path.length; s++) {
+        const x = path[s];
+        if (blend) {
+          pairs.push([active, Math.floor(x)], [active, Math.floor(x) + 1]);
+          continue;
+        }
+        const index = Math.round(x);
+        if (Math.abs(index - picked) < stride) continue;
+        picked = index;
+        pairs.push([active, index]);
+      }
+
+      const settle = Math.round(aim);
+      const ahead = aim >= position ? 1 : -1;
+      const radius = Math.min(
+        SETTLE_RADIUS,
+        Math.floor(engine.budget / engine.frameBytes(active) / 4),
+      );
+      for (let d = 0; d <= radius; d++) {
+        pairs.push([active, settle + ahead * d]);
+        if (d) pairs.push([active, settle - ahead * d]);
+      }
+      return { pairs, keep: onScreen };
+    };
+
+    const render = (now: number, target: number, elapsed: number, interval: number) => {
+      const engine = engineRef.current;
+      const sets = setsRef.current;
+      if (!engine || sets.active === null) return;
+
+      const position = filmAt;
+      const aim = clamp01(target / CLIP_END) * LAST_FRAME;
+      // Frames of film per 60th of a second, whatever the display's rate.
+      const speed =
+        lastPosition < 0 || elapsed === 0 ? 0 : Math.abs(position - lastPosition) / (elapsed * 60);
+      lastPosition = position;
+      // How fast the scroll itself is moving, in frames a second — smoothed,
+      // and only believed while it is still moving the same way this frame.
+      // A page that jumped and has stopped has a large smoothed speed and
+      // none now, and planning past its destination would waste the decodes
+      // it needs there.
+      const now60 = elapsed > 0 && lastAim >= 0 ? (aim - lastAim) / elapsed : 0;
+      aimVelocity += (now60 - aimVelocity) * Math.min(1, elapsed * 10);
+      lastAim = aim;
+      const velocity =
+        Math.sign(now60) === Math.sign(aimVelocity)
+          ? Math.sign(aimVelocity) * Math.min(Math.abs(now60), Math.abs(aimVelocity))
+          : 0;
+      const moving = speed > 0.02;
+      const still = speed < 0.25 && Math.abs(aim - position) < 0.5;
+
+      if (blendAllowed && moving && interval > 0) {
+        vsync = Math.min(vsync, Math.max(interval, 6.5));
+        lateness =
+          interval > vsync * BLEND_LATE_FACTOR ? lateness + 1 : Math.max(0, lateness - 0.25);
+        if (lateness > BLEND_GIVE_UP) blendAllowed = false;
+      }
+      // Frames of film a second the picture is asking for, against what the
+      // decoders can make — see `plan`.
+      const stride = Math.max(1, Math.ceil((speed * 60) / engine.capacity()));
+      const blend = blendAllowed && speed < 1 && stride === 1;
+
+      const low = Math.floor(position);
+      const high = Math.min(LAST_FRAME, low + 1);
+
+      // The swap to a sharper set, on the frame it has this picture ready.
+      if (sets.pending !== null) {
+        if (!still) {
+          sets.pendingSince = now;
+        } else if (
+          engine.has(sets.pending, low) &&
+          (!blend || high === low || engine.has(sets.pending, high))
+        ) {
+          sets.active = sets.pending;
+          sets.pending = null;
+          layoutDirty = true;
+          waiting.current.promoted?.(true);
+        } else if (now - sets.pendingSince > PROMOTE_TIMEOUT_MS) {
+          sets.pending = null;
+          waiting.current.promoted?.(false);
+        }
+      }
+      const active = sets.active;
+      const pending = still ? sets.pending : null;
+
+      const slow = speed < 1;
+      const pace = Math.max(-40, Math.min(40, Math.round(velocity / 8)));
+      const key =
+        ((((low * 256 + Math.round(aim)) * 4 + active) * 5 + (pending ?? 4)) * 2 + (blend ? 1 : 0)) *
+          2 +
+        (slow ? 1 : 0) +
+        (pace + 40) * 1e9 +
+        Math.min(stride, 9) * 1e11;
+      if (key !== plannedFor) {
+        plannedFor = key;
+        const next = plan(engine, position, aim, velocity, active, pending, slow, blend, stride);
+        engine.want(next.pairs, next.keep);
+      }
+
+      // What to draw: the frame under the position and, between frames, the
+      // next one faded over it. Anything not decoded yet is stood in for by
+      // the nearest frame that is.
+      let a: DrawableFrame | undefined;
+      let b: DrawableFrame | undefined;
+      let weight = 0;
+      if (blend) {
+        a = engine.get(active, low);
+        if (a && high !== low) {
+          weight = Math.round((position - low) * 64);
+          if (weight > 0) b = engine.get(active, high);
+          if (!b) weight = 0;
+          else if (weight >= 64) {
+            a = b;
+            b = undefined;
+            weight = 0;
+          }
+        }
+      } else {
+        a = engine.get(active, Math.round(position));
+      }
+      if (!a) {
+        a = engine.nearest(active, position);
+        b = undefined;
+        weight = 0;
+      }
+      if (!a) return;
+
+      exact.current = a.set === active && Math.abs(a.index - position) < 1;
+      if (exact.current) waiting.current.drawn?.();
+
+      if (layoutDirty) {
+        layoutDirty = false;
+        fit(SETS[active]);
+      } else if (a === shownA && (b ?? null) === shownB && weight === shownWeight) {
+        return;
+      }
+
+      place(a, 1);
+      if (b) place(b, weight / 64);
+      ctx.globalAlpha = 1;
+      shownA = a;
+      shownB = b ?? null;
+      shownWeight = weight;
+
+      if (!firstDrawn) {
+        firstDrawn = true;
+        canvas.style.opacity = "1";
+        setDrawn(true);
+      }
+    };
+
     const tick = (now: number) => {
       frame = requestAnimationFrame(tick);
 
@@ -979,7 +1109,8 @@ export function ScrollHero() {
       // chase twice as hard as a 60Hz one and feel like a different site. The
       // gap is clamped so a loop resuming after a pause eases in rather than
       // integrating however long it was away in a single step.
-      const elapsed = last ? Math.min((now - last) / 1000, 0.05) : 0;
+      const interval = last ? now - last : 0;
+      const elapsed = Math.min(interval / 1000, 0.05);
       last = now;
 
       const target = readProgress();
@@ -990,24 +1121,15 @@ export function ScrollHero() {
       // On the raw position, not the eased one: the bar should frost the
       // frame the panel unpins, not a beat later when the ease catches up.
       film(target < 1);
-      current += (target - current) * (1 - Math.exp(-EASE_RATE * elapsed));
+      const ease = 1 - Math.exp(-EASE_RATE * elapsed);
+      current += (target - current) * ease;
       if (Math.abs(target - current) < 0.0004) current = target;
+      const filmAim = Math.round(clamp01(target / CLIP_END) * LAST_FRAME);
+      filmAt += (filmAim - filmAt) * ease;
+      if (Math.abs(filmAim - filmAt) < 0.02) filmAt = filmAim;
 
       paint(current);
-
-      // The film on screen, and the one coming up behind it, are driven to
-      // the same place, and the swap is taken the frame they meet. The
-      // meeting is judged *before* this frame's seeks go out: both files
-      // finished last frame's seek to the same target during the frame, so
-      // this is the moment they are at rest on the same picture. Judged
-      // after, they would both be mid-seek again on every frame the reader
-      // was scrolling, and the swap would only ever land in a pause.
-      if (active() && pending()) promote(now);
-      // Read again: a promotion just now has swapped which is which.
-      const shown = active();
-      const next = pending();
-      if (shown) seek(shown, current, now);
-      if (next) seek(next, current, now);
+      render(now, target, elapsed, interval);
     };
 
     const start = () => {
@@ -1038,22 +1160,97 @@ export function ScrollHero() {
       start();
     };
 
+    /** Draw again from scratch on the next frame. */
+    const redraw = () => {
+      shownA = null;
+      layoutDirty = true;
+    };
+
     /**
      * Coming back from a background tab, another application, or the back
-     * button's page cache. Browsers reclaim video decoders from pages that
-     * have been idle, and an element that has lost its decoder accepts every
-     * `currentTime` you give it and draws none of them.
+     * button's page cache. A browser may have dropped the canvas's backing
+     * store while the page was away; drawing it again costs one frame.
      */
     const wake = () => {
-      // `readyState` dips below `HAVE_CURRENT_DATA` during any ordinary seek,
-      // so a wake landing mid-seek must not be read as a lost decoder — that
-      // would reload the element in the middle of working correctly.
-      const el = active();
-      if (el && !document.hidden && !el.seeking && el.readyState < HAVE_CURRENT_DATA) {
-        recover(el, performance.now());
-      }
+      redraw();
       sync();
     };
+
+    /*
+     * The panel's size in device pixels.
+     *
+     * `devicePixelContentBoxSize` is the exact count the browser will paint —
+     * at 125% or 150% a CSS size times the ratio is a fraction, and rounding
+     * it can land a pixel off, which softens a 1:1 draw across the whole
+     * picture. It is only taken when it agrees with the CSS size times the
+     * ratio to within that rounding: Chrome's device emulation (DevTools'
+     * device mode, and the headless harness) reports CSS pixels there, which
+     * would have a Retina screen drawn at half its resolution. Where it is
+     * not offered (Safari), or not believed, the CSS size times the ratio it
+     * is.
+     *
+     * The ratio is watched too. Moving a window to a screen of another
+     * density, or zooming the page, changes it without always changing
+     * anything a resize observer reports; when it changes, the canvas is
+     * observed afresh, which delivers a new reading straight away.
+     */
+    const measure = (w: number, h: number) => {
+      if (w === deviceW && h === deviceH) return;
+      deviceW = w;
+      deviceH = h;
+      redraw();
+    };
+    const resize =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver((entries) => {
+            const entry = entries[entries.length - 1];
+            const dpr = window.devicePixelRatio || 1;
+            const box = entry.contentBoxSize?.[0];
+            const w = Math.round((box ? box.inlineSize : entry.contentRect.width) * dpr);
+            const h = Math.round((box ? box.blockSize : entry.contentRect.height) * dpr);
+            const device = entry.devicePixelContentBoxSize?.[0];
+            if (
+              device &&
+              Math.abs(device.inlineSize - w) <= 2 &&
+              Math.abs(device.blockSize - h) <= 2
+            ) {
+              measure(device.inlineSize, device.blockSize);
+            } else {
+              measure(w, h);
+            }
+          })
+        : null;
+    const observeCanvas = () => {
+      if (!resize) return;
+      try {
+        resize.observe(canvas, { box: "device-pixel-content-box" });
+      } catch {
+        resize.observe(canvas);
+      }
+    };
+    observeCanvas();
+
+    let density: MediaQueryList | null = null;
+    const onDensity = () => {
+      watchDensity();
+      if (resize) {
+        resize.unobserve(canvas);
+        observeCanvas();
+      } else {
+        const dpr = window.devicePixelRatio || 1;
+        measure(Math.round(canvas.clientWidth * dpr), Math.round(canvas.clientHeight * dpr));
+      }
+    };
+    const watchDensity = () => {
+      density?.removeEventListener("change", onDensity);
+      density = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+      density.addEventListener("change", onDensity);
+    };
+    watchDensity();
+
+    // Chrome can take a canvas's GPU context away (a driver reset, memory
+    // pressure) and give it back blank; everything is drawn again on return.
+    canvas.addEventListener("contextrestored", redraw);
 
     const observer =
       typeof IntersectionObserver !== "undefined"
@@ -1061,20 +1258,18 @@ export function ScrollHero() {
         : null;
 
     /**
-     * Take the clip out of the compositor once the hero is well behind us.
+     * Take the canvas out of the compositor once the hero is well behind us.
      *
-     * A `<video>` holds a layer and a full-size texture for as long as it is
-     * painted, and this one is up to 3840 wide and pinned inside a track
-     * several screens tall. Being paused and off screen did not help: the
-     * layer was still in the frame the compositor built for every scroll
-     * position on the page, and it cost about a frame in eight for the
-     * *whole* home page — the one page on the site that scrolled measurably
-     * worse than the rest. Nothing was running; there was simply too much to
-     * composite.
+     * A full-screen canvas holds a layer and a texture for as long as it is
+     * painted, and this one is pinned inside a track several screens tall.
+     * Being idle and off screen does not help: the layer is still in the
+     * frame the compositor builds for every scroll position on the page. The
+     * `<video>` this replaced cost about a frame in eight for the *whole*
+     * home page that way, and a canvas is the same kind of layer.
      *
      * `visibility` rather than `display`, so the element keeps its box and
      * the layout above and below it cannot shift. And a full screen of slack
-     * either side, so the clip is always painted long before it could be
+     * either side, so the canvas is always painted long before it could be
      * seen: an observer is delivered at the end of a frame, and a decision
      * taken exactly at the edge could be a frame late, which on the way back
      * up would be a black panel where the film should be.
@@ -1082,9 +1277,7 @@ export function ScrollHero() {
      * The *last* entry is the one that counts. An observer can deliver
      * several for one element in a single callback — a flick past the
      * margin and back inside one delivery — and reading only the first
-     * would leave the clip hidden while it is on screen. A slot that mounts
-     * while the hero is culled picks the state up from `culled` as it
-     * mounts, in its ref callback below.
+     * would leave the canvas hidden while it is on screen.
      */
     const cull =
       typeof IntersectionObserver !== "undefined"
@@ -1092,9 +1285,7 @@ export function ScrollHero() {
             (entries) => {
               const entry = entries[entries.length - 1];
               culled.current = !entry.isIntersecting;
-              for (const el of [elA.current, elB.current]) {
-                if (el) el.style.visibility = culled.current ? "hidden" : "";
-              }
+              canvas.style.visibility = culled.current ? "hidden" : "";
             },
             { threshold: 0, rootMargin: "100% 0px 100% 0px" },
           )
@@ -1124,14 +1315,12 @@ export function ScrollHero() {
       film(false);
       observer?.disconnect();
       cull?.disconnect();
+      resize?.disconnect();
+      density?.removeEventListener("change", onDensity);
       culled.current = false;
-      // Whatever is mounted *now*, not what was when the effect began: the
-      // slots come and go over the effect's life, and it is the current pair
-      // that may be sitting hidden.
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      for (const el of [elA.current, elB.current]) {
-        if (el) el.style.visibility = "";
-      }
+      canvas.style.visibility = "";
+      canvas.style.opacity = "0";
+      canvas.removeEventListener("contextrestored", redraw);
       document.removeEventListener("visibilitychange", wake);
       window.removeEventListener("focus", wake);
       window.removeEventListener("pageshow", wake);
@@ -1141,63 +1330,23 @@ export function ScrollHero() {
         node.style.transform = "";
       }
     };
-  }, [mounted]);
+  }, [wide]);
 
   /*
    * Phones do not get the walkthrough at all.
    *
-   * This is a five-screen track pinning a wide clip and scrubbing it off the
+   * This is a five-screen track pinning a wide film and scrubbing it off the
    * scroll position — an interaction that wants a wheel and a connection,
-   * and on a phone is a long drag through a file that had to be downloaded
+   * and on a phone is a long drag through frames that had to be downloaded
    * first. `HomeHeroPhone` opens the page there instead: a short band of
-   * photographs under the bar, no video at all.
+   * photographs under the bar, no film at all.
    *
    * Unmounting rather than merely hiding is what stops the phone paying for
-   * this anyway — no clip, no end still, no animation frame loop. It happens
+   * this anyway — no frames, no end still, no animation frame loop. It happens
    * the moment the width is known, and `hidden desk:block` below covers the
    * frame before that, so nothing is ever seen to leave.
    */
   if (width === "phone") return null;
-
-  /**
-   * One slot. Opacity is the loop's and `reveal`'s to set, never React's:
-   * it changes on the frame a promotion lands, and a stylesheet transition
-   * would turn that into a cross-fade. `visibility` follows the cull, from
-   * the ref callback, so a slot mounting while the hero is far below the
-   * fold is not composited for nothing.
-   *
-   * Anything that says there is a frame to show reaches `reveal`; whichever
-   * the browser fires first wins and the rest are no-ops.
-   */
-  const slot = (
-    which: Slot,
-    src: string | null,
-    ref: React.MutableRefObject<HTMLVideoElement | null>,
-  ) =>
-    src && (
-      <video
-        key={src}
-        ref={(el) => {
-          ref.current = el;
-          if (el) el.style.visibility = culled.current ? "hidden" : "";
-        }}
-        src={src}
-        className="absolute inset-0 h-full w-full object-cover"
-        style={{ opacity: 0 }}
-        // `muted` + `playsInline` are what make the priming play legal.
-        muted
-        playsInline
-        preload="auto"
-        // Decorative: the poster carries the alternative text.
-        aria-hidden="true"
-        tabIndex={-1}
-        disablePictureInPicture
-        onLoadedData={(event) => reveal(which, event.currentTarget)}
-        onCanPlay={(event) => reveal(which, event.currentTarget)}
-        onSeeked={(event) => reveal(which, event.currentTarget)}
-        onError={(event) => onSlotError(which, event.currentTarget)}
-      />
-    );
 
   return (
     <section
@@ -1220,6 +1369,15 @@ export function ScrollHero() {
           : undefined
       }
     >
+      {/* The loader. Fixed over the whole window, so it sits here rather than
+          in the panel — the panel is its own stacking context, and anything
+          inside it would be under the bar. In the server's HTML so it can be
+          up from the first paint; CSS keeps it hidden unless the page has
+          asked for it. */}
+      {!loaderGone && (
+        <HeroLoader percent={percent} leaving={!loaderUp} ground={wide} />
+      )}
+
       {/* Pins at the top of the window and runs to its foot — the whole
           screen, bar included, full width, flush on all four sides. The
           panel is where it pins from the first pixel, and the scrub still
@@ -1229,17 +1387,13 @@ export function ScrollHero() {
           the walkthrough is the first and only thing on it, and the bar is
           over it rather than above it.
 
-          The clip is cut at 16:9, which is the tallest shape the render has
-          and within a few percent of the panel's own on every screen this is
-          read on, so `object-cover` fills the box with no letterbox and trims
-          only those few percent. That shape is the whole reason the hero is
-          not pushed in: `build-hero-video.py` used to cut a 2.4:1 band out of
-          a 3524×2352 render and throw away two fifths of every frame. It cuts
-          poster, clip and end still from the same windows, so the two
-          cross-fades land on frames that line up.
-
-          No `object-position`: centred, so the few percent comes off evenly.
-          See also `h-hero-screen` in `app/globals.css`. */}
+          The frames are 16:9, which is the tallest shape the render has and
+          within a few percent of the panel's own on every screen this is
+          read on, so drawing them to cover the canvas trims only those few
+          percent, evenly, and never letterboxes. The poster and both soft
+          plates are cut from the same frames, so the cross-fades land on
+          pictures that line up. See also `h-hero-screen` in
+          `app/globals.css`. */}
       <div className="sticky top-0 isolate h-hero-screen w-full overflow-hidden bg-black">
         {/* `next/image` with `fill` needs a positioned containing block, so the
             media gets a wrapper of its own — which is also the thing the close
@@ -1255,19 +1409,25 @@ export function ScrollHero() {
             placeholder="blur"
             className={cn(
               "object-cover transition-opacity duration-500",
-              ready ? "opacity-0" : "opacity-100",
+              drawn ? "opacity-0" : "opacity-100",
             )}
           />
 
-          {/* The two slots. One is the film on screen; the other, when it is
-              mounted at all, is the next file up the ladder being brought
-              up behind it. Which is which is `roles`, not their order here:
-              they trade places on every promotion. */}
-          {slot("a", srcA, elA)}
-          {slot("b", srcB, elB)}
+          {/* The film. Its opacity is the loop's to set, never React's: it
+              goes to 1 on the frame the first picture is drawn, and to 0 if
+              the film is given up. Decorative — the poster carries the
+              alternative text. */}
+          {wide && (
+            <canvas
+              ref={canvasRef}
+              aria-hidden="true"
+              className="absolute inset-0 block h-full w-full"
+              style={{ opacity: 0 }}
+            />
+          )}
 
           {/* The last frame, blurred once at build time. Cross-fading to this is
-              what the close does instead of blurring live video. */}
+              what the close does instead of blurring the canvas live. */}
           {/* The plate itself waits for the width. It is lazy, and a lazy
               image with no layout box is fetched immediately rather than
               deferred — so on a phone, where this section is `display: none`
@@ -1287,7 +1447,6 @@ export function ScrollHero() {
               />
             )}
           </div>
-
         </div>
 
         {/* The bar's own ground — the same scrim the phone's band carries, at
@@ -1345,22 +1504,19 @@ export function ScrollHero() {
           </p>
         </div>
 
-        {/* The count, then the go-ahead. Two and a half rems off the foot of
-            the screen and centred on it — the panel runs to the bottom of
-            the viewport, so its own foot is the screen's. It counts the
-            bridge in as it downloads and, once every byte of it is here,
-            tells the reader to start scrolling; the larger files arrive
-            behind that without a word. Nothing stops anyone scrolling
-            sooner: the poster and the close still run, the walkthrough is
-            simply not there yet.
+        {/* The go-ahead. Two and a half rems off the foot of the screen and
+            centred on it — the panel runs to the bottom of the viewport, so
+            its own foot is the screen's. Once the loader has lifted it tells
+            the reader to start scrolling; if the loader lifted early, on a
+            stalled connection, it counts the rest of the frames in first.
 
             Tracking is added after every letter, the last one included, so
             the line carries the same amount again on its left to sit truly
             centred over the hairline. The count is in tabular figures, so
             the line does not twitch sideways as it climbs.
 
-            The box is always rendered, because the scrub effect takes hold of
-            it on its first run; what goes in it waits until mounted. Without
+            The box is always rendered, because the loop takes hold of it on
+            its first run; what goes in it waits until mounted. Without
             JavaScript nothing is counting, and a "Loading 0%" that never
             moves would be the one thing on the screen. */}
         <div
@@ -1383,7 +1539,7 @@ export function ScrollHero() {
               <span
                 className={cn(
                   "block h-10 w-px bg-gradient-to-b from-rosegold-600 to-transparent",
-                  loaded ? "animate-pulse motion-reduce:animate-none" : "opacity-50",
+                  complete ? "animate-pulse motion-reduce:animate-none" : "opacity-50",
                 )}
               />
             </>

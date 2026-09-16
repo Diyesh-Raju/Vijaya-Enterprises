@@ -6165,6 +6165,220 @@ html[data-hero-film] .site-header .logo-art--reversed {
   opacity: 1;
 }
 
+/* ------------------------------------------------------------------
+   The walkthrough's loader.
+
+   The home page on a laptop opens on this until every frame of the smallest
+   set is in memory — see `HeroLoader` and `ScrollHero`. It is shown off
+   `data-hero-loading` on `<html>`, which the inline script in
+   `app/layout.tsx` writes before the first paint and `ScrollHero` takes
+   over at hydration (it writes `js` into it, which is also what tells the
+   script's dead man's handle that somebody is in charge).
+
+   Above the bar (z-50) and under the language chooser (z-200) and its
+   veil (z-210): a first visit answers the question first and then watches
+   the count finish, and nothing behind either can be reached.
+
+   Nothing here blurs live over the whole screen. The ground is a still
+   blurred at build time; only the card is frosted in the browser, and it
+   is small. The spinning arc turns on the compositor.
+------------------------------------------------------------------- */
+.hero-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  display: none;
+  place-items: center;
+  padding: 2rem;
+  outline: none;
+  background-color: var(--color-navy-950);
+  background-position: center;
+  background-size: cover;
+  opacity: 1;
+  transition:
+    opacity 700ms var(--ease-out-soft),
+    visibility 0s linear 0s;
+}
+
+html[data-hero-loading] .hero-loader,
+.hero-loader[data-leaving] {
+  display: grid;
+}
+
+/* Lifting. It keeps its `display` for the fade — `LOADER_FADE_MS` in
+   `scroll-hero.tsx` is how long the component waits before unmounting it. */
+.hero-loader[data-leaving] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition-delay: 0s, 700ms;
+}
+
+/* Nothing scrolls under it. `scrollbar-gutter: stable` on the root is what
+   keeps a Windows scrollbar's 17px from shifting the page when this lifts.
+   `ScrollHero` also holds touch scrolling and the keyboard, for the
+   browsers where this alone does not. */
+html[data-hero-loading] body {
+  overflow: hidden;
+}
+
+.hero-loader__ground {
+  object-fit: cover;
+}
+
+/* The film's first frame is daylight; the card is white type. Pooled in the
+   middle, where the card is, and lighter towards the edges so the picture
+   still reads as the picture. */
+.hero-loader__tint {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(55% 60% at 50% 50%, rgb(6 20 49 / 0.5), rgb(6 20 49 / 0.2) 100%),
+    linear-gradient(180deg, rgb(6 20 49 / 0.3), rgb(6 20 49 / 0.5));
+}
+
+.hero-loader__card {
+  position: relative;
+  display: flex;
+  width: min(100%, 20rem);
+  flex-direction: column;
+  align-items: center;
+  gap: 1.75rem;
+  padding: 2.5rem 2.25rem 2.25rem;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  border-radius: var(--radius-3xl);
+  background:
+    linear-gradient(150deg, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0.06) 55%, rgb(255 255 255 / 0.12));
+  box-shadow:
+    0 2.5rem 5rem -1.5rem rgb(3 8 20 / 0.55),
+    inset 0 1px 0 rgb(255 255 255 / 0.3),
+    inset 0 -1px 0 rgb(255 255 255 / 0.08);
+  color: #ffffff;
+  animation: hero-loader-arrive 900ms var(--ease-reveal) 120ms both;
+
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
+  }
+}
+
+.hero-loader__logo {
+  height: 3.25rem;
+}
+
+.hero-loader__dial {
+  position: relative;
+  display: grid;
+  width: 8.5rem;
+  height: 8.5rem;
+  place-items: center;
+}
+
+.hero-loader__rings {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.hero-loader__track {
+  fill: none;
+  stroke: rgb(255 255 255 / 0.14);
+  stroke-width: 2.5;
+}
+
+.hero-loader__fill {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 450ms var(--ease-out-soft);
+}
+
+/* A comet running round just outside the dial: a conic gradient, masked to
+   a hairline ring, turned as one composited layer. */
+.hero-loader__spinner {
+  position: absolute;
+  inset: -0.6rem;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0turn,
+    rgb(237 192 176 / 0) 0turn,
+    rgb(237 192 176 / 0) 0.55turn,
+    rgb(237 192 176 / 0.9) 0.98turn,
+    rgb(237 192 176 / 0) 1turn
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1px));
+  will-change: transform;
+  animation: hero-loader-spin 1.6s linear infinite;
+}
+
+.hero-loader__count {
+  position: relative;
+  font-size: 1.875rem;
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.hero-loader__unit {
+  margin-left: 0.08em;
+  font-size: 0.5em;
+  vertical-align: 0.75em;
+  color: rgb(255 255 255 / 0.65);
+}
+
+/* Tracked out, with the same again on the left so the word sits truly
+   centred — the bottom cue's arrangement. A translated caption drops the
+   tracking the way every Kannada line does (`[data-kn]`); this rule comes
+   later in the file and would otherwise win. */
+.hero-loader__caption {
+  margin: 0;
+  padding-left: 0.45em;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.45em;
+  color: rgb(255 255 255 / 0.8);
+}
+
+.hero-loader__caption[data-kn] {
+  padding-left: 0;
+  font-size: 0.8125rem;
+  letter-spacing: normal;
+}
+
+@keyframes hero-loader-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes hero-loader-arrive {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.75rem, 0) scale(0.98);
+  }
+}
+
+/* The ring still fills; only the decoration stops. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-loader,
+  .hero-loader__fill {
+    transition-duration: 0.01ms;
+  }
+
+  .hero-loader__card {
+    animation: none;
+  }
+
+  .hero-loader__spinner {
+    display: none;
+  }
+}
+
 /* The ground the transparent bar's white type stands on.
 
    Rendered by `HomeHeroPhone` at the top of its band and by `ScrollHero`

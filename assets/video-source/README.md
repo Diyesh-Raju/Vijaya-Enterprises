@@ -1,6 +1,7 @@
 # Home hero source clips
 
-The originals behind `public/video/home-scroll*.mp4`, kept out of `public/`
+The originals behind the home hero's frames (`public/frames/`) and the
+videos it played before them (`public/video/home-scroll*.mp4`), kept out of `public/`
 so a quarter of a gigabyte of source never ships in the deployment — and out
 of git (see `.gitignore`) so it never lands in the history either. They live
 on whoever holds the renders; ask before assuming a clone has them.
@@ -23,7 +24,127 @@ that order with the join hidden across half a second.
 join. It is 24p with no upscale, so it takes the `minterpolate` pass — the
 section below is the whole of its build.
 
-## The towers cut — what the hero plays now
+## The frame sequence — what the hero draws now, since 2026-09-16
+
+The hero no longer plays a `<video>`. Seeking one on every animation frame is
+only fast where H.264 is decoded in hardware; on the many Windows laptops that
+decode it in software, and in any browser denied the GPU, a seek takes two to
+five frames and the walkthrough trails the wheel (the software columns in the
+table below). So `ScrollHero` now draws the towers walkthrough onto a
+`<canvas>` from still frames, decoded ahead of time in workers
+(`lib/frame-sequence.ts`), and the four-file ladder further down is history —
+its files are still in `public/video/`, referenced by nothing, and can be
+deleted.
+
+`build-hero-frames.mjs` cuts everything, from `walkthrough-towers.mp4`:
+
+```sh
+node assets/video-source/build-hero-frames.mjs          # ~2½ minutes
+node assets/video-source/build-hero-frames.mjs --fresh  # re-interpolate too
+```
+
+It interpolates the 24p render straight to 30p at 2560×1440 (the same
+`minterpolate` settings as the ladder's masters; frame `i` here is frame `2i`
+of the old 60p master), converts to RGB as BT.709 limited range — what the
+ladder was tagged as, and what browsers assume for the untagged render — and
+writes three sets of lossy WebP (`effort 6`, `smartSubsample`) plus the three
+stills. The poster, the soft end plate and the new soft start plate (the
+loader's ground) all come off the same conversion, so the poster the page
+paints first and frame 0 the canvas then draws are the same picture in the
+same colours. The previous poster and end plate were cut by ffmpeg's default
+conversion, which reads the render as BT.601; the difference is about two
+code values on average.
+
+| set | frames | quality | total | a frame | who gets it |
+| --- | --- | --- | --- | --- | --- |
+| `1280/` | 209 | 72 | 14.2 MB | 67 KB | everyone first — the loader waits for all of it |
+| `1920/` | 209 | 72 | 22.8 MB | 106 KB | a panel 1400–2100 device pixels across, e.g. 1536×864 at 125% |
+| `2560/` | 209 | 72 | 31.4 MB | 146 KB | anything wider or denser: Retina MacBooks, 4K monitors |
+
+Quality 72 was picked by looking: 65 saves 8% and starts to smear the
+balcony glass at 2560; 80 costs a quarter more for nothing visible at any
+size. Sizes are measured on the build above.
+
+**Why no 4K set.** A decoded frame is width × height × 4 bytes whatever the
+file was — 33 MB at 3840×2160 — and the canvas can only hold a couple of
+dozen decoded frames inside a sensible memory budget. A 4K set would also be
+about 60 MB to download before the page opens. So the top set is 2560, and a
+screen denser than that gets it drawn 1:1 into the canvas and upscaled once
+by the compositor (1.35× on a 16" MacBook Pro, 1.5× on a 4K monitor at
+150%). This is a step down in sharpness from the 3840 video on those
+screens, taken knowingly for a scrub that never waits on a decoder.
+
+**Directory versioning.** `/frames/` is served `immutable` for a year
+(`next.config.ts`), so new bytes need a new path: bump `VERSION` in the
+script and `homeScrollBase` in `lib/images.ts` together.
+
+### How the page uses them
+
+- **Loader.** `HeroLoader` stands over the page from the first paint
+  (`data-hero-loading`, written by the inline script in `app/layout.tsx`)
+  until every frame of the 1280 set is downloaded and the frame for the
+  current scroll position is on the canvas. Scrolling, touch and keyboard
+  are held while it is up. Failsafes: no frame for 20s lifts it anyway and
+  the rest are counted in at the foot of the screen; more than 5% of frames
+  failing falls back to the poster; each request times out after 20s and is
+  retried twice. Frames already downloaded in the tab are kept, so a return
+  to the home page by a link opens at once with no loader.
+- **Climb.** The screen decides the ceiling (the smallest set with nine
+  tenths of the panel's device pixels, cover-cropped). The candidate's first
+  14 frames are downloaded and pushed through every decoder at once, at a
+  still moment, up to three times: the machine must decode at least 75
+  frames a second of that set or it stays where it is. A set that passes is
+  downloaded whole and swapped in on the frame it has the picture decoded,
+  while the reader is still — the same frame, sharper.
+- **Scheduling.** The drawn position eases towards the scroll (the same
+  rate-6 exponential as before), aimed at whole frames so it always comes
+  to rest on one. The decoders are told, every time the picture moves, what
+  to work on: the glide's path from as far ahead as a decode takes to land
+  (measured), against a target carried on at the scroll's own speed; then
+  the frames around where it will settle. Where the decoders cannot keep up,
+  the path is sampled every second or third frame, so the picture keeps up
+  with the wheel at a lower frame rate rather than trailing it. Decoded
+  frames live in a cache of 160–384 MB (by `navigator.deviceMemory`; 320 MB
+  where it is not offered). Between two frames at a slow scroll, the next is
+  cross-faded over the last; if display frames start arriving late the
+  cross-fade switches itself off.
+- **Canvas size.** The backing store is the panel's device pixels
+  (`devicePixelContentBoxSize` where it agrees with CSS size × ratio —
+  Chrome's device emulation reports CSS pixels there), capped at the frame's
+  own pixels, so a frame smaller than the screen is drawn exactly 1:1. The
+  settled canvas at 1512×982 @2 (2217×1440 backing, 2560 set) matches frame
+  106's file pixel for pixel.
+
+### Measured, 2026-09-16
+
+Headless Chrome 152 on the M5, dev server, the in-page harness in the
+session scratchpad (`run.mjs`): a steady scrub at 12px a display frame
+through the film and back, and an erratic notched wheel (bursts of
+100–240px, pauses of 1–10 frames, reversals, five-notch spins). "Trail" is
+how far the drawn frame is behind where the glide says it should be, in
+frames of film.
+
+| machine | set | scrub | display frame p95 / max | trail p50 / p95 / max |
+| --- | --- | --- | --- | --- |
+| 1512×982 @2, GPU | 2560 | steady | 16.7 / 16.8ms | 0.20 / 1.19 / 1.47 |
+| same | 2560 | wheel | 16.7 / 16.8ms | 0.28 / 2.83 / 7.83 |
+| 1536×864 @1.25, decodes +25ms, 4 cores, CPU ×4 | 1280 (1920 failed its probe) | wheel | 16.7 / 16.8ms | 0.24 / 1.87 / 16.6 |
+| same, decodes +60ms | 1280 | wheel | 16.8 / 16.8ms | 0.35 / 4.56 / 33.8 |
+| 1366×768 @1 | 1280 (ceiling) | steady | 16.7 / 16.8ms | 0.13 / 0.47 / 1.38 |
+
+No long animation frames in any run. Traced, the page's main thread spends
+about 1.3ms a display frame during a scrub — 0.2ms of it in this code — with
+the GPU on or off (`--disable-gpu`); the decodes run on the renderer's
+thread pool. The slow-decoder rows are simulated: a busy-wait added to each
+decode inside the worker, since DevTools CPU throttling does not reach the
+browser's image-decode threads. The large maximums are the first display
+frames of a hard spin, before any frame near the new position exists.
+
+Headless frame timing does not show raster cost (see the note in the
+project memory), so the display-frame columns say the main thread never
+missed; they do not by themselves prove a weak GPU would not.
+
+## The towers cut — the render the frames are cut from
 
 Since 2026-09-15 the hero plays the towers walkthrough: one render,
 `walkthrough-towers.mp4`, which opens on a landscaped block of white apartment
