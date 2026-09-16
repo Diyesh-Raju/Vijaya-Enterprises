@@ -21,7 +21,7 @@ export async function generateMetadata({
 
   return {
     title: project.name,
-    description: `${project.name} — ${project.projectType}, ${project.layout}, ${project.totalUnits} in ${project.locality}.`,
+    description: `${project.name}, ${project.projectType}, ${project.layout}, ${project.totalUnits} in ${project.locality}.`,
     alternates: { canonical: `/residential/${project.slug}` },
   };
 }
@@ -104,7 +104,7 @@ export default async function ProjectAboutPage({
                 building on five decades of integrity and on-time delivery.
                 Vijaya creates homes and spaces that blend modern design and
                 technology with vastu and eco-conscious living. Premium quality
-                at fair pricing — never one at the cost of the other. The measure
+                at fair pricing, never one at the cost of the other. The measure
                 of this vision remains the thousands of families who continue to
                 stand by the Vijaya promise.
               </p>

@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { PageHero } from "@/components/sections/page-hero";
 import { HandshakeReveal } from "@/components/sections/handshake-reveal";
-import { PartnerPanels } from "@/components/sections/partner-panels";
+import {
+  ProjectCarousel,
+  type CarouselProject,
+} from "@/components/sections/project-carousel";
 import {
   ProcessReveal,
   type ProcessStep,
@@ -10,6 +13,8 @@ import {
   ReasonPanels,
   type ReasonPanel,
 } from "@/components/sections/reason-panels";
+import Link from "next/link";
+import { Arrow } from "@/components/ui/button";
 import { Container, Section, SectionHeading } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { img, alt } from "@/lib/images";
@@ -21,38 +26,38 @@ export const metadata: Metadata = {
   alternates: { canonical: "/joint-ventures" },
 };
 
-const idealPartners = [
+/* The five projects in the carousel, in the order the client gave them
+   (2026-09-12). The label under each is a description of the picture rather
+   than a project name: only the second names itself — the name is on the
+   building — and inventing names for the other four would put words on a real
+   builder's page that nothing supports. Ask the client for them, and swap
+   them in here; nothing else has to change. Three words is the ceiling, and
+   the caption is one line at every width. */
+const projects: CarouselProject[] = [
   {
-    title: "Landowners",
-    body: "Owners of land who want it developed well, by a builder who will still be here afterwards.",
-    image: img.partnerLandHolding,
-    imageAlt: alt.partnerLandHolding,
+    image: img.projectTudorCourt,
+    alt: alt.projectTudorCourt,
+    label: "Tudor-framed apartments",
   },
   {
-    title: "Families With Development Land",
-    body: "Family-held land where several members need a fair, clear and workable arrangement.",
-    // The family from the Residential hero, so the people a joint venture is
-    // finally built for are the same people on both pages.
-    image: img.balconyFamily,
-    imageAlt: alt.balconyFamily,
-    // A narrow panel holds about a third of this photograph's width, and the
-    // four of them stand well left of centre in it. Held here the whole
-    // group is in frame, from the father to the girl's pointing hand.
-    focus: "24% 50%",
+    image: img.projectVijayaLuxo,
+    alt: alt.projectVijayaLuxo,
+    label: "Vijaya Luxo",
   },
   {
-    title: "Property Owners",
-    body: "Owners of existing property considering redevelopment rather than an outright sale.",
-    image: img.partnerBungalow,
-    imageAlt: alt.partnerBungalow,
+    image: img.projectStonePlinth,
+    alt: alt.projectStonePlinth,
+    label: "Stone-plinth apartments",
   },
   {
-    title: "Development Partners",
-    body: "Partners looking for construction capability and delivery they do not have to supervise.",
-    image: img.partnerPlansSite,
-    imageAlt: alt.partnerPlansSite,
-    // Hold the drawing and the men over it, not the plot behind them.
-    focus: "38% 60%",
+    image: img.projectTimberCorner,
+    alt: alt.projectTimberCorner,
+    label: "Timber-clad corner block",
+  },
+  {
+    image: img.projectLawnTowers,
+    alt: alt.projectLawnTowers,
+    label: "Lawn-facing towers",
   },
 ];
 
@@ -68,13 +73,19 @@ const whyPartner: ReasonPanel[] = [
     imageAlt: alt.fiftyYearsLegacy,
     imageClosed: img.fiftyYearsLegacySlat,
     // The one panel carrying a picture with type in it rather than a
-    // photograph, and every line of that type has to survive — the banner is
-    // 2.23:1 and the panel is nearer square, so no crop of the banner alone
-    // could hold both the "50 Years" lockup and the tagline beside it. The
-    // asset is therefore the banner already sitting on its own cream, sized
-    // and placed so the crop only ever eats that cream: the picture is held
-    // to the top, the lockup clears the copy at every width, and the copy
-    // reads on the empty cream below it rather than across the logo.
+    // photograph, and every line of that type has to survive. It used to be
+    // handled by the asset: the banner was padded out onto its own cream to
+    // roughly a square, so the crop that fills this panel only ever ate the
+    // padding. The client reshaped it to 3:2 on 2026-09-12, which takes that
+    // away — cropped to the panel, a third of the width goes and the tagline
+    // beside the lockup is cut in half.
+    //
+    // So the panel shows it whole instead. `ground` is the mean of the file's
+    // own four edges, which is what lets the strip under the picture read as
+    // more of the banner's cream rather than as a panel behind it; resample it
+    // if the banner is ever replaced again. See `whole` in `ReasonPanels`.
+    whole: true,
+    ground: "rgb(218 202 189)",
     focus: "50% 0%",
     // From `lg` the slat carries `imageClosed` and this hold is under it. It
     // is for the bar below `lg`, where holding the top would put a band of
@@ -112,12 +123,13 @@ const whyPartner: ReasonPanel[] = [
   {
     title: "Trust You Can Check",
     body: "Ask about the organisations and families we have already built for. That is the reference.",
-    image: img.familyLivingRoom,
-    imageAlt: alt.familyLivingRoom,
-    // The three of them sit low in the frame. Held here the mother and the
-    // child are in the slat, and open the group stands clear of the copy
-    // rather than behind it.
-    focus: "46% 62%",
+    image: img.siteHandshakePlans,
+    imageAlt: alt.siteHandshakePlans,
+    // Open, the panel keeps the photograph's full width and two-thirds of
+    // its height: held here the faces and the handshake are in the upper
+    // half and the copy reads over the drawings. Closed, the slat is the
+    // handshake itself.
+    focus: "55% 45%",
   },
 ];
 
@@ -134,7 +146,7 @@ const steps: ProcessStep[] = [
   {
     step: "02",
     title: ["Feasibility", "and planning"],
-    body: "We look at what the site can realistically support — approvals, planning, cost and demand — and share what we find.",
+    body: "We look at what the site can realistically support, approvals, planning, cost and demand, and share what we find.",
     image: img.designReviewMeeting,
     imageAlt: alt.designReviewMeeting,
   },
@@ -186,29 +198,36 @@ export default function JointVenturesPage() {
         </p>
         <p>
           Bringing land, construction expertise and development capability
-          together is what makes a joint venture work — and what makes it worth
+          together is what makes a joint venture work, and what makes it worth
           doing for everyone involved.
         </p>
       </HandshakeReveal>
 
-      {/* --------------------------------------------------------- Partners */}
-      {/* The heading sits in the page's column; the four partners run edge to
-          edge beneath it, a photograph apiece. See `PartnerPanels`.
+      {/* --------------------------------------------------------- Projects */}
+      {/* The heading sits in the page's column; the ring below it runs wider
+          than the column and is clipped to the viewport instead.
 
-          The section carries no bottom padding at all: the band runs to the
-          section's edge, so the process section that follows starts on the
-          bottom of the photographs rather than after a strip of empty page.
-          The heading above still gives the band its air. */}
-      <Section tone="mist" size="lg" className="pb-0 sm:pb-0 lg:pb-0">
+          This replaced the four partner panels — landowners, families,
+          property owners, development partners — on 2026-09-12, at the
+          client's asking and against a reference page of their own. The
+          panels named who a joint venture is *with*; the ring shows what one
+          ends up as, which is the better argument to put after the handshake
+          the section above opens on. `PartnerPanels` is still in the tree and
+          takes its items as a prop, so nothing about it was lost.
+
+          The section keeps its bottom padding, unlike the band it replaces:
+          the arrows are the last thing in it and need air under them before
+          the process section starts. */}
+      <Section tone="mist" size="lg">
         <Container>
           <SectionHeading
-            eyebrow="Ideal Partners"
-            title="Who we work with."
-            lead="If you hold land in or around Bengaluru and are considering what to do with it, there is a conversation worth having."
+            eyebrow="Our Projects"
+            title="Completed projects"
+            lead="Residential buildings Vijaya has designed and built in and around Bengaluru. Step through them with the arrows."
           />
         </Container>
-        <div className="mt-12 lg:mt-14">
-          <PartnerPanels items={idealPartners} />
+        <div className="mt-12 lg:mt-16">
+          <ProjectCarousel items={projects} />
         </div>
       </Section>
 
@@ -272,6 +291,78 @@ export default function JointVenturesPage() {
               See `ReasonPanels` for the movement. */}
           <div className="mt-14 lg:mt-16">
             <ReasonPanels items={whyPartner} />
+          </div>
+
+          {/* --------------------------------------------------- Closing */}
+          {/* The page's one ask, and the last thing before the footer. It
+              was the only main page ending without one — /civil-contracts
+              closes on a line and a button, /our-legacy on a `CtaBand`, the
+              home page on its two cards — so a reader who got to the end of
+              the reasons had nowhere to go but back up.
+
+              Small, and inside this section rather than a band of its own.
+              A full `CtaBand` here would be a third dark block under six
+              dark panels and immediately above a dark footer, and the page
+              would end on four heavy things in a row.
+
+              Set the way a reference page the client brought sets its own
+              closing (2026-09-16): a tracked eyebrow, a heading whose second
+              half turns into an italic Didone in the accent colour, a short
+              lead under it, and a tracked text link rather than a pill. The
+              reference's accent is rose gold; the client asked for blue, so
+              it is `navy-500` — the darkest step of the ramp that still reads
+              as a second colour beside the navy-900 of the heading, and one
+              that clears AA on white at the eyebrow's size. The italic is
+              `font-serif-italic`, loaded for this line alone; see
+              `app/layout.tsx`. `font-synthesis-style: none` on it is for the
+              Kannada: Noto has no italic, and a sheared syllabary reads as
+              broken rather than as emphasised.
+
+              The line is an invitation, not a claim, and the lead under it
+              is the process section said again — no obligation, what the
+              site can support, no one commits before the arrangement is
+              understood. Nothing here says anything the page has not
+              already said, which is the rule this site's copy is written to.
+
+              The heading is two nodes, so the Kannada is keyed on each half
+              (`lib/kannada.ts`); the translator puts the space between them
+              back. */}
+          <div className="mt-16 border-t border-line pt-14 lg:mt-20 lg:pt-16">
+            <div className="mx-auto max-w-[46rem] text-center">
+              <Reveal>
+                <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.3em] text-navy-500">
+                  A First Conversation
+                </p>
+              </Reveal>
+              <Reveal delay={80}>
+                <h2 className="text-balance-head mt-6 font-display text-[clamp(2.25rem,4.6vw,4rem)] leading-[1.06] text-navy-900">
+                  If our philosophy resonates,{" "}
+                  <em className="font-serif-italic font-normal uppercase tracking-[0.01em] text-navy-500 [font-synthesis-style:none]">
+                    we should meet.
+                  </em>
+                </h2>
+              </Reveal>
+              <Reveal delay={160}>
+                <p className="mx-auto mt-7 max-w-[34rem] text-[1.0625rem] leading-[1.75] text-slate-body">
+                  A first conversation, about the land, its ownership and what
+                  you would like to see happen, carries no obligation and no
+                  pressure. We say plainly what we think the site can support,
+                  and no one commits before every party understands the
+                  arrangement.
+                </p>
+              </Reveal>
+              <Reveal delay={240}>
+                <div className="mt-9">
+                  <Link
+                    href="/contact"
+                    className="group inline-flex items-center gap-2.5 text-[0.75rem] font-semibold uppercase tracking-[0.3em] text-navy-900 transition-colors duration-300 hover:text-navy-500"
+                  >
+                    Discuss A Joint Venture
+                    <Arrow />
+                  </Link>
+                </div>
+              </Reveal>
+            </div>
           </div>
         </Container>
       </Section>

@@ -47,7 +47,7 @@ export const locationsBySlug: Record<string, ProjectLocations> = {
       title: "Location of the Project",
       address:
         "Kanakapura Road, Talaghattapura, 500 metres from the Metro Station",
-      body: "Hara Vijaya Heights stands on Kanakapura Road at Talaghattapura, one of the arterial roads running south out of Bengaluru. The Metro station is 500 metres away, so the city is reachable without depending on the road. Everyday needs — schools, hospitals and markets — are along the same stretch.",
+      body: "Hara Vijaya Heights stands on Kanakapura Road at Talaghattapura, one of the arterial roads running south out of Bengaluru. The Metro station is 500 metres away, so the city is reachable without depending on the road. Everyday needs, schools, hospitals and markets, are along the same stretch.",
       // ⚠️ The pin is a name-and-address search. Send the project's own Google
       // Maps link if there is one and it will drop on the exact plot.
       query: "Hara Vijaya Heights, Kanakapura Road, Talaghattapura, Bengaluru",
@@ -58,7 +58,7 @@ export const locationsBySlug: Record<string, ProjectLocations> = {
     project: {
       title: "Location of the Project",
       address: "Rajarajeshwari Nagar, off Rajarajeshwarinagar Main Road",
-      body: "Vijaya Luxo stands in the heart of Rajarajeshwari Nagar, a street in from the main road — a kilometre from the Nimishamba and Rajarajeshwari temples and two from the Mysore Road junction, with the Rajarajeshwari Nagar Metro station on that road. Global Village tech park, BGS Hospital, the RNS and JSS colleges and Gopalan Mall are all within a short drive.",
+      body: "Vijaya Luxo stands in the heart of Rajarajeshwari Nagar, a street in from the main road, a kilometre from the Nimishamba and Rajarajeshwari temples and two from the Mysore Road junction, with the Rajarajeshwari Nagar Metro station on that road. Global Village tech park, BGS Hospital, the RNS and JSS colleges and Gopalan Mall are all within a short drive.",
       // ⚠️ The pin is a name-and-address search. Send the project's own Google
       // Maps link if there is one and it will drop on the exact plot.
       query: "Vijaya Luxo, Rajarajeshwari Nagar, Bengaluru",
@@ -73,6 +73,17 @@ export const locationsBySlug: Record<string, ProjectLocations> = {
       // ⚠️ The pin is a name-and-address search. Send the project's own Google
       // Maps link if there is one and it will drop on the exact plot.
       query: "Vijaya Aquagreen, Somshettyhalli, Chikkabanavara, Bengaluru",
+    },
+    office,
+  },
+  "vijaya-springwoods": {
+    project: {
+      title: "Location of the Project",
+      address: "#81 Singasandra Main Road, off Hosur Road, Begur, Bengaluru 560 068",
+      body: "Vijaya Springwoods faces a sixty-foot main road at Singasandra, 1.2 kilometres in from Hosur Road and 400 metres from Manipal County Resort. Electronic City is 3.2 kilometres on, the NICE Road 2.5, Bannerghatta Road 5 and the Silk Board junction 6, with supermarkets, colleges, the bus terminal and restaurants along the same stretch.",
+      // ⚠️ The pin is a name-and-address search. Send the project's own Google
+      // Maps link if there is one and it will drop on the exact plot.
+      query: "Vijaya Springwoods, 81 Singasandra Main Road, Begur, Bengaluru 560068",
     },
     office,
   },

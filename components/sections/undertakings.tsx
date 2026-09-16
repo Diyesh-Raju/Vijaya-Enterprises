@@ -1,6 +1,7 @@
-import Image, { type StaticImageData } from "next/image";
+import Image, { getImageProps, type StaticImageData } from "next/image";
 import type { CSSProperties } from "react";
 import { ScrollScrub } from "@/components/ui/scroll-scrub";
+import { UndertakingsNav } from "@/components/sections/undertakings-nav";
 
 export type Undertaking = {
   /** Anchor for the deep links into this section (`#industrial`, …). */
@@ -11,6 +12,26 @@ export type Undertaking = {
   points: string[];
   image: StaticImageData;
   imageAlt: string;
+  /** The card's own photograph, where it should not be a crop of `image`.
+   *  Decorative, like every card, so it takes no alt of its own. */
+  cardImage?: StaticImageData;
+  /**
+   * The panel's photograph on a phone, where the wide one is the wrong
+   * shape rather than the wrong picture.
+   *
+   * A phone panel is a tall frame and every `image` here is landscape, so
+   * `object-cover` fits one by its width and keeps a band across the
+   * middle — the building loses its feet and its sky and what is left is a
+   * wall. An upright photograph of the same kind of work fills that frame
+   * whole.
+   *
+   * It shares `imageAlt` with the wide one, because a `<picture>` has one
+   * alt for every source it can pick. That is a constraint on how these
+   * pairs are chosen rather than a shortcut: the two have to be the same
+   * subject closely enough that one sentence is true of both, which for
+   * six panels of "a finished building of this kind" they are.
+   */
+  phoneImage?: StaticImageData;
 };
 
 /**
@@ -80,11 +101,85 @@ const PER_SCREEN = 200;
  * caught half wiped in simply freezes. See `ease` in
  * `components/ui/scroll-scrub.tsx`.
  */
+/**
+ * Where the phone photograph gives way to the wide one. `desk:`'s query to
+ * the character — a phone on its side is past the 768 `md:` would ask for,
+ * and it still wants the phone's crop.
+ */
+const WIDE_QUERY = "(min-width: 48rem) and (min-height: 500px)";
+
+/**
+ * A panel's photograph.
+ *
+ * Without a `phoneImage` it is the plain `<Image>` it always was. With one
+ * it becomes a `<picture>`, and that is the one route to art direction that
+ * costs a single download: a second `<Image>` hidden by CSS is still
+ * fetched — Chrome loads a lazy image with no layout box rather than
+ * deferring it forever — and a client-side branch could not be read by the
+ * preload scanner, which matters here because the first of these panels is
+ * the page's own eager photograph.
+ *
+ * `getImageProps` is what puts the optimiser behind a `<source>`. What it
+ * costs is `placeholder="blur"`, which cannot be used with it, so the blur
+ * is handed to the stylesheet as a pair of custom properties and painted as
+ * a background instead — the same trick `LegacyHero` uses, and no extra
+ * request either way since a blur placeholder is a base64 string.
+ */
+function PanelPhoto({
+  item,
+  priority,
+}: {
+  item: Undertaking;
+  priority: boolean;
+}) {
+  if (!item.phoneImage) {
+    return (
+      <Image
+        src={item.image}
+        alt={item.imageAlt}
+        fill
+        quality={85}
+        sizes="100vw"
+        placeholder="blur"
+        preload={priority}
+        className="object-cover"
+      />
+    );
+  }
+
+  const common = { alt: item.imageAlt, fill: true, quality: 85 } as const;
+  const { props: wide } = getImageProps({
+    ...common,
+    src: item.image,
+    sizes: "100vw",
+  });
+  const { props: phone } = getImageProps({
+    ...common,
+    src: item.phoneImage,
+    sizes: "100vw",
+  });
+
+  return (
+    <picture>
+      <source media={WIDE_QUERY} srcSet={wide.srcSet} sizes={wide.sizes} />
+      <img
+        {...phone}
+        alt={item.imageAlt}
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : undefined}
+        className="object-cover"
+      />
+    </picture>
+  );
+}
+
 const EASE = 0.32;
 
 /**
  * A panel's points. One column of four or fewer, as they always were; past
- * that, two columns and a step down in size with them.
+ * that, two columns. The size of a two-column list is set in the
+ * stylesheet rather than here, because it depends on how much width the
+ * two columns have to share — see `.undertake__points`.
  *
  * Six or seven points in one column would put the last of them under the
  * count along the foot of the screen. Three and three fit the panel, and
@@ -106,8 +201,8 @@ function Points({ points }: { points: readonly string[] }) {
     <ul
       className={
         rows
-          ? "undertake__points text-[0.875rem] leading-[1.6]"
-          : "grid gap-2.5 text-[0.9375rem]"
+          ? "undertake__points undertake__list"
+          : "undertake__list grid gap-2.5 text-[0.9375rem]"
       }
       style={
         rows ? ({ "--point-rows": String(rows) } as CSSProperties) : undefined
@@ -122,7 +217,7 @@ function Points({ points }: { points: readonly string[] }) {
         >
           <span
             aria-hidden="true"
-            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brass-400"
+            className="mt-[0.5625rem] h-[0.4375rem] w-[0.4375rem] shrink-0 rounded-full bg-brass-400"
           />
           {point}
         </li>
@@ -180,6 +275,11 @@ export function Undertakings({ items }: { items: readonly Undertaking[] }) {
             key={item.id}
             id={item.id}
             aria-hidden="true"
+            // Which panel this anchor belongs to. Only read on a phone,
+            // where the six are stepped by the arrows rather than by the
+            // scroll and a deep link has no travel to land in — see
+            // `UndertakingsNav`.
+            data-index={index}
             className="undertake__anchor"
             style={
               {
@@ -211,17 +311,18 @@ export function Undertakings({ items }: { items: readonly Undertaking[] }) {
                 different moments: one each, composed by nesting. */}
             <div className="undertake__bg">
               <div className="undertake__zoom">
-                <div className="undertake__drift">
-                  <Image
-                    src={item.image}
-                    alt={item.imageAlt}
-                    fill
-                    quality={85}
-                    sizes="100vw"
-                    placeholder="blur"
-                    priority={index === 0}
-                    className="object-cover"
-                  />
+                <div
+                  className="undertake__drift"
+                  style={
+                    item.phoneImage
+                      ? ({
+                          "--blur-wide": `url("${item.image.blurDataURL}")`,
+                          "--blur-phone": `url("${item.phoneImage.blurDataURL}")`,
+                        } as CSSProperties)
+                      : undefined
+                  }
+                >
+                  <PanelPhoto item={item} priority={index === 0} />
                 </div>
               </div>
 
@@ -267,6 +368,11 @@ export function Undertakings({ items }: { items: readonly Undertaking[] }) {
             own width instead would take the section from six downloads to
             twelve to save nothing.
 
+            The exception is a card given a photograph of its own
+            (`cardImage`). That is a second fetch whatever it is asked for,
+            so it is asked for at the card's own width — 22vw from `lg`,
+            35.2vw below, both with the 1.2 of pan headroom on top.
+
             They are here at stage level rather than one inside each panel,
             and that is the template's own arrangement rather than a
             convenience. A panel paints over the panel before it — that is
@@ -287,11 +393,15 @@ export function Undertakings({ items }: { items: readonly Undertaking[] }) {
                 <div className="undertake__pan">
                   <div className="undertake__pan-out">
                     <Image
-                      src={item.image}
+                      src={item.cardImage ?? item.image}
                       alt=""
                       fill
                       quality={85}
-                      sizes="100vw"
+                      sizes={
+                        item.cardImage
+                          ? "(min-width: 1024px) 27vw, 43vw"
+                          : "100vw"
+                      }
                       className="object-cover"
                     />
                   </div>
@@ -300,6 +410,18 @@ export function Undertakings({ items }: { items: readonly Undertaking[] }) {
             </div>
           ))}
         </div>
+
+        {/* Two arrows, one panel back and one panel on. At stage level with
+            the count and for the same reason: what they step through
+            outlasts any one panel. The clock goes with them — a press has
+            to know where a panel settles, and that is the arithmetic the
+            whole section is timed on. See `UndertakingsNav`. */}
+        <UndertakingsNav
+          count={items.length}
+          slot={slot}
+          hold={HOLD}
+          span={span}
+        />
 
         {/* Six rules across the foot of the screen, one per picture, in
             place of the template's `01 / 06`. They are here at stage level

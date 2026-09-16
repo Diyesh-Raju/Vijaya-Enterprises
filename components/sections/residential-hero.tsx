@@ -190,7 +190,7 @@ export function ResidentialHero() {
                 quality={85}
                 sizes="100vw"
                 placeholder="blur"
-                priority={index === 0}
+                preload={index === 0}
                 loading={index === 0 ? undefined : "eager"}
                 style={{ objectPosition: photo.position }}
                 className="object-cover"

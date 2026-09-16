@@ -46,6 +46,9 @@ const LAYOUTS: Record<GallerySection["layout"], readonly string[]> = {
     "lg:col-span-4",
     "lg:col-span-4",
   ],
+  // One picture on its own, held in to the same eight columns a drawing
+  // gets — for a brochure with a single elevation on it.
+  single: ["lg:col-span-8 lg:col-start-3"],
   // One under the other, held well in from the edges. A drawing has to stay
   // big enough to read, but at anything wider than this these were dominating
   // the page — the clean exports carry more contrast than the old scans did,
@@ -69,6 +72,7 @@ const SIZES: Record<GallerySection["layout"], string> = {
   amenities: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw",
   renders: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw",
   interiors: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
+  single: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 65vw",
   plans: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 65vw",
 };
 
@@ -83,6 +87,7 @@ const RATIOS: Record<GallerySection["layout"], string> = {
   amenities: "aspect-[16/9]",
   renders: "aspect-[16/10]",
   interiors: "aspect-[4/3]",
+  single: "aspect-[16/9]",
   plans: "aspect-[4/3] sm:aspect-[16/9]",
 };
 
@@ -109,7 +114,7 @@ function Tile({
       fill
       sizes={sizes}
       className={cn(
-        "transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "zoom-hover",
         contain
           ? "object-contain p-1 group-hover/tile:scale-[1.02]"
           : "object-cover group-hover/tile:scale-[1.04]",
@@ -182,7 +187,7 @@ export function GalleryGrid({ section }: { section: GallerySection }) {
           key={item.alt}
           image={item.image}
           alt={item.alt}
-          caption={`${section.title} — ${item.alt}`}
+          caption={`${section.title}, ${item.alt}`}
           open={open === index}
           onClose={() => setOpen(null)}
         />

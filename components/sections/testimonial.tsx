@@ -51,7 +51,7 @@ export function Testimonial() {
             </h2>
             <p className="relative mt-6 text-[0.9375rem] leading-relaxed text-slate-body">
               Owners who have lived in a Vijaya building, on what the experience
-              was actually like — the quality of the work, a handover that came
+              was actually like, the quality of the work, a handover that came
               when it was promised, and the people they dealt with along the way.
             </p>
           </div>

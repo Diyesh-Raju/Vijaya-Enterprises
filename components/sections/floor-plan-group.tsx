@@ -62,7 +62,7 @@ export function FloorPlanGroup({ group }: { group: Group }) {
     plan.terrace,
   ]
     .filter(Boolean)
-    .join(" — ");
+    .join(", ");
 
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(17rem,22rem)_1fr] lg:gap-14">

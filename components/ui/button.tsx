@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-type Variant = "primary" | "outline" | "light" | "ghost";
+type Variant = "primary" | "outline" | "light" | "ghost" | "brass";
 type Size = "sm" | "md" | "lg";
 
 const base =
@@ -18,6 +18,12 @@ const variants: Record<Variant, string> = {
   light: "bg-white text-navy-900 shadow-soft hover:bg-navy-50 hover:shadow-lift",
   ghost:
     "border border-white/30 text-white hover:border-white/60 hover:bg-white/10",
+  /* The brass fill, for an action on a navy ground where `light` would put
+     a second white block beside white text. Navy type on it rather than
+     white: brass-500 is a mid tone and white on it is the one pairing in
+     the palette that fails contrast. */
+  brass:
+    "bg-brass-500 text-navy-950 shadow-soft hover:bg-brass-400 hover:shadow-lift",
 };
 
 const sizes: Record<Size, string> = {
@@ -26,8 +32,11 @@ const sizes: Record<Size, string> = {
   lg: "px-9 py-4.5 text-[0.9375rem] tracking-wide",
 };
 
-/** Small chevron that slides on hover — the only motion the button needs. */
-function Arrow() {
+/** Small chevron that slides on hover — the only motion the button needs.
+ *  Exported for the one text link on the site that carries it, the closing
+ *  of /joint-ventures, so the arrow there is this arrow and not a copy. It
+ *  slides on the hover of the nearest `group`. */
+export function Arrow() {
   return (
     <svg
       viewBox="0 0 16 16"

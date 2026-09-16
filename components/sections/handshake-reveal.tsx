@@ -73,6 +73,19 @@ const PHOTO_ZOOM = 0.09;
 /** Navy over the photograph while it is still only glimpsed through the mark. */
 const TINT_STRENGTH = 0.66;
 
+/**
+ * Seconds for the shown progress to catch up with where the page actually
+ * is. Written straight off the scroll position the band moved in the same
+ * notches the page did — a wheel's clicks, a thumb's stops and starts on a
+ * phone — and the mark opened in lurches. Chased instead, every notch is a
+ * glide that runs on for a moment after the page has stopped, the same
+ * figure `ProcessReveal` uses. Asked for by name (2026-09-16).
+ */
+const EASE = 0.2;
+
+/** Close enough to count as arrived; see `ProcessReveal`. */
+const SETTLED = 0.0005;
+
 const clamp01 = (value: number) => Math.min(Math.max(value, 0), 1);
 
 /** 0 before `from`, 1 after `to`, linear between. */
@@ -98,8 +111,7 @@ type HandshakeRevealProps = {
  * the home page, sized to about half the screen — except the mark is not
  * inked, it is cut out. Behind it is the photograph, held back under navy so
  * only glimpses of it come through the silhouette and the thing still reads
- * as the icon. Scrolling opens the cut-out: the navy lifts, the rose-gold
- * cuffs go, the hands grow past the edges of the screen, and what is left is
+ * as the icon. Scrolling opens the cut-out: the navy lifts, the cuffs go, the hands grow past the edges of the screen, and what is left is
  * the photograph full-bleed. The last of the scroll brings the copy up onto
  * it.
  *
@@ -161,10 +173,31 @@ export function HandshakeReveal({
 
     if (prefersReducedMotion()) return;
 
-    const tick = ({ height: viewportHeight }: { height: number }) => {
+    /** What the nodes show now; below zero until the first write. */
+    let shown = -1;
+    /** When the last frame ran, for the chase. Zero while the loop is idle. */
+    let last = 0;
+
+    const tick = ({ height: viewportHeight }: { height: number }, now: number) => {
       const box = track.getBoundingClientRect();
       const distance = box.height - viewportHeight;
-      const progress = distance > 0 ? clamp01(-box.top / distance) : 1;
+      const target = distance > 0 ? clamp01(-box.top / distance) : 1;
+
+      // The first write goes straight through, so the band is never seen
+      // catching up to where the page already is; after that the value
+      // chases the page. Capped and clocked as `ProcessReveal` does it.
+      const elapsed = last ? Math.min((now - last) / 1000, 0.05) : 1 / 60;
+      last = now;
+      const chase = 1 - Math.exp(-elapsed / EASE);
+      let next = shown < 0 ? target : shown + (target - shown) * chase;
+      const settling = Math.abs(target - next) > SETTLED;
+      if (!settling) next = target;
+      if (next === shown) {
+        if (!settling) last = 0;
+        return settling;
+      }
+      shown = next;
+      const progress = shown;
 
       const width = panel.clientWidth;
       const height = panel.clientHeight;
@@ -198,6 +231,11 @@ export function HandshakeReveal({
       scrim.style.opacity = `${easeOut(ramp(progress, COPY_FROM - 0.06, COPY_TO - 0.12))}`;
       copy.style.opacity = `${arrival}`;
       copy.style.transform = `translateY(${(1 - arrival) * 32}px)`;
+
+      // `true` asks the shared loop for another frame, which is how the
+      // glide carries on after the page has stopped.
+      if (settling) return true;
+      last = 0;
     };
 
     // `onScroll` runs its subscriber once, synchronously, before returning —
@@ -256,8 +294,21 @@ export function HandshakeReveal({
         />
 
         {/* The white ground with the mark cut out of it, and the cuffs laid
-            back over their own cut-outs in rose gold. One `transform` opens
-            both. */}
+            back over their own cut-outs. One `transform` opens both.
+
+            The cuffs were rose gold — the accent the icon set uses — until
+            2026-09-12, and at this size that peach read as bare wrists rather
+            than as sleeves. Navy-950 rather than black, which was the other
+            candidate: rendered side by side at the same scroll position,
+            black sat as a flat hole against a photograph that is all
+            blue-grey dusk, where the navy belongs to both the picture and the
+            palette. Nothing else on the site is pure black either — even the
+            shadows are navy-tinted.
+
+            The small handshake in `build-icons.tsx` keeps its rose gold: that
+            one is a member of a set where every icon carries the same accent,
+            and it is drawn at a size where the cuff is a detail rather than a
+            sleeve. */}
         <svg
           aria-hidden="true"
           focusable="false"
@@ -282,7 +333,7 @@ export function HandshakeReveal({
             <path
               d={HANDSHAKE_SLEEVES}
               fillRule="evenodd"
-              className="fill-rosegold-500"
+              className="fill-navy-950"
             />
           </g>
         </svg>

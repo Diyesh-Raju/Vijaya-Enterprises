@@ -1,5 +1,6 @@
 import { CurtainPhoto } from "@/components/sections/curtain-photo";
 import { DisclosureList, type DisclosureItem } from "@/components/ui/disclosure-list";
+import { ChevronDownIcon } from "@/components/ui/line-icons";
 import { Reveal } from "@/components/ui/reveal";
 import { ScrollScrub } from "@/components/ui/scroll-scrub";
 import { img, alt } from "@/lib/images";
@@ -39,7 +40,7 @@ const principles: readonly DisclosureItem[] = [
   },
   {
     title: "Vastu, without giving up the plan",
-    body: "Orientation, entrances, kitchens, pooja rooms and master bedrooms are placed to vastu — without losing the light, ventilation or usable area that make a home work.",
+    body: "Orientation, entrances, kitchens, pooja rooms and master bedrooms are placed to vastu, without losing the light, ventilation or usable area that make a home work.",
   },
   {
     title: "Built for the long stay",
@@ -85,23 +86,46 @@ export function PlannedForLiving() {
             <Reveal delay={80}>
               <p className="mt-6 max-w-[34rem] text-[1.0625rem] leading-[1.75] text-navy-100/85 lg:mt-[clamp(1rem,2.6vh,1.5rem)]">
                 50+ years of building for families in Karnataka decides how a
-                Vijaya home is planned — where the light falls, where the
+                Vijaya home is planned, where the light falls, where the
                 storage goes, and what still looks right long after the keys
                 have changed hands.
               </p>
             </Reveal>
 
             <Reveal delay={160}>
-              {/* The rows give way on a short window. Everything in the
-                  panel has to fit one screen — the stage is pinned, so
-                  anything past the bottom is not scrolled to, it is simply
-                  never seen — and on a 13-inch laptop four rows at their
-                  full height are what tips it over. */}
-              <DisclosureList
-                items={principles}
-                tone="navy"
-                className="mt-10 sm:mt-12 lg:mt-[clamp(1.5rem,4.5vh,3rem)] lg:[--disclosure-row-py:clamp(0.5rem,1.5vh,1.125rem)]"
-              />
+              {/* The list's own top margin, moved out here onto a wrapper so
+                  the cue below can be set against the list rather than
+                  against the paragraph above it — 40px of air over the cue
+                  and 14 under it, which is what makes it read as belonging
+                  to the rows and not as the last line of the copy. */}
+              <div className="mt-10 sm:mt-12 lg:mt-[clamp(1.5rem,4.5vh,3rem)]">
+                {/* Phone only, on `desk:` rather than `md:` — a handset on
+                    its side is past 768 and would otherwise keep this.
+
+                    A pointer has the hover to tell it the rows are live:
+                    the title lights and the cursor changes. A thumb has
+                    neither, so on a phone the four rows read as a printed
+                    list and the pluses as decoration. This says they are
+                    not. Brass rather than the list's own white, so it sits
+                    beside the marks rather than joining them as a fifth
+                    row, and the chevron points at what it is talking
+                    about. */}
+                <p className="mb-3.5 flex items-center gap-2 text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-brass-400 desk:hidden">
+                  Click to explore
+                  <ChevronDownIcon aria-hidden="true" className="h-3.5 w-3.5" />
+                </p>
+
+                {/* The rows give way on a short window. Everything in the
+                    panel has to fit one screen — the stage is pinned, so
+                    anything past the bottom is not scrolled to, it is simply
+                    never seen — and on a 13-inch laptop four rows at their
+                    full height are what tips it over. */}
+                <DisclosureList
+                  items={principles}
+                  tone="navy"
+                  className="lg:[--disclosure-row-py:clamp(0.5rem,1.5vh,1.125rem)]"
+                />
+              </div>
             </Reveal>
           </div>
         </div>

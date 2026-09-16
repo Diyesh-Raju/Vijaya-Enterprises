@@ -21,7 +21,7 @@ export async function generateMetadata({
   if (!project) return {};
 
   return {
-    title: `Gallery — ${project.name}`,
+    title: `Gallery, ${project.name}`,
     description: `Photographs and drawings of ${project.name}: the elevations, the amenities, the interiors and the plans.`,
     alternates: { canonical: `/residential/${project.slug}/gallery` },
   };

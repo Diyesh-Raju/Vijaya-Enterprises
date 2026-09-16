@@ -62,18 +62,28 @@ import { img, alt } from "@/lib/images";
  * over with the picture it belongs to. One or two short sentences each, and
  * each about the company rather than about the photograph: the band is the
  * first thing on the phone's home page and there is no other copy on it, so
- * these four lines are where a reader who has arrived from a search result
+ * these three lines are where a reader who has arrived from a search result
  * finds out who they are looking at. Written to be read in the two seconds a
  * frame holds — a third sentence does not get read, it gets scrolled past.
  */
+/* What has come off this list, and when, because all of it is one line to
+   put back and none of it is recoverable from the code:
+
+   - Frames three and four were `courtyardHouse` and `vijayaSurya` until
+     2026-09-14. The two that replaced them are also the first two projects
+     on /joint-ventures, which is deliberate on the client's part rather
+     than an accident to tidy up: they are the pictures they want a phone
+     to open on.
+   - `towersLawn` led the set until 2026-09-14, when the client asked for it
+     out. Its caption went with it — "Building trust since 1973. Over fifty
+     years of homes across Karnataka, still run by the family that started
+     it." — and it was the only one of the four that said who the company
+     is rather than what it builds. What carries that now is the lockup in
+     the header, which reads "Since 1973" under the wordmark, and the `h1`
+     below, which is read but not seen.
+
+   All three photographs are still in `lib/images.ts` and used nowhere. */
 const FRAMES = [
-  {
-    src: img.towersLawn,
-    alt: alt.towersLawn,
-    position: "50% 50%",
-    caption:
-      "Building trust since 1973. Over fifty years of homes across Karnataka, still run by the family that started it.",
-  },
   {
     src: img.vijayAquaGreen,
     alt: alt.vijayAquaGreen,
@@ -82,16 +92,21 @@ const FRAMES = [
       "Apartments planned around light, air and the way a family actually lives in a home.",
   },
   {
-    src: img.courtyardHouse,
-    alt: alt.courtyardHouse,
+    src: img.projectTimberCorner,
+    alt: alt.projectTimberCorner,
+    // The band is near enough square on a phone and the source is 3:2, so
+    // `object-cover` keeps the whole height and takes the crop off the
+    // sides — which makes the horizontal figure the only one doing any
+    // work here. 50% lands on the building's corner, which is what the
+    // photograph is of.
     position: "50% 50%",
     caption:
-      "Residential, commercial, industrial and institutional work — one standard of building across all four.",
+      "Residential, commercial, industrial and institutional work, one standard of building across all four.",
   },
   {
-    src: img.vijayaSurya,
-    alt: alt.vijayaSurya,
-    position: "50% 18%",
+    src: img.projectTudorCourt,
+    alt: alt.projectTudorCourt,
+    position: "50% 50%",
     caption:
       "Every project. Every customer. Like family. That is the whole of how we work.",
   },
@@ -237,11 +252,13 @@ export function HomeHeroPhone() {
    * opens on white paper, and a transparent bar over white paper leaves
    * the lockup on nothing.
    *
-   * A phone opens on a photograph, so it can afford the bar the laptop
-   * cannot, and the picture is better for reaching the top of the screen.
-   * The bar goes transparent over it — that half is `.header--phone-hero`
-   * in `globals.css` — and the band takes back the height the padding was
-   * holding, so nothing below this section moves by a pixel.
+   * A phone opens on a photograph, and the picture is better for reaching
+   * the top of the screen. The bar goes transparent over it — the header's
+   * ordinary state over a hero, now that the home page is off its
+   * `LIGHT_FROM_TOP` list — and the band takes back the height the padding
+   * was holding, so nothing below this section moves by a pixel. The
+   * laptop's walkthrough reaches the top of the screen the same way, since
+   * 2026-09-16.
    *
    * `desk:hidden` is the pre-hydration half of the split with `ScrollHero`.
    * After hydration the wide branch of this component unmounts outright, so
@@ -261,7 +278,7 @@ export function HomeHeroPhone() {
           it closes on; there is no lockup here and nothing is laid over the
           pictures, so this one is read rather than seen. */}
       <h1 className="sr-only">
-        Vijaya Enterprises — building trust since 1973
+        Vijaya Enterprises, building trust since 1973
       </h1>
 
       {/* The opening frame's own blur placeholder, as a background rather
@@ -285,7 +302,7 @@ export function HomeHeroPhone() {
             then unmounted — would therefore never fetch one. It is wrong:
             Chrome loads a lazy image that has no layout box at all rather
             than deferring it forever, so rendering these in the markup the
-            server sends had a laptop pulling down all four photographs it
+            server sends had a laptop pulling down every photograph it
             was never going to show. Holding them back until `width` says
             `phone` is what keeps the desktop page exactly as it was. */}
         {width === "phone" &&
@@ -381,7 +398,8 @@ export function HomeHeroPhone() {
             touching the picture anybody is actually looking at.
 
             Sized by measurement, not by eye: see the note on
-            `.header--phone-hero` in `globals.css` for what it clears.
+            `.reshero__bar-scrim` in `globals.css` for what it clears. The
+            walkthrough lays the same scrim across the top of its panel.
 
             `z-3` puts it over both photograph layers — a settled frame is
             `z-1` and a rising one `z-2` — and it shares that level with

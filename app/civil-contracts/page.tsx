@@ -13,6 +13,7 @@ import {
 import { Container, Section, Eyebrow } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { ScrollLit } from "@/components/ui/scroll-lit";
+import { HardHatIcon } from "@/components/ui/line-icons";
 import { Button } from "@/components/ui/button";
 import { img, alt } from "@/lib/images";
 
@@ -23,12 +24,22 @@ export const metadata: Metadata = {
   alternates: { canonical: "/civil-contracts" },
 };
 
+/* Four of the six carry a `phoneImage` as well: an upright photograph the
+   client supplied on 2026-09-14 for the phone, where the landscape one keeps
+   a band across the middle of a tall frame and loses the building's feet and
+   its sky. `Undertakings` picks between the pair in a `<picture>`, so only
+   one of the two is ever downloaded.
+
+   Their `imageAlt` is written to be true of both pictures, because a
+   `<picture>` carries one alt for every source it can choose between. That
+   is why each pair is the same subject rather than two different ideas of
+   the same heading. */
 const undertakings: Undertaking[] = [
   {
     id: "commercial",
-    eyebrow: "01 — Commercial Construction",
+    eyebrow: "01 · Commercial Construction",
     title: "Commercial spaces built around your business.",
-    body: "We undertake complete civil construction for offices, commercial buildings and business spaces — from structural work and building services to finishing and final handover. Our focus is on creating durable, functional spaces built for everyday use and long-term performance.",
+    body: "We undertake complete civil construction, from structural work and building services to finishing and final handover. Our focus is on creating durable, functional spaces built for everyday use and long-term performance.",
     points: [
       "Corporate offices and workspaces",
       "Commercial buildings and complexes",
@@ -38,13 +49,16 @@ const undertakings: Undertaking[] = [
       "Renovation, refurbishment and upgrades",
     ],
     image: img.commercialStreetBlock,
-    imageAlt: alt.commercialStreetBlock,
+    phoneImage: img.commercialCornerDuskPhone,
+    imageAlt:
+      "A completed commercial building on a city street, its offices lit behind the glazing and traffic passing in front",
+    cardImage: img.commercialStreetBlockPortrait,
   },
   {
     id: "industrial",
-    eyebrow: "02 — Industrial Construction",
+    eyebrow: "02 · Industrial Construction",
     title: "Industrial structures built for performance.",
-    body: "Industrial construction demands more than a strong building. It requires careful planning, structural precision and an understanding of how the facility will operate. We undertake civil and structural works for factories, warehouses, production facilities and other industrial requirements.",
+    body: "Industrial construction demands more than a strong building. It requires careful planning, structural precision and an understanding of how the facility will operate.",
     points: [
       "Factories and manufacturing facilities",
       "PEB (Pre-Engineered Building) structures",
@@ -59,7 +73,7 @@ const undertakings: Undertaking[] = [
   },
   {
     id: "institutional",
-    eyebrow: "03 — Institutional Construction",
+    eyebrow: "03 · Institutional Construction",
     title: "Buildings that serve people for generations.",
     body: "Institutional buildings demand reliability, safety and careful execution because they are used by large numbers of people every day. We undertake civil construction and infrastructure works for institutions where quality, durability and dependable project execution are essential.",
     points: [
@@ -72,13 +86,15 @@ const undertakings: Undertaking[] = [
       "Complete civil construction and execution",
     ],
     image: img.institutionHospital,
-    imageAlt: alt.institutionHospital,
+    phoneImage: img.institutionHospitalDrivePhone,
+    imageAlt:
+      "A hospital seen from its approach road, the entrance canopy ahead and planting either side of the drive",
   },
   {
     id: "residential-contracts",
-    eyebrow: "04 — Residential Construction",
+    eyebrow: "04 · Residential Construction",
     title: "Homes built around the way you want to live.",
-    body: "We undertake residential construction for individual homeowners, developers and builders — from foundation and structural work to finishing and final handover. Whether it is a private residence or a larger residential development, we bring the same attention to quality, workmanship and execution.",
+    body: "We undertake residential construction for individual homeowners, developers and builders, from foundation and structural work to finishing and final handover. Whether it is a private residence or a larger residential development, we bring the same attention to quality, workmanship and execution.",
     points: [
       "Independent homes and villas",
       "Residential buildings and apartments",
@@ -89,12 +105,15 @@ const undertakings: Undertaking[] = [
       "External works and site development",
     ],
     image: img.villaStreetDusk,
-    imageAlt: alt.villaStreetDusk,
+    phoneImage: img.villaLitDrivePhone,
+    imageAlt:
+      "A completed private residence at dusk seen from the street, stone and timber with the rooms and the planting lit and a car standing outside",
+    cardImage: img.villaStreetDuskPortrait,
   },
   {
     id: "renovation",
-    eyebrow: "05 — Renovation, Expansion & Redevelopment",
-    title: "Upgrade, expand or rebuild — without starting from scratch.",
+    eyebrow: "05 · Renovation, Expansion & Redevelopment",
+    title: "Upgrade, expand or rebuild, without starting from scratch.",
     body: "Not every project begins construction on an empty site. We undertake additions, extensions, renovations and redevelopment of existing buildings, working around the structure and conditions already on site. Our experience allows us to approach such projects with practical planning, careful execution and minimal disruption.",
     points: [
       "Building extensions and additional floors",
@@ -109,8 +128,8 @@ const undertakings: Undertaking[] = [
   },
   {
     id: "landscaping",
-    eyebrow: "06 — Landscaping & Site Development",
-    title: "From the building to the landscape — we complete the whole site.",
+    eyebrow: "06 · Landscaping & Site Development",
+    title: "From the building to the landscape, we complete the whole site.",
     body: "We undertake landscaping and external development works to transform unfinished sites into functional, well-planned outdoor environments. Our scope covers both hardscape and softscape works, coordinated with the building and site requirements.",
     points: [
       "Landscape design execution",
@@ -122,7 +141,9 @@ const undertakings: Undertaking[] = [
       "Complete external site development",
     ],
     image: img.landscapeGardenPath,
-    imageAlt: alt.landscapeGardenPath,
+    phoneImage: img.landscapeWallPlantingPhone,
+    imageAlt:
+      "A finished garden: beds of broad-leaved planting in bloom with frangipani above them, mown lawn and paving alongside",
   },
 ];
 
@@ -137,7 +158,7 @@ const undertakings: Undertaking[] = [
 const stages: ContractStage[] = [
   {
     step: "01",
-    title: "01 — Site & Project Assessment",
+    title: "01 · Site & Project Assessment",
     subtitle: "We start by understanding the project.",
     points: [
       "Site inspection and existing-condition assessment",
@@ -152,7 +173,7 @@ const stages: ContractStage[] = [
   },
   {
     step: "02",
-    title: "02 — Legal & Statutory Verification",
+    title: "02 · Legal & Statutory Verification",
     subtitle: "Before we draw, we make sure the project can proceed.",
     points: [
       "Property and ownership documentation",
@@ -164,13 +185,13 @@ const stages: ContractStage[] = [
       "Required NOCs and statutory clearances",
       "Identification of potential legal or approval issues",
     ],
-    note: "We identify requirements early — before they become construction problems.",
+    note: "We identify requirements early, before they become construction problems.",
     image: img.legalVerificationDesk,
     imageAlt: alt.legalVerificationDesk,
   },
   {
     step: "03",
-    title: "03 — Drawings & Detailed Estimate",
+    title: "03 · Drawings & Detailed Estimate",
     subtitle: "Every part of the project is defined before construction.",
     points: [
       "Architectural and structural drawings",
@@ -187,8 +208,8 @@ const stages: ContractStage[] = [
   },
   {
     step: "04",
-    title: "04 — Agreement & Construction Schedule",
-    subtitle: "Scope, cost and timelines — clearly agreed.",
+    title: "04 · Agreement & Construction Schedule",
+    subtitle: "Scope, cost and timelines, clearly agreed.",
     points: [
       "Final scope of work",
       "Detailed specifications",
@@ -205,7 +226,7 @@ const stages: ContractStage[] = [
   },
   {
     step: "05",
-    title: "05 — In-House Execution & Site Management",
+    title: "05 · In-House Execution & Site Management",
     subtitle: "Our team takes the project from plans to completion.",
     points: [
       "Civil and structural construction",
@@ -220,10 +241,13 @@ const stages: ContractStage[] = [
     ],
     image: img.slabDusk,
     imageAlt: alt.slabDusk,
+    // The slab at dusk is a pale sky across the whole of its upper half,
+    // and the subtitle and the first line of points sit in it.
+    shade: "deep",
   },
   {
     step: "06",
-    title: "06 — Handover & After Completion",
+    title: "06 · Handover & After Completion",
     subtitle: "We stay involved until the project is properly handed over.",
     points: [
       "Final inspection",
@@ -271,7 +295,7 @@ export default function CivilContractsPage() {
                 <Eyebrow>Your Project. Our Experience.</Eyebrow>
               </Reveal>
               <Reveal delay={80}>
-                <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
+                <h2 className="text-balance-head inscribed mt-6 text-[clamp(1.75rem,3.6vw,2.75rem)] leading-[1.06]">
                   Every construction project is different.
                 </h2>
               </Reveal>
@@ -295,7 +319,23 @@ export default function CivilContractsPage() {
             <div className="lg:col-span-5">
               <Reveal delay={120}>
                 <div className="rounded-[2rem] border border-line bg-mist p-8 sm:p-10">
-                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-slate-muted">
+                  {/* The card's label is grey rather than brass, so it is
+                      the one eyebrow on the page without the site's brass
+                      rule in front of it. The hat stands in for that rule and
+                      says what the card is about at the same time: it is the
+                      company's own crew that does the work. Brass, because
+                      that is what marks an eyebrow everywhere else.
+
+                      It is drawn large and set on its own line rather than
+                      in front of the words: at this size it would dwarf an
+                      11px eyebrow it stood beside, and the card has the room
+                      to let it be the first thing read. The stroke comes
+                      down as the hat goes up so it stays a thin line. */}
+                  <HardHatIcon
+                    className="h-11 w-11 text-brass-600 sm:h-[3.25rem] sm:w-[3.25rem]"
+                    strokeWidth={1.1}
+                  />
+                  <p className="mt-5 text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-slate-muted">
                     In-house execution
                   </p>
                   <p className="mt-6 font-display text-[1.5rem] leading-snug text-navy-900 sm:text-[1.75rem]">
@@ -332,16 +372,28 @@ export default function CivilContractsPage() {
               <Eyebrow>Contract Construction</Eyebrow>
             </Reveal>
             <Reveal delay={80}>
-              <h2 className="text-balance-head mt-6 text-[clamp(1.75rem,3.6vw,2.5rem)] leading-[1.12]">
+              <h2 className="text-balance-head inscribed mt-6 text-[clamp(1.625rem,3.1vw,2.375rem)] leading-[1.08]">
                 You own the project. We build it.
               </h2>
             </Reveal>
             <Reveal delay={160}>
-              {/* Lights word by word on the scroll, and is not finished until
-                  the stages below are in frame — set larger than body copy
-                  for it, but held under the heading it sits beneath. */}
-              <ScrollLit className="mt-7 text-[clamp(1.1875rem,2.1vw,1.5rem)] leading-[1.7]">
-                {`A contract with Vijaya covers the building itself — foundation
+              {/* Lights word by word on the scroll. Two things about it were
+                  what made this section read as unfinished rather than as an
+                  effect (2026-09-12).
+
+                  It used to run until the stages below were in frame, which
+                  meant that at every scroll position where a reader actually
+                  stops on this paragraph it was half navy and half pale grey
+                  — a sentence in two colours, which looks like a fault. The
+                  sweep now closes while the block is still comfortably on
+                  screen; `to` is the control, and `ScrollLit` documents it.
+
+                  And at 24px against a 40px heading there was no step between
+                  them, so the two competed. It is a size down now: still
+                  above body copy, which is the point of it, but plainly
+                  second to the line above. */}
+              <ScrollLit className="mt-8 text-[clamp(1.0625rem,1.7vw,1.3125rem)] leading-[1.75]">
+                {`A contract with Vijaya covers the building itself, foundation
                   to finishes, on your land, to your drawings or ours. No share
                   and no stake: what is built stays entirely yours, and we are
                   paid to construct it properly. Any size, anywhere in and
@@ -360,30 +412,47 @@ export default function CivilContractsPage() {
           right of it are six screens of their own below. Nothing is held
           under the header any more — there is nothing left beside this to
           hold it against. */}
-      <Section tone="mist" size="lg">
+      <Section tone="mist" size="md">
         <Container>
-          <div className="grid gap-10 lg:grid-cols-12 lg:items-end lg:gap-20">
+          {/* The two columns start together at the top. They used to be
+              `items-end`, which bottom-aligns them — and since the right
+              column is the taller of the two, that pushed the heading down
+              until its last line sat level with a button, leaving a quarter
+              of the row empty above the eyebrow and nothing to explain why.
+              Aligned at the top there is one line across the row to read
+              from, which is what the section was missing.
+
+              The right column is then pushed down by the height of the
+              eyebrow and its margin, so its first line starts level with the
+              heading's first line rather than with the eyebrow above it. The
+              rule across the top is what makes that reading deliberate: both
+              columns hang from it. */}
+          <div className="grid gap-10 border-t border-line pt-12 lg:grid-cols-12 lg:items-start lg:gap-20 lg:pt-14">
             <div className="lg:col-span-6">
               <Reveal>
                 <Eyebrow>How A Contract Runs</Eyebrow>
               </Reveal>
               <Reveal delay={80}>
-                <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08]">
+                <h2 className="text-balance-head inscribed mt-6 text-[clamp(1.75rem,3.6vw,2.75rem)] leading-[1.06]">
                   What happens after you call us.
                 </h2>
               </Reveal>
             </div>
 
-            <div className="lg:col-span-6">
+            {/* 2.9rem is the eyebrow's own line plus the `mt-6` under it, so
+                the paragraph opens on the heading's first line. Only from
+                `lg`: below it the columns are stacked and there is nothing
+                left to align to. */}
+            <div className="lg:col-span-6 lg:pt-[2.9rem]">
               <Reveal delay={160}>
-                <p className="text-[1.0625rem] leading-[1.8] text-slate-body">
+                <p className="max-w-[34rem] text-[1.0625rem] leading-[1.8] text-slate-body">
                   A contract should be predictable long before it is signed.
                   These are the six stages every project goes through with
                   us, whether it is a single house or a factory floor.
                 </p>
               </Reveal>
               <Reveal delay={240}>
-                <div className="mt-9">
+                <div className="mt-8">
                   <Button href="/our-legacy" variant="outline" withArrow>
                     See Our Legacy
                   </Button>
@@ -415,15 +484,16 @@ export default function CivilContractsPage() {
         <Container>
           <div className="mx-auto max-w-[46rem] text-center">
             <Reveal>
-              <h2 className="text-balance-head text-[clamp(1.875rem,4vw,3rem)] leading-[1.12]">
-                The project is complete when you are satisfied with the
+              <h2 className="text-balance-head inscribed text-[clamp(1.625rem,3.3vw,2.5rem)] leading-[1.18]">
+                The project is complete when{" "}
+                <span className="mark-navy">you are satisfied</span> with the
                 handover.
               </h2>
             </Reveal>
             <Reveal delay={80}>
               <p className="mx-auto mt-6 max-w-[38rem] text-[1.0625rem] leading-[1.8] text-slate-body">
                 Bring us the plot, the drawings and a budget. We will tell you
-                plainly what it will take to build — item by item, before
+                plainly what it will take to build, item by item, before
                 anything is signed.
               </p>
             </Reveal>

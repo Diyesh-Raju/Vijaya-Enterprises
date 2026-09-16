@@ -1,12 +1,25 @@
 import type { ReactElement } from "react";
 import { Container, Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
+import { Counter } from "@/components/ui/counter";
 import { GradientCard, type CardStat } from "@/components/ui/gradient-card";
 import {
   AreaIcon,
   BuildingIcon,
   HeartIcon,
 } from "@/components/ui/line-icons";
+import { LookingFor } from "@/components/sections/looking-for";
+
+/**
+ * The same for all five figures in the band.
+ *
+ * 1.5s, asked for by name (2026-09-15). It was 2200ms, which was set so
+ * there was time to watch the lakhs roll over on the Sq. Ft. card — that
+ * is the one figure here with seven digits, and it is the one this
+ * shortening costs the most. Raise this first if the roll starts reading
+ * as a flicker rather than a count.
+ */
+const COUNT_MS = 1500;
 
 /**
  * The band directly under the hero: the headline figure on the left, three
@@ -22,6 +35,16 @@ import {
  * `scroll-snap-type` on `html`; that handed the scroll from this band to the
  * next section, and made every gesture on every page of the site a snap
  * negotiation to pay for it. See the note in `globals.css`.
+ *
+ * Every figure counts up from nothing as it comes into view, and again each
+ * time the band is scrolled back to — see `Counter`. All five run for the
+ * same time, so they land together however far each has to climb. The
+ * finished figure is what the server sends, so it is on the page without
+ * JavaScript and read whole by a screen reader.
+ *
+ * All five on a laptop, that is. The headline 50+ stands still on a phone,
+ * where it is set at 11rem and counting it moves the whole screen — the
+ * four in the cards still run, and still land together.
  */
 const points: {
   icon: (props: { className?: string }) => ReactElement;
@@ -31,20 +54,37 @@ const points: {
   {
     icon: AreaIcon,
     title: "Sq. Ft. Delivered",
-    stats: [{ value: "+10,00,000" }],
+    stats: [
+      {
+        value: (
+          <Counter to={1000000} prefix="+" grouping durationMs={COUNT_MS} />
+        ),
+      },
+    ],
   },
   {
     icon: BuildingIcon,
     title: "Residential Portfolio Scale",
     stats: [
-      { label: "Apartment projects", value: "30+" },
-      { label: "No. of flats constructed", value: "1200+" },
+      {
+        label: "Apartment projects",
+        value: <Counter to={30} suffix="+" durationMs={COUNT_MS} />,
+      },
+      {
+        label: "No. of flats constructed",
+        value: <Counter to={1200} suffix="+" durationMs={COUNT_MS} />,
+      },
     ],
   },
   {
     icon: HeartIcon,
     title: "Trusted by Families",
-    stats: [{ value: "+1,500", label: "happy families" }],
+    stats: [
+      {
+        value: <Counter to={1500} prefix="+" grouping durationMs={COUNT_MS} />,
+        label: "happy families",
+      },
+    ],
   },
 ];
 
@@ -57,7 +97,20 @@ export function FiftyYears() {
             <Reveal>
               <h2 className="text-navy-900">
                 <span className="block font-display text-[clamp(5rem,14vw,11rem)] leading-[0.8]">
-                  50+
+                  {/* Still on a phone, asked for by name (2026-09-14). This
+                      is the one figure on the site set at 11rem, and at a
+                      phone's width that is most of the page — a number that
+                      size rolling through four digit shapes before it
+                      settles is not a flourish, it is the whole screen
+                      moving. The three cards beside it still count: they are
+                      figures inside a card rather than the page's headline.
+                      See `countOn` in `Counter`. */}
+                  <Counter
+                    to={50}
+                    suffix="+"
+                    durationMs={COUNT_MS}
+                    countOn="desk"
+                  />
                 </span>
                 <span
                   aria-hidden="true"
@@ -81,6 +134,14 @@ export function FiftyYears() {
                   />
                 </Reveal>
               ))}
+
+              {/* Three ways into the site, at the right of this band and on
+                  this page alone. See `LookingFor` — on a laptop it leaves
+                  the flow and floats at the right edge; the element here is
+                  what tells it when the band is on the screen. */}
+              <Reveal delay={points.length * 90}>
+                <LookingFor />
+              </Reveal>
             </div>
           </div>
         </div>

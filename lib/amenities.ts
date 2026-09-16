@@ -155,7 +155,7 @@ const vijayaLuxo: readonly AmenityGroup[] = [
         name: "Party Hall",
         icon: "party-hall",
         description:
-          "A hall for the occasions a flat cannot hold — birthdays, pujas, a gathering of the whole family.",
+          "A hall for the occasions a flat cannot hold, birthdays, pujas, a gathering of the whole family.",
       },
       {
         name: "Indoor Play Area",
@@ -303,11 +303,111 @@ const vijayaAquagreen: readonly AmenityGroup[] = [
   },
 ];
 
+/**
+ * The ten on the brochure's amenities list, plus the lift and the rain
+ * water harvesting its specifications page adds.
+ */
+const vijayaSpringwoods: readonly AmenityGroup[] = [
+  {
+    title: "Recreation",
+    amenities: [
+      {
+        name: "Pool",
+        icon: "swimming-pool",
+        description:
+          "A pool at the end of the drive, beside the clubhouse, for laps in the morning or a swim after the working day.",
+      },
+      {
+        name: "Gymnasium",
+        icon: "gym",
+        description:
+          "A fitness room on site, so a workout never depends on the traffic.",
+      },
+      {
+        name: "Club House",
+        icon: "clubhouse",
+        description:
+          "A clubhouse beside the pool, for getting together with the neighbours.",
+      },
+      {
+        name: "Party Hall",
+        icon: "party-hall",
+        description:
+          "A hall for the occasions a flat cannot hold, birthdays, pujas, a gathering of the whole family.",
+      },
+      {
+        name: "Auditorium",
+        icon: "auditorium",
+        description:
+          "A twenty-seat auditorium, for a film or a talk without leaving the development.",
+      },
+      {
+        name: "Children's Play Area",
+        icon: "kids-play-area",
+        description:
+          "A play area set aside for children, within sight of the homes around it.",
+      },
+    ],
+  },
+  {
+    title: "Grounds",
+    amenities: [
+      {
+        name: "Landscaping",
+        icon: "garden",
+        description:
+          "More than half the site kept open and planted, with the lawn running the length of the block.",
+      },
+      {
+        name: "Visitors' Car Parking",
+        icon: "car-parking",
+        description:
+          "Parking for visitors along the drive, and covered or surface parking for residents.",
+      },
+    ],
+  },
+  {
+    title: "Essentials",
+    amenities: [
+      {
+        name: "24 Hrs Security",
+        icon: "security",
+        description:
+          "Security on the gate around the clock, every day of the year.",
+      },
+      {
+        name: "Intercom",
+        icon: "intercom",
+        description:
+          "Intercom connecting every home to the security desk and to each other.",
+      },
+      {
+        name: "Power Backup",
+        icon: "power-backup",
+        description:
+          "Generator backup for the lift and all the common areas.",
+      },
+      {
+        name: "Automatic Lift",
+        icon: "lift",
+        description: "A Johnson or equivalent automatic lift serving every floor.",
+      },
+      {
+        name: "Rain Water Harvesting",
+        icon: "rain-water-harvesting",
+        description:
+          "Rain off the roof collected and put back into the ground rather than the drain.",
+      },
+    ],
+  },
+];
+
 /** Keyed by project slug, so a project page can look up its own amenities. */
 export const amenitiesBySlug: Record<string, readonly AmenityGroup[]> = {
   "hara-vijaya-heights": haraVijayaHeights,
   "vijaya-luxo": vijayaLuxo,
   "vijaya-aquagreen": vijayaAquagreen,
+  "vijaya-springwoods": vijayaSpringwoods,
 };
 
 /** The brochure's own introduction to the amenities, shown above the tabs. */
@@ -315,7 +415,9 @@ export const amenitiesIntroBySlug: Record<string, string> = {
   "hara-vijaya-heights":
     "Hara Vijaya Heights offers a host of neat spaces for recreation and relaxation alike. A state-of-the-art clubhouse and a multi-purpose hall provide an ideal place to get together with loved ones. The landscaped garden and park area are perfect for a stroll by yourself.",
   "vijaya-luxo":
-    "Surround yourself with plush amenities. We believe there are no boundaries for quality — from the quality of material and of finish to the architectural design and the add-ons, everything at Vijaya Luxo has been given the highest care, including vastu compliance.",
+    "Surround yourself with plush amenities. We believe there are no boundaries for quality, from the quality of material and of finish to the architectural design and the add-ons, everything at Vijaya Luxo has been given the highest care, including vastu compliance.",
   "vijaya-aquagreen":
-    "Vijaya Aquagreen is not only a home — it is a dream with all modern amenities. Planned to make sure there is excellent cross ventilation and comfortable living for the modern family, with a clubhouse and pool at the heart of the grounds.",
+    "Vijaya Aquagreen is not only a home, it is a dream with all modern amenities. Planned to make sure there is excellent cross ventilation and comfortable living for the modern family, with a clubhouse and pool at the heart of the grounds.",
+  "vijaya-springwoods":
+    "Fully loaded amenities and exclusive features give you the comfort and feeling of living in an independent home. The apartments are planned so that there are no common walls between homes, no knocking through from the other side, and three sides of natural light and fresh air for every flat.",
 };

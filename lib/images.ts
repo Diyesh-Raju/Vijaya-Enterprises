@@ -18,6 +18,13 @@ import aerialLand from "@/assets/images/aerial-land.jpg";
 import amenitiesGarden from "@/assets/images/amenities-garden.jpg";
 import agreementSigning from "@/assets/images/agreement-signing.jpg";
 import bankReception from "@/assets/images/bank-reception.jpg";
+/* The enquiry form on /contact is set on this: a stone-walled entry court at
+   dusk, lit from the wall. It is chosen for what it does behind glass rather
+   than for what it shows — the frosted panel over it needs something with
+   large, slow areas of tone and one warm light source, because a busy
+   photograph blurred is grey mush and a flat one gives the frost nothing to
+   catch. */
+import backdropCourtyard from "@/assets/images/backdrop-courtyard.jpg";
 import backdropFabric from "@/assets/images/backdrop-fabric.jpg";
 /* The same cloth, for the phone's shape of the residence-finder panel. A
    portrait frame with the fold running corner to corner, where the laptop's
@@ -70,7 +77,21 @@ import blueprintCraft from "@/assets/images/blueprint-craft.jpg";
    there, in line with the other five, and 13:1 under the desktop heading.
    Measure before changing it — see the note on `undertake` in
    `app/globals.css`. */
+/* The four phone photographs for the `Undertakings` panels on
+   /civil-contracts, supplied by the client on 2026-09-14. They are upright
+   where the panel photographs they stand in for are landscape, which is the
+   whole reason they exist: a phone panel is a tall frame, and a 16:9 picture
+   in it keeps a band across the middle and loses the building's feet and its
+   sky. They are never served to a laptop — `Undertakings` picks between the
+   two in a `<picture>` — so they are sized for a phone and no larger. */
+import commercialCornerDuskPhone from "@/assets/images/commercial-corner-dusk-phone.jpg";
 import commercialStreetBlock from "@/assets/images/commercial-street-block.jpg";
+/* The same block again, upright, for the portrait card standing in front of
+   that panel — the one place on the section where the card is not a crop of
+   its own backdrop. Supplied by the client at 1024 × 1536; the card is 4:5,
+   so it keeps the photograph's whole width. Nothing is written over it, so
+   it is not graded. */
+import commercialStreetBlockPortrait from "@/assets/images/commercial-street-block-portrait.jpg";
 import cityNight from "@/assets/images/city-night.jpg";
 import citySunset from "@/assets/images/city-sunset.jpg";
 import cranesSkyline from "@/assets/images/cranes-skyline.jpg";
@@ -100,6 +121,13 @@ import vijayaLuxoNight from "@/assets/images/vijaya-luxo-night.jpg";
    brochure's "perfect balance" spread; the finished building itself is
    `vijayAquaGreen`, further down. */
 import vijayaAquagreenRender from "@/assets/images/vijaya-aquagreen-render.jpg";
+/* Vijaya Springwoods, Singasandra. Both are the one render on the front of
+   the brochure — a two-page fold, scanned — cut from a 4800px render of the
+   page: the whole elevation for the hero and the card, cropped in under the
+   BBMP seal that sits in its sky, and the entrance corner for the concept
+   panel. */
+import vijayaSpringwoodsRender from "@/assets/images/vijaya-springwoods-render.jpg";
+import vijayaSpringwoodsCorner from "@/assets/images/vijaya-springwoods-corner.jpg";
 /* The two management portraits on /our-legacy — the founder and the
    managing director. Vijaya's own, like `tudorApartments`; see
    `Management`. */
@@ -110,12 +138,25 @@ import mahanteshNelavagi from "@/assets/images/mahantesh-nelavagi.jpg";
    drawings with the engineer at the site table. */
 import handoverFamilyEngineer from "@/assets/images/handover-family-engineer.jpg";
 import homeDusk from "@/assets/images/home-dusk.jpg";
-import homeScrollEnd from "@/assets/images/home-scroll-end.jpg";
-import homeScrollPoster from "@/assets/images/home-scroll-poster.jpg";
+/* The home hero's three stills, cut from the towers walkthrough by
+   `assets/video-source/build-hero-frames.mjs`, from the same master and the
+   same colour conversion as the frames in `frames.homeScroll` below — the
+   poster is painted first and the canvas then draws frame 0 over it, so a
+   still cut any other way would show as a jump. The soft start plate is what
+   the loader stands on; the soft end plate is what the close fades to.
+
+   The two earlier cuts' stills are all still here: `home-scroll-short-*.jpg`
+   for the short cut before the towers, `home-scroll-*.jpg` for the long one
+   before that. Those cuts only ever existed as video, so going back to
+   either is no longer a swap of paths: `ScrollHero` draws frames now. */
+import homeScrollEnd from "@/assets/images/home-scroll-towers-end.jpg";
+import homeScrollPoster from "@/assets/images/home-scroll-towers-poster.jpg";
+import homeScrollStartSoft from "@/assets/images/home-scroll-towers-start-soft.jpg";
 import homeLawn from "@/assets/images/home-lawn.jpg";
 import industrialEngineer from "@/assets/images/industrial-engineer.jpg";
 import institutionCampus from "@/assets/images/institution-campus.jpg";
 import institutionHospital from "@/assets/images/institution-hospital.jpg";
+import institutionHospitalDrivePhone from "@/assets/images/institution-hospital-drive-phone.jpg";
 /* The industrial panel on /civil-contracts, in place of the stock
    warehouse aisle: a finished PEB shed, its structure and its floor both
    on show, which is what that panel is about. Supplied by the client at
@@ -133,11 +174,23 @@ import interiorLiving from "@/assets/images/interior-living.jpg";
    the other five panels are 2400, so it is the softest of the six on a wide
    window. Replace it with a larger copy of the same scene if one exists. */
 import landscapeGardenPath from "@/assets/images/landscape-garden-path.jpg";
-/* The Our Legacy hero, behind the opening aperture. Supplied by the
-   client: a model of a building being set down on its site plan with a
-   city behind it, which is the page's subject in one frame. See
+import landscapeWallPlantingPhone from "@/assets/images/landscape-wall-planting-phone.jpg";
+/* The Our Legacy hero until 2026-09-11: a model of a building being set
+   down on its site plan with a city behind it. No longer imported by
+   anything — kept so the hero can go back to it by changing one line in
    `LegacyHero`. */
 import legacyModelCity from "@/assets/images/legacy-model-city.jpg";
+/* The Our Legacy hero, behind the opening aperture. Supplied by the
+   client: two men in an office, standing in front of the model of a tower,
+   with its drawings on the desk beside them and the city through the glass.
+   1600 × 900, where a full-screen photograph here is wanted at 3840 — the
+   softest hero on the site on a wide or dense screen. See `LegacyHero`. */
+import legacyHeroOffice from "@/assets/images/legacy-hero-office.jpg";
+/* The same two men, same room, shot upright — for the phone, where the
+   landscape frame above keeps about a quarter of its width and cuts both of
+   them off at the shin. 900 × 1600, so a tall phone frame takes it whole.
+   `LegacyHero` picks between the two in a `<picture>`. */
+import legacyHeroOfficePhone from "@/assets/images/legacy-hero-office-phone.jpg";
 import legacyPoster from "@/assets/images/legacy-poster.jpg";
 /* The second stage of a contract on /civil-contracts — the legal and
    statutory check before anything is drawn. Supplied by the client.
@@ -219,6 +272,12 @@ import storyLivingRoom from "@/assets/images/story-living-room.jpg";
    `app/globals.css`. */
 import storyGroundDusk from "@/assets/images/story-ground-dusk.jpg";
 import siteTeam from "@/assets/images/site-team.jpg";
+/* The "Trust You Can Check" panel on /joint-ventures, in place of
+   `familyLivingRoom`: an agreement shaken on at a site, the frame going up
+   behind it. Supplied by the client at 1066 × 1600 — portrait, where the
+   open panel is nearer square, so the crop is the photograph's full width
+   and the `focus` on that page chooses which two-thirds of its height. */
+import siteHandshakePlans from "@/assets/images/site-handshake-plans.jpg";
 import slabDusk from "@/assets/images/slab-dusk.jpg";
 import steelRebar from "@/assets/images/steel-rebar.jpg";
 import towerOccupied from "@/assets/images/tower-occupied.jpg";
@@ -227,12 +286,37 @@ import towerOccupied from "@/assets/images/tower-occupied.jpg";
    `homeDusk` there, which the closing call to action on /residential also
    uses — so the section no longer shares a photograph with another page.
    1376px on the long edge, where the stock panels are 2400. */
+import villaLitDrivePhone from "@/assets/images/villa-lit-drive-phone.jpg";
 import villaStreetDusk from "@/assets/images/villa-street-dusk.jpg";
+/* The same house again, upright, for the portrait card in front of that
+   panel. Supplied by the client at 896 × 1200; the card is 4:5, so it keeps
+   the photograph's whole width. Nothing is written over it, so it is not
+   graded. */
+import villaStreetDuskPortrait from "@/assets/images/villa-street-dusk-portrait.jpg";
 import towersGlass from "@/assets/images/towers-glass.jpg";
 /* Vijaya's own — a completed Tudor-framed apartment block, and the one
-   picture on the site that is not stock. It carries the arch on
-   /our-legacy; see `WhoWeBuildFor`. */
+   picture on the site that is not stock. It carried the arch on /our-legacy
+   until the garden below took it (2026-09-12), and is kept for going back to. */
 import tudorApartments from "@/assets/images/tudor-apartments.jpg";
+/* The five projects in the carousel on /joint-ventures. Landscape, and each
+   card is cut to its own file's shape rather than to a shared one, so every
+   picture shows whole — see `ProjectCarousel`. They are renders and
+   photographs of Vijaya's own buildings, supplied by the client on
+   2026-09-12; only the second names itself, on the building. */
+import projectTudorCourt from "@/assets/images/project-tudor-court.jpg";
+import projectVijayaLuxo from "@/assets/images/project-vijaya-luxo.jpg";
+import projectStonePlinth from "@/assets/images/project-stone-plinth.jpg";
+import projectTimberCorner from "@/assets/images/project-timber-corner.jpg";
+import projectLawnTowers from "@/assets/images/project-lawn-towers.jpg";
+/* The ground under the brochures on /our-legacy. It is the section's whole
+   background and is never cropped — see the note in `app/our-legacy/page.tsx`
+   — so what the band can be is set by the file's own 16:9. */
+import airportDusk from "@/assets/images/airport-dusk.jpg";
+/* The arch on /our-legacy — a lit approach at sunset, the shrine on one side
+   and the house on the other. Upright to begin with, which the 4:5 arch wants:
+   it keeps the photograph's whole width and trims only the sky and the near
+   foreground. See `WhoWeBuildFor`. */
+import gardenShrineDusk from "@/assets/images/garden-shrine-dusk.jpg";
 import villaPool from "@/assets/images/villa-pool.jpg";
 import warehouseAisle from "@/assets/images/warehouse-aisle.jpg";
 
@@ -251,6 +335,7 @@ export const img = {
   aerialLand,
   amenitiesGarden,
   agreementSigning,
+  backdropCourtyard,
   backdropFabric,
   backdropFabricPhone,
   backdropFooter,
@@ -263,7 +348,9 @@ export const img = {
   blueprintCraft,
   cityNight,
   citySunset,
+  commercialCornerDuskPhone,
   commercialStreetBlock,
+  commercialStreetBlockPortrait,
   cranesSkyline,
   drawingBoard,
   familyConversation,
@@ -279,6 +366,8 @@ export const img = {
   vijayaLuxoDusk,
   vijayaLuxoNight,
   vijayaAquagreenRender,
+  vijayaSpringwoodsRender,
+  vijayaSpringwoodsCorner,
   hbShivakumar,
   handoverFamilyEngineer,
   mahanteshNelavagi,
@@ -286,14 +375,19 @@ export const img = {
   homeLawn,
   homeScrollEnd,
   homeScrollPoster,
+  homeScrollStartSoft,
   industrialEngineer,
   industrialShedFloor,
   institutionCampus,
   institutionHospital,
+  institutionHospitalDrivePhone,
   interiorFamily,
   interiorLiving,
   landscapeGardenPath,
+  landscapeWallPlantingPhone,
   legacyModelCity,
+  legacyHeroOffice,
+  legacyHeroOfficePhone,
   legacyPoster,
   legalVerificationDesk,
   meetingHands,
@@ -320,13 +414,23 @@ export const img = {
   storyCityNight,
   storyLivingRoom,
   storyGroundDusk,
+  siteHandshakePlans,
   siteTeam,
   slabDusk,
   steelRebar,
   towerOccupied,
   towersGlass,
+  villaLitDrivePhone,
   villaStreetDusk,
+  villaStreetDuskPortrait,
   tudorApartments,
+  gardenShrineDusk,
+  airportDusk,
+  projectTudorCourt,
+  projectVijayaLuxo,
+  projectStonePlinth,
+  projectTimberCorner,
+  projectLawnTowers,
   villaPool,
   warehouseAisle,
   towersLawn,
@@ -342,6 +446,8 @@ export const alt = {
     "A planted garden walk winding between mature trees and low flowering beds, a pale concrete wall behind",
   agreementSigning:
     "Two people either side of a desk, one signing an agreement while the other holds the papers steady",
+  backdropCourtyard:
+    "A stone-walled entry courtyard at dusk, a tree and planting to one side and a lit passage through to a garden beyond",
   backdropFabric:
     "Soft folds of cream fabric, lit from one side",
   backdropFabricPhone:
@@ -355,6 +461,8 @@ export const alt = {
   bankReception: "Banking hall interior with a curved reception counter",
   blueprintCraft: "Hands marking up a construction drawing at a desk",
   cityNight: "Long-exposure traffic trails running through a city at night",
+  commercialCornerDuskPhone:
+    "A completed commercial building on a street corner at dusk, timber-slatted and glazed with planting up its flank, the offices lit and traffic passing in front",
   commercialStreetBlock:
     "A completed four-storey commercial building in brick, stone and glass on a Bengaluru street, lit offices behind its ground-floor glazing and traffic passing in front",
   citySunset: "City skyline and arterial roads at sunset",
@@ -373,7 +481,7 @@ export const alt = {
     "A site crew spreading and levelling fresh concrete across a floor slab, the city behind them",
   heroPoster: "Tower cranes working above a city skyline under construction",
   homeScrollEnd:
-    "The entrance foyer of a completed home, softly out of focus",
+    "The lamplit living room of a completed home, softly out of focus",
   homeScrollPoster:
     "A landscaped residential development of white apartment towers seen from the air",
   haraVijayaConcept:
@@ -390,6 +498,10 @@ export const alt = {
     "Vijaya Luxo at night, every window lit, the timber fin carrying the name and the planted compound wall below",
   vijayaAquagreenRender:
     "Architectural view of Vijaya Aquagreen: three low blocks in white and timber stepping back along the road behind a planted verge, the entrance gate in the foreground",
+  vijayaSpringwoodsRender:
+    "Architectural view of Vijaya Springwoods: a long five-storey block in white with terracotta panels and stone-clad piers, balconies running the length of it, lawn and a road in front",
+  vijayaSpringwoodsCorner:
+    "The entrance corner of Vijaya Springwoods, the name on a terracotta panel above the glazed lobby and planting up the stone piers",
   hbShivakumar:
     "Sri H. B. Shivakumar, founder of Vijaya Enterprises, in a dark suit and striped tie",
   mahanteshNelavagi:
@@ -409,10 +521,18 @@ export const alt = {
   industrialShedFloor:
     "The inside of a completed pre-engineered industrial shed, its steel frame and roof lights overhead and a finished, sealed floor running the length of it",
   institutionHospital: "Hospital building entrance and approach road",
+  institutionHospitalDrivePhone:
+    "A hospital seen from the head of its approach road, the entrance canopy ahead, an ambulance at the kerb and flower beds either side of the drive",
   interiorFamily: "Family living room with a dog resting by the sofa",
   interiorLiving: "Open-plan living and dining space in a completed apartment",
   landscapeGardenPath:
     "A paved garden path between flowering beds and clipped hedges, frangipani in bloom overhead, with lawn, a lily pond and terraced fields beyond",
+  landscapeWallPlantingPhone:
+    "A finished garden bed of broad-leaved planting along a dressed stone wall, lit from the wall, frangipani in bloom above it and mown lawn and paving in front",
+  legacyHeroOffice:
+    "Two men in dark suits standing in an office in front of a scale model of a residential tower, rolled drawings on the desk beside them and the city through the windows behind",
+  legacyHeroOfficePhone:
+    "Two men in dark suits standing full length in an office, a scale model of a residential tower on the desk behind them, rolled drawings beside it and the city through the windows",
   legacyModelCity:
     "Two hands setting a model of a low glass-fronted building down on its site plan, the model lit from within, a city skyline at sunset behind it",
   legacyPoster: "A building frame and tower crane silhouetted against the sunset",
@@ -448,7 +568,7 @@ export const alt = {
   scaleModelHands:
     "Two hands lowering a lit scale model of a low-rise building onto a site plan, the city skyline behind it at sunset",
   residentialInterior:
-    "Warmly lit living and dining room in a completed Vijaya home, with a sofa, armchair and planting",
+    "Living room of a completed Vijaya home in the evening, a fire in the hearth, lit shelves behind the sofa and the dining room through the doorway",
   residentialLivingDusk:
     "A warmly lit living room at dusk, floor-to-ceiling glass open to the city lights, with a Ganesha idol, marigolds and embroidered cushions",
   storyCraneDawn:
@@ -461,17 +581,35 @@ export const alt = {
     "A finished contemporary living room, panelled navy feature wall, filament pendants and daylight through sheer curtains",
   storyGroundDusk:
     "A low modern house of glass and stone at dusk, its roof reaching out over a still infinity pool that runs to a lake and distant hills",
+  siteHandshakePlans:
+    "Two colleagues greeting a client with a handshake on a construction site, a concrete frame and tower cranes behind them and drawings, a hard hat and a calculator on the table in front",
   siteTeam: "Site engineers and workers walking a large concrete deck",
   slabDusk:
     "Workers silhouetted at dusk against a pink sky, on the reinforcement cage of a floor going up",
   steelRebar: "Reinforcement steel being placed on an active construction site",
   towerOccupied:
     "A completed apartment block at night with its windows lit, the building in use",
+  villaLitDrivePhone:
+    "A completed private residence at dusk seen from the street, stone and timber with the rooms and the planting lit, and a car standing on the drive",
   villaStreetDusk:
     "A completed private residence at dusk seen from the street: three storeys in stone, timber and glass, the rooms and the planting lit, and a car standing in the porch",
   towersGlass: "Glass office towers seen from street level",
   tudorApartments:
     "A completed four-storey apartment block with a tiled gabled roof and black timber framing over white render, seen from the road",
+  gardenShrineDusk:
+    "A lit stone path curving through a landscaped garden at sunset, a Ganesha shrine on a fountain plinth under the trees and a lamp-lit residence beyond",
+  airportDusk:
+    "An airport at dusk from above: aircraft standing at the gates along a lit terminal, one on approach over the runways, and a city skyline on the horizon",
+  projectTudorCourt:
+    "A four-storey apartment block at dusk, its gabled roofs tiled and its façade framed in dark timber over cream render, palms around a paved forecourt",
+  projectVijayaLuxo:
+    "Vijaya Luxo at dusk from the street, a white and dark-stone façade with timber panelling, balconies lit and the name on the boundary wall",
+  projectStonePlinth:
+    "A white apartment block in daylight, its balconies banded in grey and terracotta above a rough stone plinth, lawns and palms around it",
+  projectTimberCorner:
+    "A timber-clad residential block on a street corner at dusk, its balconies and planting lit, traffic passing on the road in front",
+  projectLawnTowers:
+    "Four white residential towers under a clear sky, circular canopies at their tops, seen across an open lawn",
   villaPool: "Completed villa with a swimming pool and terrace",
   warehouseAisle: "Aisle inside a completed warehouse facility",
   towersLawn:
@@ -486,11 +624,43 @@ export const alt = {
 
 /** Background video files (these do live in `public/`, served by URL). */
 export const video = {
-  homeScrollDesktop: "/video/home-scroll.mp4",
-  homeScrollMobile: "/video/home-scroll-mobile.mp4",
   heroDesktop: "/video/hero.mp4",
   heroMobile: "/video/hero-mobile.mp4",
   legacyDesktop: "/video/legacy.mp4",
   legacyMobile: "/video/legacy-mobile.mp4",
   craft: "/video/craft.mp4",
+} as const;
+
+/**
+ * Frame sequences — the home hero's walkthrough, as stills (`public/frames/`).
+ *
+ * The towers walkthrough, 209 frames at 30 a second, cut from the render by
+ * `assets/video-source/build-hero-frames.mjs` in three sizes. `ScrollHero`
+ * waits for the smallest before the page opens, then brings up whichever
+ * larger set this screen can use and this machine can decode fast enough.
+ * The README beside the script has the sizes, and why these three.
+ *
+ * The directory carries a version because the frames are served immutable
+ * (`next.config.ts`): new bytes need a new path, or a browser holding the old
+ * frames would go on drawing them. Bump `VERSION` in the script and here
+ * together.
+ */
+const homeScrollBase = "/frames/home-towers-v1";
+const homeScrollSet = (width: number, height: number) => ({
+  width,
+  height,
+  url: (index: number) =>
+    `${homeScrollBase}/${width}/${String(index).padStart(3, "0")}.webp`,
+});
+
+export const frames = {
+  homeScroll: {
+    count: 209,
+    /** Smallest first. The first is the one the loader waits for. */
+    sets: [
+      homeScrollSet(1280, 720),
+      homeScrollSet(1920, 1080),
+      homeScrollSet(2560, 1440),
+    ],
+  },
 } as const;

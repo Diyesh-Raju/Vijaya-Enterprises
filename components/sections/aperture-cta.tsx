@@ -116,7 +116,7 @@ export function ApertureCta() {
             <div className="aperture__copy">
               <h3>What we tell you</h3>
               <p>
-                Honestly, what is possible on that — and what it takes to build
+                Honestly, what is possible on that, and what it takes to build
                 it well.
               </p>
             </div>
@@ -220,12 +220,23 @@ export function ApertureCta() {
                 </h2>
                 <p className="mt-6 max-w-xl text-[1.0625rem] leading-[1.75] text-navy-100/85">
                   Tell us where you want to live, what you need and what you
-                  are working with. We will tell you honestly what is possible
-                  — and what it takes to build it well.
+                  are working with. We will tell you honestly what is possible,
+                  and what it takes to build it well.
                 </p>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* "Scroll", at the foot of the stage, for as long as there is
+            sequence left to scroll through — it goes with the last move,
+            as the buttons lift into place. See `.aperture__cue` in
+            `globals.css`, including for why it inverts what is behind it.
+            Decorative: it says what the wheel does, which a screen reader
+            has no use for. */}
+        <div className="aperture__cue" aria-hidden="true">
+          <span className="aperture__cue-word">Scroll</span>
+          <span className="aperture__cue-line animate-pulse" />
         </div>
       </div>
     </ScrollScrub>

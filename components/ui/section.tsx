@@ -12,11 +12,12 @@ export function Container({
   return <div className={cn("container-page", className)}>{children}</div>;
 }
 
-type Tone = "white" | "mist" | "navy" | "navy-deep";
+type Tone = "white" | "mist" | "blush" | "navy" | "navy-deep";
 
 const tones: Record<Tone, string> = {
   white: "bg-white",
   mist: "bg-mist",
+  blush: "bg-blush",
   navy: "bg-navy-900 text-white",
   "navy-deep": "bg-navy-deep text-white",
 };

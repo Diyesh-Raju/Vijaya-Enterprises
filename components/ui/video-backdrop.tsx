@@ -146,7 +146,10 @@ export function VideoBackdrop({
         src={poster}
         alt={posterAlt}
         fill
-        priority={priority}
+        // `preload`, not the deprecated `priority`: Next 16 renamed it.
+        // Distinct from the `<video preload>` attribute below, which is
+        // HTML's own and takes a keyword rather than a boolean.
+        preload={priority}
         sizes="100vw"
         placeholder="blur"
         className={cn(

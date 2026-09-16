@@ -130,6 +130,11 @@ import aqua18 from "@/assets/brochures/vijaya-aquagreen/18.webp";
 import aqua19 from "@/assets/brochures/vijaya-aquagreen/19.webp";
 import aqua20 from "@/assets/brochures/vijaya-aquagreen/20.webp";
 
+import spring01 from "@/assets/brochures/vijaya-springwoods/01.webp";
+import spring02 from "@/assets/brochures/vijaya-springwoods/02.webp";
+import spring03 from "@/assets/brochures/vijaya-springwoods/03.webp";
+import spring04 from "@/assets/brochures/vijaya-springwoods/04.webp";
+
 import haraS01 from "@/assets/brochures/hara-vijaya-heights/small/01.webp";
 import haraS02 from "@/assets/brochures/hara-vijaya-heights/small/02.webp";
 import haraS03 from "@/assets/brochures/hara-vijaya-heights/small/03.webp";
@@ -192,6 +197,11 @@ import aquaS18 from "@/assets/brochures/vijaya-aquagreen/small/18.webp";
 import aquaS19 from "@/assets/brochures/vijaya-aquagreen/small/19.webp";
 import aquaS20 from "@/assets/brochures/vijaya-aquagreen/small/20.webp";
 
+import springS01 from "@/assets/brochures/vijaya-springwoods/small/01.webp";
+import springS02 from "@/assets/brochures/vijaya-springwoods/small/02.webp";
+import springS03 from "@/assets/brochures/vijaya-springwoods/small/03.webp";
+import springS04 from "@/assets/brochures/vijaya-springwoods/small/04.webp";
+
 export type Brochure = {
   slug: string;
   /** Roman numeral over the title, as the reference books number themselves. */
@@ -214,6 +224,15 @@ export type Brochure = {
   pages: readonly StaticImageData[];
   /** The same leaves at 840px, for a phone's one-page-at-a-time reading. */
   small: readonly StaticImageData[];
+  /**
+   * The shelf draws each book taller than its square cover, with the cover
+   * whole inside it — see `BookCover`. `coverPaper` is the colour of the
+   * cover's own edge, sampled off `small[0]`, so the rest of the book is the
+   * same stock; `coverHold` is where the cover sits in it. Re-sample if the
+   * cover file changes.
+   */
+  coverPaper: string;
+  coverHold: string;
 };
 
 /**
@@ -239,6 +258,11 @@ export const brochures: readonly Brochure[] = [
       "Three towers on three and a half acres, set out the way the book was printed: the master plan, the specifications line by line, the amenities, the location map, and the projects Vijaya finished before this one.",
     pdf: "/brochures/hara-vijaya-heights.pdf",
     pdfSize: "5.4 MB",
+    // The flowers run off the foot of this cover and the sky above them is
+    // one flat grey, 246 across its whole top row: held to the foot, the
+    // book grows upward into more of that sky, with no seam to find.
+    coverPaper: "#f6f6f6",
+    coverHold: "50% 100%",
     pages: [
       hara01, hara02, hara03, hara04, hara05, hara06,
       hara07, hara08, hara09, hara10, hara11, hara12,
@@ -262,6 +286,11 @@ export const brochures: readonly Brochure[] = [
       "The elevation, the typical floor plan for every unit on the site, the amenities and the roads that reach it. RERA PRM/KA/RERA/1251/310/PR/041122/005393.",
     pdf: "/brochures/vijaya-luxo.pdf",
     pdfSize: "14.9 MB",
+    // Textured white paper at both edges, 249 on average top and bottom,
+    // and something in every corner: centred, the extra paper is shared
+    // above the address and below the seals.
+    coverPaper: "#f9f9f9",
+    coverHold: "50% 50%",
     pages: [
       luxo01, luxo02, luxo03, luxo04, luxo05,
       luxo06, luxo07, luxo08, luxo09, luxo10,
@@ -283,6 +312,13 @@ export const brochures: readonly Brochure[] = [
       "Two acres and 196 one- and two-bedroom homes at Somshettyhalli, promoted by Digvijaya Shelters LLP: the master plan block by block, seven unit plans, the specifications, the amenities and the roads in from the city.",
     pdf: "/brochures/vijaya-aquagreen.pdf",
     pdfSize: "0.9 MB",
+    // Grey-veined marble to every edge, 229 across the top row and 230
+    // across the bottom, the logos in the top corners and the Kannada name
+    // and RERA line in the bottom ones: centred, the extra stock is shared
+    // above and below, and the veining is soft enough that a flat grey
+    // reads as more of the same slab.
+    coverPaper: "#e5e5e5",
+    coverHold: "50% 50%",
     pages: [
       aqua01, aqua02, aqua03, aqua04, aqua05,
       aqua06, aqua07, aqua08, aqua09, aqua10,
@@ -295,6 +331,29 @@ export const brochures: readonly Brochure[] = [
       aquaS11, aquaS12, aquaS13, aquaS14, aquaS15,
       aquaS16, aquaS17, aquaS18, aquaS19, aquaS20,
     ],
+  },
+  {
+    // A single sheet folded once, scanned as two landscape pages: the
+    // outside (back cover, front cover) and the inside. Cut down the fold
+    // into four portrait leaves — the one book here that is not square,
+    // which the reader takes from the cover file's own shape.
+    slug: "vijaya-springwoods",
+    volume: "Volume IV",
+    title: "Vijaya Springwoods",
+    place: "Singasandra, off Hosur Road",
+    quote: "No common walls. Magnificent yet affordable.",
+    blurb:
+      "One sheet, folded: the elevation on the front, the project and its specifications inside with the two typical plans, and the master plan and the roads in from Hosur Road on the back. BBMP approved, off Hosur Road at Begur.",
+    pdf: "/brochures/vijaya-springwoods.pdf",
+    pdfSize: "1.9 MB",
+    // Charcoal at the head and the foot alike, 72 across the top row and
+    // 77 across the bottom, the name in the top third and the render's
+    // lawn running out over charcoal below: centred, the extra stock is
+    // shared above and below and reads as more of the same card.
+    coverPaper: "#484848",
+    coverHold: "50% 50%",
+    pages: [spring01, spring02, spring03, spring04],
+    small: [springS01, springS02, springS03, springS04],
   },
 ];
 

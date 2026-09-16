@@ -69,16 +69,17 @@ export function Frame({
       alt={alt}
       fill
       sizes={sizes}
-      priority={priority}
+      // Next 16 renamed `<Image priority>` to `preload`; the prop on this
+      // component keeps its own name.
+      preload={priority}
       placeholder="blur"
       className={cn(
         "object-cover",
-        // `transition-transform` covers `scale` too — in Tailwind v4 it is
-        // `transition-property: transform, translate, scale, rotate`. That
-        // matters here because the hover moves `scale` while the reveal
-        // moves `transform`, and a frame can be doing both at once.
+        // The zoom's pace is `zoom-hover`, in `globals.css`, and it moves
+        // `scale` only. The reveal moves `transform` on this same picture and
+        // lists `scale` beside it, so a frame can be doing both at once.
         zoom &&
-          "transition-transform duration-[1.4s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06] motion-reduce:transition-none motion-reduce:group-hover:scale-100",
+          "zoom-hover group-hover:scale-[1.06] motion-reduce:transition-none motion-reduce:group-hover:scale-100",
         imageClassName,
       )}
     />

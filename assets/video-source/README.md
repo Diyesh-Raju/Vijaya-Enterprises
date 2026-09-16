@@ -1,22 +1,503 @@
 # Home hero source clips
 
-The two originals behind `public/video/home-scroll*.mp4`, kept out of
-`public/` so a quarter of a gigabyte of source never ships in the deployment —
-and out of git (see `.gitignore`) so it never lands in the history either. They
-live on whoever holds the renders; ask before assuming a clone has them.
+The originals behind the home hero's frames (`public/frames/`) and the
+videos it played before them (`public/video/home-scroll*.mp4`), kept out of `public/`
+so a quarter of a gigabyte of source never ships in the deployment — and out
+of git (see `.gitignore`) so it never lands in the history either. They live
+on whoever holds the renders; ask before assuming a clone has them.
 
 | File                                 | Source                | Shot                         |
 | ------------------------------------ | --------------------- | ---------------------------- |
 | `walkthrough-exterior-to-living.mp4` | 3524×2352, 7.02s, 60p | towers from the air → living |
 | `walkthrough-living-to-foyer.mp4`    | 3988×2162, 4.00s, 60p | living → entrance foyer      |
+| `walkthrough-towers.mp4`             | 3840×2160, 7.04s, 24p | towers → balcony → living    |
 
-Both are Topaz upscales of the original 24p renders, which are kept alongside
-them as `*-24p.mp4`. The upscales are what the build uses: they arrive at 60fps
-with the intermediate frames already synthesised, which is both better and
-cheaper than the `minterpolate` pass the 24p files used to need.
+The first two are the long cut, and are Topaz upscales of the original 24p
+renders, which are kept alongside them as `*-24p.mp4`. The upscales are what
+that build uses: they arrive at 60fps with the intermediate frames already
+synthesised, which is both better and cheaper than the `minterpolate` pass the
+24p files used to need. `walkthrough-living-to-foyer.mp4` opens on the same
+living room `walkthrough-exterior-to-living.mp4` ends in, and the two run in
+that order with the join hidden across half a second.
 
-The second clip opens on the same living room the first one ends in, and the
-two run in that order with the join hidden across half a second.
+`walkthrough-towers.mp4` is the one the hero plays now, on its own and with no
+join. It is 24p with no upscale, so it takes the `minterpolate` pass — the
+section below is the whole of its build.
+
+## The frame sequence — what the hero draws now, since 2026-09-16
+
+The hero no longer plays a `<video>`. Seeking one on every animation frame is
+only fast where H.264 is decoded in hardware; on the many Windows laptops that
+decode it in software, and in any browser denied the GPU, a seek takes two to
+five frames and the walkthrough trails the wheel (the software columns in the
+table below). So `ScrollHero` now draws the towers walkthrough onto a
+`<canvas>` from still frames, decoded ahead of time in workers
+(`lib/frame-sequence.ts`), and the four-file ladder further down is history —
+its files are still in `public/video/`, referenced by nothing, and can be
+deleted.
+
+`build-hero-frames.mjs` cuts everything, from `walkthrough-towers.mp4`:
+
+```sh
+node assets/video-source/build-hero-frames.mjs          # ~2½ minutes
+node assets/video-source/build-hero-frames.mjs --fresh  # re-interpolate too
+```
+
+It interpolates the 24p render straight to 30p at 2560×1440 (the same
+`minterpolate` settings as the ladder's masters; frame `i` here is frame `2i`
+of the old 60p master), converts to RGB as BT.709 limited range — what the
+ladder was tagged as, and what browsers assume for the untagged render — and
+writes three sets of lossy WebP (`effort 6`, `smartSubsample`) plus the three
+stills. The poster, the soft end plate and the new soft start plate (the
+loader's ground) all come off the same conversion, so the poster the page
+paints first and frame 0 the canvas then draws are the same picture in the
+same colours. The previous poster and end plate were cut by ffmpeg's default
+conversion, which reads the render as BT.601; the difference is about two
+code values on average.
+
+| set | frames | quality | total | a frame | who gets it |
+| --- | --- | --- | --- | --- | --- |
+| `1280/` | 209 | 72 | 14.2 MB | 67 KB | everyone first — the loader waits for all of it |
+| `1920/` | 209 | 72 | 22.8 MB | 106 KB | a panel 1400–2100 device pixels across, e.g. 1536×864 at 125% |
+| `2560/` | 209 | 72 | 31.4 MB | 146 KB | anything wider or denser: Retina MacBooks, 4K monitors |
+
+Quality 72 was picked by looking: 65 saves 8% and starts to smear the
+balcony glass at 2560; 80 costs a quarter more for nothing visible at any
+size. Sizes are measured on the build above.
+
+**Why no 4K set.** A decoded frame is width × height × 4 bytes whatever the
+file was — 33 MB at 3840×2160 — and the canvas can only hold a couple of
+dozen decoded frames inside a sensible memory budget. A 4K set would also be
+about 60 MB to download before the page opens. So the top set is 2560, and a
+screen denser than that gets it drawn 1:1 into the canvas and upscaled once
+by the compositor (1.35× on a 16" MacBook Pro, 1.5× on a 4K monitor at
+150%). This is a step down in sharpness from the 3840 video on those
+screens, taken knowingly for a scrub that never waits on a decoder.
+
+**Directory versioning.** `/frames/` is served `immutable` for a year
+(`next.config.ts`), so new bytes need a new path: bump `VERSION` in the
+script and `homeScrollBase` in `lib/images.ts` together.
+
+### How the page uses them
+
+- **Loader.** `HeroLoader` stands over the page from the first paint
+  (`data-hero-loading`, written by the inline script in `app/layout.tsx`)
+  until every frame of the 1280 set is downloaded and the frame for the
+  current scroll position is on the canvas. Scrolling, touch and keyboard
+  are held while it is up. Failsafes: no frame for 20s lifts it anyway and
+  the rest are counted in at the foot of the screen; more than 5% of frames
+  failing falls back to the poster; each request times out after 20s and is
+  retried twice. Frames already downloaded in the tab are kept, so a return
+  to the home page by a link opens at once with no loader.
+- **Climb.** The screen decides the ceiling (the smallest set with nine
+  tenths of the panel's device pixels, cover-cropped). The candidate's first
+  14 frames are downloaded and pushed through every decoder at once, at a
+  still moment, up to three times: the machine must decode at least 75
+  frames a second of that set or it stays where it is. A set that passes is
+  downloaded whole and swapped in on the frame it has the picture decoded,
+  while the reader is still — the same frame, sharper.
+- **Scheduling.** The drawn position eases towards the scroll (the same
+  rate-6 exponential as before), aimed at whole frames so it always comes
+  to rest on one. The decoders are told, every time the picture moves, what
+  to work on: the glide's path from as far ahead as a decode takes to land
+  (measured), against a target carried on at the scroll's own speed; then
+  the frames around where it will settle. Where the decoders cannot keep up,
+  the path is sampled every second or third frame, so the picture keeps up
+  with the wheel at a lower frame rate rather than trailing it. Decoded
+  frames live in a cache of 160–384 MB (by `navigator.deviceMemory`; 320 MB
+  where it is not offered). Between two frames at a slow scroll, the next is
+  cross-faded over the last; if display frames start arriving late the
+  cross-fade switches itself off.
+- **Canvas size.** The backing store is the panel's device pixels
+  (`devicePixelContentBoxSize` where it agrees with CSS size × ratio —
+  Chrome's device emulation reports CSS pixels there), capped at the frame's
+  own pixels, so a frame smaller than the screen is drawn exactly 1:1. The
+  settled canvas at 1512×982 @2 (2217×1440 backing, 2560 set) matches frame
+  106's file pixel for pixel.
+
+### Measured, 2026-09-16
+
+Headless Chrome 152 on the M5, dev server, the in-page harness in the
+session scratchpad (`run.mjs`): a steady scrub at 12px a display frame
+through the film and back, and an erratic notched wheel (bursts of
+100–240px, pauses of 1–10 frames, reversals, five-notch spins). "Trail" is
+how far the drawn frame is behind where the glide says it should be, in
+frames of film.
+
+| machine | set | scrub | display frame p95 / max | trail p50 / p95 / max |
+| --- | --- | --- | --- | --- |
+| 1512×982 @2, GPU | 2560 | steady | 16.7 / 16.8ms | 0.20 / 1.19 / 1.47 |
+| same | 2560 | wheel | 16.7 / 16.8ms | 0.28 / 2.83 / 7.83 |
+| 1536×864 @1.25, decodes +25ms, 4 cores, CPU ×4 | 1280 (1920 failed its probe) | wheel | 16.7 / 16.8ms | 0.24 / 1.87 / 16.6 |
+| same, decodes +60ms | 1280 | wheel | 16.8 / 16.8ms | 0.35 / 4.56 / 33.8 |
+| 1366×768 @1 | 1280 (ceiling) | steady | 16.7 / 16.8ms | 0.13 / 0.47 / 1.38 |
+
+No long animation frames in any run. Traced, the page's main thread spends
+about 1.3ms a display frame during a scrub — 0.2ms of it in this code — with
+the GPU on or off (`--disable-gpu`); the decodes run on the renderer's
+thread pool. The slow-decoder rows are simulated: a busy-wait added to each
+decode inside the worker, since DevTools CPU throttling does not reach the
+browser's image-decode threads. The large maximums are the first display
+frames of a hard spin, before any frame near the new position exists.
+
+Headless frame timing does not show raster cost (see the note in the
+project memory), so the display-frame columns say the main thread never
+missed; they do not by themselves prove a weak GPU would not.
+
+## The towers cut — the render the frames are cut from
+
+Since 2026-09-15 the hero plays the towers walkthrough: one render,
+`walkthrough-towers.mp4`, which opens on a landscaped block of white apartment
+towers from the air, pushes down the facade past a planted balcony and ends
+inside a lamplit living room. Same arc as the short cut it replaces —
+exterior, through the glass, interior — so the two stills either end of the
+scrub still describe it and `alt` did not change.
+
+It arrives already 16:9 (3840×2160) and carries no render mark, so unlike
+both earlier cuts there is **no crop window**: the whole frame is used, and
+the poster and the clip cannot drift out of framing with each other because
+neither is cropped. `cropdetect` over the first 48 frames returns
+`3840:2160:0:0`, and the bottom corners are clean at native resolution.
+
+The render is 24p and there is no 60p upscale of it, so `minterpolate`
+synthesises the frames in between, into a near-lossless 60p master every
+file below is encoded from. That pass is the slow one: about four minutes.
+The master was checked for what interpolation can do wrong — a duplicated
+frame where scene-change detection gives up, a spike where a motion vector
+goes astray — and has neither: 418 frames, no frame under 12% of the median
+frame-to-frame difference, no spike over 2.2× it. The 24→60 cadence leaves a
+mild 3-2-3-2 alternation in the size of each step (consecutive-step ratio
+p50 0.99, p95 1.35), which at five or six pixels of scroll a frame is below
+anything a scrub can show.
+
+### The ladder — four encodes, since 2026-09-16
+
+The hero used to play one 3200×1800 file, for everyone, from the start —
+which meant a visitor on an ordinary connection watched a still poster and a
+percentage for ten to forty seconds before the film would move, and a
+machine decoding H.264 in software got a seek that took two to five frames
+and a scrub that lagged the wheel. Both read as "it freezes". So there are
+four files now — three cut from one master on the morning of 2026-09-16,
+and the 4K top added that afternoon from a second master that differs only
+in leaving the render at its own size — and `ScrollHero` climbs them:
+
+| | file | size | GOP | crf | level | for |
+| --- | --- | --- | --- | --- | --- | --- |
+| bridge | `home-scroll-towers-720.mp4`, 1280×720 | 8.3 MB | 2 | 28 | 4.2 | on screen first, in seconds |
+| mid | `home-scroll-towers-1080.mp4`, 1920×1080 | 21.9 MB | 1 | 24 | 4.2 | the ceiling for a software decoder |
+| hq | `home-scroll-towers-3200.mp4`, 3200×1800 | 34.0 MB | 2 | 26 | 5.2 | hardware decoders that cannot seek 4K in time; the ceiling for a 1× screen up to ~2250 wide |
+| uhd | `home-scroll-towers-2160.mp4`, 3840×2160 | 42.5 MB | 2 | 26 | 5.2 | hardware decoders on a wide or dense screen — the render at its own size |
+
+The bridge is read in and counted ("Loading 42%"); the moment it is in, the
+cue says "Scroll to Discover" and the scrub works. The larger files are then
+fetched behind it, attached in a second `<video>` out of sight, and **timed
+on sixteen seeks** that follow the same route a scrub does (after two
+unscored warm-up seeks), at a moment when nothing has scrolled for a third
+of a second — probed *under* a scrub, a file reads slow for the wrong
+reason. It is promoted only if the median lands inside 24ms on the probe —
+a frame and a half there, which is a frame as shown; see *The bar* below —
+and the 95th percentile inside two frames (33ms); a file that misses is
+asked twice more, a couple of seconds apart, and only then dropped, the
+reader trying the next file down. The promotion itself is a same-frame opacity swap
+taken the frame both elements come to rest on the same picture — judged
+before that frame's seeks go out, so it lands within a few frames even
+mid-scrub — and nothing blinks; it never cross-fades, because a cross-fade
+between two copies of one frame at different sharpness is half a second of
+the picture going soft.
+
+Which of the larger files are tried, and in what order, is the browser's
+call (`MediaCapabilities.decodingInfo`, asked about each hardware tier the
+screen can use — `powerEfficient` is its word for a hardware decoder), and
+a screen that already has a third more source pixels than it can show
+stops the climb — a 1× laptop up to about 1280 wide gets the 1080p file
+and no more, and a 1× screen up to about 2250 wide stops at the 3200 file.
+After a failure the climb steps down from the file that *failed*: until the
+afternoon of 2026-09-16 it stepped down from the file *shown*, which after
+any failure was still the bridge, so the first file to miss its probe ended
+the climb and a machine that could not seek the 3200 file was left on 720p
+rather than handed the 1080p one. The component's comments are the long
+version.
+
+There is no phone file. The phone unmounts the hero altogether
+(`HomeHeroPhone`, since 401e977), so the `-mobile` encodes the earlier cuts
+carry were never played by anything; the towers cut's has been removed and
+the older ones are dead weight in `public/video/`.
+
+#### Why these four, measured
+
+Seek cost per file, off-keyframe, on a fully buffered blob, 80 seeks × 3
+rounds, median round. "scrub" follows a scrub's route (steps of 3–5 frames
+either way with two flick-sized jumps); "random" jumps across the clip.
+Hardware is Chrome 152 on an Apple M5 with the Metal backend; software is the
+same Chrome with `--disable-gpu`, which also rasterises in software and so
+is *pessimistic* — a real machine with a GPU but no H.264 decoder sits
+somewhere between the two columns.
+
+| file | hardware, scrub p50 / p95 | software, scrub p50 / p95 | software, random p50 |
+| --- | --- | --- | --- |
+| **3840×2160 GOP 2 crf 26 → uhd** | **19.7 / 22.5** | 46.4 / 55.7 † | — |
+| 3840×2160 GOP 2 crf 28 | 19.9 / 22.6 | — | — |
+| 3840×2160 GOP 2 crf 30 | 19.9 / 22.0 | — | — |
+| 3840×2160 GOP 1 crf 26 | 22.2 / 23.0 | — | — |
+| 3200×1800 GOP 2 crf 28 (was shipped) | 13.6 / 15.4 | 60.8 / 74.4 | 55.4 |
+| 3200×1800 GOP 1 crf 28 | 15.4 / 16.3 | 50.0 / 56.6 | 47.6 |
+| 3200×1800 GOP 2 crf 24 | 14.8 / 17.6 | 88.9 / 362 | 68.3 |
+| **3200×1800 GOP 2 crf 26 → hq** | **13.7 / 15.0** | 72.5 / 92.4 | 59.9 |
+| 2560×1440 GOP 2 crf 26 | 8.6 / 9.6 | 41.9 / 55.5 | 38.2 |
+| **1920×1080 GOP 1 crf 24 → mid** | **5.6 / 5.8** | **24.4 / 28.7** | 21.0 |
+| 1920×1080 GOP 2 crf 24 | 5.4 / 6.6 | 29.0 / 35.4 | 23.4 |
+| 1280×720 GOP 2 crf 27 | 2.6 / 3.2 | 17.3 / 21.9 | 14.1 |
+| 1280×720 GOP 2 crf 30 | 2.3 / 2.5 | 16.2 / 27.4 | 11.6 |
+
+† The software columns for the 4K file were taken in the afternoon
+session, where the 3200 file measured 31.7 / 38.6 against the 72.5 / 92.4
+in the row above — the software path moves with whatever else the machine
+is doing, so read the two against each other: 4K costs half again what
+3200 does there, and both are far outside the bar.
+
+What the table decided:
+
+- **crf 26 for the top file, not 24.** On hardware 26 seeks as fast as 28
+  and lands its p95 inside a frame; 24 pushes p95 past one and costs 40 MB.
+  SSIM against the master: 0.9738 at 28, 0.9768 at 26.
+- **All-intra only where it pays.** A keyframe every frame is *slower* on a
+  hardware decoder (15.4 vs 13.6 at 3200) and faster on a software one
+  (24.4 vs 29.0 at 1080p). So the 1080p file — the one software decoders
+  end up on — is all-intra and the others keep the two-frame GOP.
+- **3200 and 4K are for hardware only.** No 3200 encode gets under three
+  frames a seek in software, whatever the crf, and the 4K file is further
+  off again. 1080p is the ceiling there.
+- **The 4K file costs pixels, not bits.** Its four candidates were cut on
+  the afternoon of 2026-09-16 and timed against the shipped 3200 file in
+  the same session (13.8 / 15.4 that day, in line with the table). crf 26,
+  28 and 30 seek within 0.2ms of each other at 3840×2160 — 19.7 to 19.9
+  median — at 42.5, 34.7 and 28.6 MB, so the crf is chosen on quality
+  alone: SSIM against the 4K master 0.978 at 26, 0.974 at 28, 0.970 at 30.
+  All-intra is slower again (22.2), as it was at 3200. Across the ladder
+  the cost runs at about 2.4ms a megapixel on this decoder — 720p 2.6,
+  1080p 5.6, 3200 13.8, 4K 19.7 — which is why no 4K encode could get
+  inside the 16ms bar the probe used to hold, and why the bar moved.
+- **The bridge at crf 28** splits the two measured: 8.3 MB, three and a half
+  seconds at 20 Mbps.
+
+In the page itself, with the file in memory and the hero scrubbed through
+and back at three speeds, through the close and back, and after leaving the
+page for a screen and a half and returning (instant scrolling — see the
+note below), the hardware path shows **no stalls** at any speed: seeks p50
+8.4ms, p95 10.3, zero long animation frames, zero dropped frames, no
+degradation across cycles, no `load()` ever called. The 933ms "hold" a
+naive count reports on the way back up is the close, where the film is
+parked on its last frame by design.
+
+The 4K file, measured the same way on the afternoon of 2026-09-16 (the
+harness's continuous scrub at 24px a frame, three passes, a 900ms pause at
+each turn, at 1512×982 and 2×): the bridge is live at 387ms, the ladder
+climbs straight to the 4K file — the swap lands at 2.75s, at the end of the
+first pass, and no frame is ever without a picture — and the file then
+scrubs at seeks p50 14.3ms, p95 20.3, max 22.4, with **no stalls** of three
+frames or more. But it does not present a new picture on every tick: over
+184 scrubbing ticks the frame changed on 137, three in four, where the 3200
+file in the same harness (held to it by the ceiling, at 1.4× density)
+changed on every one of its 184, at p50 8.7 and p95 10.9. That is the
+price of 4K on this decoder, and it is what to look for on the page: the
+scrub stays attached to the wheel, and is a shade less liquid than at
+3200. The one-line way back, if it reads as lag, is `PROBE_P50_MS = 16`
+in `ScrollHero` — the 4K file is then never shown and the ladder stops at
+3200 as before. The way to have both is the design not yet built: the 4K
+file on top only while the reader is still, the 3200 one under the scrub,
+swapped on the same frame the way a promotion already is.
+
+#### The bar, and why it moved from 16ms to 24
+
+The probe times seeks one at a time — set `currentTime`, wait for
+`seeked`, set the next — and the scrub does not: it sets the next target
+every animation frame whether or not the last has landed, and the decoder
+pipelines them. So the same file on the same machine costs less under the
+scrub than on the probe, by a steady amount: the 3200 file measures 13.5ms
+a seek on the probe and 8.7 under the scrub, the 4K file 19.3 and 14.3 —
+six to seven tenths. A bar of a frame *on the probe* was therefore a bar
+of ten or eleven milliseconds as shown, and at 3200 that pessimism was
+free: the file passed with room. At 4K it is not: no hardware decoder
+measured here lands a 4K seek under 16 on the probe, and the one measured
+lands its median inside a frame under the scrub. The bar is now 24ms on
+the probe's own figure — a frame and a half there, a frame as shown at the
+median — and the odd slow seek still has to land inside two frames. What
+the bar now admits, knowingly, is a file whose slower seeks miss the odd
+tick — three pictures in four ticks at 4K on this machine, as measured
+above — where the old bar admitted only files that hit every one.
+
+#### Colour
+
+Every file in the chain — render, master, both earlier cuts — was untagged:
+`color_range`, `color_space`, `color_transfer` and `color_primaries` all
+unknown. Chrome assumes BT.709 limited for an untagged HD stream, and a
+canvas test confirmed it draws the untagged file and a BT.709-tagged one
+pixel for pixel the same; Safari and Firefox do not promise the same
+assumption. So every file now says so explicitly, twice — in the SPS VUI
+that x264 writes and in the container's `colr` atom that AVFoundation reads
+first — and the pixels are untouched (decoded frame 100 of the tagged 3200
+file is byte-identical to the untagged encode).
+
+The ffmpeg CLI in this build takes `-colorspace` and `-color_range` into the
+stream parameters but *not* `-color_primaries` or `-color_trc`, so with
+`+write_colr` the muxer writes a `colr` atom that says primaries and
+transfer are unspecified while x264's VUI says BT.709 — and ffprobe reports
+the atom. The seven payload bytes are patched in place after encoding; the
+atom's size does not change, so no offset in the file moves.
+
+The render itself is not flat, crushed or clipped: across the clip the
+darkest 10% of pixels sit at Y 19–44 and the brightest 10% at 141–198, with
+true black and white both present. No grade is applied — a grade on a
+client-supplied render is the client's decision.
+
+```sh
+SRC=assets/video-source/walkthrough-towers.mp4
+MI="minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1"
+
+# ~4 minutes. No crop: the render is already 16:9 edge to edge. The three
+# lower files are cut from this master, which resamples to 3200 before it
+# interpolates.
+ffmpeg -y -i $SRC -vf "scale=3200:1800:flags=lanczos,$MI" \
+  -an -c:v libx264 -preset fast -crf 8 -pix_fmt yuv420p /tmp/towers-60p-master.mp4
+# ~6 minutes. The 4K file is cut from this one, which leaves the render at
+# its own 3840×2160 — the two masters differ in nothing else, and the lower
+# three were not re-cut from it, since new bytes would need new names
+# (see the cache note in `lib/images.ts`) for no visible gain.
+ffmpeg -y -i $SRC -vf "$MI" \
+  -an -c:v libx264 -preset fast -crf 8 -pix_fmt yuv420p /tmp/towers-60p-master-2160.mp4
+
+# In zsh, write the option lists out rather than expanding a variable: an
+# unquoted $COL is one word there, and ffmpeg rejects it.
+ffmpeg -y -i /tmp/towers-60p-master.mp4 -vf "scale=1280:720:flags=lanczos,format=yuv420p" \
+  -an -c:v libx264 -preset slow -crf 28 -g 2 -keyint_min 2 -sc_threshold 0 -bf 0 \
+  -profile:v high -level 4.2 -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+  -x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709 \
+  -movflags +faststart+write_colr public/video/home-scroll-towers-720.mp4
+ffmpeg -y -i /tmp/towers-60p-master.mp4 -vf "scale=1920:1080:flags=lanczos,format=yuv420p" \
+  -an -c:v libx264 -preset slow -crf 24 -g 1 -keyint_min 1 -sc_threshold 0 -bf 0 \
+  -profile:v high -level 4.2 -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+  -x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709 \
+  -movflags +faststart+write_colr public/video/home-scroll-towers-1080.mp4
+ffmpeg -y -i /tmp/towers-60p-master.mp4 -vf format=yuv420p \
+  -an -c:v libx264 -preset slow -crf 26 -g 2 -keyint_min 2 -sc_threshold 0 -bf 0 \
+  -profile:v high -level 5.2 -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+  -x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709 \
+  -movflags +faststart+write_colr public/video/home-scroll-towers-3200.mp4
+ffmpeg -y -i /tmp/towers-60p-master-2160.mp4 -vf format=yuv420p \
+  -an -c:v libx264 -preset slow -crf 26 -g 2 -keyint_min 2 -sc_threshold 0 -bf 0 \
+  -profile:v high -level 5.2 -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+  -x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709 \
+  -movflags +faststart+write_colr public/video/home-scroll-towers-2160.mp4
+
+# The colr atom: primaries, transfer, matrix as u16 each, then a flags byte.
+python3 - <<'EOF'
+import pathlib
+for f in ("720", "1080", "3200", "2160"):
+    p = pathlib.Path(f"public/video/home-scroll-towers-{f}.mp4"); d = bytearray(p.read_bytes())
+    i = d.find(b"colrnclx"); assert i > 0 and d[i+8:i+15] == bytes.fromhex("00020002000100")
+    d[i+8:i+15] = bytes.fromhex("00010001000100"); p.write_bytes(d)
+EOF
+# Check both agree: the container, and the SPS on its own.
+ffprobe -v error -select_streams v:0 -show_entries stream=color_range,color_space,color_transfer,color_primaries -of csv=p=0 public/video/home-scroll-towers-3200.mp4
+ffmpeg -v error -i public/video/home-scroll-towers-3200.mp4 -c copy -bsf:v h264_mp4toannexb -f h264 - | \
+  ffprobe -v error -f h264 -show_entries stream=color_range,color_space,color_transfer,color_primaries -of csv=p=0 -i pipe:0
+
+# The poster is the render's own first frame, full size and uncompressed:
+# it is the home page's largest-contentful paint.
+ffmpeg -y -i $SRC -frames:v 1 -q:v 3 assets/images/home-scroll-towers-poster.jpg
+# The end still is the frame the scrub stops on — `duration - 0.05` in `ScrollHero`.
+ffmpeg -y -ss 6.9167 -i /tmp/towers-60p-master.mp4 -frames:v 1 \
+  -vf "scale=1280:720:flags=lanczos,gblur=sigma=6" -q:v 4 assets/images/home-scroll-towers-end.jpg
+```
+
+The poster registers against the clip's first frame at SSIM 0.893, where the
+same comparison with one 10px horizontal offset gives 0.508. The gap is the
+check; the absolute figure is low only because the poster comes off the
+uncompressed render and the clip is crf 26.
+
+#### Measuring it, and two ways the harness lies
+
+Time seeks on `seeked`, on a blob, after one `play()`/`pause()`, with the
+machine otherwise idle — a parallel encode inflates software-decode seeks
+several-fold. Scroll with `scrollTo({top, behavior: "instant"})`: the site
+sets `scroll-behavior: smooth`, so a plain `scrollTo(0, y)` is animated, and
+a "leave the hero and come back" step written that way never actually
+arrives — the hero then looks hidden and frozen for the whole return pass,
+which is an artefact. And close a headless Chrome's old page targets between
+runs: each keeps its blob and its animation loop, and after a few the next
+run hangs on `canplay`.
+
+### The first encode of this cut, 2026-09-15 to 2026-09-16
+
+One file, `home-scroll-towers-hq.mp4` (3200×1800, GOP 2, crf 28, 27.8 MB,
+untagged), played for everyone from the start, with a `-mobile` sibling
+nothing used. Removed with the ladder; its master is the same one the ladder
+is cut from.
+
+## The short cut — what the hero played from 2026-09-12 to 2026-09-15
+
+Its files are all still in `public/video/` and `assets/images/`, as the long
+cut's are. Going back to either is the two imports and the two paths in
+`lib/images.ts`, and nothing else.
+
+Between those dates the hero played `public/video/home-scroll-short-hq.mp4` rather
+than the two-clip build below: one render, `walkthrough-short.mp4`
+(3524×2352, 7.04s, 24p, a Kling 3.0 render), which runs from the towers in
+through a window to the living room and stops there — no foyer, and so no
+join. The long cut's files are all still in place (`home-scroll.mp4`,
+`home-scroll-mobile.mp4`, `home-scroll-poster.jpg`, `home-scroll-end.jpg`),
+and going back to it is a matter of pointing `lib/images.ts` at them again.
+
+It is built to the long cut's settings — the same centred 3504×1971 window,
+3200×1800 and 1920×1080, a keyframe every second frame, no B-frames, 60fps —
+except the CRF, which is 28 rather than 34. At 34 this clip visibly lost the
+balcony railings and window frames against its own master; at 1:1, 28 cannot
+be told from the master, and 26 bought nothing more for another 7 MB:
+
+| crf | size | SSIM vs master | median seek | p95 |
+| --- | ------- | ----- | ---- | ---- |
+| 34 | 16.7 MB | 0.948 | 14.0 | 14.9 |
+| 30 | 24.6 MB | 0.964 | 14.2 | 15.1 |
+| **28** | **30.1 MB** | **0.970** | **14.2** | **15.3** |
+| 26 | 37.1 MB | 0.975 | 14.3 | 15.2 |
+
+The seek table further down argues for a high CRF, but it was taken on the
+software decoder. On Chrome's hardware decoder (Apple M5, headless, 80
+off-keyframe seeks on a buffered file, median of three rounds) the CRF moves
+nothing: every candidate lands inside a 60fps frame. What 28 costs is the
+download the cue counts in — 30 MB, against 23.5 MB for the long cut.
+
+The files carry `-hq` rather than overwriting the crf 34 pair they replaced,
+because `/video/` is served with a 30-day `max-age` (`next.config.ts`) and a
+browser that had the old file would have kept showing it. The render is 24p and there is no 60p upscale of it, so
+`minterpolate` synthesises the frames in between, as it did for the 24p
+renders before the Topaz files arrived. It is done once, into a near-lossless
+60p master, and both files are encoded from that.
+
+The render carries a "KlingAI 3.0 4K" mark in its bottom-right corner. Its top
+edge is at row 2207 and the window ends at 2161, so the crop takes it off the
+clip and both stills. Any window reaching lower than that brings it back.
+
+```sh
+SRC=assets/video-source/walkthrough-short.mp4
+WIN="crop=3504:1971:10:190"
+MI="minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1"
+X264="-an -c:v libx264 -preset slow -crf 28 -g 2 -keyint_min 2 -sc_threshold 0 -bf 0 -profile:v high -movflags +faststart"
+
+ffmpeg -y -i $SRC -vf "$WIN,scale=3200:1800:flags=lanczos,$MI" \
+  -an -c:v libx264 -preset fast -crf 8 -pix_fmt yuv420p /tmp/short-60p-master.mp4
+ffmpeg -y -i /tmp/short-60p-master.mp4 -vf format=yuv420p \
+  $X264 -level 5.2 public/video/home-scroll-short-hq.mp4
+ffmpeg -y -i /tmp/short-60p-master.mp4 -vf "scale=1920:1080:flags=lanczos,format=yuv420p" \
+  $X264 -level 4.2 public/video/home-scroll-short-hq-mobile.mp4
+
+ffmpeg -y -i $SRC -frames:v 1 -vf "$WIN" -q:v 3 assets/images/home-scroll-short-poster.jpg
+# The end still is the frame the scrub stops on — `duration - 0.05` in
+# `ScrollHero` — taken off the master, which interpolation leaves 0.07s
+# shorter than the render.
+ffmpeg -y -ss 6.9167 -i /tmp/short-60p-master.mp4 -frames:v 1 \
+  -vf "scale=1280:720:flags=lanczos,gblur=sigma=6" -q:v 4 assets/images/home-scroll-short-end.jpg
+```
 
 ## Rebuilding the hero video
 

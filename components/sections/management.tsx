@@ -100,15 +100,15 @@ export function Management() {
         <SectionHeading
           eyebrow="Management"
           title="The people behind the name."
-          lead="Two generations of the same standard — the man who started the company in 1973, and the one running it now. Press a portrait to read about them."
+          lead="Two generations of the same standard, the man who started the company in 1973, and the one running it now. Press a portrait to read about them."
           align="center"
           className="mx-auto"
         />
 
-        {/* Two cards, and only ever two: a leadership pair reads as a pair.
-            They are held to a measure rather than stretched across the
-            container, because a portrait card wider than about 26rem stops
-            looking like a portrait. */}
+        {/* Two portraits, and only ever two: a leadership pair reads as a
+            pair. Circles, held to the same measure the cards were — about
+            26rem across at desktop — so they stay the size of a portrait
+            rather than growing into a pair of discs that fill the screen. */}
         <ul className="mx-auto mt-14 grid max-w-4xl gap-8 sm:grid-cols-2 sm:gap-10 lg:mt-20">
           {leaders.map((leader, index) => (
             <Reveal as="li" key={leader.name} delay={index * 90}>
@@ -123,7 +123,11 @@ export function Management() {
   );
 }
 
-/** The portrait on the page: a photograph, the name on it, and a way in. */
+/**
+ * The portrait on the page: a photograph in a circle, the name on it, and a
+ * way in. Pressing it opens the same note as it always has — only the shape
+ * of the thing pressed changed.
+ */
 function LeaderCard({
   leader,
   onOpen,
@@ -132,53 +136,92 @@ function LeaderCard({
   onOpen: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      aria-haspopup="dialog"
-      aria-label={`Read about ${leader.name}, ${leader.role}`}
-      className="group block w-full cursor-pointer overflow-hidden rounded-[1.5rem] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brass-500 sm:rounded-[2rem]"
-    >
-      <figure className="relative isolate aspect-[4/5] overflow-hidden rounded-[1.5rem] bg-navy-100 sm:rounded-[2rem]">
-        <Image
-          src={leader.photo}
-          alt=""
-          fill
-          sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 420px"
-          placeholder="blur"
-          style={{ objectPosition: leader.objectPosition }}
-          // The same slow settle every other photograph on the site has on
-          // hover. `alt=""` because the button already carries the name: read
-          // out, the portrait would otherwise announce it twice.
-          className="object-cover transition-transform duration-[1.4s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-        />
-        {/* The name sits on the photograph, so it needs a ground. Both
-            portraits are lit from above against a pale backdrop and go dark at
-            the shoulders, which is where this lands. */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/25 to-transparent"
-        />
-        <figcaption className="absolute inset-x-0 bottom-0 p-6 text-left sm:p-7">
-          <h3 className="font-display text-[1.25rem] leading-snug text-white sm:text-[1.4375rem]">
-            {leader.name}
-          </h3>
-          <p className="mt-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.24em] text-brass-400">
-            {leader.role}
-          </p>
-        </figcaption>
+    <div>
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-haspopup="dialog"
+        aria-label={`Read about ${leader.name}, ${leader.role}`}
+        className="group block w-full cursor-pointer overflow-hidden rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brass-500"
+      >
+        <figure className="relative isolate aspect-square overflow-hidden rounded-full bg-navy-100">
+          <Image
+            src={leader.photo}
+            alt=""
+            fill
+            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 420px"
+            placeholder="blur"
+            style={{ objectPosition: leader.objectPosition }}
+            // The same slow settle every other photograph on the site has on
+            // hover. `alt=""` because the button already carries the name: read
+            // out, the portrait would otherwise announce it twice.
+            className="object-cover zoom-hover group-hover:scale-[1.05] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+          />
+          {/* The name sits on the photograph, so it needs a ground. Both
+              portraits are lit from above against a pale backdrop and go dark at
+              the shoulders, which is where this lands. */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/25 to-transparent"
+          />
+          {/* Centred, and lifted off the foot: a circle is narrowest at the
+              bottom, so a line set in the corner the card had would be cut by
+              the curve. At 12% up the chord is still two-thirds of the
+              diameter, which is room for the longer of the two names on a
+              phone. The role used to sit under the name here and now stands
+              below the circle instead — see the note on it. */}
+          <figcaption className="absolute inset-x-0 bottom-[12%] px-[14%] text-center">
+            <h3 className="font-display text-[1.25rem] leading-snug text-white sm:text-[1.4375rem]">
+              {leader.name}
+            </h3>
+          </figcaption>
 
-        {/* The cue that the card opens. `aria-hidden` because it describes a
-            gesture, not content, and the button's own label already says what
-            pressing does. */}
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute right-5 top-5 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-[1.125rem] leading-none text-white backdrop-blur-sm transition-colors duration-300 group-hover:bg-white/25"
-        >
-          +
-        </span>
-      </figure>
-    </button>
+          {/* The cue that the card opens. `aria-hidden` because it describes a
+              gesture, not content, and the button's own label already says what
+              pressing does. */}
+          {/* Where the card had it in the corner, the circle has no corner:
+              22% in from the top and the right puts it on the diagonal, well
+              inside the curve. */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute right-[22%] top-[22%] inline-flex h-9 w-9 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-white/15 text-[1.125rem] leading-none text-white backdrop-blur-sm transition-colors duration-300 group-hover:bg-white/25"
+          >
+            +
+          </span>
+        </figure>
+      </button>
+
+      {/* The role, under the circle rather than inside it (2026-09-12).
+
+          It is outside the `<button>` on purpose. The button is round and
+          clips to its own circle, so a line inside it would be cut off at
+          the bottom; and its focus ring is `rounded-full`, which would have
+          to become a stadium around a caption to keep it. The role is still
+          announced with the portrait — the button's `aria-label` carries
+          it — so nothing is lost by it not being pressable. */}
+      {/* Manrope, tracked capitals, and a hairline under it — asked to read
+          cleaner and neater, and underlined, on 2026-09-16. Until then it
+          was Cinzel at 700, 22px to 32px, the one place the site set that
+          face bold; the bold cut is unloaded again with it (see
+          `app/layout.tsx`), so the page is back to one Cinzel file.
+
+          The setting is the open panel's own role label, grown: the same
+          face, weight and case it puts over the leader's name, so the two
+          places the role appears read as one thing. Sized to keep the
+          presence the bigger serif had — capitals at 17px to 21px stand
+          about as tall on the page as Cinzel's small capitals did at 22 to
+          32 — and tracked out, as capitals want to be.
+
+          The underline is `text-decoration` rather than a border on the
+          block: "Managing Director & CEO" breaks to two lines on a laptop,
+          and a decoration follows each line where a border would run once
+          under the pair. Brass, like every rule on the site, and set a
+          little below the baseline so it reads as a rule under the word
+          rather than a strike through its feet. */}
+      <p className="text-balance-head mt-6 text-center text-[clamp(1.0625rem,1.7vw,1.3125rem)] font-semibold uppercase leading-[1.5] tracking-[0.18em] text-navy-900 underline decoration-brass-500 decoration-[1.5px] underline-offset-[0.5em]">
+        {leader.role}
+      </p>
+    </div>
   );
 }
 
@@ -364,9 +407,27 @@ function LeaderDialog({
                     aria-hidden="true"
                     className="mt-7 block h-px w-12 bg-brass-500/70"
                   />
-                  <div className="mt-7 space-y-5 text-[1rem] leading-[1.8] text-navy-100/85 sm:text-[1.0625rem]">
+                  {/* The colour goes on the paragraphs, not on this wrapper.
+                      `globals.css` sets `p { color: var(--color-slate-body) }`
+                      as a base rule, and a rule that names the element beats
+                      a colour inherited from its parent however the parent is
+                      styled — so a `text-*` class out here is simply not
+                      applied to the text inside. It read as slate on navy,
+                      which is about 2.8:1 and the reason the bios looked
+                      washed out against the sheet.
+
+                      The weight is 500 rather than the 400 body copy is set
+                      at everywhere else, and that is the only lever left for
+                      how bright this reads: the colour is already #fff at
+                      full opacity, so "brighter" can only mean more ink.
+                      White on navy at 400 renders thin — the strokes are what
+                      carries the light, not the hue — and Manrope is loaded
+                      variable, so 500 costs nothing to reach for. */}
+                  <div className="mt-7 space-y-5 text-[1rem] leading-[1.8] sm:text-[1.0625rem]">
                     {leader.bio.map((para) => (
-                      <p key={para}>{para}</p>
+                      <p key={para} className="font-medium text-white">
+                        {para}
+                      </p>
                     ))}
                   </div>
                 </div>

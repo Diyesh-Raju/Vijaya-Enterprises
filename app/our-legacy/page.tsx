@@ -7,16 +7,13 @@ import { LegacyChapters, type Chapter } from "@/components/sections/legacy-chapt
 import { BrochureShelf } from "@/components/sections/brochure-shelf";
 import { Container, Section, SectionHeading, Eyebrow } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
-import { Frame } from "@/components/ui/media";
-import { Marquee } from "@/components/ui/marquee";
-import { VideoBackdrop } from "@/components/ui/video-backdrop";
-import { img, alt, video } from "@/lib/images";
-import { associatedOrganisations, sectors } from "@/lib/site";
+import Image from "next/image";
+import { img, alt } from "@/lib/images";
 
 export const metadata: Metadata = {
   title: "Our Legacy",
   description:
-    "Building trust since 1973. Five decades of residential, commercial, industrial and institutional construction in Karnataka — and the values that have not changed.",
+    "Building trust since 1973. Five decades of residential, commercial, industrial and institutional construction in Karnataka, and the values that have not changed.",
   alternates: { canonical: "/our-legacy" },
 };
 
@@ -50,7 +47,7 @@ const story: readonly Chapter[] = [
   {
     marker: "Growing",
     title: "Years of construction experience.",
-    body: "Growing through projects, partnerships and relationships — and through every change in materials, methods and technology the industry went through.",
+    body: "Growing through projects, partnerships and relationships, and through every change in materials, methods and technology the industry went through.",
     image: img.storySteelWelder,
     imageAlt: alt.storySteelWelder,
   },
@@ -93,9 +90,9 @@ export default function OurLegacyPage() {
     <>
       <LegacyHero />
 
-      <WhoWeBuildFor />
-
       <Management />
+
+      <WhoWeBuildFor />
 
       <LegacyChapters chapters={story} />
 
@@ -140,28 +137,90 @@ export default function OurLegacyPage() {
       </Section>
 
       {/* --------------------------------------------------------- Brochures */}
-      {/* The band the philosophy used to hold. It keeps its ground — the
-          same footage under the same gradient — and gives the row that
-          carried the vision and the mission over to the two brochures
-          Vijaya has printed. The anchor is what a reader comes back to
-          from a book. */}
+      {/* The band the philosophy used to hold. It gives the row that carried
+          the vision and the mission over to the two brochures Vijaya has
+          printed. The anchor is what a reader comes back to from a book.
+
+          The ground is one photograph, and the client's rule for it
+          (2026-09-12) is that it is never zoomed and never cropped: the
+          whole 16:9 frame is on the page or it is wrong. That rule, not the
+          layout, is what sizes this band, and it is worth understanding
+          before touching either.
+
+          `object-contain` is what enforces it — the picture fits inside the
+          section and stops, where `object-cover` would have filled the box by
+          cutting the frame down. The consequence is that the section can no
+          longer be any height it likes. At 16/9 of its own width the photo
+          fills it exactly, edge to edge; any taller and the picture is
+          width-limited and leaves ground showing above and below it.
+
+          So the band is squeezed towards that height rather than given it:
+          the paragraphs under the heading are gone, the heading is a size
+          down from the page's other two, and the padding is the smallest
+          that still reads as a band. What it cannot be squeezed past is the
+          shelf — 716px at a laptop, and the brochures are to keep their size
+          — which is why a 1440 laptop still runs about 50px over and shows a
+          little ground at each edge. The gradient is heaviest exactly there,
+          so those two edges read as part of the picture's own dusk rather
+          than as bars. A phone, where the photo is 219px tall and the two
+          books stacked are over a thousand, shows a lot of it: that is the
+          cost of not cropping, and cropping is the thing that was ruled out.
+
+          The video that used to run here is gone with it — a still is what
+          the rule leaves room for. */}
+      {/* The ground is rgb(33 36 54) — the mean of the photograph's own bottom
+          row of pixels, its tarmac — and the picture is hung from the top of
+          the band. Between them that is what makes the ground invisible: the
+          only ground that can ever show is below the frame, it is the colour
+          the frame ends on, and it is under the same overlay at that point, so
+          there is no seam to find.
+
+          Centring the picture instead puts half the ground above it, where the
+          frame ends on a pale lavender sky and a flat field of it reads as a
+          bar over the heading — on a phone, where the picture is 219px in a
+          band of 1385, it read as two flat fields with a strip of photograph
+          lost between them. Resample the bottom row if the picture is ever
+          changed. */}
       <section
         id="brochures"
-        className="relative isolate overflow-hidden bg-navy-950 scroll-mt-[var(--header-h)]"
+        className="relative isolate overflow-hidden bg-[rgb(33_36_54)] scroll-mt-[var(--header-h)]"
       >
-        <VideoBackdrop
-          poster={img.legacyPoster}
-          posterAlt={alt.legacyPoster}
-          srcDesktop={video.legacyDesktop}
-          srcMobile={video.legacyMobile}
-          kenBurns={false}
+        <Image
+          src={img.airportDusk}
+          alt={alt.airportDusk}
+          fill
+          // The photo is the width of the screen, and the file is 1600 wide,
+          // so every screen past that gets the file whole and nothing is
+          // gained by asking for more.
+          sizes="100vw"
+          className="object-contain object-top"
         />
+        {/* A gradient, not a wash. The old band sat under a flat 90-97% navy
+            because nothing under it had to be seen; this one has to stay a
+            photograph, so it is heavy only where the type is and lets the
+            middle — where the covers stand — through at a quarter.
+
+            The top stop is set by measurement, not taste. It carries the two
+            lines over the brightest part of the picture, and the eyebrow is
+            the binding one: 11px of brass, so it wants 4.5:1. Sampling the
+            composited ground behind each line at 1440 and taking the worst
+            line-sized patch under it:
+
+              top stop   eyebrow   heading
+              0.66         3.7       6.7    eyebrow fails
+              0.78         4.7       8.5    ← this one
+              0.82         5.2       9.4    darker than it needs to be
+
+            Anything under the covers is on the flat ground below the frame
+            and measures 8.8:1 or better, so the middle stop is free to be as
+            light as the picture wants. Re-measure if the picture, the stops
+            or the type over them change. */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-b from-navy-950/94 via-navy-950/90 to-navy-950/97"
+          className="absolute inset-0 bg-[linear-gradient(to_bottom,rgb(2_8_23/0.78)_0%,rgb(2_8_23/0.38)_26%,rgb(2_8_23/0.24)_54%,rgb(2_8_23/0.62)_100%)]"
         />
 
-        <Container className="relative py-24 sm:py-32 lg:py-40">
+        <Container className="relative py-14 sm:py-16 lg:py-20">
           <div className="mx-auto max-w-3xl text-center">
             <Reveal>
               <Eyebrow onNavy className="justify-center">
@@ -169,91 +228,15 @@ export default function OurLegacyPage() {
               </Eyebrow>
             </Reveal>
             <Reveal delay={80}>
-              <h2 className="text-balance-head mt-7 text-[clamp(2rem,5vw,3.75rem)] leading-[1.06] text-white">
+              <h2 className="text-balance-head mt-5 text-[clamp(1.75rem,3.4vw,2.75rem)] leading-[1.06] text-white">
                 What we have built, cover to cover.
               </h2>
-            </Reveal>
-            <Reveal delay={160}>
-              <p className="mt-8 text-[1.0625rem] leading-[1.8] text-navy-100/85">
-                Three of our residential projects were printed as books — the
-                master plan, the specifications, the floor plans unit by unit
-                and the roads that reach them, set out page by page the way
-                they went to press.
-              </p>
-            </Reveal>
-            <Reveal delay={240}>
-              <p className="mt-8 text-[1.0625rem] leading-[1.8] text-navy-100/85">
-                All three are here whole, with nothing left out. Open one and turn
-                it a spread at a time, or take the PDF with you.
-              </p>
             </Reveal>
           </div>
 
           <BrochureShelf />
         </Container>
       </section>
-
-      {/* ------------------------------------------------------- Credibility */}
-      <Section tone="navy" size="lg">
-        <Container>
-          <div className="grid gap-14 lg:grid-cols-12 lg:gap-20">
-            <div className="lg:col-span-6">
-              <Reveal>
-                <Eyebrow onNavy>Institutional Credibility</Eyebrow>
-              </Reveal>
-              <Reveal delay={80}>
-                <h2 className="text-balance-head mt-6 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.08] text-white">
-                  Trusted across generations.
-                </h2>
-              </Reveal>
-              <Reveal delay={160}>
-                <p className="mt-7 text-[1.0625rem] leading-[1.8] text-navy-100/80">
-                  Selected organisations associated with our construction
-                  experience include Bharat Electronics Ltd., HAL, Indian Oil, Union
-                  Bank, CSIR, BARC and National Aerospace Laboratories, alongside
-                  educational institutions, hospitals, temples and private
-                  industrial clients.
-                </p>
-              </Reveal>
-              <Reveal delay={240}>
-                <p className="mt-6 text-[0.875rem] leading-relaxed text-navy-100/55">
-                  Projects associated with these organisations reflect the range of
-                  our construction experience across sectors.
-                </p>
-              </Reveal>
-            </div>
-
-            <div className="lg:col-span-6">
-              <Reveal delay={120}>
-                <ul className="flex flex-wrap gap-2.5">
-                  {associatedOrganisations.map((organisation) => (
-                    <li
-                      key={organisation}
-                      className="rounded-full border border-white/15 bg-white/[0.04] px-5 py-2.5 text-[0.875rem] text-navy-100/85"
-                    >
-                      {organisation}
-                    </li>
-                  ))}
-                </ul>
-              </Reveal>
-              <Reveal delay={200}>
-                <Frame
-                  src={img.institutionCampus}
-                  alt={alt.institutionCampus}
-                  ratio="wide"
-                  sizes="(max-width: 1024px) 100vw, 45vw"
-                  rounded="rounded-[1.75rem] sm:rounded-[2.5rem]"
-                  className="mt-8"
-                />
-              </Reveal>
-            </div>
-          </div>
-        </Container>
-
-        <Reveal className="mt-16 border-y border-white/10 py-8 sm:mt-20">
-          <Marquee items={sectors} onNavy />
-        </Reveal>
-      </Section>
 
       <CtaBand
         eyebrow="Since 1973"

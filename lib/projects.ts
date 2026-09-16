@@ -9,7 +9,7 @@ import { img, alt } from "@/lib/images";
  * the card becomes a link to its own page at /residential/<slug>. Entries with
  * neither still list and still filter, they just show as a placeholder card.
  *
- * ⚠️ Entries 4-8 are placeholders. Replace them as each project's photography
+ * ⚠️ Entries 5-8 are placeholders. Replace them as each project's photography
  * and details come in — nothing else needs editing.
  */
 export type Project = {
@@ -22,7 +22,19 @@ export type Project = {
 
   /** Set once the project has real details. */
   slug?: string;
+  /**
+   * How the project reads on its own card — "Luxury Apartments", "Premium
+   * Residences". Prose, and deliberately not what anything filters on: three
+   * projects here are apartment developments and all three word it
+   * differently. `category` is the filterable half.
+   */
   projectType?: string;
+  /**
+   * The kind of development, in the words the home page's search panel
+   * offers. Matched against that panel's Project Type menu, so it has to be
+   * one of those strings exactly — see `tabs` in `find-residences.tsx`.
+   */
+  category?: "Apartment" | "Villa" | "Plotted Development";
   /** How the layouts read on the card, e.g. "2, 3 & 4 BHK". */
   layout?: string;
   devSize?: string;
@@ -61,6 +73,7 @@ export const projects: readonly Project[] = [
     name: "Hara Vijaya Heights",
     slug: "hara-vijaya-heights",
     projectType: "Premium Residences",
+    category: "Apartment",
     layout: "2, 3 & 4 BHK",
     devSize: "3.5 Acres",
     totalUnits: "242 Units",
@@ -99,6 +112,7 @@ export const projects: readonly Project[] = [
     name: "Vijaya Luxo",
     slug: "vijaya-luxo",
     projectType: "Luxury Apartments",
+    category: "Apartment",
     layout: "1, 2 & 3 BHK",
     devSize: "Single Block",
     totalUnits: "18 Units",
@@ -132,6 +146,7 @@ export const projects: readonly Project[] = [
     name: "Vijaya Aquagreen",
     slug: "vijaya-aquagreen",
     projectType: "Garden Apartments",
+    category: "Apartment",
     layout: "1 & 2 BHK",
     devSize: "2 Acres",
     totalUnits: "196 Units",
@@ -153,7 +168,42 @@ export const projects: readonly Project[] = [
     conceptAlt: alt.vijayaAquagreenRender,
     promoter: "Digvijaya Shelters LLP",
   },
-  { name: "Project 4", bhk: ["4 BHK"], locality: "Bengaluru", status: "Upcoming", possession: "One to three years" },
+  {
+    // Off the printed brochure (`lib/brochures.ts`, Volume IV): 2 & 3 BHK
+    // at Singasandra, off Hosur Road at Begur, BBMP approved, 53% of the
+    // site open space and landscaping, and no common walls between homes.
+    //
+    // ⚠️ The brochure prints no unit count. Twenty flats to a floor are
+    // drawn on the master plan — ten 3 BHK along one side of the drive and
+    // ten 2 BHK along the other — and that per-floor count is what the card
+    // carries; the render shows four residential floors over the ground
+    // but does not state it, so no total is claimed. `status` and
+    // `possession` are not on the brochure either, which went to press
+    // before the build — confirm both.
+    name: "Vijaya Springwoods",
+    slug: "vijaya-springwoods",
+    projectType: "Independent-Style Apartments",
+    category: "Apartment",
+    layout: "2 & 3 BHK",
+    devSize: "53% Open Space",
+    totalUnits: "20 a Floor",
+    conceptStats: [
+      { value: "2 & 3", label: "BHK" },
+      { value: "53%", label: "Open Space" },
+      { value: "1,040+", label: "Sq ft" },
+      { value: "BBMP", label: "Approved" },
+    ],
+    bhk: ["2 BHK", "3 BHK"],
+    locality: "Singasandra",
+    status: "Completed",
+    possession: "Ready to move",
+    image: img.vijayaSpringwoodsRender,
+    imageAlt: alt.vijayaSpringwoodsRender,
+    heroImage: img.vijayaSpringwoodsRender,
+    heroAlt: alt.vijayaSpringwoodsRender,
+    conceptImage: img.vijayaSpringwoodsCorner,
+    conceptAlt: alt.vijayaSpringwoodsCorner,
+  },
   { name: "Project 5", bhk: ["3 BHK"], locality: "Bengaluru", status: "Completed", possession: "Ready to move" },
   { name: "Project 6", bhk: ["2 BHK"], locality: "Bengaluru", status: "Ongoing", possession: "Within a year" },
   { name: "Project 7", bhk: ["3 BHK"], locality: "Bengaluru", status: "Ongoing", possession: "Within a year" },

@@ -70,9 +70,24 @@ export function HomeHero() {
             className="animate-rise mt-10 flex flex-wrap gap-3"
             style={{ animationDelay: "560ms" }}
           >
-            <Button href="/residential" variant="light" size="lg" withArrow>
-              Find Your Home
-            </Button>
+            {/* Find Your Home is off on a phone (2026-09-14). This hero opens
+                the Civil Contracts page, and a reader who has arrived at a
+                page about construction contracts is not there to be sent to
+                the flats — on a laptop it costs a button at the end of a row
+                that has the room for it, but on a phone the two stack and it
+                takes the top one, which is the one that gets pressed.
+
+                Hidden by a wrapper rather than by `desk:hidden` on the button
+                itself. `cn` is a plain join, so `hidden` and the `inline-flex`
+                the button carries in its base would both land and the winner
+                would be whichever Tailwind happened to emit last. `contents`
+                on the wrapper puts the button back as a direct child of this
+                flex row at `desk:`, so the gap is untouched. */}
+            <span className="hidden desk:contents">
+              <Button href="/residential" variant="light" size="lg" withArrow>
+                Find Your Home
+              </Button>
+            </span>
             <Button href="/contact" variant="ghost" size="lg">
               Discuss Your Project
             </Button>

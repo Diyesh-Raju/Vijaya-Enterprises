@@ -31,6 +31,12 @@ import aquaType5 from "@/assets/floor-plans/vijaya-aquagreen/type-5.jpg";
 import aquaType6 from "@/assets/floor-plans/vijaya-aquagreen/type-6.jpg";
 import aquaType7 from "@/assets/floor-plans/vijaya-aquagreen/type-7.jpg";
 
+/* Vijaya Springwoods: the two typical plans off the brochure's floor-plan
+   page, cut from a 4800px render of the scan; the north point on the page
+   comes along with the 2 BHK. */
+import springTwoBhk from "@/assets/floor-plans/vijaya-springwoods/2bhk.jpg";
+import springThreeBhk from "@/assets/floor-plans/vijaya-springwoods/3bhk.jpg";
+
 /**
  * Unit plans, grouped the way the Floor Plans page lists them.
  *
@@ -475,9 +481,58 @@ const vijayaAquagreen: readonly FloorPlanGroup[] = [
   },
 ];
 
+/**
+ * Vijaya Springwoods. One typical plan per layout, drawn with a north point
+ * and every room dimensioned; the brochure states no facing, so `facing`
+ * says what the drawing is instead.
+ */
+const vijayaSpringwoods: readonly FloorPlanGroup[] = [
+  {
+    title: "2 BHK",
+    residence: "2 Bedroom Residence",
+    types: [
+      {
+        label: "Typical",
+        facing: "Typical floor plan · No common walls",
+        area: "1,040 sq ft",
+        features: [
+          { icon: "bed", label: "2 Bedroom, each with Dress" },
+          { icon: "bath", label: "2 Toilets" },
+          { icon: "living", label: "Living & Dining, 21' 2\" × 11'" },
+          { icon: "kitchen", label: "Kitchen, Utility & Foyer" },
+          { icon: "balcony", label: "Balcony" },
+        ],
+        image: springTwoBhk,
+        alt: "2 BHK typical plan of 1,040 square feet: foyer, kitchen and utility at the top, a living and dining room of 21 by 11 feet, master bedroom and bedroom each with a dress area and toilet, and a balcony off the master bedroom",
+      },
+    ],
+  },
+  {
+    title: "3 BHK",
+    residence: "3 Bedroom Residence",
+    types: [
+      {
+        label: "Typical",
+        facing: "Typical floor plan · No common walls",
+        area: "1,370 sq ft",
+        features: [
+          { icon: "bed", label: "3 Bedroom" },
+          { icon: "bath", label: "3 Toilets" },
+          { icon: "living", label: "Living & Dining, 11' × 24' 3\"" },
+          { icon: "kitchen", label: "Kitchen, Utility & Foyer" },
+          { icon: "balcony", label: "Two Sitouts" },
+        ],
+        image: springThreeBhk,
+        alt: "3 BHK typical plan of 1,370 square feet: utility, kitchen and two sitouts along the top, a living and dining room of 11 by 24 feet, master bedroom and two bedrooms, three toilets and a foyer by the duct",
+      },
+    ],
+  },
+];
+
 /** Keyed by project slug, so a project page can look up its own plans. */
 export const floorPlansBySlug: Record<string, readonly FloorPlanGroup[]> = {
   "hara-vijaya-heights": haraVijayaHeights,
   "vijaya-luxo": vijayaLuxo,
   "vijaya-aquagreen": vijayaAquagreen,
+  "vijaya-springwoods": vijayaSpringwoods,
 };

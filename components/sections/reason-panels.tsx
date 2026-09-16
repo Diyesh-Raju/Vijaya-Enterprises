@@ -32,7 +32,29 @@ export type ReasonPanel = {
    * Unset, the closed panel keeps `focus`.
    */
   focusClosed?: string;
+  /**
+   * Show the whole picture rather than a crop of it, for a panel carrying a
+   * banner instead of a photograph. A photograph can be cropped to any shape
+   * and still be a photograph; a banner cannot — the crop that fills this
+   * panel took a third off the width of this one and cut its own words in
+   * half.
+   *
+   * Contained, the picture is held in the top of the panel with a strip left
+   * under it for the copy, and `ground` is what the panel is filled with so
+   * that strip continues the banner rather than sitting against navy. Sample
+   * it off the file's own edge; for the 50-years banner the four edges average
+   * rgb(218 202 189).
+   */
+  whole?: boolean;
+  /** The panel's fill under a `whole` picture. Sampled off the file's edge. */
+  ground?: string;
 };
+
+/* The strip left under a `whole` picture for the copy to sit on. Big enough
+   for the longest of the six titles over two lines, its rule, and two lines of
+   body — measured, not guessed, and the picture takes whatever is left. It is
+   what makes this fit at any window height instead of only at a tall one. */
+const COPY_STRIP = "bottom-[11.5rem] lg:bottom-[14rem]";
 
 /**
  * The reasons to partner with us, as one photographic accordion: one panel
@@ -90,7 +112,10 @@ export function ReasonPanels({ items }: { items: readonly ReasonPanel[] }) {
         "flex flex-col gap-3",
         // From `lg` the row is measured against the window, so the open panel
         // carries the screen. Capped, or it runs away on a tall display.
-        "lg:h-[min(78svh,44rem)] lg:flex-row",
+        // Trimmed from 78svh/44rem on 2026-09-12: the open panel was as tall
+        // as it was wide, and the banner on the first one is 3:2, so showing
+        // it whole in a square left it small in a lot of empty ground.
+        "lg:h-[min(74svh,42rem)] lg:flex-row",
       )}
     >
       {items.map((item, index) => {
@@ -100,6 +125,7 @@ export function ReasonPanels({ items }: { items: readonly ReasonPanel[] }) {
         return (
           <li
             key={item.title}
+            style={item.ground ? { backgroundColor: item.ground } : undefined}
             className={cn(
               "group relative isolate overflow-hidden rounded-[1.25rem] bg-navy-900 sm:rounded-[1.5rem]",
               "transition-[flex-grow,height] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
@@ -110,6 +136,16 @@ export function ReasonPanels({ items }: { items: readonly ReasonPanel[] }) {
                 : "h-[5.5rem] lg:h-auto lg:flex-[1]",
             )}
           >
+            {/* A `whole` picture is held in the top of the panel with the
+                copy strip left clear under it; everything else fills the
+                panel as before. The wrapper is what `fill` measures itself
+                against, so it is the wrapper that moves, not the picture. */}
+            <div
+              className={cn(
+                "absolute inset-x-0 top-0",
+                item.whole ? COPY_STRIP : "bottom-0",
+              )}
+            >
             <Image
               src={item.image}
               alt={item.imageAlt}
@@ -126,12 +162,26 @@ export function ReasonPanels({ items }: { items: readonly ReasonPanel[] }) {
                   undefined,
               }}
               className={cn(
-                "object-cover group-hover:scale-[1.04] motion-reduce:group-hover:scale-100",
-                "transition-[transform,object-position] duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                item.whole ? "object-contain" : "object-cover",
+                // Nothing is cropped on a `whole` picture, so there is nothing
+                // for a hover zoom to do but cut its edges off.
+                !item.whole &&
+                  "group-hover:scale-[1.04] motion-reduce:group-hover:scale-100",
+                // Longhands, because the pan and the zoom share this element
+                // and want different paces: `object-position` moves with the
+                // panel, `scale` at the site's one zoom pace — the list
+                // `zoom-hover` would set has no room for the pan. (This was
+                // `transition-[transform,object-position]`, which never
+                // covered `scale` at all, so the zoom snapped.)
+                "[transition-property:object-position,scale]",
+                "[transition-timing-function:var(--ease-out-soft),var(--ease-reveal)]",
                 // The pan has to finish with the panel, not 300ms after it.
-                item.focusClosed && "duration-[900ms]",
+                item.focusClosed
+                  ? "[transition-duration:900ms,var(--zoom-duration)]"
+                  : "[transition-duration:1200ms,var(--zoom-duration)]",
               )}
             />
+            </div>
 
             {item.imageClosed && (
               <Image
@@ -222,7 +272,7 @@ export function ReasonPanels({ items }: { items: readonly ReasonPanel[] }) {
               <div className="w-full lg:w-[21rem] xl:w-[30rem]">
                 <p className="font-display text-[0.6875rem] font-semibold uppercase tabular-nums tracking-[0.35em] text-brass-400">
                   {String(index + 1).padStart(2, "0")}
-                  <span className="mx-2 text-brass-400/60">—</span>
+                  <span className="mx-2 text-brass-400/60">/</span>
                   {total}
                 </p>
 

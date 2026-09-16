@@ -31,10 +31,14 @@ const csp = [
   // Every image is served from this origin: the photographs are static
   // imports through the optimiser, and the client logos are in `public/`.
   "img-src 'self' data: blob:",
+  // Every video is played from its own URL. (`blob:` was here for the home
+  // hero while it played a video read into memory; it draws frames now.)
   "media-src 'self'",
   "font-src 'self' data:",
   `connect-src 'self'${isDev ? " ws: wss: http://localhost:* http://127.0.0.1:*" : ""}`,
   "manifest-src 'self'",
+  // `blob:` for the home hero's frame decoders, which are built from a
+  // string in `lib/frame-sequence.ts` rather than shipped as a file.
   "worker-src 'self' blob:",
   // Google Maps embeds are framed on the project location pages. This is the
   // only third-party frame the site allows; everything else stays blocked.
@@ -132,6 +136,19 @@ const nextConfig: NextConfig = {
           {
             key: "Cache-Control",
             value: "public, max-age=2592000, stale-while-revalidate=86400",
+          },
+        ],
+      },
+      {
+        // The home hero's frames. Their directory carries a version
+        // (`home-towers-v1`), bumped whenever a frame's bytes change, so a
+        // path never changes what it serves and can be cached for good: a
+        // second visit loads all 209 from the browser's cache.
+        source: "/frames/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
         ],
       },

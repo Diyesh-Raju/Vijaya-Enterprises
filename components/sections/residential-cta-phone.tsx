@@ -7,8 +7,14 @@ import { Container, Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 
 /**
- * How /residential closes on a phone: the two buttons the project pages
- * close on, and nothing else.
+ * How /residential closes: the two buttons the project pages close on.
+ *
+ * Both widths get them now (2026-09-16). On a phone they are the whole
+ * ending; on a laptop they come after `ApertureCta`, which is five screens
+ * of scrubbed photography that finishes on a heading and then hands the
+ * reader nothing to press. The aperture is the argument and these are the
+ * answer to it, so the page ends the way every project page ends rather
+ * than on a closing line with no door in it.
  *
  * What stood here was `ApertureCta` — five screens of scrubbed track that
  * closes a photograph to a slit, turns it, and lets two more wipe in behind
@@ -26,10 +32,11 @@ import { Reveal } from "@/components/ui/reveal";
  */
 
 /**
- * Where `ApertureCta` takes over. Laptop-shaped rather than merely wide,
- * since a phone on its side is past the 768 that `md:` asks for. Identical
- * to the query in `aperture-cta.tsx` and to the `desk:` variant in
- * `globals.css`.
+ * Laptop-shaped rather than merely wide, since a phone on its side is past
+ * the 768 that `md:` asks for. Identical to the query in `aperture-cta.tsx`
+ * and to the `desk:` variant in `globals.css`. Both widths render the same
+ * pair; the query is only here so that the buttons wait for the width to be
+ * known rather than mounting twice.
  */
 const WIDE_QUERY = "(min-width: 48rem) and (min-height: 500px)";
 
@@ -49,25 +56,19 @@ export function ResidentialCtaPhone() {
     () => "ssr" as const,
   );
 
-  // Off a laptop entirely once the width is known, so it carries neither a
-  // second copy of the page's call to action nor `BookVisitButton`'s WebGL
-  // canvas. `desk:hidden` below covers the frame before that.
-  if (width === "wide") return null;
+  // Nothing until the width is known. `BookVisitButton` starts a WebGL
+  // context when it mounts, and one of those should be opened once, for the
+  // width that is actually being read — this is the last section on the
+  // page, so nothing above it moves when the buttons arrive.
+  if (width === "ssr") return null;
 
   return (
-    <Section tone="white" size="lg" className="desk:hidden">
+    <Section tone="white" size="lg">
       <Container>
-        {/* The buttons themselves wait for the width rather than riding out
-            on the server's markup. `BookVisitButton` starts a WebGL context
-            when it mounts, and a laptop should never pay for one it is
-            about to throw away — this is the last section on the page, so
-            nothing above it moves when they arrive. */}
-        {width === "phone" && (
-          <Reveal className="mx-auto flex max-w-3xl flex-col items-center gap-6">
-            <BookVisitButton />
-            <ButtonWithIcon href="/contact">Contact Us</ButtonWithIcon>
-          </Reveal>
-        )}
+        <Reveal className="mx-auto flex max-w-3xl flex-col items-center gap-6">
+          <BookVisitButton />
+          <ButtonWithIcon href="/contact">Contact Us</ButtonWithIcon>
+        </Reveal>
       </Container>
     </Section>
   );

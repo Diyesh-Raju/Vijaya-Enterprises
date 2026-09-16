@@ -1,9 +1,12 @@
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 export type CardStat = {
-  /** The figure itself, already formatted — "+10,00,000", "1,200". */
-  value: string;
+  /**
+   * The figure itself — already formatted, "+10,00,000", or a `Counter` that
+   * counts up to it.
+   */
+  value: ReactNode;
   /** What the figure counts. Omit on a single stat the title already names. */
   label?: string;
 };
@@ -45,6 +48,13 @@ export function GradientCard({
     <div
       className={cn(
         "relative isolate overflow-hidden rounded-[1.5rem] bg-navy-1000 p-6 ring-1 ring-white/10 sm:rounded-[1.75rem] sm:p-8",
+        // The hairline warms under the pointer, and that is the whole
+        // interaction. No lift: a lift is the site's way of saying a card
+        // leads somewhere — `ProjectCard` and `PearlCard` both rise, and both
+        // are links — and these three are figures, with nothing to open.
+        // Brass rather than a brighter white, so it reads as the card's own
+        // gradient catching rather than as a border being switched on.
+        "transition-[box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:ring-brass-300/30",
         className,
       )}
     >
@@ -73,9 +83,9 @@ export function GradientCard({
             </p>
           ) : (
             <dl className="mt-4 divide-y divide-white/10 border-t border-white/10">
-              {stats.map((stat) => (
+              {stats.map((stat, index) => (
                 <div
-                  key={stat.label ?? stat.value}
+                  key={stat.label ?? index}
                   className="flex items-baseline gap-4 py-2.5"
                 >
                   <dd className="order-first w-[4.25rem] shrink-0 font-display text-[1.375rem] leading-none text-white sm:w-[4.75rem] sm:text-[1.5rem]">

@@ -30,7 +30,7 @@ const TITLE_BLOCK = [
   { label: "Drawn by", value: site.name },
   { label: "First issue", value: String(site.founded) },
   { label: "Sheet", value: "404" },
-  { label: "Revision", value: "—" },
+  { label: "Revision", value: "Nil" },
   { label: "Status", value: "Not built" },
 ] as const;
 
@@ -75,7 +75,7 @@ export default function NotFound() {
             className="nf-rise text-balance-head mt-9 text-[clamp(1.875rem,3.6vw,2.875rem)] leading-[1.1] text-white"
             style={rise(500)}
           >
-            <span className="sr-only">404 — </span>
+            <span className="sr-only">404, </span>
             This page was never built.
           </h1>
 
@@ -83,7 +83,7 @@ export default function NotFound() {
             className="nf-rise mx-auto mt-6 max-w-xl text-[1.0625rem] leading-[1.75] text-navy-100/85"
             style={rise(650)}
           >
-            The address you followed isn&rsquo;t in our drawings — moved,
+            The address you followed isn&rsquo;t in our drawings, moved,
             perhaps, or never planned at all. Everything we <em>have</em> built
             since {site.founded} is still exactly where it should be.
           </p>

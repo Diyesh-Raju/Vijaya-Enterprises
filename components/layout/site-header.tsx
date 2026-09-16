@@ -18,29 +18,28 @@ const SCROLL_THRESHOLD = 24;
  * that opens on a pale section — there the lockup and the word "Menu" would
  * be white on near-white. These get the frosted bar from the first pixel.
  *
- * The home page is on the list because its walkthrough now starts *below*
- * the bar rather than running behind it: there is white paper up there, not
- * film, so a transparent bar would leave the lockup on nothing.
+ * The home page is not on it. Its walkthrough runs up behind the bar and
+ * fills the screen (since 2026-09-16 — it used to start below the bar, with
+ * white paper above it, and was on this list for that), and so does the
+ * phone's band of photographs. Both widths want the transparent bar at the
+ * top, so the one server-rendered state is right for both and nothing flips
+ * after hydration.
  *
- * That is true of the walkthrough, and only of the walkthrough. A phone gets
- * `HomeHeroPhone` instead, and that band now runs up behind the bar with a
- * photograph in it — so at that width the home page wants the transparent
- * state after all. It cannot be taken off this list to get it: the list is
- * about the laptop as much as the phone, and dropping "/" would leave the
- * walkthrough's white paper under a white lockup.
- *
- * So the phone's half of it is done in CSS rather than here — see
- * `.header--phone-hero` below and in `globals.css`. The reason it is not a
- * width check in this component is first paint: the server cannot know the
- * window, so a `useSyncExternalStore` would have to pick one branch to
- * render and the other width would see the bar flip after hydration.
+ * What is different about the walkthrough is how *long* it wants it. Every
+ * other hero is one screen tall and the bar frosts 24px in, as the page
+ * starts to rise over it; the walkthrough is pinned for nearly four screens
+ * of scroll, and a frosted white bar sitting across the top of a full-screen
+ * film for all of them would be the bar un-blending itself. So while the
+ * film is pinned, `ScrollHero` sets `data-hero-film` on `<html>`, and CSS
+ * keyed on that (`globals.css`, "the bar over the film") holds the bar
+ * transparent whatever `scrolled` says here. It comes off the frame the
+ * panel unpins, and the frosting arrives on the transition already declared.
  */
 /*
  * An entry ending in a slash covers everything under it — the brochure
  * readers are one page per book and all of them open on paper.
  */
 const LIGHT_FROM_TOP = [
-  "/",
   "/faq",
   "/privacy-policy",
   "/cookie-policy",
@@ -162,18 +161,6 @@ export function SiteHeader() {
   const solid = scrolled || opensLight(pathname);
   const light = !solid && !open;
 
-  /**
-   * The home page at the top of itself, where a phone — and only a phone —
-   * has a photograph behind the bar rather than under it.
-   *
-   * Rendered at every width and honoured at one: the media query on
-   * `.header--phone-hero` is what confines it, so the markup the server
-   * sends is right for both and neither flips after hydration. It comes off
-   * the moment the page scrolls, which is what hands the bar back to its
-   * ordinary frosted state.
-   */
-  const phoneHero = pathname === "/" && !scrolled && !open;
-
   return (
     <>
       <header
@@ -183,23 +170,25 @@ export function SiteHeader() {
         // can ask of a GPU — and it is invisible, because the background
         // colour is fading in over the same half second.
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          // `site-header` is a hook, not styling: it is what the walkthrough's
+          // `data-hero-film` rules in `globals.css` reach the bar by.
+          "site-header fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
           solid && !open
             ? "glass border-line shadow-soft"
             : "border-transparent bg-transparent",
-          phoneHero && "header--phone-hero",
         )}
       >
         <div className="container-page">
           {/* The row takes its height from `--header-h` less the hairline, so
-              the bar is exactly `--header-h` tall and whatever starts below
-              it — the home page's hero — cannot drift out of register with
-              it at any breakpoint or root font size. */}
+              the bar is exactly `--header-h` tall and whatever is sized
+              against it — the handshake panel, the scrim across the top of
+              the two home heroes — cannot drift out of register with it at
+              any breakpoint or root font size. */}
           <div className="flex h-[calc(var(--header-h)-1px)] items-center justify-between gap-4">
             {/* Left — the lockup, unchanged, and it still goes home */}
             <Link
               href="/"
-              aria-label="Vijaya Enterprises — home"
+              aria-label="Vijaya Enterprises, home"
               className="inline-flex shrink-0 rounded-2xl"
             >
               {/* Keyed to `scrolled` rather than `light`: while the panel is
@@ -216,8 +205,8 @@ export function SiteHeader() {
               aria-expanded={open}
               aria-controls="site-menu"
               className={cn(
-                // `header__menu` is the hook the phone-hero state colours
-                // through — see the note on `phoneHero` above.
+                // `header__menu` is the hook the over-the-film rules colour
+                // through — see `LIGHT_FROM_TOP` above.
                 "header__menu group inline-flex shrink-0 items-center gap-3 rounded-full transition-colors duration-300 sm:gap-4",
                 light ? "text-white" : "text-navy-900",
               )}

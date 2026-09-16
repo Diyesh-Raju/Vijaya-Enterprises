@@ -45,11 +45,11 @@ export async function submitEnquiry(
   if (!gate.ok) {
     switch (gate.reason) {
       case "honeypot":
-        return { status: "success", message: "Thank you — we will be in touch." };
+        return { status: "success", message: "Thank you, we will be in touch." };
       case "too-fast":
         return {
           status: "error",
-          message: "That was too quick — please try again.",
+          message: "That was too quick, please try again.",
           values,
         };
       case "rate-limited":
@@ -90,7 +90,7 @@ export async function submitEnquiry(
     email: values.email,
     phone: values.phone,
     source: LEAD_SOURCE,
-    subject: `Website enquiry — ${values.name} (${projectType})`,
+    subject: `Website enquiry, ${values.name} (${projectType})`,
     details: [{ key: "projectType", label: "About", value: projectType }],
     message: values.message,
     receivedAt: new Date().toISOString(),
@@ -113,7 +113,7 @@ export async function submitEnquiry(
         return {
           status: "success",
           message:
-            "Thank you. (Development mode: the enquiry was logged to the server console — no delivery channel is configured yet.)",
+            "Thank you. (Development mode: the enquiry was logged to the server console, no delivery channel is configured yet.)",
         };
       }
 

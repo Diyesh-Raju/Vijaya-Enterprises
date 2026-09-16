@@ -20,7 +20,7 @@ export async function generateMetadata({
   if (!project) return {};
 
   return {
-    title: `Amenities — ${project.name}`,
+    title: `Amenities, ${project.name}`,
     description: amenitiesIntroBySlug[project.slug],
     alternates: { canonical: `/residential/${project.slug}/amenities` },
   };

@@ -33,7 +33,7 @@ export default async function ProjectLayout({
             src={project.heroImage}
             alt={project.heroAlt ?? ""}
             fill
-            priority
+            preload
             sizes="100vw"
             placeholder="blur"
             className="object-cover"

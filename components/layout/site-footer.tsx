@@ -2,9 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "./logo";
 import { Reveal } from "@/components/ui/reveal";
-import { socialIcons } from "@/components/ui/social-icons";
 import { img } from "@/lib/images";
-import { navLinks, contact, offices, site, social } from "@/lib/site";
+import { navLinks, contact, offices, site } from "@/lib/site";
 
 /**
  * The footer: the lockup on the left, the pages set large down the middle,
@@ -103,8 +102,8 @@ export function SiteFooter() {
         className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(18,12,8,0.66)_0%,rgba(18,12,8,0.58)_42%,rgba(18,12,8,0.76)_100%)]"
       />
 
-      <div className="container-page pb-20 pt-[4.5rem] sm:pb-24 sm:pt-20 lg:pb-28 lg:pt-24">
-        <div className="grid gap-14 lg:grid-cols-12 lg:gap-10">
+      <div className="container-page pb-12 pt-12 sm:pb-24 sm:pt-20 lg:pb-28 lg:pt-24">
+        <div className="grid gap-9 sm:gap-14 lg:grid-cols-12 lg:gap-10">
           {/* ------------------------------------------------------ Brand */}
           <Reveal className="lg:col-span-4">
             {/* Dropped a little below the line the other two columns start
@@ -113,38 +112,15 @@ export function SiteFooter() {
                 high rather than aligned. */}
             <Link
               href="/"
-              aria-label="Vijaya Enterprises — home"
-              className="mt-3 inline-flex rounded-2xl sm:mt-5 lg:mt-7"
+              aria-label="Vijaya Enterprises, home"
+              className="inline-flex rounded-2xl sm:mt-5 lg:mt-7"
             >
-              <Logo reversed className="h-20 sm:h-24 lg:h-28" />
+              <Logo reversed className="h-16 sm:h-24 lg:h-28" />
             </Link>
 
-            {/* Marks only, no names: four known glyphs in a row read faster
-                than four words, and the label is there for a screen reader.
-                Reads off `site.social` — an account we do not have is an
-                entry that is not in the list. */}
-            {social.length > 0 && (
-              <ul className="mt-7 flex items-center gap-3">
-                {social.map(({ label, href }) => {
-                  const Icon = socialIcons[label];
-                  if (!Icon) return null;
-
-                  return (
-                    <li key={label}>
-                      <a
-                        href={href}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        aria-label={`${site.name} on ${label}`}
-                        className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition-[background-color,border-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/10"
-                      >
-                        <Icon className="h-[1.125rem] w-[1.125rem]" />
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+            {/* A row of social marks used to stand here. Vijaya has no
+                social media accounts, so there is nothing for it to link
+                to — see the note in `lib/site.ts`. */}
           </Reveal>
 
           {/* ------------------------------------------------------ Pages */}
@@ -155,7 +131,7 @@ export function SiteFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="inline-block font-sans text-[clamp(1.75rem,3vw,2.75rem)] font-semibold leading-[1.3] tracking-[-0.02em] text-white transition-colors duration-300 hover:text-brass-300"
+                      className="inline-block font-sans text-[clamp(1.5rem,3vw,2.75rem)] font-semibold leading-[1.3] tracking-[-0.02em] text-white transition-colors duration-300 hover:text-brass-300"
                     >
                       {link.label}
                     </Link>
@@ -170,7 +146,7 @@ export function SiteFooter() {
             <h3 className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-navy-100/85">
               Contact
             </h3>
-            <ul className="mt-5 space-y-3 text-[0.9375rem] text-navy-100/90">
+            <ul className="mt-4 space-y-2 text-[0.9375rem] text-navy-100/90 sm:mt-5 sm:space-y-3">
               <li>
                 <a href={contact.phoneHref} className="link-underline hover:text-white">
                   {contact.phoneDisplay}
@@ -187,7 +163,12 @@ export function SiteFooter() {
             {offices.map((office) => (
               <address
                 key={office.label}
-                className="mt-6 not-italic text-[0.9375rem] leading-relaxed text-navy-100/85"
+                /* The postal address is a laptop's. On a phone it was three
+                   more lines of the same address the contact page gives in
+                   full, under a phone number and an email that are already
+                   one tap each, and it was asked for by name (2026-09-16)
+                   as part of shortening the footer there. */
+                className="mt-6 hidden not-italic text-[0.9375rem] leading-relaxed text-navy-100/85 desk:block"
               >
                 {office.lines.map((line) => (
                   <span key={line} className="block">
@@ -200,7 +181,7 @@ export function SiteFooter() {
         </div>
 
         {/* -------------------------------------------------- Bottom line */}
-        <Reveal className="mt-16 flex flex-col gap-3 border-t border-white/12 pt-8 text-[0.9375rem] text-navy-100/85 sm:flex-row sm:items-center sm:justify-between">
+        <Reveal className="mt-10 flex flex-col gap-3 border-t border-white/12 pt-6 sm:mt-16 sm:pt-8 text-[0.9375rem] text-navy-100/85 sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {year} {site.legalName}. All rights reserved.
             <span aria-hidden="true" className="mx-2.5 text-navy-100/40">

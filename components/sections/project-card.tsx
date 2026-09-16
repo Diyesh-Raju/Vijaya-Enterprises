@@ -80,6 +80,16 @@ export function ProjectCard({ project }: { project: Project }) {
         "transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-1",
       ].join(" ")}
     >
+      {/* One shape for every card in the grid, 16:9.
+
+          Each card used to take its own photograph's proportions, on the
+          argument that nothing is then trimmed off a picture. Side by side
+          that is the wrong trade: two cards in a row stood at two different
+          heights, so their names, their rules and their four figures all
+          landed on different lines and the grid read as unfinished. Asked
+          to make them uniform (2026-09-16), and a row that lines up is
+          worth a little off the ends of the widest frontage. A placeholder
+          has no shape of its own and was always 16:9. */}
       <div
         className={[
           "relative aspect-[16/9] w-full shrink-0 overflow-hidden bg-mist",
@@ -88,16 +98,17 @@ export function ProjectCard({ project }: { project: Project }) {
       >
         {project.image ? (
           // Uncovered rather than faded in — see `ImageReveal`. The hover
-          // moves `scale` and the reveal moves `transform`, and Tailwind's
-          // `transition-transform` covers both, so a card can be settling
-          // out of its crop and following the pointer at the same time.
+          // moves `scale`, at the site's one zoom pace (`zoom-hover`), and
+          // the reveal moves `transform` and lists `scale` beside it, so a
+          // card can be settling out of its crop and following the pointer
+          // at the same time.
           <ImageReveal>
             <Image
               src={project.image}
               alt={project.imageAlt ?? ""}
               fill
               sizes="(max-width: 640px) 100vw, 50vw"
-              className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+              className="object-cover zoom-hover group-hover:scale-[1.04]"
             />
           </ImageReveal>
         ) : (
@@ -179,7 +190,7 @@ export function ProjectCard({ project }: { project: Project }) {
   return (
     <Link
       href={`/residential/${project.slug}`}
-      aria-label={`${project.name} — project details`}
+      aria-label={`${project.name}, project details`}
       className="block h-full rounded-[1.5rem] sm:rounded-[1.75rem]"
     >
       {card}

@@ -103,7 +103,7 @@ export function CookieNotice() {
             Nothing to accept.
           </h2>
           <p className="mt-3 text-[0.9375rem] leading-[1.7] text-slate-body">
-            This site sets no cookies — no trackers, no analytics. The form
+            This site sets no cookies, no trackers, no analytics. The form
             sends us only what you type, and dismissing this note is
             remembered on your device, not on ours.
           </p>

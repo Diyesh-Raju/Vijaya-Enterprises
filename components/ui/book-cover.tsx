@@ -30,27 +30,65 @@ import { cn } from "@/lib/cn";
  * item at 12rem and a hero at 22rem without a second set of rules. The
  * aspect ratio is the file's own — these two brochures are square, and a
  * portrait one would come through as portrait without an edit here.
+ *
+ * Unless the caller asks for a `shape`. A book drawn taller than its cover
+ * is NOT a crop of the cover: the artwork is the brochure's real front page,
+ * with something in every corner on at least one of them, and a crop would
+ * take one of those off. The cover stands whole inside the taller book
+ * instead, held where `hold` says, and the rest of the leaf is `paper` — the
+ * colour of the cover's own edge, so the book reads as a longer sheet of the
+ * same stock rather than as a square with a band above it.
  */
 export function BookCover({
   cover,
   alt,
   className,
   style,
+  shape,
+  paper,
+  hold = "50% 50%",
 }: {
   cover: StaticImageData;
   alt: string;
   className?: string;
   style?: CSSProperties;
+  /** The book's width over its height, as CSS writes it (`"4 / 5"`). */
+  shape?: string;
+  /** The cover's edge colour, laid behind it where the book outruns it. */
+  paper?: string;
+  /** Where the cover sits in a book taller than it (`object-position`). */
+  hold?: string;
 }) {
+  const leaf: CSSProperties | undefined = shape
+    ? { backgroundColor: paper }
+    : undefined;
+  const art: CSSProperties | undefined = shape
+    ? { objectFit: "contain", objectPosition: hold }
+    : undefined;
+
   return (
     <span
       className={cn("book", className)}
-      style={{ aspectRatio: `${cover.width} / ${cover.height}`, ...style }}
+      style={{
+        aspectRatio: shape ?? `${cover.width} / ${cover.height}`,
+        ...style,
+      }}
     >
-      <span className="book__leaf book__leaf--under" aria-hidden="true">
-        <Image src={cover} alt="" fill unoptimized className="book__art" />
+      <span
+        className="book__leaf book__leaf--under"
+        style={leaf}
+        aria-hidden="true"
+      >
+        <Image
+          src={cover}
+          alt=""
+          fill
+          unoptimized
+          className="book__art"
+          style={art}
+        />
       </span>
-      <span className="book__leaf book__leaf--over">
+      <span className="book__leaf book__leaf--over" style={leaf}>
         <Image
           src={cover}
           alt={alt}
@@ -58,6 +96,7 @@ export function BookCover({
           unoptimized
           placeholder="blur"
           className="book__art"
+          style={art}
         />
         <span className="book__sheen" aria-hidden="true" />
       </span>

@@ -22,7 +22,7 @@ export async function generateMetadata({
   const locations = locationsBySlug[project.slug];
 
   return {
-    title: `Location — ${project.name}`,
+    title: `Location, ${project.name}`,
     description: locations
       ? `${project.name} is at ${locations.project.address}. See the project and our office on the map, and book a site visit.`
       : undefined,

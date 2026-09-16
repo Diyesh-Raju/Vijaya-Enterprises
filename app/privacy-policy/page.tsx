@@ -66,7 +66,7 @@ const sections: readonly PolicySection[] = [
         </p>
         <p className="mt-4">
           We build homes and buildings, not mailing lists. This page exists so
-          you know exactly what reaches us when you use the site — and it is a
+          you know exactly what reaches us when you use the site, and it is a
           short page, because very little does.
         </p>
       </>
@@ -98,7 +98,7 @@ const sections: readonly PolicySection[] = [
         <PolicyList
           items={[
             "Your name and email address, so we can reply.",
-            "Your phone number, only if you give it — the field is optional.",
+            "Your phone number, only if you give it, the field is optional.",
             "The kind of project you have in mind, and whatever you write in the message.",
             "For a site visit: the project, and the day and time of day you would like to come.",
           ]}
@@ -111,7 +111,7 @@ const sections: readonly PolicySection[] = [
           Technically, our hosting infrastructure also sees your connection
           address (IP) when a page or form is served, as every website&rsquo;s
           does. We use it only in the moment, to limit repeated form
-          submissions from one connection — it is not kept in any register of
+          submissions from one connection, it is not kept in any register of
           ours, and standard, short-lived server logs are handled by our
           hosting provider.
         </p>
@@ -127,13 +127,13 @@ const sections: readonly PolicySection[] = [
         <PolicyList
           items={[
             "To reply to you, and to discuss the project or home you asked about.",
-            "To keep the thread of that conversation if it continues — a joint venture or a home purchase can run for months, and we need to remember what was said.",
+            "To keep the thread of that conversation if it continues, a joint venture or a home purchase can run for months, and we need to remember what was said.",
           ]}
         />
         <p className="mt-4">
           That is the whole list. We do not add you to a marketing list, send
           newsletters you did not ask for, or contact you about anything other
-          than what you raised — if we ever want to, we will ask you first.
+          than what you raised, if we ever want to, we will ask you first.
         </p>
       </>
     ),
@@ -144,14 +144,14 @@ const sections: readonly PolicySection[] = [
     body: (
       <>
         <p>
-          We do not sell, rent or trade your information — to anyone, for
+          We do not sell, rent or trade your information, to anyone, for
           anything. It is shared only as far as delivering it to us requires:
         </p>
         <PolicyList
           items={[
             "The email delivery service that carries your enquiry from the website to our inbox, the way a postal service carries a letter.",
             "The provider that hosts this website and serves its pages.",
-            "Authorities, if the law requires it of us — and only then.",
+            "Authorities, if the law requires it of us, and only then.",
           ]}
         />
       </>
@@ -164,12 +164,12 @@ const sections: readonly PolicySection[] = [
       <>
         <p>
           This site sets no cookies. There is no analytics script, no
-          advertising pixel, no tracker of any kind — nothing watching how you
+          advertising pixel, no tracker of any kind, nothing watching how you
           read it. That is not an oversight; it is how we chose to build it.
         </p>
         <p className="mt-4">
           The one thing your browser keeps for us is a note that you dismissed
-          the cookie notice on the contact page — held in your browser&rsquo;s
+          the cookie notice on the contact page, held in your browser&rsquo;s
           own storage, on your device, never sent to anyone. The{" "}
           <Link
             href="/cookie-policy"
@@ -177,7 +177,7 @@ const sections: readonly PolicySection[] = [
           >
             cookie policy
           </Link>{" "}
-          is the full statement — and if any of this ever changes, both pages
+          is the full statement, and if any of this ever changes, both pages
           will say so plainly before it does.
         </p>
       </>
@@ -189,7 +189,7 @@ const sections: readonly PolicySection[] = [
     body: (
       <p>
         An enquiry lives in our inbox for as long as the conversation it
-        started — and if that conversation becomes a project, for as long as
+        started, and if that conversation becomes a project, for as long as
         the project&rsquo;s records need to exist, including what tax and
         company law require us to hold. An enquiry that goes nowhere is simply
         old mail; write to us and we will delete it.
@@ -221,7 +221,7 @@ const sections: readonly PolicySection[] = [
           >
             {contact.emailDisplay}
           </a>{" "}
-          does any of these. We answer it the way we answer everything — like
+          does any of these. We answer it the way we answer everything, like
           family, without a form to fill in first.
         </p>
       </>
@@ -232,8 +232,8 @@ const sections: readonly PolicySection[] = [
     title: "Links to other places",
     body: (
       <p>
-        The site links out to services we do not run — WhatsApp, Google Maps,
-        and our profiles on social networks. What happens there is governed by
+        The site links out to services we do not run, WhatsApp for a message
+        and Google Maps for directions. What happens there is governed by
         those services&rsquo; own privacy policies, not this one; from the
         moment you follow such a link, you are in their house.
       </p>
@@ -246,7 +246,7 @@ const sections: readonly PolicySection[] = [
       <p>
         This website is meant for people planning homes and buildings, and is
         not directed at children. We do not knowingly collect information from
-        anyone under 18 — if you believe a child has sent us theirs, tell us
+        anyone under 18, if you believe a child has sent us theirs, tell us
         and we will delete it.
       </p>
     ),
@@ -258,7 +258,7 @@ const sections: readonly PolicySection[] = [
       <p>
         If what we collect or how we use it changes, this page changes with
         it, and the date at the top changes too. We will not quietly widen
-        anything — a policy you read once should stay the policy you agreed
+        anything, a policy you read once should stay the policy you agreed
         to, unless we have plainly said otherwise.
       </p>
     ),
@@ -291,7 +291,7 @@ const sections: readonly PolicySection[] = [
             >
               {contact.phoneDisplay}
             </a>
-            <span className="text-slate-muted"> — {contact.hours}</span>
+            <span className="text-slate-muted">, {contact.hours}</span>
           </p>
         </address>
       </>

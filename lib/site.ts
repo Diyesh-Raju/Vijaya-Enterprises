@@ -1,10 +1,12 @@
 /**
  * Single source of truth for brand, navigation and contact details.
  *
- * ⚠️ PLACEHOLDER CONTACT DETAILS — replace the `contact` and `offices`
- * blocks below with Vijaya Enterprises' real phone, email and address
- * before this site goes live. Everything else on the site reads from
- * here, so this is the only file that needs editing.
+ * The `contact` and `offices` blocks are the company's own, taken from the
+ * contact panel on its existing site and the back of the Springwoods
+ * brochure (2026-09-16): the Bull Temple Road office, the four telephone
+ * lines, the fax, the Gmail address and the working hours. Everything else
+ * on the site reads from here, so this is the only file that needs editing
+ * when any of them changes.
  */
 
 export const site = {
@@ -20,42 +22,46 @@ export const site = {
 } as const;
 
 export const contact = {
-  phoneDisplay: "+91 80 2345 6789",
-  phoneHref: "tel:+918023456789",
-  mobileDisplay: "+91 98450 00000",
-  mobileHref: "tel:+919845000000",
-  whatsappHref: "https://wa.me/919845000000",
-  emailDisplay: "enquiry@vijayaenterprises.in",
-  emailHref: "mailto:enquiry@vijayaenterprises.in",
-  hours: "Monday – Saturday, 9:30 am – 6:30 pm",
+  /** The first of the four lines listed, and the one every "call us" opens. */
+  phoneDisplay: "+91 74067 88884",
+  phoneHref: "tel:+917406788884",
+  /** The other three, for the contact page's card. */
+  otherPhones: [
+    { display: "+91 76765 55444", href: "tel:+917676555444" },
+    { display: "+91 97421 50349", href: "tel:+919742150349" },
+    { display: "+91 98458 55622", href: "tel:+919845855622" },
+  ],
+  /** The marketing mobile printed on the brochures, which is the WhatsApp line. */
+  mobileDisplay: "+91 98458 55622",
+  mobileHref: "tel:+919845855622",
+  whatsappHref: "https://wa.me/919845855622",
+  faxDisplay: "080 2242 9053",
+  emailDisplay: "vijaya1973@gmail.com",
+  emailHref: "mailto:vijaya1973@gmail.com",
+  hours: "Every day, 9:30 am – 8:30 pm",
 } as const;
 
-/**
- * The networks the footer links out to.
+/*
+ * There is no `social` list here, and that is deliberate rather than an
+ * omission: Vijaya has no social media accounts (2026-09-16). What stood
+ * here were four guessed addresses under the company's own name, none of
+ * them confirmed against a real profile, and the footer drew an icon for
+ * each — four links leading to nothing, or to somebody else's account.
  *
- * ⚠️ PLACEHOLDER HANDLES — these are the addresses the accounts *would* have
- * under the company's own name; none of them has been confirmed against a real
- * profile. Check every one before launch and correct or delete it: an icon
- * that leads to somebody else's account, or to nothing, is worse than no icon.
- * Deleting an entry removes it from the footer with no other edit.
- *
- * `label` is also the key the mark is looked up by — see `socialIcons` in
- * `components/ui/social-icons.tsx`.
+ * If accounts are opened, the row of marks comes back with them: add the
+ * list, the icons in `components/ui/social-icons.tsx` (deleted with it, in
+ * the same commit) and the block in `site-footer.tsx`.
  */
-export const social = [
-  { label: "Instagram", href: "https://www.instagram.com/vijayaenterprises" },
-  { label: "Facebook", href: "https://www.facebook.com/vijayaenterprises" },
-  { label: "X", href: "https://x.com/vijayaenterprise" },
-  {
-    label: "LinkedIn",
-    href: "https://www.linkedin.com/company/vijaya-enterprises",
-  },
-] as const;
 
 export const offices = [
   {
     label: "Head Office",
-    lines: ["Vijaya Enterprises", "Basavanagudi, Bengaluru", "Karnataka, India"],
+    lines: [
+      "Vijaya Enterprises",
+      "#41/1, 1st Floor, Bull Temple Road",
+      "Basavanagudi, Bengaluru 560 004",
+      "Karnataka, India",
+    ],
     mapHref: "https://maps.app.goo.gl/16Vp8ebWMc7ECVRN7",
   },
 ] as const;
