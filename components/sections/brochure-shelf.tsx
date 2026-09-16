@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Reveal } from "@/components/ui/reveal";
 import { BookCover } from "@/components/ui/book-cover";
+import { Button } from "@/components/ui/button";
 import { ArrowRightIcon } from "@/components/ui/line-icons";
 import { brochures, pagesFor, READER_WIDE_QUERY } from "@/lib/brochures";
 import { readAhead, readingOrder, sparing, type Reader } from "@/lib/read-ahead";
@@ -11,9 +12,19 @@ import { observeReveal } from "@/lib/scroll";
 
 /**
  * The printed brochures, standing where the vision and mission cards used
- * to, on the navy band of the legacy page. Four of them now: one to a
- * column on a laptop, two by two on a tablet, one under the other on a
- * phone.
+ * to, on the navy band of the legacy page.
+ *
+ * Two at a time, with a button that turns to the next two (2026-09-16).
+ * All four across a laptop was four books in the width two used to have,
+ * and at that size the tilt on one reached into the copy under its
+ * neighbour: a row of covers rather than objects standing apart on a
+ * shelf. Two have the room the arrangement was drawn for, and the pair
+ * that is not showing is one press away rather than squeezed in beside
+ * them.
+ *
+ * The button wraps rather than stopping at the end, and says which way it
+ * is about to go, so the shelf can be walked round and round and never
+ * leaves the reader at a control that would do nothing.
  *
  * They are deliberately small. The reference this was drawn from gives one
  * book half a screen and a paragraph beside it; here two of them share the
@@ -41,8 +52,14 @@ import { observeReveal } from "@/lib/scroll";
  * ones for a phone's strip — is decided by the reader's own query, so the
  * pages that arrive are the pages the book will ask for.
  */
+/** How many stand on the shelf at once. */
+const PER_PAGE = 2;
+
+const PAGES = Math.ceil(brochures.length / PER_PAGE);
+
 export function BrochureShelf() {
   const shelf = useRef<HTMLDivElement>(null);
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
     const el = shelf.current;
@@ -91,12 +108,20 @@ export function BrochureShelf() {
     };
   }, []);
 
+  const shown = brochures.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
+  const last = page === PAGES - 1;
+
   return (
-    <div
-      ref={shelf}
-      className="mx-auto mt-10 grid max-w-7xl gap-12 sm:mt-12 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4 lg:gap-6"
-    >
-      {brochures.map((brochure, index) => (
+    <div ref={shelf}>
+      {/* Keyed on the page, so turning the shelf mounts two new books and
+          they arrive the way the first two did rather than swapping their
+          covers over in place. */}
+      <div
+        key={page}
+        aria-live="polite"
+        className="mx-auto mt-10 grid max-w-5xl gap-14 sm:mt-12 sm:grid-cols-2 sm:gap-24 lg:gap-32"
+      >
+      {shown.map((brochure, index) => (
         <Reveal key={brochure.slug} delay={index * 110} className="flex justify-center">
           <Link href={`/brochures/${brochure.slug}`} className="book-link">
             {/* Drawn 4:5, taller than the square cover it carries: the
@@ -125,6 +150,21 @@ export function BrochureShelf() {
           </Link>
         </Reveal>
       ))}
+      </div>
+
+      {/* The rest of the shelf, one press away. Hidden when there is only
+          one pageful, so a shelf of two books carries no control at all. */}
+      {PAGES > 1 && (
+        <Reveal delay={220} className="mt-14 flex flex-col items-center gap-5 sm:mt-16">
+          <Button type="button" variant="light" withArrow onClick={() => setPage((at) => (at + 1) % PAGES)}>
+            {last ? "Back to the first two" : "Show the next two"}
+          </Button>
+          <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.24em] text-navy-100/60">
+            <span className="sr-only">Showing page </span>
+            {page + 1} / {PAGES}
+          </p>
+        </Reveal>
+      )}
     </div>
   );
 }

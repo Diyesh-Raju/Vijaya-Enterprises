@@ -4135,15 +4135,23 @@
      window: `--action-bar-h` is 0 wherever the bar is not shown, so this
      is the plain offset everywhere else. */
   .undertake {
-    /* What the foot of the screen is spending: the gap under the arrows,
-       the arrows themselves, and the gap between them and the rules. The
-       rules are padded up by it, and the copy above is held clear of the
-       whole stack — three things that have to agree, so it is one number.
+    /* What the foot of the screen is spending, from the bottom up: the gap
+       under the arrows, the arrows themselves, and the gap between them
+       and the rules. The rules are padded up by it and the copy above is
+       held clear of the whole stack — three things that have to agree, so
+       it is one number.
 
        `--action-bar-h` is the phone's Call/WhatsApp bar, which owns the
-       bottom edge of the window; it is 0 wherever the bar is not shown. */
+       bottom edge of the window; it is 0 wherever the bar is not shown.
+
+       The gap under the arrows is a quarter of a rem, which is as low as
+       the pair can stand: the bar below is already 4.5rem of clear space,
+       so there is nothing to be gained by holding them off it as well.
+       Everything above rides down with them — asked for by name
+       (2026-09-16), the whole block was sitting too high up the
+       photograph. */
     --undertake-foot: calc(
-      clamp(1rem, 3vh, 1.75rem) + var(--action-bar-h, 0px) + 2.5rem + 1rem
+      0.25rem + var(--action-bar-h, 0px) + 2.5rem + 0.75rem
     );
   }
 
@@ -4152,7 +4160,7 @@
     top: auto;
     right: 0;
     left: 0;
-    bottom: calc(clamp(1rem, 3vh, 1.75rem) + var(--action-bar-h, 0px));
+    bottom: calc(0.25rem + var(--action-bar-h, 0px));
     flex-direction: row;
     justify-content: center;
     gap: 1.25rem;
@@ -4164,9 +4172,10 @@
 
   /* And the copy stops above all of it. Without this the title, which is
      now the last thing in the block, sets straight through the rules and
-     the arrows under them. */
+     the arrows under them. One rem of it: at half that the rules came up
+     under the title's descenders and read as an underline on it. */
   .undertake__copy-layer {
-    padding-bottom: calc(var(--undertake-foot) + 1.25rem);
+    padding-bottom: calc(var(--undertake-foot) + 1rem);
   }
 }
 
