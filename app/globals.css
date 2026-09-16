@@ -4960,6 +4960,17 @@
   .stages__count > span:last-child {
     font-size: 0.8125rem;
   }
+
+  /* The line under the title and the line under the list both go. Asked for
+     by name (2026-09-16), and both were marked on the same screenshot: each
+     says in a sentence what the list between them says in eight, and on a
+     phone the list is the half that survives. A laptop still reads them,
+     which is why this is `display: none` here rather than a change to the
+     markup or to `lib/contracts.ts`. */
+  .stages__lede,
+  .stages__note {
+    display: none;
+  }
 }
 
 .stages__count {

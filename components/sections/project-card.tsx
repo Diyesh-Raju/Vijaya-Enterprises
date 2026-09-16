@@ -80,22 +80,21 @@ export function ProjectCard({ project }: { project: Project }) {
         "transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-1",
       ].join(" ")}
     >
-      {/* A photograph sets the frame to its own shape, so all of it is on
-          the card — nothing trimmed off the sides to make it 16:9. The
-          Hara Vijaya Heights frontage is a little over 2:1, and in a 16:9
-          frame it lost the trees at either end of the lawn. A placeholder
-          has no shape of its own and keeps 16:9. */}
+      {/* One shape for every card in the grid, 16:9.
+
+          Each card used to take its own photograph's proportions, on the
+          argument that nothing is then trimmed off a picture. Side by side
+          that is the wrong trade: two cards in a row stood at two different
+          heights, so their names, their rules and their four figures all
+          landed on different lines and the grid read as unfinished. Asked
+          to make them uniform (2026-09-16), and a row that lines up is
+          worth a little off the ends of the widest frontage. A placeholder
+          has no shape of its own and was always 16:9. */}
       <div
         className={[
-          "relative w-full shrink-0 overflow-hidden bg-mist",
-          project.image ? "" : "aspect-[16/9]",
+          "relative aspect-[16/9] w-full shrink-0 overflow-hidden bg-mist",
           detailed ? "rounded-[1.05rem] sm:rounded-[1.3rem]" : "",
         ].join(" ")}
-        style={
-          project.image
-            ? { aspectRatio: `${project.image.width} / ${project.image.height}` }
-            : undefined
-        }
       >
         {project.image ? (
           // Uncovered rather than faded in — see `ImageReveal`. The hover

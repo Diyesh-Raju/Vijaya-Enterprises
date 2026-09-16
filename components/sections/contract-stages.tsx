@@ -157,7 +157,7 @@ export function ContractStages({
                 {/* The line under the title, and then either the
                     paragraph or the list — see `ContractStage`. */}
                 {item.subtitle ? (
-                  <p className="mt-4 max-w-[38rem] text-[clamp(1.0625rem,1.4vw,1.25rem)] leading-[1.5] text-white/90">
+                  <p className="stages__lede mt-4 max-w-[38rem] text-[clamp(1.0625rem,1.4vw,1.25rem)] leading-[1.5] text-white/90">
                     {item.subtitle}
                   </p>
                 ) : null}
@@ -171,7 +171,7 @@ export function ContractStages({
                 {item.points ? <StagePoints points={item.points} /> : null}
 
                 {item.note ? (
-                  <p className="mt-6 max-w-[38rem] text-[clamp(1rem,1.2vw,1.125rem)] leading-[1.6] text-white">
+                  <p className="stages__note mt-6 max-w-[38rem] text-[clamp(1rem,1.2vw,1.125rem)] leading-[1.6] text-white">
                     {item.note}
                   </p>
                 ) : null}

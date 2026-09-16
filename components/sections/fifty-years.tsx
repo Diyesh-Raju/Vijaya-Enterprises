@@ -8,6 +8,7 @@ import {
   BuildingIcon,
   HeartIcon,
 } from "@/components/ui/line-icons";
+import { LookingFor } from "@/components/sections/looking-for";
 
 /**
  * The same for all five figures in the band.
@@ -133,6 +134,14 @@ export function FiftyYears() {
                   />
                 </Reveal>
               ))}
+
+              {/* Three ways into the site, at the right of this band and on
+                  this page alone. See `LookingFor` — on a laptop it leaves
+                  the flow and floats at the right edge; the element here is
+                  what tells it when the band is on the screen. */}
+              <Reveal delay={points.length * 90}>
+                <LookingFor />
+              </Reveal>
             </div>
           </div>
         </div>

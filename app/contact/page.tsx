@@ -167,8 +167,23 @@ export default function ContactPage() {
                 <div className="mt-10 space-y-6">
                   {offices.map((office) => (
                     <address key={office.label} className="not-italic">
-                      <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-white/55">
-                        {office.label}
+                      {/* The dialer's own icon beside the label, asked for
+                          by name (2026-09-16): the office block gives the
+                          address and the way to walk there, and this is the
+                          way to ring it without scrolling back up to the
+                          cards. The same mark as the Call card above, for
+                          the reason in the note over `channels`. */}
+                      <span className="flex items-center gap-3">
+                        <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.28em] text-white/55">
+                          {office.label}
+                        </span>
+                        <a
+                          href={contact.phoneHref}
+                          aria-label={`Call the ${office.label.toLowerCase()} on ${contact.phoneDisplay}`}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-white/10 transition-[background-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/20 active:scale-95"
+                        >
+                          <PhoneAppMark aria-hidden="true" className="h-4 w-4" />
+                        </a>
                       </span>
                       <span className="mt-3 block text-[1rem] leading-relaxed text-white/85">
                         {office.lines.map((line) => (

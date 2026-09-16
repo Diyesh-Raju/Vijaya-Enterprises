@@ -128,9 +128,16 @@ export const kannada: Readonly<Record<string, string>> = {
   "#41/1, 1st Floor, Bull Temple Road": "#41/1, 1ನೇ ಮಹಡಿ, ಬುಲ್ ಟೆಂಪಲ್ ರಸ್ತೆ",
   "Basavanagudi, Bengaluru 560 004": "ಬಸವನಗುಡಿ, ಬೆಂಗಳೂರು 560 004",
   "Monday – Friday, 8 am – 5 pm": "ಸೋಮವಾರ – ಶುಕ್ರವಾರ, ಬೆಳಿಗ್ಗೆ 8 – ಸಂಜೆ 5",
+  "Every day, 9:30 am – 8:30 pm": "ಪ್ರತಿದಿನ, ಬೆಳಿಗ್ಗೆ 9:30 – ರಾತ್ರಿ 8:30",
   "Karnataka, India": "ಕರ್ನಾಟಕ, ಭಾರತ",
   "Monday – Saturday, 9:30 am – 6:30 pm": "ಸೋಮವಾರ – ಶನಿವಾರ, ಬೆಳಿಗ್ಗೆ 9:30 – ಸಂಜೆ 6:30",
 
+  // The three ways in, at the right of the fifty-years band.
+  "Start here": "ಇಲ್ಲಿಂದ ಆರಂಭಿಸಿ",
+  "What are you looking for?": "ನೀವು ಯಾವುದನ್ನು ಹುಡುಕುತ್ತಿದ್ದೀರಿ?",
+  "Homes to buy": "ಖರೀದಿಸಲು ಮನೆಗಳು",
+  "Build on your site": "ನಿಮ್ಮ ಸ್ಥಳದಲ್ಲಿ ಕಟ್ಟಿಸಿ",
+  "Develop your land": "ನಿಮ್ಮ ಭೂಮಿಯನ್ನು ಅಭಿವೃದ್ಧಿಪಡಿಸಿ",
   // The home page
   "Vijaya": "ವಿಜಯಾ",
   "Our": "ನಮ್ಮ",
@@ -897,6 +904,16 @@ export const kannada: Readonly<Record<string, string>> = {
   "Send an Enquiry": "ವಿಚಾರಣೆ ಕಳುಹಿಸಿ",
   "Full name": "ಪೂರ್ಣ ಹೆಸರು",
   "Your name": "ನಿಮ್ಮ ಹೆಸರು",
+  // The enquiry form asks one question at a time (2026-09-16); these are
+  // the questions, the lines under them, and the walk between them.
+  "What is your name?": "ನಿಮ್ಮ ಹೆಸರೇನು?",
+  "What is your email address?": "ನಿಮ್ಮ ಇಮೇಲ್ ವಿಳಾಸ ಯಾವುದು?",
+  "This is where we reply first.": "ನಾವು ಮೊದಲು ಉತ್ತರಿಸುವುದು ಇಲ್ಲಿಗೇ.",
+  "What number can we reach you on?": "ನಿಮ್ಮನ್ನು ಯಾವ ಸಂಖ್ಯೆಯಲ್ಲಿ ಸಂಪರ್ಕಿಸಬಹುದು?",
+  "If none of these fit, choose Something else and tell us in the next question.": "ಇವುಗಳಲ್ಲಿ ಯಾವುದೂ ಹೊಂದದಿದ್ದರೆ, ಬೇರೇನೋ ಆಯ್ಕೆ ಮಾಡಿ ಮುಂದಿನ ಪ್ರಶ್ನೆಯಲ್ಲಿ ತಿಳಿಸಿ.",
+  "A few lines is plenty.": "ಕೆಲವು ಸಾಲುಗಳು ಸಾಕು.",
+  "Optional": "ಐಚ್ಛಿಕ",
+  "Skip": "ಬಿಟ್ಟು ಮುಂದೆ",
   "What is this about?": "ಇದು ಯಾವುದರ ಬಗ್ಗೆ?",
   "Please choose…": "ಆಯ್ಕೆ ಮಾಡಿ…",
   "Buying a home": "ಮನೆ ಖರೀದಿ",

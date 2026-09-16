@@ -38,7 +38,7 @@ export const contact = {
   faxDisplay: "080 2242 9053",
   emailDisplay: "vijaya1973@gmail.com",
   emailHref: "mailto:vijaya1973@gmail.com",
-  hours: "Monday – Friday, 8 am – 5 pm",
+  hours: "Every day, 9:30 am – 8:30 pm",
 } as const;
 
 /*

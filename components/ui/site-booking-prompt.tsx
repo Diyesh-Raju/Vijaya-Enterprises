@@ -301,7 +301,7 @@ export function SiteBookingPrompt() {
                 type="button"
                 onClick={fold}
                 aria-label="Dismiss"
-                className="absolute right-3.5 top-3.5 inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-muted transition-colors duration-300 hover:bg-navy-50 hover:text-navy-900"
+                className="absolute right-1.5 top-1.5 inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-muted transition-colors duration-300 hover:bg-navy-50 hover:text-navy-900"
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4">
                   <path

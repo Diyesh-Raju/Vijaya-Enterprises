@@ -21,7 +21,7 @@ import { projectsWithPages } from "@/lib/projects";
 export const TIME_SLOTS = [
   { value: "Morning", hint: "10 am – 12 pm" },
   { value: "Afternoon", hint: "12 pm – 3 pm" },
-  { value: "Evening", hint: "3 pm – 6 pm" },
+  { value: "Evening", hint: "3 pm – 8:30 pm" },
 ] as const;
 
 export type TimeSlot = (typeof TIME_SLOTS)[number]["value"];
