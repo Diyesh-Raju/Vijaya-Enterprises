@@ -255,10 +255,10 @@
        that height, not a copy of it: the bar sizes its row from this variable
        (`site-header.tsx`), so the two cannot drift apart. Anything that has
        to start below the bar rather than behind it reads the same value — the
-       handshake panel — and so does the scrim the two home heroes lay across
-       their top for the bar's white to hold on. The bar carries its border
-       in every state, merely transparent where the bar is, so the height
-       never changes.
+       home page's scroll hero and the handshake panel — and so does the scrim
+       the phone's home hero lays across its top for the bar's white to hold
+       on. The bar carries its border in every state, merely transparent where
+       the bar is, so the height never changes.
 
        The breakpoint is `40rem` rather than `640px` because that is what
        Tailwind's `sm:` is, and the two must turn over together: on a browser
@@ -465,29 +465,23 @@
 /* The pinned panel of the home page's scroll hero, and the track it is
    pinned inside.
 
-   `h-hero-panel` is the whole screen below the header: it starts at the
-   bottom edge of the bar and runs to the bottom of the viewport. The
-   handshake panel pins in it. `h-hero-screen` is the whole screen, bar
-   included: the home walkthrough pins in that, running up behind the bar,
-   which is transparent over it (see "the bar over the film" below). It used
-   to pin in the first, below a white strip the bar sat on, and was moved up
-   on 2026-09-16 so the film fills the screen.
+   The panel is the whole screen below the header, at every width: it starts
+   at the bottom edge of the bar and runs to the bottom of the viewport, so
+   the walkthrough plays full-bleed rather than in a band with page under it,
+   and the handshake panel pins in the same box. (For part of 2026-09-16 the
+   walkthrough ran up behind the bar instead, in a full-screen box; the
+   client asked for the white bar back above it.)
 
-   Nothing here fixes the shape, so a panel is whatever the window is —
-   between about 1.7:1 and 1.95:1 on a laptop or a desktop. The clip is cut at
-   16:9 to sit inside that range (see `ASPECT` in `build-hero-video.py`), so
-   the `object-cover` on the media trims a few percent off one pair of edges
-   and never letterboxes. Two declarations each, because a browser that has
-   never heard of `svh` must still get the first; `svh` is what keeps mobile
-   Safari from jumping as the URL bar collapses. */
+   Nothing here fixes the shape, so the panel is whatever the window is —
+   from about 1.7:1 (a MacBook's 1512×982 window) to 2.4:1 (a 1366×768
+   laptop's) once the 97px bar is taken off. The frames are 16:9 and drawn to
+   cover it, so on the wider windows they lose a strip off the top and bottom,
+   and they never letterbox. Two declarations, because a browser
+   that has never heard of `svh` must still get the first; `svh` is what
+   keeps mobile Safari from jumping as the URL bar collapses. */
 @utility h-hero-panel {
   height: calc(100vh - var(--header-h));
   height: calc(100svh - var(--header-h));
-}
-
-@utility h-hero-screen {
-  height: 100vh;
-  height: 100svh;
 }
 
 @utility h-hero-track {
@@ -6132,57 +6126,66 @@
 }
 
 /* ------------------------------------------------------------------
-   The bar over the film.
+   The bar over the phone's home hero.
 
-   The home walkthrough runs up behind the bar and fills the screen, and it
-   stays pinned there for nearly four screens of scroll. `site-header.tsx`
-   frosts the bar 24px in, which is right over every one-screen hero — the
-   page is already rising over it — and wrong here, where a frosted white
-   strip would sit across the top of a full-screen film for the whole of the
-   scrub. So while its panel is pinned `ScrollHero` sets `data-hero-film` on
-   `<html>`, and these rules hold the bar transparent with white type and
-   the reversed lockup for as long as it is there, whatever the component
-   has decided about `scrolled`. The attribute comes off the frame the panel
-   unpins, and the bar frosts on the transition already declared on it.
+   Every other page that opens on a photograph gets the transparent bar
+   from React: `LIGHT_FROM_TOP` in `site-header.tsx` names the pages that
+   do *not*, and the home page is on that list because its laptop
+   walkthrough starts below the bar on white paper.
 
-   `glass` is a Tailwind utility and therefore layered; these rules are not,
-   and unlayered CSS outranks a layer whatever the specificity — which is
-   what lets four plain declarations undo it. No media query: a phone never
-   mounts the walkthrough, so never sets the attribute.
+   A phone does not get the walkthrough. It gets `HomeHeroPhone`, and that
+   band runs up behind the bar with a photograph in it — so at this
+   width the home page wants the transparent state that the list is
+   denying it. Taking "/" off the list would fix the phone and break the
+   laptop, which is why the phone's half is here instead: the component
+   puts `header--phone-hero` on the bar at every width whenever the home
+   page is at the top of itself, and this query is what confines it to the
+   width that should have it. Nothing is width-checked in React, so the
+   markup the server sends is right for both and neither flips after
+   hydration.
 
-   ⚠️ THE TYPE OVER THE PICTURE. The film opens on daylight — blue sky over
-   the towers — and white type laid straight on that measures about 1.3:1.
-   What makes it legible is the scrim across the top of the panel in
-   `scroll-hero.tsx`, the same one the phone's band carries in
-   `home-hero-phone.tsx`; re-measure both together if either changes: the
-   pictures, the scrim's depth, or the bar's height.
+   It comes off as soon as the page scrolls past 24px, which hands the bar
+   back to its ordinary frosted state on the transition that is already
+   declared on it.
+
+   ⚠️ THE TYPE OVER THE PICTURE. The four hero frames are daylight — blue
+   sky over the towers, a sunset over Aqua Green — and white type laid
+   straight on that measures about 1.3:1. What makes this legible is the
+   scrim across the top of the band in `home-hero-phone.tsx`, not anything
+   here. Re-measure both together if either changes: the photographs, the
+   scrim's depth, or the bar's height.
 ------------------------------------------------------------------- */
-html[data-hero-film] .site-header {
-  background-color: transparent;
-  border-color: transparent;
-  box-shadow: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
+@media (max-width: 767.98px), (max-height: 499.98px) {
+  .header--phone-hero {
+    /* `glass` is a Tailwind utility and therefore layered; these rules are
+       not, and unlayered CSS outranks a layer whatever the specificity —
+       which is what lets four plain declarations undo it. */
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 
-html[data-hero-film] .site-header .header__menu {
-  color: #ffffff;
-}
+  .header--phone-hero .header__menu {
+    color: #ffffff;
+  }
 
-html[data-hero-film] .site-header .header__menu-ring {
-  border-color: rgb(255 255 255 / 0.4);
-}
+  .header--phone-hero .header__menu-ring {
+    border-color: rgb(255 255 255 / 0.4);
+  }
 
-/* The lockup swaps to the artwork drawn for a dark ground. Both are already
-   in the DOM and cross-faded on opacity — see `logo.tsx` — so this is the
-   same swap the `reversed` prop makes, asked for in CSS because the
-   component has already asked for the other one. */
-html[data-hero-film] .site-header .logo-art--full {
-  opacity: 0;
-}
+  /* The lockup swaps to the artwork drawn for a dark ground. Both are
+     already in the DOM and cross-faded on opacity — see `logo.tsx` — so
+     this is the same swap the `reversed` prop makes, asked for in CSS
+     because React cannot know the width in time to ask for it. */
+  .header--phone-hero .logo-art--full {
+    opacity: 0;
+  }
 
-html[data-hero-film] .site-header .logo-art--reversed {
-  opacity: 1;
+  .header--phone-hero .logo-art--reversed {
+    opacity: 1;
+  }
 }
 
 /* ------------------------------------------------------------------
@@ -6401,10 +6404,9 @@ html[data-hero-loading] body {
 
 /* The ground the transparent bar's white type stands on.
 
-   Rendered by `HomeHeroPhone` at the top of its band and by `ScrollHero`
-   at the top of its panel; the bar over both is its transparent state —
-   held there over the walkthrough by "the bar over the film" above. The
-   scrim and the bar are one design and have to be measured together.
+   Rendered by `HomeHeroPhone` at the top of its band; the bar itself is
+   `.header--phone-hero` above. The two are one design and have to be
+   measured together.
 
    MEASURED. The four frames are daylight and the type is white, so this
    is doing all the work — bare, the worst line-sized patch under "Menu"

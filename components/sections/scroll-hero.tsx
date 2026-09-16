@@ -23,13 +23,12 @@ import {
 } from "@/lib/frame-sequence";
 
 /**
- * Screens of scroll the walkthrough plays over. Set by the pace, not picked:
- * 2.35 screens for a 6.97s clip is about three seconds of film a screen,
- * which is what the long cut ran at — 10.47s over three and a half. Given the
- * long cut's three and a half, this clip ran at two seconds a screen and
- * dragged.
+ * Screens of scroll the walkthrough plays over: 1.6, so the 7s film runs at
+ * about four and a half seconds a screen. The client asked for it faster
+ * (2026-09-16); it was 2.35 before that, three seconds a screen, which was
+ * the long cut's pace — 10.47s over three and a half.
  */
-const SCRUB_SCREENS = 2.35;
+const SCRUB_SCREENS = 1.6;
 
 /**
  * Screens of scroll the close takes once the film has stopped: the picture
@@ -80,13 +79,16 @@ const CUE_FADE_END = at(SCRUB_SCREENS + 0.1);
  */
 const EASE_RATE = 6;
 
-/** The walkthrough as frames: 209 of them, in three sizes. See `lib/images.ts`. */
+/** The walkthrough as frames: the render's own 169, in four sizes. See `lib/images.ts`. */
 const FILM = frames.homeScroll;
 const SETS: readonly FrameSetSpec[] = FILM.sets;
 const LAST_FRAME = FILM.count - 1;
 
 /** The set the loader waits for, and the one every machine can fall back to. */
 const BASE = 0;
+
+/** The 4K set, drawn only at rest — see `REST_FRAMES_HELD`. */
+const REST_SET = SETS.length - 1;
 
 /**
  * How far along the glide the decoders are asked to work, in display frames
@@ -119,7 +121,7 @@ const LOOKAHEAD_FRAMES = 24;
  * leave room for everything else it fetches.
  */
 const BASE_CONCURRENCY = 8;
-const UPGRADE_CONCURRENCY = 4;
+const UPGRADE_CONCURRENCY = 6;
 
 /**
  * The loader's failsafes. A load where nothing has arrived for twenty
@@ -154,7 +156,9 @@ const LOADER_FADE_MS = 700;
  * decode, and one that fails stays on the smaller set, which it can keep up
  * with. Asked at a still moment (a probe run under a scrub is timed against
  * decoders busy with the scrub) and up to three times, a couple of seconds
- * apart, before a set is given up.
+ * apart, before a set is given up. The first step up is timed while the
+ * loader is still over the page, which is as still as a page gets, so the
+ * sharper set can start downloading the moment the page opens.
  */
 const PROBE_FRAMES = 14;
 const PROBE_WARMUP = 2;
@@ -164,19 +168,24 @@ const PROBE_ATTEMPTS = 3;
 const PROBE_RETRY_MS = 2000;
 
 /**
- * A set that has passed and arrived in full is swapped in the frame it has
+ * A set that has passed and arrived in full is swapped in on the frame it has
  * the picture on screen decoded — the same frame, sharper, so nothing blinks.
- * It is only asked for while the reader is still (a decode of a big frame
- * mid-scrub would take a decoder away from the frames the scrub needs), and
- * given this long of stillness before the swap is called off.
+ * That can be mid-scrub: the decoders are asked for the new set's frames a
+ * little way along the glide, and the swap lands as soon as one is under the
+ * picture. Only stillness counts against this timeout — a reader who keeps
+ * scrolling is not a reason to throw away a download — and after this long
+ * of it without landing, the swap is called off.
  */
 const PROMOTE_TIMEOUT_MS = 8000;
+
+/** How many display frames along the glide the waiting set is decoded for. */
+const PENDING_PATH_STEPS = 4;
 
 /**
  * Cross-fading between neighbouring frames, and when to stop.
  *
- * The film is 30 frames a second, so a slow scroll can sit between two
- * frames for several display frames. Drawing the next one over the last at
+ * The film is the render's own 24 frames a second, so a slow scroll can sit
+ * between two frames for several display frames. Drawing the next one over the last at
  * the fraction between them turns those steps into a continuous move; at
  * speed (a frame or more per display frame) there is nothing between to
  * show, and the nearest frame is drawn alone.
@@ -196,6 +205,43 @@ const BLEND_GIVE_UP = 12;
 const MAX_CANVAS_PIXELS = 16_777_216;
 
 const MB = 1024 * 1024;
+
+/**
+ * How many decoded frames of a set the cache must be able to hold for that
+ * set to be scrubbed on: the pair on screen, a stretch of path ahead, and a
+ * few either side of where the glide will settle. A set whose frames are too
+ * big to hold this many in the memory this machine can spare is never
+ * climbed to — which keeps the 2560 set off a 4 GB laptop.
+ */
+const MIN_FRAMES_HELD = 16;
+
+/**
+ * The 4K set is never scrubbed on. Measured on the M5 this was built on, a
+ * 4K frame takes about 40ms to decode in Chrome, and with the film at 1.6
+ * screens a steady scroll asks for ninety-odd frames a second: scrubbed on
+ * the 4K set, only every second display frame showed a new picture, where
+ * the 1920 and 2560 sets kept up with every one.
+ *
+ * So the 2560 set carries the motion, and the 4K set is the picture at
+ * rest: when the glide settles on a frame, that frame is decoded in 4K and
+ * faded in over the 2560 one in `REST_FADE_MS` — the same picture, sharper —
+ * and the moment the page moves again the 2560 set takes it back. One 4K
+ * decode per stop, which any machine that passes `REST_MIN_DECODES_PER_S`
+ * turns out in well under a tenth of a second, and a handful of 4K frames in
+ * memory rather than a scrub's worth.
+ *
+ * It needs no complete download to be useful — a frame not yet arrived just
+ * leaves the 2560 one standing — so 4K frames are used as they come in.
+ */
+const REST_FRAMES_HELD = 3;
+const REST_MIN_DECODES_PER_S = 20;
+const REST_FADE_MS = 180;
+
+/**
+ * Once a sharper set has taken over, the smaller one stays this long as a
+ * stand-in for any frame of the new one not decoded yet, and then goes.
+ */
+const DROP_AFTER_MS = 1500;
 
 /**
  * When the walkthrough runs at all: a laptop-shaped window, not merely a
@@ -243,6 +289,17 @@ function decodeBudget() {
 }
 
 /**
+ * The most the cache may be raised to for the sets on screen — 640 MB on a
+ * machine Chrome rounds to 8 GB or more, and where the browser does not say
+ * (Safari, Firefox; in practice laptops that have it). The 2560 set scrubbed
+ * with 4K frames at rest needs about 340 MB; a 4 GB machine gets neither.
+ */
+function decodeCeiling() {
+  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+  return !memory || memory >= 8 ? 640 * MB : decodeBudget();
+}
+
+/**
  * Decoders: half the cores, between one and four. The other half are the
  * page's, the compositor's and the GPU process's, which is where a smooth
  * scroll actually happens.
@@ -271,7 +328,8 @@ type Phase = "loading" | "partial" | "ready" | "failed";
  */
 function warmSet() {
   if (typeof window === "undefined") return null;
-  for (let set = SETS.length - 1; set >= BASE; set--) {
+  // The rest set is never one the page scrubs on — see `REST_FRAMES_HELD`.
+  for (let set = REST_SET - 1; set >= BASE; set--) {
     if (isDownloaded(SETS[set], FILM.count)) return set;
   }
   return null;
@@ -301,19 +359,18 @@ const languageIsAsking = () => {
 /**
  * The home page hero: one walkthrough — the towers from the air, in through
  * a window to the living room — with the scroll wheel as its transport
- * control, closing on the lockup. It fills the screen and runs up behind the
- * bar, which is transparent over it for as long as the film is pinned.
- * Nothing is laid over the film but a shade across its top for the bar's
- * white to hold on, and no grade sits on it.
+ * control, closing on the lockup. It starts below the bar, which is frosted
+ * white over a white strip at the top of the page, and fills the rest of the
+ * screen. Nothing is laid over the film itself and no grade sits on it.
  *
  * The section is a tall *track*; the panel inside it is `sticky`, so it pins
- * to the whole viewport while the track scrolls past underneath — fixed for
- * exactly as long as the hero lasts, and in the page's flow either side of
- * it. How far the track has travelled is how far into the film the canvas
+ * to the viewport below the bar while the track scrolls past underneath —
+ * fixed for exactly as long as the hero lasts, and in the page's flow either
+ * side of it. How far the track has travelled is how far into the film the canvas
  * is, so scrolling down runs the walkthrough forward and scrolling back up
  * runs it in reverse, identically.
  *
- * The film is not a `<video>`. It is 209 still frames drawn onto a
+ * The film is not a `<video>`. It is 169 still frames drawn onto a
  * `<canvas>`, because seeking a video on every animation frame is only fast
  * on a machine that decodes it in hardware, and a great many Windows laptops
  * do not — the walkthrough trailed the wheel there by two to five frames a
@@ -371,10 +428,17 @@ export function ScrollHero() {
    * A ref rather than state: the loop reads it every frame, and the swap is
    * made inside the loop, on the frame the new set has the picture ready.
    */
-  const setsRef = useRef<{ active: number | null; pending: number | null; pendingSince: number }>({
+  const setsRef = useRef<{
+    active: number | null;
+    pending: number | null;
+    pendingSince: number;
+    /** The 4K set, once this machine may draw it at rest. */
+    rest: number | null;
+  }>({
     active: null,
     pending: null,
     pendingSince: 0,
+    rest: null,
   });
   /** Promises the loading effect waits on and the loop resolves. */
   const waiting = useRef<{ drawn: (() => void) | null; promoted: ((landed: boolean) => void) | null }>({
@@ -499,10 +563,12 @@ export function ScrollHero() {
    */
   useEffect(() => {
     if (!wide) return;
+    const baseBudget = decodeBudget();
+    const ceilingBudget = decodeCeiling();
     const engine = new FrameSequence({
       sets: SETS,
       count: FILM.count,
-      budgetBytes: decodeBudget(),
+      budgetBytes: baseBudget,
       decoders: decoderCount(),
     });
     engineRef.current = engine;
@@ -512,7 +578,8 @@ export function ScrollHero() {
     // no loader to lift.
     const warm = warmSet();
     const first = warm ?? BASE;
-    setsRef.current = { active: first, pending: null, pendingSince: 0 };
+    setsRef.current = { active: first, pending: null, pendingSince: 0, rest: null };
+    engine.budget = Math.max(baseBudget, MIN_FRAMES_HELD * engine.frameBytes(first));
     let cancelled = false;
 
     // For the headless harness in a dev build: which set is on screen, and
@@ -557,42 +624,79 @@ export function ScrollHero() {
     const giveUp = () => {
       engine.dispose();
       engineRef.current = null;
-      setsRef.current = { active: null, pending: null, pendingSince: 0 };
+      setsRef.current = { active: null, pending: null, pendingSince: 0, rest: null };
       if (canvasRef.current) canvasRef.current.style.opacity = "0";
       setDrawn(false);
       setPhase("failed");
     };
 
     /**
-     * The sets worth trying after the base, best first.
+     * The sets to climb through after the one the page opens on, in order.
      *
      * The panel is drawn cropped to cover, so what it needs from a set is
      * the width of source it shows, in device pixels — its own width, or its
      * height at the film's shape if the window is taller than 16:9. The
      * smallest set with nine tenths of that is the ceiling: a set a tenth
-     * short is upscaled by an amount nobody can see in a moving picture,
-     * and the next one up would cost half again the memory and the decode
-     * for it. So a 1366-wide laptop at 1× stays on the base set, a 1536-wide
-     * one at 125% (1920 device pixels) gets the middle set, and a Retina
-     * MacBook or a 4K monitor gets the top. A set that fails is followed by
-     * the one below it.
+     * short is upscaled by an amount nobody can see in a moving picture, and
+     * the next one up would cost half again the memory and the decode for
+     * it. So a 1366-wide laptop at 1× stays on the base set, a 1536-wide one
+     * at 125% (1920 device pixels) climbs to the 1920 set, a 2560 monitor to
+     * the 2560 set, and a Retina MacBook or a 4K monitor to the 4K one — which
+     * means the 2560 set to scrub on and the 4K set at rest (see
+     * `REST_FRAMES_HELD`). A set this machine could not hold enough of in
+     * memory is not a ceiling.
      */
-    const climbOrder = () => {
+    const climbPlan = () => {
       const panel = canvasRef.current;
       const dpr = window.devicePixelRatio || 1;
       const w = (panel?.clientWidth || window.innerWidth) * dpr;
       const h = (panel?.clientHeight || window.innerHeight) * dpr;
       const shape = SETS[BASE].width / SETS[BASE].height;
       const needed = Math.max(w, h * shape) * 0.9;
+      const holdable = (set: number) =>
+        MIN_FRAMES_HELD * engine.frameBytes(set) <= ceilingBudget;
       let ceiling = SETS.findIndex((set) => set.width >= needed);
-      if (ceiling === -1) ceiling = SETS.length - 1;
-      const order: number[] = [];
-      for (let set = ceiling; set > BASE; set--) order.push(set);
-      return order;
+      if (ceiling === -1) ceiling = REST_SET;
+      const motion = Math.min(ceiling, REST_SET - 1);
+      let scrub = motion;
+      while (scrub > BASE && !holdable(scrub)) scrub--;
+      const rest =
+        ceiling === REST_SET &&
+        scrub === motion &&
+        budgetFor(scrub) + REST_FRAMES_HELD * engine.frameBytes(REST_SET) <= ceilingBudget
+          ? REST_SET
+          : null;
+      return { steps: scrub > BASE ? [scrub] : [], rest };
     };
+
+    /** The decode budget for a page scrubbing on `set`, and drawing 4K at rest if it is. */
+    const budgetFor = (set: number) =>
+      Math.max(baseBudget, MIN_FRAMES_HELD * engine.frameBytes(set)) +
+      (setsRef.current.rest !== null ? REST_FRAMES_HELD * engine.frameBytes(REST_SET) : 0);
 
     /** Set once the base set is in and on offer; past that, nothing is fatal. */
     let usable = false;
+
+    const run = async () => {
+      const plan = climbPlan();
+      const steps = plan.steps.filter((set) => set > first);
+      // Timed now, under the loader, alongside the base set's download.
+      const firstProbe = steps.length
+        ? probe(steps[0], MIN_DECODES_PER_S)
+        : Promise.resolve(false);
+      if (warm !== null) {
+        await engine.load(warm, { concurrency: BASE_CONCURRENCY, priority: "high" });
+        if (cancelled) return;
+        usable = true;
+        setPercent(100);
+        setPhase("ready");
+      } else {
+        await loadBase();
+        if (cancelled || !usable) return;
+      }
+      await climb(steps, firstProbe);
+      if (plan.rest !== null && !cancelled) await restOn(plan.rest);
+    };
 
     const loadBase = async () => {
       // The base set, counted in under the loader.
@@ -623,70 +727,104 @@ export function ScrollHero() {
       setPhase("ready");
     };
 
-    const climb = async () => {
-      // Best first; after a failure, the next one down. Nothing at or below
-      // the set already on screen.
-      for (const set of climbOrder()) {
-        if (set <= first) break;
-        await engine.load(set, {
-          to: PROBE_FRAMES,
-          concurrency: UPGRADE_CONCURRENCY,
-          priority: "low",
-        });
-        if (cancelled) return;
-
+    /**
+     * Whether this machine decodes `set` at `bar` frames a second or better:
+     * its first frames are downloaded — two at a time, at low priority, so
+     * they cost the base set little — and timed, at a still moment, up to
+     * `PROBE_ATTEMPTS` times.
+     */
+    const probe = async (set: number, bar: number) => {
+      try {
+        await engine.load(set, { to: PROBE_FRAMES, concurrency: 2, priority: "low" });
         const sample = Array.from({ length: PROBE_FRAMES }, (_, i) => i);
-        let passed = false;
-        for (let attempt = 0; attempt < PROBE_ATTEMPTS && !passed; attempt++) {
+        for (let attempt = 0; attempt < PROBE_ATTEMPTS; attempt++) {
           if (attempt > 0) await pause(PROBE_RETRY_MS);
           await untilStill();
-          if (cancelled) return;
-          passed = (await engine.throughput(set, sample, PROBE_WARMUP)) >= MIN_DECODES_PER_S;
-          if (cancelled) return;
+          if (cancelled) return false;
+          const rate = await engine.throughput(set, sample, PROBE_WARMUP);
+          if (cancelled) return false;
+          if (rate >= bar) return true;
         }
-        if (!passed) {
-          engine.drop(set);
-          continue;
-        }
+      } catch {
+        // Counted as a failure below.
+      }
+      return false;
+    };
 
-        await engine.load(set, { concurrency: UPGRADE_CONCURRENCY, priority: "low" });
-        if (cancelled) return;
-        // A set with a hole in it is not swapped in: mid-scrub, the hole
-        // would be drawn from the smaller set, and the picture would go
-        // soft for a frame and come back.
-        if (!engine.complete(set)) {
-          engine.drop(set);
-          continue;
-        }
-
-        const landed = await new Promise<boolean>((resolve) => {
-          waiting.current.promoted = resolve;
-          setsRef.current.pending = set;
-          setsRef.current.pendingSince = performance.now();
-        });
-        waiting.current.promoted = null;
-        if (cancelled) return;
-        if (landed) {
-          // Everything below the set on screen is dead weight now.
-          for (let below = BASE; below < set; below++) engine.drop(below);
-          return;
-        }
+    /**
+     * Download the rest of a set that has passed its probe and swap it in.
+     * True once it is on screen. The sets below it stay a moment as
+     * stand-ins, then go.
+     */
+    const takeUp = async (set: number) => {
+      await engine.load(set, { concurrency: UPGRADE_CONCURRENCY, priority: "low" });
+      if (cancelled) return false;
+      // A set with a hole in it is not swapped in: mid-scrub, the hole
+      // would be drawn from the smaller set, and the picture would go soft
+      // for a frame and come back.
+      if (!engine.complete(set)) {
         engine.drop(set);
+        return false;
+      }
+
+      const before = setsRef.current.active ?? BASE;
+      engine.budget = Math.max(budgetFor(before), budgetFor(set));
+      const landed = await new Promise<boolean>((resolve) => {
+        waiting.current.promoted = resolve;
+        setsRef.current.pending = set;
+        setsRef.current.pendingSince = performance.now();
+      });
+      waiting.current.promoted = null;
+      if (cancelled) return false;
+      if (!landed) {
+        engine.drop(set);
+        engine.budget = budgetFor(before);
+        return false;
+      }
+
+      await pause(DROP_AFTER_MS);
+      if (cancelled) return true;
+      for (let below = BASE; below < set; below++) engine.drop(below);
+      engine.budget = budgetFor(set);
+      return true;
+    };
+
+    /**
+     * Up the steps in order. The first failing — its probe, or its download —
+     * says nothing about the sets below it, which are tried in turn, best
+     * first; a later step failing ends the climb on the step before it.
+     */
+    const climb = async (steps: readonly number[], firstProbe: Promise<boolean>) => {
+      for (const [i, set] of steps.entries()) {
+        const passed = i === 0 ? await firstProbe : await probe(set, MIN_DECODES_PER_S);
+        if (cancelled) return;
+        if (passed && (await takeUp(set))) continue;
+        if (cancelled) return;
+        engine.drop(set);
+        if (i > 0) return;
+        for (let lower = set - 1; lower > first; lower--) {
+          if ((await probe(lower, MIN_DECODES_PER_S)) && (await takeUp(lower))) return;
+          if (cancelled) return;
+          engine.drop(lower);
+        }
+        return;
       }
     };
 
-    const run = async () => {
-      if (warm !== null) {
-        await engine.load(warm, { concurrency: BASE_CONCURRENCY, priority: "high" });
-        if (cancelled) return;
-        usable = true;
-        setPercent(100);
-        setPhase("ready");
-      } else {
-        await loadBase();
-        if (cancelled || !usable) return;
+    /**
+     * Turn on the 4K set at rest, if this machine can decode it quickly
+     * enough, and bring its frames in behind — each one is usable the
+     * moment it arrives.
+     */
+    const restOn = async (set: number) => {
+      if (!(await probe(set, REST_MIN_DECODES_PER_S))) {
+        if (!cancelled) engine.drop(set);
+        return;
       }
-      await climb();
+      if (cancelled) return;
+      setsRef.current.rest = set;
+      engine.budget = budgetFor(setsRef.current.active ?? BASE);
+      await engine.load(set, { concurrency: 4, priority: "low" });
     };
 
     run().catch(() => {
@@ -708,7 +846,7 @@ export function ScrollHero() {
       // Back to the start, so a window resized out of the laptop layout and
       // back in loads again rather than drawing from a disposed cache — or,
       // with the frames still in hand, opens again at once.
-      setsRef.current = { active: null, pending: null, pendingSince: 0 };
+      setsRef.current = { active: null, pending: null, pendingSince: 0, rest: null };
       exact.current = false;
       const reopen = warmSet() !== null;
       setPhase(reopen ? "ready" : "loading");
@@ -761,6 +899,12 @@ export function ScrollHero() {
     let shownA: DrawableFrame | null = null;
     let shownB: DrawableFrame | null = null;
     let shownWeight = -1;
+    let shownSharp: DrawableFrame | null = null;
+    let shownSharpWeight = -1;
+    /** How far the 4K frame at rest has faded in, 0–1. */
+    let restAlpha = 0;
+    /** The set the backing store was last sized for. */
+    let fittedFor = -1;
     let firstDrawn = false;
 
     /** The panel in device pixels, and whether the backing store needs fitting to it. */
@@ -778,21 +922,6 @@ export function ScrollHero() {
       hook.position = () => lastPosition;
       hook.blend = () => blendAllowed;
     }
-
-    /**
-     * The bar over the film. While the panel is pinned, `<html>` carries
-     * `data-hero-film` and the bar stays transparent with white type
-     * whatever its own scroll threshold says — the rules are in
-     * `globals.css`, the reasoning on `LIGHT_FROM_TOP` in `site-header.tsx`.
-     * Written only on change: this runs every frame.
-     */
-    let filmed: boolean | null = null;
-    const film = (on: boolean) => {
-      if (on === filmed) return;
-      filmed = on;
-      if (on) document.documentElement.setAttribute("data-hero-film", "");
-      else document.documentElement.removeAttribute("data-hero-film");
-    };
 
     /** Cached by the shared loop and refreshed on resize — see `lib/scroll.ts`. */
     let viewportHeight = window.innerHeight;
@@ -907,9 +1036,10 @@ export function ScrollHero() {
      * own path comes first, starting as far ahead as a decode takes here,
      * and followed on past the scroll position while the page is still
      * moving (`LOOKAHEAD_FRAMES`). Then the frames around where the glide
-     * will settle, the side it is heading first. And, when the reader is
-     * still, the picture's two frames in the set waiting to take over, so it
-     * can.
+     * will settle, the side it is heading first. And the same few frames in
+     * the set waiting to take over, just behind the ones on screen, so it
+     * can take over mid-scrub; and, once the picture is slowing, the frame it
+     * will stop on in 4K.
      *
      * `stride` is how many frames apart the path is sampled. On a machine
      * whose decoders cannot keep up with the film at the speed it is being
@@ -925,6 +1055,7 @@ export function ScrollHero() {
       velocity: number,
       active: number,
       pending: number | null,
+      rest: number | null,
       slow: boolean,
       blend: boolean,
       stride: number,
@@ -938,7 +1069,10 @@ export function ScrollHero() {
       ];
 
       if (slow) pairs.push(...onScreen);
-      if (pending !== null) pairs.push([pending, low], [pending, low + 1]);
+      // The frame the glide is settling on, in 4K, so it is ready to fade in
+      // as the picture comes to rest.
+      if (rest !== null && slow) pairs.push([rest, Math.round(aim)]);
+      if (pending !== null && slow) pairs.push([pending, low], [pending, low + 1]);
 
       const lead = Math.min(10, Math.round(engine.latencyMs / 16.7));
       const path = glidePath(
@@ -961,6 +1095,11 @@ export function ScrollHero() {
         if (Math.abs(index - picked) < stride) continue;
         picked = index;
         pairs.push([active, index]);
+      }
+      if (pending !== null && !slow) {
+        for (let s = lead; s < Math.min(path.length, lead + PENDING_PATH_STEPS); s++) {
+          pairs.push([pending, Math.round(path[s])]);
+        }
       }
 
       const settle = Math.round(aim);
@@ -1016,25 +1155,28 @@ export function ScrollHero() {
       const low = Math.floor(position);
       const high = Math.min(LAST_FRAME, low + 1);
 
-      // The swap to a sharper set, on the frame it has this picture ready.
+      // The swap to a sharper set, on the frame it has this picture ready —
+      // the frame this tick would draw, and its neighbour if cross-fading.
       if (sets.pending !== null) {
-        if (!still) {
-          sets.pendingSince = now;
-        } else if (
-          engine.has(sets.pending, low) &&
+        const shown = blend ? low : Math.round(position);
+        if (
+          engine.has(sets.pending, shown) &&
           (!blend || high === low || engine.has(sets.pending, high))
         ) {
           sets.active = sets.pending;
           sets.pending = null;
           layoutDirty = true;
           waiting.current.promoted?.(true);
+        } else if (!still) {
+          sets.pendingSince = now;
         } else if (now - sets.pendingSince > PROMOTE_TIMEOUT_MS) {
           sets.pending = null;
           waiting.current.promoted?.(false);
         }
       }
       const active = sets.active;
-      const pending = still ? sets.pending : null;
+      const pending = sets.pending;
+      const rest = sets.rest;
 
       const slow = speed < 1;
       const pace = Math.max(-40, Math.min(40, Math.round(velocity / 8)));
@@ -1043,10 +1185,11 @@ export function ScrollHero() {
           2 +
         (slow ? 1 : 0) +
         (pace + 40) * 1e9 +
-        Math.min(stride, 9) * 1e11;
+        Math.min(stride, 9) * 1e11 +
+        (rest === null ? 0 : 1e12);
       if (key !== plannedFor) {
         plannedFor = key;
-        const next = plan(engine, position, aim, velocity, active, pending, slow, blend, stride);
+        const next = plan(engine, position, aim, velocity, active, pending, rest, slow, blend, stride);
         engine.want(next.pairs, next.keep);
       }
 
@@ -1081,19 +1224,44 @@ export function ScrollHero() {
       exact.current = a.set === active && Math.abs(a.index - position) < 1;
       if (exact.current) waiting.current.drawn?.();
 
+      // At rest on a whole frame, the same frame in 4K, faded in over it.
+      const resting = rest !== null && still && !b && position === Math.round(position);
+      const sharp = resting ? engine.get(rest, position) : undefined;
+      restAlpha = sharp ? Math.min(1, restAlpha + (elapsed * 1000) / REST_FADE_MS) : 0;
+      const sharpWeight = sharp ? Math.round(restAlpha * 32) : 0;
+
+      // The backing store is sized for the sharpest set that will be drawn.
+      const fitFor = rest ?? active;
+      if (fitFor !== fittedFor) {
+        fittedFor = fitFor;
+        layoutDirty = true;
+      }
       if (layoutDirty) {
         layoutDirty = false;
-        fit(SETS[active]);
-      } else if (a === shownA && (b ?? null) === shownB && weight === shownWeight) {
+        fit(SETS[fitFor]);
+      } else if (
+        a === shownA &&
+        (b ?? null) === shownB &&
+        weight === shownWeight &&
+        (sharp ?? null) === shownSharp &&
+        sharpWeight === shownSharpWeight
+      ) {
         return;
       }
 
-      place(a, 1);
-      if (b) place(b, weight / 64);
+      if (sharp && sharpWeight >= 32) {
+        place(sharp, 1);
+      } else {
+        place(a, 1);
+        if (b) place(b, weight / 64);
+        if (sharp && sharpWeight > 0) place(sharp, sharpWeight / 32);
+      }
       ctx.globalAlpha = 1;
       shownA = a;
       shownB = b ?? null;
       shownWeight = weight;
+      shownSharp = sharp ?? null;
+      shownSharpWeight = sharpWeight;
 
       if (!firstDrawn) {
         firstDrawn = true;
@@ -1118,9 +1286,6 @@ export function ScrollHero() {
         lastTarget = target;
         lastMoveAt.current = now;
       }
-      // On the raw position, not the eased one: the bar should frost the
-      // frame the panel unpins, not a beat later when the ease catches up.
-      film(target < 1);
       const ease = 1 - Math.exp(-EASE_RATE * elapsed);
       current += (target - current) * ease;
       if (Math.abs(target - current) < 0.0004) current = target;
@@ -1151,8 +1316,6 @@ export function ScrollHero() {
     const sync = () => {
       if (document.hidden || !onScreen()) {
         stop();
-        // Off screen means scrolled past: the bar is over the page now.
-        if (!onScreen()) film(false);
         return;
       }
       last = 0;
@@ -1163,6 +1326,7 @@ export function ScrollHero() {
     /** Draw again from scratch on the next frame. */
     const redraw = () => {
       shownA = null;
+      shownSharp = null;
       layoutDirty = true;
     };
 
@@ -1312,7 +1476,6 @@ export function ScrollHero() {
 
     return () => {
       stop();
-      film(false);
       observer?.disconnect();
       cull?.disconnect();
       resize?.disconnect();
@@ -1351,16 +1514,18 @@ export function ScrollHero() {
   return (
     <section
       ref={trackRef}
-      // No padding under the bar: the panel pins at the very top of the
-      // window and the bar runs over it, transparent — see `film` in the
-      // loop. It used to start below the bar, on a white strip the bar sat
-      // on; that strip was the whole reason the home page was on the
-      // header's `LIGHT_FROM_TOP` list, and both went on 2026-09-16.
+      // The bar's height as top padding, so the panel's resting position is
+      // already under it and `sticky` has nothing to correct on the first
+      // paint. White rather than black: that strip is what the frosted bar
+      // has behind it at the top of the page, and why the home page is on
+      // the header's `LIGHT_FROM_TOP` list. (For part of 2026-09-16 the film
+      // ran up behind a transparent bar instead; the client asked for the
+      // white bar back.)
       className={cn(
         // `hidden desk:block` is the pre-hydration half of the split with
         // `HomeHeroPhone`: the server sends both heroes and CSS shows the
         // right one, so neither flashes before the width is known.
-        "relative hidden bg-black desk:block",
+        "relative hidden bg-white pt-[var(--header-h)] desk:block",
         mounted && "h-hero-track",
       )}
       style={
@@ -1378,23 +1543,22 @@ export function ScrollHero() {
         <HeroLoader percent={percent} leaving={!loaderUp} ground={wide} />
       )}
 
-      {/* Pins at the top of the window and runs to its foot — the whole
-          screen, bar included, full width, flush on all four sides. The
-          panel is where it pins from the first pixel, and the scrub still
-          ends exactly as it unpins.
+      {/* Pins under the bar rather than behind it, and runs to the bottom of
+          the viewport — full width, flush on all four sides. Padding and
+          offset are the same height, so the panel is where it pins from the
+          first pixel and the scrub still ends exactly as it unpins.
 
-          Nothing shares the panel with the film: it is the whole screen, so
-          the walkthrough is the first and only thing on it, and the bar is
-          over it rather than above it.
+          Nothing shares the panel with the film: it is the whole screen below
+          the bar, so the walkthrough is the first and only thing on it.
 
           The frames are 16:9, which is the tallest shape the render has and
           within a few percent of the panel's own on every screen this is
           read on, so drawing them to cover the canvas trims only those few
           percent, evenly, and never letterboxes. The poster and both soft
           plates are cut from the same frames, so the cross-fades land on
-          pictures that line up. See also `h-hero-screen` in
+          pictures that line up. See also `h-hero-panel` in
           `app/globals.css`. */}
-      <div className="sticky top-0 isolate h-hero-screen w-full overflow-hidden bg-black">
+      <div className="sticky top-[var(--header-h)] isolate h-hero-panel w-full overflow-hidden bg-black">
         {/* `next/image` with `fill` needs a positioned containing block, so the
             media gets a wrapper of its own — which is also the thing the close
             pushes in. The veil and the lockup are deliberately outside it, so
@@ -1448,17 +1612,6 @@ export function ScrollHero() {
             )}
           </div>
         </div>
-
-        {/* The bar's own ground — the same scrim the phone's band carries, at
-            the same measured depth (`.reshero__bar-scrim`, and the note on
-            "the bar over the film" in `globals.css` for what it clears). The
-            film opens on daylight, and a white lockup and a white "Menu"
-            laid straight on a blue sky do not read. So the top of the panel
-            is darkened under the bar and lets go a little below it, which is
-            the one place a shade can go without touching the picture anybody
-            is looking at. Outside the media wrapper, so the close's push
-            leaves it where it is. */}
-        <div aria-hidden="true" className="reshero__bar-scrim" />
 
         {/* An ellipse rather than a flat wash: it darkens the middle, where
             the lockup lands, and leaves the edges of the shot alone. */}

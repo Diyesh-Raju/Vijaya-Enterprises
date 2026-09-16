@@ -634,18 +634,20 @@ export const video = {
 /**
  * Frame sequences — the home hero's walkthrough, as stills (`public/frames/`).
  *
- * The towers walkthrough, 209 frames at 30 a second, cut from the render by
- * `assets/video-source/build-hero-frames.mjs` in three sizes. `ScrollHero`
- * waits for the smallest before the page opens, then brings up whichever
- * larger set this screen can use and this machine can decode fast enough.
- * The README beside the script has the sizes, and why these three.
+ * The towers walkthrough, every one of the render's 169 frames (24 a
+ * second), cut by `assets/video-source/build-hero-frames.mjs` in four sizes
+ * up to the render's own 3840×2160. `ScrollHero` waits for the smallest
+ * before the page opens, then brings up whichever larger set this screen can
+ * use and this machine can decode fast enough. The README beside the script
+ * has the sizes, and why these four.
  *
  * The directory carries a version because the frames are served immutable
  * (`next.config.ts`): new bytes need a new path, or a browser holding the old
  * frames would go on drawing them. Bump `VERSION` in the script and here
- * together.
+ * together. (`-v1` was 209 frames interpolated to 30 a second, in three
+ * sizes, and is gone.)
  */
-const homeScrollBase = "/frames/home-towers-v1";
+const homeScrollBase = "/frames/home-towers-v2";
 const homeScrollSet = (width: number, height: number) => ({
   width,
   height,
@@ -655,12 +657,13 @@ const homeScrollSet = (width: number, height: number) => ({
 
 export const frames = {
   homeScroll: {
-    count: 209,
+    count: 169,
     /** Smallest first. The first is the one the loader waits for. */
     sets: [
       homeScrollSet(1280, 720),
       homeScrollSet(1920, 1080),
       homeScrollSet(2560, 1440),
+      homeScrollSet(3840, 2160),
     ],
   },
 } as const;

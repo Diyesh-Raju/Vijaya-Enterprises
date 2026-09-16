@@ -24,9 +24,9 @@
  *
  * ── Memory ───────────────────────────────────────────────────────────────
  *
- * The downloads are small (the whole of the smallest set is about 14 MB) and
+ * The downloads are small (the whole of the smallest set is about 15 MB) and
  * are all held. The decoded frames are not: a decoded 1920×1080 frame is
- * 8 MB whatever the file was, so 209 of them would be 1.7 GB. Decoded frames
+ * 8 MB whatever the file was, so 169 of them would be 1.4 GB. Decoded frames
  * live in a cache with a byte budget (`budgetBytes`), and the caller says, on
  * every change, which frames it wants — the ones on screen, the ones the
  * glide is about to pass through, and a few either side of where it will
@@ -114,7 +114,7 @@ const bytesOf = (spec: FrameSetSpec) => spec.width * spec.height * 4;
  * the same files come back out of the HTTP cache. It holds the set in use
  * and nothing else: a set is taken out again when it is dropped, so the
  * smaller set does not linger once a larger one has taken over. That is
- * 14 MB to 31 MB of compressed frames, which the browser keeps in its blob
+ * 15 MB to 60 MB of compressed frames, which the browser keeps in its blob
  * store rather than in the page's heap.
  */
 const downloaded = new Map<string, Blob>();
@@ -322,8 +322,7 @@ export function glidePath(
 export class FrameSequence {
   readonly count: number;
   readonly sets: readonly FrameSetSpec[];
-  /** The byte budget for decoded frames. */
-  readonly budget: number;
+  private budgetBytes: number;
   /** A running mean of how long one decode takes here, in ms. */
   decodeMs = 16;
   /**
@@ -363,7 +362,7 @@ export class FrameSequence {
   }) {
     this.sets = sets;
     this.count = count;
-    this.budget = budgetBytes;
+    this.budgetBytes = budgetBytes;
     this.blobs = sets.map(() => new Array(count));
     this.progress = sets.map(() => ({ settled: 0, failed: 0, total: count }));
     this.controllers = sets.map(() => new AbortController());
@@ -384,6 +383,20 @@ export class FrameSequence {
       this.decoders.length = 0;
       this.decoders.push(new PageDecoder());
     }
+  }
+
+  /**
+   * The byte budget for decoded frames. The page raises it for a set whose
+   * frames are large (4K) and lowers it again when the set goes; lowering it
+   * evicts at once.
+   */
+  get budget() {
+    return this.budgetBytes;
+  }
+
+  set budget(bytes: number) {
+    this.budgetBytes = bytes;
+    this.evict();
   }
 
   /** How much memory one decoded frame of `set` takes. */

@@ -1,21 +1,25 @@
 #!/usr/bin/env node
 /**
- * Build the home hero's frame sequences — `public/frames/home-towers-v1/` —
+ * Build the home hero's frame sequences — `public/frames/home-towers-v2/` —
  * and the three stills that sit either side of them, from the towers render.
  *
  * The hero draws the walkthrough onto a `<canvas>` from pre-decoded WebP
  * frames instead of seeking a `<video>` (see `ScrollHero`, and the README's
  * "Frame sequence" section for why). This script cuts those frames:
  *
- *   1. One interpolated master, as PNG. The render is 24p; `minterpolate`
- *      synthesises the frames between, straight to 30p. That is exactly every
- *      second frame of the 60p master the video ladder was cut from, with the
- *      same timestamps, so frame `i` here is `2i` there. The conversion to RGB
- *      names BT.709 limited range, which is what browsers assume for the
- *      untagged render and what the video ladder was tagged as, so the frames
- *      draw in the colours the video played in. swscale's default would read
- *      the render as BT.601 and shift every hue a little.
- *   2. Three sets from that master, one per width in `SETS`, as lossy WebP.
+ *   1. Every frame of the render, as it was rendered: 169 frames at 24 a
+ *      second, 3840×2160, read straight out of ffmpeg one at a time. No
+ *      interpolation. The first cut of these frames (`-v1`) was
+ *      `minterpolate`d to 30 a second, and four frames in five were
+ *      synthesised — with doubled window outlines and smeared planting that
+ *      showed whenever the page came to rest on one. The canvas cross-fades
+ *      between neighbouring frames while the page moves, which is what the
+ *      interpolation was standing in for, and at rest every frame is one the
+ *      render actually drew. The conversion to RGB names BT.709 limited
+ *      range, which is what browsers assume for the untagged render, so the
+ *      frames draw in the colours the video played in; swscale's default
+ *      would read the render as BT.601 and shift every hue a little.
+ *   2. Four sets from each frame, one per width in `SETS`, as lossy WebP.
  *   3. The poster, the soft end plate and the soft start plate, from the same
  *      conversion, so the poster the page paints first and the frame the
  *      canvas then draws over it are the same picture in the same colours.
@@ -25,16 +29,16 @@
  *
  *     node assets/video-source/build-hero-frames.mjs
  *
- * The master is cached in the system temp directory, so a second run that only
- * changes a quality setting skips the four-minute interpolation. Pass `--fresh`
- * to rebuild it.
+ * About a minute and a half on an M5. Nothing is written outside the repo but
+ * one PNG in the system temp directory.
  *
- * Bump `VERSION` whenever the bytes of any frame change. The frames are served
- * as immutable (`next.config.ts`), so a browser holding the old ones will never
- * ask for them again under the same path.
+ * Bump `VERSION` whenever the bytes of any frame change, and `homeScrollBase`
+ * in `lib/images.ts` with it. The frames are served as immutable
+ * (`next.config.ts`), so a browser holding the old ones will never ask for
+ * them again under the same path.
  */
 
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -44,13 +48,13 @@ import sharp from "sharp";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const SRC = path.join(ROOT, "assets/video-source/walkthrough-towers.mp4");
 
-const VERSION = "v1";
+const VERSION = "v2";
 const OUT = path.join(ROOT, "public/frames", `home-towers-${VERSION}`);
 const IMAGES = path.join(ROOT, "assets/images");
 
-/** Largest set's size: the master is cut at this, and every set is resampled from it. */
-const MASTER_WIDTH = 2560;
-const MASTER_HEIGHT = 1440;
+/** The render's own size. The top set is this, untouched. */
+const WIDTH = 3840;
+const HEIGHT = 2160;
 
 /**
  * The sets, smallest first, and the WebP quality each is written at. The
@@ -58,97 +62,114 @@ const MASTER_HEIGHT = 1440;
  * Sizes and the reasoning are in the README.
  */
 const SETS = [
-  { width: 1280, height: 720, quality: 72 },
-  { width: 1920, height: 1080, quality: 72 },
-  { width: 2560, height: 1440, quality: 72 },
+  { width: 1280, height: 720, quality: 80 },
+  { width: 1920, height: 1080, quality: 80 },
+  { width: 2560, height: 1440, quality: 80 },
+  { width: 3840, height: 2160, quality: 80 },
 ];
 
-const MI = "minterpolate=fps=30:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1";
 const TO_RGB =
   "scale=in_color_matrix=bt709:in_range=tv:out_range=pc:flags=accurate_rnd+full_chroma_int,format=rgb24";
 
-const fresh = process.argv.includes("--fresh");
-const cache = path.join(os.tmpdir(), "vj-hero-frames");
-const master = path.join(cache, "master");
+/** Frames encoded at once. Each holds a 24 MB buffer while it is worked on. */
+const CONCURRENCY = Math.max(2, Math.min(6, Math.floor(os.availableParallelism() / 2)));
+
+const pad = (i) => String(i).padStart(3, "0");
+const raw = { raw: { width: WIDTH, height: HEIGHT, channels: 3 } };
 
 function ffmpeg(args) {
   const run = spawnSync("ffmpeg", ["-v", "error", "-y", ...args], { stdio: "inherit" });
   if (run.status !== 0) throw new Error(`ffmpeg failed: ${args.join(" ")}`);
 }
 
-const pad = (i) => String(i).padStart(3, "0");
-
-/** Run `task` over `items`, `limit` at a time. */
-async function pool(items, limit, task) {
-  let next = 0;
-  await Promise.all(
-    Array.from({ length: limit }, async () => {
-      while (next < items.length) await task(items[next++]);
-    }),
+/** The render's frames, in order, as raw RGB buffers. */
+async function* framesOf(file) {
+  const child = spawn(
+    "ffmpeg",
+    ["-v", "error", "-i", file, "-vf", TO_RGB, "-an", "-fps_mode", "passthrough", "-f", "rawvideo", "-"],
+    { stdio: ["ignore", "pipe", "inherit"] },
   );
+  // Listened for from the start: ffmpeg can be gone before the last chunk
+  // has been read, and a listener added after that would wait for ever.
+  const closed = new Promise((resolve) => child.on("close", resolve));
+  const size = WIDTH * HEIGHT * 3;
+  let pending = [];
+  let held = 0;
+  for await (const chunk of child.stdout) {
+    pending.push(chunk);
+    held += chunk.length;
+    while (held >= size) {
+      const all = Buffer.concat(pending, held);
+      yield all.subarray(0, size);
+      const rest = all.subarray(size);
+      pending = rest.length ? [rest] : [];
+      held = rest.length;
+    }
+  }
+  const code = await closed;
+  if (code !== 0) throw new Error(`ffmpeg exited ${code}`);
+  if (held) throw new Error(`${held} stray bytes at the end of the stream`);
 }
-
-// 1. The master ---------------------------------------------------------------
 
 if (!fs.existsSync(SRC)) {
   console.error(`No render at ${path.relative(ROOT, SRC)} — see the README's table.`);
   process.exit(1);
 }
 
-if (fresh) fs.rmSync(master, { recursive: true, force: true });
-if (!fs.existsSync(path.join(master, "000.png"))) {
-  fs.mkdirSync(master, { recursive: true });
-  console.log("Interpolating the master (about four minutes)…");
-  ffmpeg([
-    "-i", SRC,
-    "-vf", `scale=${MASTER_WIDTH}:${MASTER_HEIGHT}:flags=lanczos,${MI},${TO_RGB}`,
-    "-an", "-fps_mode", "passthrough",
-    "-start_number", "0",
-    path.join(master, "%03d.png"),
-  ]);
-}
-
-const frames = fs.readdirSync(master).filter((f) => f.endsWith(".png")).sort();
-const count = frames.length;
-console.log(`Master: ${count} frames at ${MASTER_WIDTH}×${MASTER_HEIGHT}`);
-
-// 2. The sets -----------------------------------------------------------------
-
 fs.rmSync(OUT, { recursive: true, force: true });
-for (const set of SETS) {
-  const dir = path.join(OUT, String(set.width));
-  fs.mkdirSync(dir, { recursive: true });
-  let bytes = 0;
-  await pool(frames, Math.max(2, Math.floor(os.availableParallelism() / 2)), async (file) => {
-    const i = Number.parseInt(file, 10);
-    let image = sharp(path.join(master, file));
-    if (set.width !== MASTER_WIDTH) {
-      image = image.resize(set.width, set.height, { kernel: "lanczos3" });
-    }
+for (const set of SETS) fs.mkdirSync(path.join(OUT, String(set.width)), { recursive: true });
+
+const bytes = SETS.map(() => 0);
+const running = new Set();
+let count = 0;
+let first = null;
+let last = null;
+
+const encode = async (index, frame) => {
+  for (const [i, set] of SETS.entries()) {
+    let image = sharp(frame, raw);
+    if (set.width !== WIDTH) image = image.resize(set.width, set.height, { kernel: "lanczos3" });
     const info = await image
       .webp({ quality: set.quality, effort: 6, smartSubsample: true })
-      .toFile(path.join(dir, `${pad(i)}.webp`));
-    bytes += info.size;
-  });
+      .toFile(path.join(OUT, String(set.width), `${pad(index)}.webp`));
+    bytes[i] += info.size;
+  }
+};
+
+for await (const frame of framesOf(SRC)) {
+  const index = count++;
+  // Copied: what the generator yields is a view into its stream buffer.
+  const own = Buffer.from(frame);
+  if (index === 0) first = own;
+  last = own;
+  const job = encode(index, own).finally(() => running.delete(job));
+  running.add(job);
+  if (running.size >= CONCURRENCY) await Promise.race(running);
+}
+await Promise.all(running);
+
+console.log(`${count} frames at ${WIDTH}×${HEIGHT}`);
+for (const [i, set] of SETS.entries()) {
   console.log(
-    `${set.width}×${set.height} q${set.quality}: ${(bytes / 1e6).toFixed(1)} MB, ` +
-      `${(bytes / count / 1024).toFixed(0)} KB a frame`,
+    `${set.width}×${set.height} q${set.quality}: ${(bytes[i] / 1e6).toFixed(1)} MB, ` +
+      `${(bytes[i] / count / 1024).toFixed(0)} KB a frame`,
   );
 }
 
-// 3. The stills ---------------------------------------------------------------
+// The stills ------------------------------------------------------------------
 
 // The poster is the render's own first frame at its own 3840×2160 — it is the
 // page's largest contentful paint, and `next/image` resamples it per screen.
-const posterPng = path.join(cache, "poster.png");
+const posterPng = path.join(os.tmpdir(), "vj-hero-poster.png");
 ffmpeg(["-i", SRC, "-frames:v", "1", "-vf", TO_RGB, posterPng]);
 await sharp(posterPng)
   .jpeg({ quality: 90, mozjpeg: true })
   .toFile(path.join(IMAGES, "home-scroll-towers-poster.jpg"));
+fs.rmSync(posterPng, { force: true });
 
 // The close cross-fades to this: the last frame, softened once here rather
 // than blurred live over the canvas. Sigma 6 at 1280 is what it always was.
-await sharp(path.join(master, frames[count - 1]))
+await sharp(last, raw)
   .resize(1280, 720, { kernel: "lanczos3" })
   .blur(6)
   .jpeg({ quality: 80, mozjpeg: true })
@@ -157,8 +178,8 @@ await sharp(path.join(master, frames[count - 1]))
 // The loader stands on this: the first frame, blurred far enough that it
 // reads as frosted glass over the poster. Pre-blurred for the same reason as
 // the end plate — a full-screen `backdrop-filter` redrawn under a spinning
-// ring is the kind of cost this whole rewrite exists to take away.
-await sharp(path.join(master, frames[0]))
+// ring is the kind of cost this whole pipeline exists to take away.
+await sharp(first, raw)
   .resize(960, 540, { kernel: "lanczos3" })
   .blur(18)
   .jpeg({ quality: 78, mozjpeg: true })
