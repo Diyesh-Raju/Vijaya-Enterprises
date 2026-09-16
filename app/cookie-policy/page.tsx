@@ -108,10 +108,10 @@ const sections: readonly PolicySection[] = [
     title: "Cookies that are not ours",
     body: (
       <p>
-        Where the site points elsewhere, WhatsApp for a message, Google Maps
-        for directions, our profiles on social networks, you leave this site,
-        and those services set cookies by their own policies, which are the
-        ones to read there. Nothing on our pages lets them do it here.
+        Where the site points elsewhere, WhatsApp for a message and Google
+        Maps for directions, you leave this site, and those services set
+        cookies by their own policies, which are the ones to read there.
+        Nothing on our pages lets them do it here.
       </p>
     ),
   },

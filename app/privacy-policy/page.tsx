@@ -232,8 +232,8 @@ const sections: readonly PolicySection[] = [
     title: "Links to other places",
     body: (
       <p>
-        The site links out to services we do not run, WhatsApp, Google Maps,
-        and our profiles on social networks. What happens there is governed by
+        The site links out to services we do not run, WhatsApp for a message
+        and Google Maps for directions. What happens there is governed by
         those services&rsquo; own privacy policies, not this one; from the
         moment you follow such a link, you are in their house.
       </p>

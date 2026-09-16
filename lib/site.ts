@@ -41,27 +41,17 @@ export const contact = {
   hours: "Monday – Friday, 8 am – 5 pm",
 } as const;
 
-/**
- * The networks the footer links out to.
+/*
+ * There is no `social` list here, and that is deliberate rather than an
+ * omission: Vijaya has no social media accounts (2026-09-16). What stood
+ * here were four guessed addresses under the company's own name, none of
+ * them confirmed against a real profile, and the footer drew an icon for
+ * each — four links leading to nothing, or to somebody else's account.
  *
- * ⚠️ PLACEHOLDER HANDLES — these are the addresses the accounts *would* have
- * under the company's own name; none of them has been confirmed against a real
- * profile. Check every one before launch and correct or delete it: an icon
- * that leads to somebody else's account, or to nothing, is worse than no icon.
- * Deleting an entry removes it from the footer with no other edit.
- *
- * `label` is also the key the mark is looked up by — see `socialIcons` in
- * `components/ui/social-icons.tsx`.
+ * If accounts are opened, the row of marks comes back with them: add the
+ * list, the icons in `components/ui/social-icons.tsx` (deleted with it, in
+ * the same commit) and the block in `site-footer.tsx`.
  */
-export const social = [
-  { label: "Instagram", href: "https://www.instagram.com/vijayaenterprises" },
-  { label: "Facebook", href: "https://www.facebook.com/vijayaenterprises" },
-  { label: "X", href: "https://x.com/vijayaenterprise" },
-  {
-    label: "LinkedIn",
-    href: "https://www.linkedin.com/company/vijaya-enterprises",
-  },
-] as const;
 
 export const offices = [
   {

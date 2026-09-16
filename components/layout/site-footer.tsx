@@ -2,9 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "./logo";
 import { Reveal } from "@/components/ui/reveal";
-import { socialIcons } from "@/components/ui/social-icons";
 import { img } from "@/lib/images";
-import { navLinks, contact, offices, site, social } from "@/lib/site";
+import { navLinks, contact, offices, site } from "@/lib/site";
 
 /**
  * The footer: the lockup on the left, the pages set large down the middle,
@@ -119,32 +118,9 @@ export function SiteFooter() {
               <Logo reversed className="h-20 sm:h-24 lg:h-28" />
             </Link>
 
-            {/* Marks only, no names: four known glyphs in a row read faster
-                than four words, and the label is there for a screen reader.
-                Reads off `site.social` — an account we do not have is an
-                entry that is not in the list. */}
-            {social.length > 0 && (
-              <ul className="mt-7 flex items-center gap-3">
-                {social.map(({ label, href }) => {
-                  const Icon = socialIcons[label];
-                  if (!Icon) return null;
-
-                  return (
-                    <li key={label}>
-                      <a
-                        href={href}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        aria-label={`${site.name} on ${label}`}
-                        className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition-[background-color,border-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/10"
-                      >
-                        <Icon className="h-[1.125rem] w-[1.125rem]" />
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+            {/* A row of social marks used to stand here. Vijaya has no
+                social media accounts, so there is nothing for it to link
+                to — see the note in `lib/site.ts`. */}
           </Reveal>
 
           {/* ------------------------------------------------------ Pages */}
