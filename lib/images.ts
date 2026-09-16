@@ -608,12 +608,15 @@ export const alt = {
 /** Background video files (these do live in `public/`, served by URL). */
 export const video = {
   /* The towers walkthrough, since 2026-09-15, as the ladder `ScrollHero`
-     climbs: the bridge is on screen first, in seconds; the other two are
+     climbs: the bridge is on screen first, in seconds; the others are
      brought up behind it and shown only once this machine has proved it can
-     seek them inside a frame. All three are cut from the same 60fps master
+     seek them inside a frame. All four are cut from the same 60fps master
      with a keyframe every second frame and no B-frames, because the hero
      seeks to an arbitrary time on every animation frame and the keyframe
      interval is what decides whether the scrub feels attached to the wheel.
+     The top one is the render at its own 3840×2160 (since 2026-09-16); the
+     3200 file below it was the top until then and stays as the step a
+     hardware decoder that cannot seek 4K in time is given instead.
      `assets/video-source/README.md` has the settings and the measurements.
 
      There is no phone file. The phone unmounts the hero altogether
@@ -627,6 +630,7 @@ export const video = {
     bridge: "/video/home-scroll-towers-720.mp4",
     mid: "/video/home-scroll-towers-1080.mp4",
     hq: "/video/home-scroll-towers-3200.mp4",
+    uhd: "/video/home-scroll-towers-2160.mp4",
   },
   heroDesktop: "/video/hero.mp4",
   heroMobile: "/video/hero-mobile.mp4",

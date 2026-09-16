@@ -49,20 +49,23 @@ mild 3-2-3-2 alternation in the size of each step (consecutive-step ratio
 p50 0.99, p95 1.35), which at five or six pixels of scroll a frame is below
 anything a scrub can show.
 
-### The ladder — three encodes, since 2026-09-16
+### The ladder — four encodes, since 2026-09-16
 
 The hero used to play one 3200×1800 file, for everyone, from the start —
 which meant a visitor on an ordinary connection watched a still poster and a
 percentage for ten to forty seconds before the film would move, and a
 machine decoding H.264 in software got a seek that took two to five frames
 and a scrub that lagged the wheel. Both read as "it freezes". So there are
-three files now, cut from the same master, and `ScrollHero` climbs them:
+four files now — three cut from one master on the morning of 2026-09-16,
+and the 4K top added that afternoon from a second master that differs only
+in leaving the render at its own size — and `ScrollHero` climbs them:
 
 | | file | size | GOP | crf | level | for |
 | --- | --- | --- | --- | --- | --- | --- |
 | bridge | `home-scroll-towers-720.mp4`, 1280×720 | 8.3 MB | 2 | 28 | 4.2 | on screen first, in seconds |
 | mid | `home-scroll-towers-1080.mp4`, 1920×1080 | 21.9 MB | 1 | 24 | 4.2 | the ceiling for a software decoder |
-| hq | `home-scroll-towers-3200.mp4`, 3200×1800 | 34.0 MB | 2 | 26 | 5.2 | hardware decoders — most laptops |
+| hq | `home-scroll-towers-3200.mp4`, 3200×1800 | 34.0 MB | 2 | 26 | 5.2 | hardware decoders that cannot seek 4K in time; the ceiling for a 1× screen up to ~2250 wide |
+| uhd | `home-scroll-towers-2160.mp4`, 3840×2160 | 42.5 MB | 2 | 26 | 5.2 | hardware decoders on a wide or dense screen — the render at its own size |
 
 The bridge is read in and counted ("Loading 42%"); the moment it is in, the
 cue says "Scroll to Discover" and the scrub works. The larger files are then
@@ -70,28 +73,36 @@ fetched behind it, attached in a second `<video>` out of sight, and **timed
 on sixteen seeks** that follow the same route a scrub does (after two
 unscored warm-up seeks), at a moment when nothing has scrolled for a third
 of a second — probed *under* a scrub, a file reads slow for the wrong
-reason. It is promoted only if the median lands inside a 60fps frame (16ms)
-and the 95th percentile inside two (33ms); a file that misses is asked
-twice more, a couple of seconds apart, and only then dropped, the reader
-keeping what they have. The promotion itself is a same-frame opacity swap
+reason. It is promoted only if the median lands inside 24ms on the probe —
+a frame and a half there, which is a frame as shown; see *The bar* below —
+and the 95th percentile inside two frames (33ms); a file that misses is
+asked twice more, a couple of seconds apart, and only then dropped, the
+reader trying the next file down. The promotion itself is a same-frame opacity swap
 taken the frame both elements come to rest on the same picture — judged
 before that frame's seeks go out, so it lands within a few frames even
 mid-scrub — and nothing blinks; it never cross-fades, because a cross-fade
 between two copies of one frame at different sharpness is half a second of
 the picture going soft.
 
-Which of the two larger files is tried first is the browser's call
-(`MediaCapabilities.decodingInfo` — `powerEfficient` is its word for a
-hardware decoder), and a screen that already has a third more source pixels
-than it can show stops the climb — a 1× laptop up to about 1280 wide gets
-the 1080p file and no more. The component's comments are the long version.
+Which of the larger files are tried, and in what order, is the browser's
+call (`MediaCapabilities.decodingInfo`, asked about each hardware tier the
+screen can use — `powerEfficient` is its word for a hardware decoder), and
+a screen that already has a third more source pixels than it can show
+stops the climb — a 1× laptop up to about 1280 wide gets the 1080p file
+and no more, and a 1× screen up to about 2250 wide stops at the 3200 file.
+After a failure the climb steps down from the file that *failed*: until the
+afternoon of 2026-09-16 it stepped down from the file *shown*, which after
+any failure was still the bridge, so the first file to miss its probe ended
+the climb and a machine that could not seek the 3200 file was left on 720p
+rather than handed the 1080p one. The component's comments are the long
+version.
 
 There is no phone file. The phone unmounts the hero altogether
 (`HomeHeroPhone`, since 401e977), so the `-mobile` encodes the earlier cuts
 carry were never played by anything; the towers cut's has been removed and
 the older ones are dead weight in `public/video/`.
 
-#### Why these three, measured
+#### Why these four, measured
 
 Seek cost per file, off-keyframe, on a fully buffered blob, 80 seeks × 3
 rounds, median round. "scrub" follows a scrub's route (steps of 3–5 frames
@@ -103,6 +114,10 @@ somewhere between the two columns.
 
 | file | hardware, scrub p50 / p95 | software, scrub p50 / p95 | software, random p50 |
 | --- | --- | --- | --- |
+| **3840×2160 GOP 2 crf 26 → uhd** | **19.7 / 22.5** | 46.4 / 55.7 † | — |
+| 3840×2160 GOP 2 crf 28 | 19.9 / 22.6 | — | — |
+| 3840×2160 GOP 2 crf 30 | 19.9 / 22.0 | — | — |
+| 3840×2160 GOP 1 crf 26 | 22.2 / 23.0 | — | — |
 | 3200×1800 GOP 2 crf 28 (was shipped) | 13.6 / 15.4 | 60.8 / 74.4 | 55.4 |
 | 3200×1800 GOP 1 crf 28 | 15.4 / 16.3 | 50.0 / 56.6 | 47.6 |
 | 3200×1800 GOP 2 crf 24 | 14.8 / 17.6 | 88.9 / 362 | 68.3 |
@@ -113,6 +128,12 @@ somewhere between the two columns.
 | 1280×720 GOP 2 crf 27 | 2.6 / 3.2 | 17.3 / 21.9 | 14.1 |
 | 1280×720 GOP 2 crf 30 | 2.3 / 2.5 | 16.2 / 27.4 | 11.6 |
 
+† The software columns for the 4K file were taken in the afternoon
+session, where the 3200 file measured 31.7 / 38.6 against the 72.5 / 92.4
+in the row above — the software path moves with whatever else the machine
+is doing, so read the two against each other: 4K costs half again what
+3200 does there, and both are far outside the bar.
+
 What the table decided:
 
 - **crf 26 for the top file, not 24.** On hardware 26 seeks as fast as 28
@@ -122,8 +143,19 @@ What the table decided:
   hardware decoder (15.4 vs 13.6 at 3200) and faster on a software one
   (24.4 vs 29.0 at 1080p). So the 1080p file — the one software decoders
   end up on — is all-intra and the others keep the two-frame GOP.
-- **3200 is for hardware only.** No 3200 encode gets under three frames a
-  seek in software, whatever the crf. 1080p is the ceiling there.
+- **3200 and 4K are for hardware only.** No 3200 encode gets under three
+  frames a seek in software, whatever the crf, and the 4K file is further
+  off again. 1080p is the ceiling there.
+- **The 4K file costs pixels, not bits.** Its four candidates were cut on
+  the afternoon of 2026-09-16 and timed against the shipped 3200 file in
+  the same session (13.8 / 15.4 that day, in line with the table). crf 26,
+  28 and 30 seek within 0.2ms of each other at 3840×2160 — 19.7 to 19.9
+  median — at 42.5, 34.7 and 28.6 MB, so the crf is chosen on quality
+  alone: SSIM against the 4K master 0.978 at 26, 0.974 at 28, 0.970 at 30.
+  All-intra is slower again (22.2), as it was at 3200. Across the ladder
+  the cost runs at about 2.4ms a megapixel on this decoder — 720p 2.6,
+  1080p 5.6, 3200 13.8, 4K 19.7 — which is why no 4K encode could get
+  inside the 16ms bar the probe used to hold, and why the bar moved.
 - **The bridge at crf 28** splits the two measured: 8.3 MB, three and a half
   seconds at 20 Mbps.
 
@@ -135,6 +167,43 @@ note below), the hardware path shows **no stalls** at any speed: seeks p50
 degradation across cycles, no `load()` ever called. The 933ms "hold" a
 naive count reports on the way back up is the close, where the film is
 parked on its last frame by design.
+
+The 4K file, measured the same way on the afternoon of 2026-09-16 (the
+harness's continuous scrub at 24px a frame, three passes, a 900ms pause at
+each turn, at 1512×982 and 2×): the bridge is live at 387ms, the ladder
+climbs straight to the 4K file — the swap lands at 2.75s, at the end of the
+first pass, and no frame is ever without a picture — and the file then
+scrubs at seeks p50 14.3ms, p95 20.3, max 22.4, with **no stalls** of three
+frames or more. But it does not present a new picture on every tick: over
+184 scrubbing ticks the frame changed on 137, three in four, where the 3200
+file in the same harness (held to it by the ceiling, at 1.4× density)
+changed on every one of its 184, at p50 8.7 and p95 10.9. That is the
+price of 4K on this decoder, and it is what to look for on the page: the
+scrub stays attached to the wheel, and is a shade less liquid than at
+3200. The one-line way back, if it reads as lag, is `PROBE_P50_MS = 16`
+in `ScrollHero` — the 4K file is then never shown and the ladder stops at
+3200 as before. The way to have both is the design not yet built: the 4K
+file on top only while the reader is still, the 3200 one under the scrub,
+swapped on the same frame the way a promotion already is.
+
+#### The bar, and why it moved from 16ms to 24
+
+The probe times seeks one at a time — set `currentTime`, wait for
+`seeked`, set the next — and the scrub does not: it sets the next target
+every animation frame whether or not the last has landed, and the decoder
+pipelines them. So the same file on the same machine costs less under the
+scrub than on the probe, by a steady amount: the 3200 file measures 13.5ms
+a seek on the probe and 8.7 under the scrub, the 4K file 19.3 and 14.3 —
+six to seven tenths. A bar of a frame *on the probe* was therefore a bar
+of ten or eleven milliseconds as shown, and at 3200 that pessimism was
+free: the file passed with room. At 4K it is not: no hardware decoder
+measured here lands a 4K seek under 16 on the probe, and the one measured
+lands its median inside a frame under the scrub. The bar is now 24ms on
+the probe's own figure — a frame and a half there, a frame as shown at the
+median — and the odd slow seek still has to land inside two frames. What
+the bar now admits, knowingly, is a file whose slower seeks miss the odd
+tick — three pictures in four ticks at 4K on this machine, as measured
+above — where the old bar admitted only files that hit every one.
 
 #### Colour
 
@@ -164,9 +233,17 @@ client-supplied render is the client's decision.
 SRC=assets/video-source/walkthrough-towers.mp4
 MI="minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1"
 
-# ~4 minutes. No crop: the render is already 16:9 edge to edge.
+# ~4 minutes. No crop: the render is already 16:9 edge to edge. The three
+# lower files are cut from this master, which resamples to 3200 before it
+# interpolates.
 ffmpeg -y -i $SRC -vf "scale=3200:1800:flags=lanczos,$MI" \
   -an -c:v libx264 -preset fast -crf 8 -pix_fmt yuv420p /tmp/towers-60p-master.mp4
+# ~6 minutes. The 4K file is cut from this one, which leaves the render at
+# its own 3840×2160 — the two masters differ in nothing else, and the lower
+# three were not re-cut from it, since new bytes would need new names
+# (see the cache note in `lib/images.ts`) for no visible gain.
+ffmpeg -y -i $SRC -vf "$MI" \
+  -an -c:v libx264 -preset fast -crf 8 -pix_fmt yuv420p /tmp/towers-60p-master-2160.mp4
 
 # In zsh, write the option lists out rather than expanding a variable: an
 # unquoted $COL is one word there, and ffmpeg rejects it.
@@ -185,11 +262,16 @@ ffmpeg -y -i /tmp/towers-60p-master.mp4 -vf format=yuv420p \
   -profile:v high -level 5.2 -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
   -x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709 \
   -movflags +faststart+write_colr public/video/home-scroll-towers-3200.mp4
+ffmpeg -y -i /tmp/towers-60p-master-2160.mp4 -vf format=yuv420p \
+  -an -c:v libx264 -preset slow -crf 26 -g 2 -keyint_min 2 -sc_threshold 0 -bf 0 \
+  -profile:v high -level 5.2 -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+  -x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709 \
+  -movflags +faststart+write_colr public/video/home-scroll-towers-2160.mp4
 
 # The colr atom: primaries, transfer, matrix as u16 each, then a flags byte.
 python3 - <<'EOF'
 import pathlib
-for f in ("720", "1080", "3200"):
+for f in ("720", "1080", "3200", "2160"):
     p = pathlib.Path(f"public/video/home-scroll-towers-{f}.mp4"); d = bytearray(p.read_bytes())
     i = d.find(b"colrnclx"); assert i > 0 and d[i+8:i+15] == bytes.fromhex("00020002000100")
     d[i+8:i+15] = bytes.fromhex("00010001000100"); p.write_bytes(d)

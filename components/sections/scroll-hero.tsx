@@ -91,8 +91,8 @@ const HAVE_CURRENT_DATA = 2;
  * where each lives and `assets/video-source/README.md` how each is built.
  *
  *  - `bridge` (1280×720, ~9MB) is what the reader scrubs first. It is the
- *    whole reason the ladder exists: the 3200×1800 file is 34MB, and a
- *    visitor on an ordinary connection was looking at a still poster and a
+ *    whole reason the ladder exists: the top file is 43MB, and a visitor
+ *    on an ordinary connection was looking at a still poster and a
  *    percentage for ten, twenty, forty seconds before anything moved — a
  *    "freeze" before the film had even started. The bridge is on screen in
  *    a few seconds and the upgrades happen behind it.
@@ -101,20 +101,31 @@ const HAVE_CURRENT_DATA = 2;
  *    inside a frame and a 3200×1800 one two to nine frames late; the README
  *    has the table. Sharp enough to pass for the real thing on a laptop.
  *  - `hq` (3200×1800) is for hardware decoders, which is most laptops, and
- *    is what the previous hero always played, for everyone, from the start.
+ *    was the top of the ladder until 2026-09-16. It stays as the step
+ *    below the top: what a machine that decodes in hardware but cannot
+ *    seek the 4K file fast enough is shown instead, and the ceiling for a
+ *    screen that could not show the 4K file's pixels anyway.
+ *  - `uhd` (3840×2160) is the render at its own size — the source is 4K,
+ *    and the 3200 file is a 0.83× resample of it. Its seeks cost half
+ *    again what the 3200 file's do on the same hardware decoder (about
+ *    20ms against 14 on the probe, whatever the crf: the cost tracks
+ *    pixels, not bits), which is what set the probe's bar where it is —
+ *    see `PROBE_P50_MS`.
  *
- * Which of the last two a machine gets is decided twice: once by asking
+ * Which of the upper tiers a machine gets is decided twice: once by asking
  * the browser (`MediaCapabilities`, see `climbOrder`), and then by trying —
  * the candidate is fetched, attached out of sight, and timed on sixteen
  * seeks before it is allowed on screen. A machine that cannot land those
- * inside a frame never sees the file. That second check is what turns
- * "smooth on most machines" into "never lags on any": the browser's answer
- * is a prediction, the probe is a measurement.
+ * inside a frame never sees the file, and is tried on the next one down.
+ * That second check is what turns "smooth on most machines" into "never
+ * lags on any": the browser's answer is a prediction, the probe is a
+ * measurement.
  */
 const TIERS = {
-  bridge: { src: video.homeScrollTiers.bridge, rank: 0, width: 1280 },
-  mid: { src: video.homeScrollTiers.mid, rank: 1, width: 1920 },
-  hq: { src: video.homeScrollTiers.hq, rank: 2, width: 3200 },
+  bridge: { src: video.homeScrollTiers.bridge, rank: 0, width: 1280, height: 720, bitrate: 9_500_000 },
+  mid: { src: video.homeScrollTiers.mid, rank: 1, width: 1920, height: 1080, bitrate: 25_000_000 },
+  hq: { src: video.homeScrollTiers.hq, rank: 2, width: 3200, height: 1800, bitrate: 39_000_000 },
+  uhd: { src: video.homeScrollTiers.uhd, rank: 3, width: 3840, height: 2160, bitrate: 51_000_000 },
 } as const;
 type Tier = (typeof TIERS)[keyof typeof TIERS];
 
@@ -130,50 +141,65 @@ type Tier = (typeof TIERS)[keyof typeof TIERS];
  * 1650-wide 1× laptop is visibly cleaner on the railings than the 1920 one
  * even though both are sharper than the panel. So a tier is only treated
  * as the ceiling once it carries a third again more pixels than the screen
- * — past that the next file up is a 34MB download for nothing. In practice
- * that stops the climb on 1× laptops up to about 1280 wide and lets every
- * larger or denser screen have the best file the machine can seek.
+ * — past that the next file up is a 43MB download for nothing. In practice
+ * that stops the climb on 1× laptops up to about 1280 wide, holds a 1×
+ * screen up to about 2250 wide at the 3200 file, and lets every larger or
+ * denser screen have the best file the machine can seek.
  */
 const DISPLAY_MARGIN = 1.05;
 const OVERSAMPLE = 1.35;
 
 /**
- * The top tier, described for `MediaCapabilities.decodingInfo`. `avc1.640034`
- * is High profile, level 5.2, which is what the file is. `powerEfficient` is
- * the browser's word for a hardware decoder — Chrome, Safari and Firefox all
+ * A tier described for `MediaCapabilities.decodingInfo`. `avc1.640034` is
+ * High profile, level 5.2, which both files above 1080p are (the two
+ * below are level 4.2, and are never asked about). `powerEfficient` is the
+ * browser's word for a hardware decoder — Chrome, Safari and Firefox all
  * answer it — and it is the difference between a seek that costs eight
  * milliseconds and one that costs thirty.
  */
-const HQ_DECODING: MediaDecodingConfiguration = {
+const decodingOf = (tier: Tier): MediaDecodingConfiguration => ({
   type: "file",
   video: {
     contentType: 'video/mp4; codecs="avc1.640034"',
-    width: 3200,
-    height: 1800,
-    bitrate: 40_000_000,
+    width: tier.width,
+    height: tier.height,
+    bitrate: tier.bitrate,
     framerate: 60,
   },
-};
+});
 
 /**
  * The probe: how many seeks a candidate is timed on before it may be shown,
  * and what it has to manage. Sixteen is enough for a median that means
  * something and costs under half a second on any machine that will pass.
  *
- * The bar is a 60fps frame. The scrub issues one seek an animation frame; a
- * file whose seeks take longer than a frame presents a new picture every
- * second frame at best, and that is what the reader calls lag — the README
- * records a 19.6ms median as "visibly lagged the wheel". The median has to
- * land inside 16.7ms, and the odd slow one inside two frames.
+ * The bar is a 60fps frame, as the reader gets it. The scrub issues one
+ * seek an animation frame; a file whose seeks take longer than a frame
+ * presents a new picture every second frame at best, and that is what the
+ * reader calls lag — the README records a 19.6ms median as "visibly lagged
+ * the wheel".
  *
- * The probe reads a little high: a seek on an element that is not yet
- * shown lands later than the same seek once it is, by about half again
- * (13.5ms against 8.7 for the 3200 file on the machine this was built on).
- * The bar is left where it is regardless — a file that only just passes a
- * pessimistic probe scrubs comfortably, and a machine that misses it gets
- * the next file down, which is still sharper than most screens.
+ * The probe reads high, and by a known amount. It times seeks one at a
+ * time — set `currentTime`, wait for `seeked`, set the next — where the
+ * scrub sets the next before the last has landed and the decoder
+ * pipelines them. Measured in the page on the machine this was built on,
+ * the same seeks cost six to seven tenths under the scrub of what they
+ * cost on the probe: 8.7ms against 14.1 for the 3200 file, 14.3 against
+ * 19.3 for the 4K one. So the bar on the probe's own figure is 24ms — a
+ * frame and a half on the probe, a frame as shown at the median. It was
+ * 16, a frame on the probe itself, until the 4K file arrived: no hardware
+ * decoder measured here gets a 4K seek under 16 on the probe, and at 16
+ * the ladder would have thrown the file away on the very machines it was
+ * cut for. The odd slow seek still has to land inside two frames.
+ *
+ * What the wider bar admits, knowingly, is a file whose slower seeks miss
+ * the odd tick: at 4K on the machine this was built on the scrub presents
+ * a new picture on three ticks in four, where at 3200 it did on every one
+ * — the README has the run. That is the price of the render at its own
+ * size, and `PROBE_P50_MS = 16` is the one-line way back to a ladder that
+ * stops at 3200 if it ever reads as lag.
  */
-const PROBE_P50_MS = 16;
+const PROBE_P50_MS = 24;
 const PROBE_P95_MS = 33;
 
 /**
@@ -336,7 +362,7 @@ function timedSeek(el: HTMLVideoElement, to: number, timeoutMs: number) {
  *     `assets/video-source/README.md` covers how they are built, and why a
  *     wider interval was tried and lagged.
  *   • The reader is given a small file first and a large one later — the
- *     ladder above `TIERS`. Nothing waits on a 34MB download before the
+ *     ladder above `TIERS`. Nothing waits on a 43MB download before the
  *     film will move, and no machine is shown a file it cannot seek inside
  *     a frame, because each step up is timed before it is taken.
  *   • Stepping up never blinks. The next file is brought up in a second
@@ -626,17 +652,20 @@ export function ScrollHero() {
      * First the screen: a tier already carrying a third more pixels across
      * than the panel needs is the ceiling, and nothing above it is worth
      * the download or the slower seek — see `OVERSAMPLE`. Then the browser
-     * is asked whether it decodes the top tier in hardware:
+     * is asked, for each hardware tier the screen can use, whether it
+     * decodes that file in hardware:
      *
-     *  - yes: try the top; if the probe disagrees, settle for the middle.
+     *  - yes to the 4K file: try it; if the probe disagrees, the 3200 file;
+     *    if that disagrees too, the middle.
+     *  - yes to the 3200 file only: that, then the middle.
      *  - no: the middle, and stop there — a software decoder was never going
      *    to seek 3200×1800 inside a frame, and 34MB is a lot to download to
      *    confirm it.
-     *  - no answer (an old browser): the middle, and then the top only if
-     *    the middle passed.
+     *  - no answer (an old browser): the middle, and then each file up only
+     *    if the one below it passed.
      *
-     * The rule that walks it: after a failure only step *down*, after a
-     * success only step *up*. See `run`.
+     * The rule that walks it: after a failure only step *down* from what
+     * failed, after a success only step *up* from what is shown. See `run`.
      */
     const climbOrder = async (): Promise<Tier[]> => {
       const panel = mediaRef.current?.clientWidth || window.innerWidth;
@@ -644,14 +673,18 @@ export function ScrollHero() {
       const ceiling = (tier: Tier) => tier.width >= needed * OVERSAMPLE;
       if (ceiling(TIERS.bridge)) return [];
       if (ceiling(TIERS.mid)) return [TIERS.mid];
+      // The hardware tiers this screen can use, best first.
+      const tops: Tier[] = ceiling(TIERS.hq) ? [TIERS.hq] : [TIERS.uhd, TIERS.hq];
 
+      const inHardware = async (tier: Tier) => {
+        const info = await navigator.mediaCapabilities.decodingInfo(decodingOf(tier));
+        return info.supported && info.smooth && info.powerEfficient;
+      };
       try {
-        const info = await navigator.mediaCapabilities.decodingInfo(HQ_DECODING);
-        return info.supported && info.smooth && info.powerEfficient
-          ? [TIERS.hq, TIERS.mid]
-          : [TIERS.mid];
+        const answers = await Promise.all(tops.map(inHardware));
+        return [...tops.filter((_, i) => answers[i]), TIERS.mid];
       } catch {
-        return [TIERS.mid, TIERS.hq];
+        return [TIERS.mid, ...[...tops].reverse()];
       }
     };
 
@@ -677,10 +710,16 @@ export function ScrollHero() {
       const order = await climbOrder();
       if (cancelled) return;
 
-      let lastOutcome: "up" | "down" | null = null;
+      // Never a file below the one shown; and after a failure, only files
+      // below the one that failed. (Until 2026-09-16 the second test was
+      // made against the file *shown*, which after any failure was still
+      // the bridge — so the first file to fail its probe ended the climb,
+      // and a machine that could not seek the 3200 file was left on 720p
+      // rather than handed the 1080p one.)
+      let failed: Tier | null = null;
       for (const tier of order) {
-        if (lastOutcome === "up" && tier.rank <= held.rank) break;
-        if (lastOutcome === "down" && tier.rank >= held.rank) break;
+        if (tier.rank <= held.rank) break;
+        if (failed && tier.rank >= failed.rank) break;
 
         // A candidate that will not download is not the reader's problem:
         // they have a film already.
@@ -698,7 +737,7 @@ export function ScrollHero() {
           el = await attach(slot, tier, candidate);
         } catch {
           release(slot);
-          lastOutcome = "down";
+          failed = tier;
           continue;
         }
         if (cancelled) return;
@@ -707,7 +746,7 @@ export function ScrollHero() {
         if (cancelled) return;
         if (!passed) {
           release(slot);
-          lastOutcome = "down";
+          failed = tier;
           continue;
         }
 
@@ -726,10 +765,9 @@ export function ScrollHero() {
         if (landed) {
           release(slot === "a" ? "b" : "a");
           held = tier;
-          lastOutcome = "up";
         } else {
           release(slot);
-          lastOutcome = "down";
+          failed = tier;
         }
       }
     };
@@ -1026,7 +1064,7 @@ export function ScrollHero() {
      * Take the clip out of the compositor once the hero is well behind us.
      *
      * A `<video>` holds a layer and a full-size texture for as long as it is
-     * painted, and this one is up to 3200 wide and pinned inside a track
+     * painted, and this one is up to 3840 wide and pinned inside a track
      * several screens tall. Being paused and off screen did not help: the
      * layer was still in the frame the compositor built for every scroll
      * position on the page, and it cost about a frame in eight for the
