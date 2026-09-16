@@ -8588,3 +8588,25 @@ html[data-lang="kn"] {
   letter-spacing: normal;
   word-spacing: normal;
 }
+
+/* Kannada stands taller than Latin. Its vowel signs ride above the
+   consonant and its conjuncts hang below it, so Noto draws a syllable in a
+   box about 1.36em tall where Manrope's capitals use one. The site's
+   headings are set tight for Latin — 0.98 to 1.2 — and in Kannada that
+   prints the hanging conjuncts of one line over the vowel signs of the
+   next: on the /civil-contracts hero at a phone's width, 44px type on a
+   43px line, with 60px of ink per line (2026-09-16).
+
+   So every heading, and every display line, that has had Kannada written
+   into it is opened to 1.4 — enough to clear the box, and about what
+   Kannada is set at in print. `:has()` is what keeps this off the Latin: a
+   counter's "50+" at `leading-none` keeps its leading, because nothing in
+   it was translated. The inner span is listed as well as the heading,
+   since the line box is only as tall as its tallest inline and a span that
+   carries its own `leading-*` would otherwise stay tight inside an opened
+   heading. Body copy is left alone: it is already at 1.6 and above, and
+   this rule would only pull it in. */
+html[data-lang="kn"] :is(h1, h2, h3, h4, blockquote, .font-display, .inscribed):is([data-kn], :has([data-kn])),
+html[data-lang="kn"] :is(h1, h2, h3, h4, blockquote, .font-display, .inscribed) [data-kn] {
+  line-height: 1.4;
+}
