@@ -149,13 +149,21 @@ export default function ContactPage() {
         {/* Two layers, as the CTA bands use. The flat one is what guarantees
             the copy at left reads whatever the photograph is doing behind it;
             the directional one lifts off towards the right so the glass has
-            some picture left to catch. The right end is deliberately light —
-            44px of blur is already destroying the picture, and scrimming it
-            first as well leaves the panel with nothing behind it but grey. */}
-        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-navy-950/38" />
+            some picture left to catch.
+
+            Both sit well below the bands' strength. They used to sum to
+            nine-tenths navy at the left edge and three quarters at the
+            centre, and at that weight the courtyard was a tint, not a
+            photograph. About three quarters navy behind the copy column is
+            the floor: the paragraph text at 80% white sits over the sky at
+            top left, the brightest thing in the picture. The right end is
+            clear — 44px of blur is already destroying the picture, and
+            scrimming it first as well leaves the panel with nothing behind
+            it but grey. */}
+        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-navy-950/20" />
         <div
           aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-gradient-to-r from-navy-950/88 via-navy-950/58 to-navy-950/10"
+          className="absolute inset-0 -z-10 bg-gradient-to-r from-navy-950/72 via-navy-950/42 to-transparent"
         />
         <Container>
           <div className="grid gap-14 lg:grid-cols-12 lg:gap-16">
@@ -228,9 +236,18 @@ export default function ContactPage() {
             </div>
 
             <div className="lg:col-span-7">
-              <Reveal delay={120}>
-                {/* The glass. Three things make it read as frost rather
-                    than as a tinted box, and all three have to be there:
+              <Reveal delay={120} variant="glass">
+                {/* The glass. It arrives as `glass`, not the default rise,
+                    because the default fades and a fade breaks frost: for as
+                    long as any ancestor is below full opacity the blur has
+                    nothing behind it to blur, so the panel came in as a clear
+                    window and only frosted over once the fade had ended. The
+                    `glass` variant rises without ever fading, and it is the
+                    form inside that fades instead — see `reveal-glass-body`
+                    in `globals.css`.
+
+                    Three things make it read as frost rather than as a
+                    tinted box, and all three have to be there:
 
                     `backdrop-blur-[44px]` — far past the `backdrop-blur-xl`
                     Tailwind tops out at, because the reference this was set
@@ -248,7 +265,9 @@ export default function ContactPage() {
                     point of the picture lost — the blur is doing the work,
                     and the veil is only there to catch the light. */}
                 <div className="rounded-[1.75rem] border border-white/25 bg-white/[0.12] p-7 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.55)] backdrop-blur-[44px] backdrop-saturate-150 sm:rounded-[2.5rem] sm:p-10 lg:p-12">
-                  <ContactForm />
+                  <div className="reveal-glass-body">
+                    <ContactForm />
+                  </div>
                 </div>
               </Reveal>
             </div>

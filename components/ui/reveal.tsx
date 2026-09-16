@@ -3,8 +3,11 @@
 import { useEffect, useRef, type CSSProperties, type ElementType, type ReactNode } from "react";
 import { observeReveal, prefersReducedMotion } from "@/lib/scroll";
 
-/** How the block arrives. `up` is the default: it rises into place. */
-export type RevealVariant = "up" | "fade" | "left" | "right" | "scale";
+/** How the block arrives. `up` is the default: it rises into place.
+ *  `glass` rises too but never fades — for a panel with a `backdrop-filter`,
+ *  whose frost is blank for as long as any ancestor is below full opacity.
+ *  Mark what should fade inside it with `reveal-glass-body`. */
+export type RevealVariant = "up" | "fade" | "left" | "right" | "scale" | "glass";
 
 type RevealProps = {
   children: ReactNode;

@@ -575,6 +575,25 @@
 .reveal[data-reveal="off"][data-reveal-variant="right"] { transform: translate3d(46px, 0, 0); }
 .reveal[data-reveal="off"][data-reveal-variant="scale"] { transform: scale(0.94); }
 
+/* `glass` — the rise, without the fade, for a block that is (or holds) a
+   `backdrop-filter` panel. An element below full opacity is a backdrop
+   root: everything inside it that blurs its backdrop blurs only what is
+   inside that element, and the page behind is out of reach. So for the
+   whole of a fade a frosted panel is a clear window, and the frost snaps on
+   at the moment the fade ends — which is what the enquiry form did. A
+   transform is not a backdrop root, so the block can still rise into place.
+
+   What fades instead is the panel's contents, marked `reveal-glass-body`.
+   An opacity on a descendant of the glass roots only that descendant's own
+   subtree, and nothing in there blurs its backdrop. The stagger is the
+   wrapper's own `--reveal-delay`, inherited. */
+.reveal[data-reveal="off"][data-reveal-variant="glass"] { opacity: 1; }
+.reveal[data-reveal-variant="glass"] .reveal-glass-body {
+  transition: opacity 0.9s var(--ease-reveal);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal[data-reveal="off"][data-reveal-variant="glass"] .reveal-glass-body { opacity: 0; }
+
 /* `reveal-still` — a block that keeps its place on a phone.
 
    Not every block wants arriving into. A phone shows one section at a time,
