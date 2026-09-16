@@ -252,11 +252,13 @@ export function HomeHeroPhone() {
    * opens on white paper, and a transparent bar over white paper leaves
    * the lockup on nothing.
    *
-   * A phone opens on a photograph, so it can afford the bar the laptop
-   * cannot, and the picture is better for reaching the top of the screen.
-   * The bar goes transparent over it — that half is `.header--phone-hero`
-   * in `globals.css` — and the band takes back the height the padding was
-   * holding, so nothing below this section moves by a pixel.
+   * A phone opens on a photograph, and the picture is better for reaching
+   * the top of the screen. The bar goes transparent over it — the header's
+   * ordinary state over a hero, now that the home page is off its
+   * `LIGHT_FROM_TOP` list — and the band takes back the height the padding
+   * was holding, so nothing below this section moves by a pixel. The
+   * laptop's walkthrough reaches the top of the screen the same way, since
+   * 2026-09-16.
    *
    * `desk:hidden` is the pre-hydration half of the split with `ScrollHero`.
    * After hydration the wide branch of this component unmounts outright, so
@@ -396,7 +398,8 @@ export function HomeHeroPhone() {
             touching the picture anybody is actually looking at.
 
             Sized by measurement, not by eye: see the note on
-            `.header--phone-hero` in `globals.css` for what it clears.
+            `.reshero__bar-scrim` in `globals.css` for what it clears. The
+            walkthrough lays the same scrim across the top of its panel.
 
             `z-3` puts it over both photograph layers — a settled frame is
             `z-1` and a rising one `z-2` — and it shares that level with

@@ -319,8 +319,10 @@ function timedSeek(el: HTMLVideoElement, to: number, timeoutMs: number) {
 /**
  * The home page hero: one walkthrough — the towers from the air, in through
  * a window to the living room — with the scroll wheel as its transport
- * control, closing on the lockup. Nothing is laid over the film itself and
- * no grade sits on it.
+ * control, closing on the lockup. It fills the screen and runs up behind the
+ * bar, which is transparent over it for as long as the film is pinned.
+ * Nothing is laid over the film but a shade across its top for the bar's
+ * white to hold on, and no grade sits on it.
  *
  * The section is a tall *track*; the panel inside it is `sticky`, so it pins
  * to the viewport while the track scrolls past underneath. How far the track
@@ -771,6 +773,21 @@ export function ScrollHero() {
     let lastTarget = -1;
 
     /**
+     * The bar over the film. While the panel is pinned, `<html>` carries
+     * `data-hero-film` and the bar stays transparent with white type
+     * whatever its own scroll threshold says — the rules are in
+     * `globals.css`, the reasoning on `LIGHT_FROM_TOP` in `site-header.tsx`.
+     * Written only on change: this runs every frame.
+     */
+    let filmed: boolean | null = null;
+    const film = (on: boolean) => {
+      if (on === filmed) return;
+      filmed = on;
+      if (on) document.documentElement.setAttribute("data-hero-film", "");
+      else document.documentElement.removeAttribute("data-hero-film");
+    };
+
+    /**
      * Per element, since two can be chasing at once: when its outstanding
      * seek was issued, where to, and when it was last reloaded. Keyed on the
      * element so a slot remounting with a new file starts clean.
@@ -932,6 +949,9 @@ export function ScrollHero() {
         lastTarget = target;
         lastMoveAt.current = now;
       }
+      // On the raw position, not the eased one: the bar should frost the
+      // frame the panel unpins, not a beat later when the ease catches up.
+      film(target < 1);
       current += (target - current) * (1 - Math.exp(-EASE_RATE * elapsed));
       if (Math.abs(target - current) < 0.0004) current = target;
 
@@ -971,6 +991,8 @@ export function ScrollHero() {
     const sync = () => {
       if (document.hidden || !onScreen()) {
         stop();
+        // Off screen means scrolled past: the bar is over the page now.
+        if (!onScreen()) film(false);
         return;
       }
       last = 0;
@@ -1061,6 +1083,7 @@ export function ScrollHero() {
 
     return () => {
       stop();
+      film(false);
       observer?.disconnect();
       cull?.disconnect();
       culled.current = false;
@@ -1141,15 +1164,16 @@ export function ScrollHero() {
   return (
     <section
       ref={trackRef}
-      // The bar's height as top padding, so the panel's resting position is
-      // already under it and `sticky` has nothing to correct on the first
-      // paint. White rather than black: that strip is what the frosted bar
-      // has behind it at the top of the page.
+      // No padding under the bar: the panel pins at the very top of the
+      // window and the bar runs over it, transparent — see `film` in the
+      // loop. It used to start below the bar, on a white strip the bar sat
+      // on; that strip was the whole reason the home page was on the
+      // header's `LIGHT_FROM_TOP` list, and both went on 2026-09-16.
       className={cn(
         // `hidden desk:block` is the pre-hydration half of the split with
         // `HomeHeroPhone`: the server sends both heroes and CSS shows the
         // right one, so neither flashes before the width is known.
-        "relative hidden bg-white pt-[var(--header-h)] desk:block",
+        "relative hidden bg-black desk:block",
         mounted && "h-hero-track",
       )}
       style={
@@ -1158,13 +1182,14 @@ export function ScrollHero() {
           : undefined
       }
     >
-      {/* Pins under the bar rather than behind it, and runs to the bottom of
-          the viewport — full width, flush on all four sides. Padding and
-          offset are the same height, so the panel is where it pins from the
-          first pixel and the scrub still ends exactly as it unpins.
+      {/* Pins at the top of the window and runs to its foot — the whole
+          screen, bar included, full width, flush on all four sides. The
+          panel is where it pins from the first pixel, and the scrub still
+          ends exactly as it unpins.
 
-          Nothing shares the panel with the film: it is the whole screen below
-          the bar, so the walkthrough is the first and only thing on it.
+          Nothing shares the panel with the film: it is the whole screen, so
+          the walkthrough is the first and only thing on it, and the bar is
+          over it rather than above it.
 
           The clip is cut at 16:9, which is the tallest shape the render has
           and within a few percent of the panel's own on every screen this is
@@ -1176,8 +1201,8 @@ export function ScrollHero() {
           cross-fades land on frames that line up.
 
           No `object-position`: centred, so the few percent comes off evenly.
-          See also `h-hero-panel` in `app/globals.css`. */}
-      <div className="sticky top-[var(--header-h)] isolate h-hero-panel w-full overflow-hidden bg-black">
+          See also `h-hero-screen` in `app/globals.css`. */}
+      <div className="sticky top-0 isolate h-hero-screen w-full overflow-hidden bg-black">
         {/* `next/image` with `fill` needs a positioned containing block, so the
             media gets a wrapper of its own — which is also the thing the close
             pushes in. The veil and the lockup are deliberately outside it, so
@@ -1226,6 +1251,17 @@ export function ScrollHero() {
           </div>
 
         </div>
+
+        {/* The bar's own ground — the same scrim the phone's band carries, at
+            the same measured depth (`.reshero__bar-scrim`, and the note on
+            "the bar over the film" in `globals.css` for what it clears). The
+            film opens on daylight, and a white lockup and a white "Menu"
+            laid straight on a blue sky do not read. So the top of the panel
+            is darkened under the bar and lets go a little below it, which is
+            the one place a shade can go without touching the picture anybody
+            is looking at. Outside the media wrapper, so the close's push
+            leaves it where it is. */}
+        <div aria-hidden="true" className="reshero__bar-scrim" />
 
         {/* An ellipse rather than a flat wash: it darkens the middle, where
             the lockup lands, and leaves the edges of the shot alone. */}
