@@ -32,8 +32,11 @@ const sizes: Record<Size, string> = {
   lg: "px-9 py-4.5 text-[0.9375rem] tracking-wide",
 };
 
-/** Small chevron that slides on hover — the only motion the button needs. */
-function Arrow() {
+/** Small chevron that slides on hover — the only motion the button needs.
+ *  Exported for the one text link on the site that carries it, the closing
+ *  of /joint-ventures, so the arrow there is this arrow and not a copy. It
+ *  slides on the hover of the nearest `group`. */
+export function Arrow() {
   return (
     <svg
       viewBox="0 0 16 16"

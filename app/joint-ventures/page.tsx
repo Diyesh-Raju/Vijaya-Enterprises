@@ -13,7 +13,8 @@ import {
   ReasonPanels,
   type ReasonPanel,
 } from "@/components/sections/reason-panels";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Arrow } from "@/components/ui/button";
 import { Container, Section, SectionHeading } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { img, alt } from "@/lib/images";
@@ -302,39 +303,63 @@ export default function JointVenturesPage() {
               Small, and inside this section rather than a band of its own.
               A full `CtaBand` here would be a third dark block under six
               dark panels and immediately above a dark footer, and the page
-              would end on four heavy things in a row. A rule, a line and a
-              button is the whole of it.
+              would end on four heavy things in a row.
 
-              The quote is lifted from the process section higher up the
-              page, word for word — a pull-quote, which is what the device
-              is for. Nothing here claims anything the page has not already
-              said, which is the rule this site's copy is written to.
+              Set the way a reference page the client brought sets its own
+              closing (2026-09-16): a tracked eyebrow, a heading whose second
+              half turns into an italic Didone in the accent colour, a short
+              lead under it, and a tracked text link rather than a pill. The
+              reference's accent is rose gold; the client asked for blue, so
+              it is `navy-500` — the darkest step of the ramp that still reads
+              as a second colour beside the navy-900 of the heading, and one
+              that clears AA on white at the eyebrow's size. The italic is
+              `font-serif-italic`, loaded for this line alone; see
+              `app/layout.tsx`. `font-synthesis-style: none` on it is for the
+              Kannada: Noto has no italic, and a sheared syllabary reads as
+              broken rather than as emphasised.
 
-              The marks are brass and the words navy: quotation marks set in
-              the same ink as the sentence read as punctuation to be
-              skipped, and the point of them is to be seen first. */}
+              The line is an invitation, not a claim, and the lead under it
+              is the process section said again — no obligation, what the
+              site can support, no one commits before the arrangement is
+              understood. Nothing here says anything the page has not
+              already said, which is the rule this site's copy is written to.
+
+              The heading is two nodes, so the Kannada is keyed on each half
+              (`lib/kannada.ts`); the translator puts the space between them
+              back. */}
           <div className="mt-16 border-t border-line pt-14 lg:mt-20 lg:pt-16">
-            <div className="mx-auto max-w-[44rem] text-center">
+            <div className="mx-auto max-w-[46rem] text-center">
               <Reveal>
-                <blockquote className="text-balance-head font-display text-[clamp(1.25rem,2.6vw,1.75rem)] leading-[1.45] text-navy-900">
-                  <span aria-hidden="true" className="text-brass-500">
-                    &ldquo;
-                  </span>
-                  We would rather explain the process honestly than push an
-                  agreement.
-                  <span aria-hidden="true" className="text-brass-500">
-                    &rdquo;
-                  </span>
-                </blockquote>
+                <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.3em] text-navy-500">
+                  A First Conversation
+                </p>
               </Reveal>
-              <Reveal delay={120}>
-                {/* `primary` — the navy pill. This is the page's one action
-                    on a light ground, and it is the same button every other
-                    page closes on. */}
+              <Reveal delay={80}>
+                <h2 className="text-balance-head mt-6 font-display text-[clamp(2.25rem,4.6vw,4rem)] leading-[1.06] text-navy-900">
+                  If our philosophy resonates,{" "}
+                  <em className="font-serif-italic font-normal uppercase tracking-[0.01em] text-navy-500 [font-synthesis-style:none]">
+                    we should meet.
+                  </em>
+                </h2>
+              </Reveal>
+              <Reveal delay={160}>
+                <p className="mx-auto mt-7 max-w-[34rem] text-[1.0625rem] leading-[1.75] text-slate-body">
+                  A first conversation — about the land, its ownership and what
+                  you would like to see happen — carries no obligation and no
+                  pressure. We say plainly what we think the site can support,
+                  and no one commits before every party understands the
+                  arrangement.
+                </p>
+              </Reveal>
+              <Reveal delay={240}>
                 <div className="mt-9">
-                  <Button href="/contact" variant="primary" size="lg" withArrow>
-                    Contact Us
-                  </Button>
+                  <Link
+                    href="/contact"
+                    className="group inline-flex items-center gap-2.5 text-[0.75rem] font-semibold uppercase tracking-[0.3em] text-navy-900 transition-colors duration-300 hover:text-navy-500"
+                  >
+                    Discuss A Joint Venture
+                    <Arrow />
+                  </Link>
                 </div>
               </Reveal>
             </div>

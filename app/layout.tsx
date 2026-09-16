@@ -1,5 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope, Cinzel, Noto_Sans_Kannada } from "next/font/google";
+import {
+  Manrope,
+  Cinzel,
+  Playfair_Display,
+  Noto_Sans_Kannada,
+} from "next/font/google";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SamePageLinks } from "@/components/layout/same-page-links";
@@ -45,7 +50,29 @@ const cinzel = Cinzel({
   weight: ["500"],
 });
 
-// The third face, and the only one an English reader never loads: Kannada,
+// The third face, and like Cinzel a narrow exception made for a reference
+// page the client brought (2026-09-16): the closing of /joint-ventures sets
+// the second half of its heading in an italic Didone, the way that page sets
+// its own. Neither face already here can do it — Manrope is a grotesk, and
+// Cinzel is an inscriptional Roman with no italic cut, so asking it to slant
+// would have the browser shear the upright, which is the same smear the note
+// above is about. One weight, one style, one file, reached through
+// `font-serif-italic` and set nowhere else.
+//
+// `preload: false`, like Kannada below: nothing links a preload, so the file
+// is fetched only by a page that actually sets a glyph in it, and every other
+// page pays nothing for it. On the one page that does, the heading is the
+// last thing on it, and the fetch is long finished by the time it is read.
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400"],
+  style: ["italic"],
+  preload: false,
+});
+
+// The fourth face, and the only one an English reader never loads: Kannada,
 // for the translation (see `lib/language.ts`). Manrope has no Kannada glyphs
 // at all, so without this the translated site falls back to whatever the
 // device happens to ship — which on Android is Noto, on iOS a face drawn for
@@ -168,7 +195,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // mismatch on every phone load. Suppression reaches this element's own
       // attributes and no further, which is exactly the span in question.
       suppressHydrationWarning
-      className={`${manrope.variable} ${cinzel.variable} ${notoKannada.variable}`}
+      className={`${manrope.variable} ${cinzel.variable} ${playfair.variable} ${notoKannada.variable}`}
     >
       <head>
         {/* Which language this visitor reads the site in, settled before

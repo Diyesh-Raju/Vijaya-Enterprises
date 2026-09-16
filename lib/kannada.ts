@@ -748,7 +748,15 @@ export const kannada: Readonly<Record<string, string>> = {
   "Long-Term Approach": "ದೀರ್ಘಕಾಲದ ದೃಷ್ಟಿ",
   "We are not looking for one transaction. Our reputation since 1973 depends on the outcome.": "ನಾವು ಒಂದು ವ್ಯವಹಾರವನ್ನಷ್ಟೇ ಹುಡುಕುತ್ತಿಲ್ಲ. 1973ರಿಂದ ಕಟ್ಟಿಕೊಂಡ ನಮ್ಮ ಹೆಸರು ಈ ಫಲಿತಾಂಶವನ್ನೇ ಅವಲಂಬಿಸಿದೆ.",
   "Clear from the first conversation.": "ಮೊದಲ ಮಾತುಕತೆಯಿಂದಲೇ ಸ್ಪಷ್ಟ.",
-  "We would rather explain the process honestly than push an agreement.": "ಒಪ್ಪಂದಕ್ಕೆ ಒತ್ತಾಯಿಸುವುದಕ್ಕಿಂತ ಪ್ರಕ್ರಿಯೆಯನ್ನು ಪ್ರಾಮಾಣಿಕವಾಗಿ ವಿವರಿಸುವುದೇ ನಮಗೆ ಇಷ್ಟ.",
+  // The closing, set the way the client's reference page sets its own. The
+  // heading is two nodes — the italic half is its own element — so it is
+  // keyed in halves; the clause order is the same in both languages, so
+  // the halves compose without rearranging. The link under it reuses the
+  // hero's "Discuss A Joint Venture".
+  "A First Conversation": "ಮೊದಲ ಮಾತುಕತೆ",
+  "If our philosophy resonates,": "ನಮ್ಮ ಚಿಂತನೆ ನಿಮ್ಮ ಮನಸ್ಸಿಗೆ ತಟ್ಟಿದರೆ,",
+  "we should meet.": "ನಾವು ಭೇಟಿಯಾಗೋಣ.",
+  "A first conversation — about the land, its ownership and what you would like to see happen — carries no obligation and no pressure. We say plainly what we think the site can support, and no one commits before every party understands the arrangement.": "ಭೂಮಿ, ಅದರ ಮಾಲೀಕತ್ವ ಮತ್ತು ನೀವು ಏನಾಗಬೇಕೆಂದು ಬಯಸುತ್ತೀರಿ ಎಂಬುದರ ಕುರಿತ ಮೊದಲ ಮಾತುಕತೆಗೆ ಯಾವ ಬಾಧ್ಯತೆಯೂ ಇಲ್ಲ, ಯಾವ ಒತ್ತಡವೂ ಇಲ್ಲ. ಆ ಸೈಟ್ ಏನನ್ನು ತಾಳಿಕೊಳ್ಳಬಲ್ಲದು ಎಂದು ನಾವು ಭಾವಿಸುತ್ತೇವೆಯೋ ಅದನ್ನು ಸ್ಪಷ್ಟವಾಗಿ ಹೇಳುತ್ತೇವೆ; ಪ್ರತಿ ಪಕ್ಷಕ್ಕೂ ಒಪ್ಪಂದ ಅರ್ಥವಾಗುವ ಮೊದಲು ಯಾರೂ ಬದ್ಧರಾಗುವುದಿಲ್ಲ.",
   "We would rather explain the process honestly than push an agreement. Most of our work has come from people who felt they were told the truth early.": "ಒಪ್ಪಂದಕ್ಕೆ ಒತ್ತಾಯಿಸುವುದಕ್ಕಿಂತ ಪ್ರಕ್ರಿಯೆಯನ್ನು ಪ್ರಾಮಾಣಿಕವಾಗಿ ವಿವರಿಸುವುದೇ ನಮಗೆ ಇಷ್ಟ. ಮೊದಲಿಗೇ ಸತ್ಯ ಹೇಳಲಾಯಿತು ಎಂದು ಭಾವಿಸಿದವರಿಂದಲೇ ನಮ್ಮ ಬಹುಪಾಲು ಕೆಲಸ ಬಂದಿದೆ.",
   "Discuss A Joint Venture": "ಜಂಟಿ ಉದ್ಯಮದ ಬಗ್ಗೆ ಮಾತನಾಡಿ",
   "Our Projects": "ನಮ್ಮ ಯೋಜನೆಗಳು",
