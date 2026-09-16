@@ -25,7 +25,11 @@ import { img, alt } from "@/lib/images";
  */
 
 /**
- * The cycle, in order. The first frame is what the page opens on.
+ * The cycle, in order. The first frame is what the page opens on — Vijaya
+ * Luxo at dusk, the one picture the client picked out for this page. It is
+ * a render of a building rather than a photograph of a family, so it needs
+ * no anchor: the block sits in the middle of its frame at every crop, and
+ * a phone's portrait cut keeps the lit corner and the name on it.
  *
  * `position` is where the crop hangs on to. All three photographs are
  * landscape and all three put the family off to one side, so a phone —
@@ -38,6 +42,7 @@ import { img, alt } from "@/lib/images";
  * is the top and bottom that get trimmed instead.
  */
 const FRAMES = [
+  { src: img.vijayaLuxoDusk, alt: alt.vijayaLuxoDusk, position: "50% 50%" },
   { src: img.balconyFamily, alt: alt.balconyFamily, position: "22% 50%" },
   { src: img.balconyFamilyTower, alt: alt.balconyFamilyTower, position: "72% 50%" },
   { src: img.balconyFamilyEvening, alt: alt.balconyFamilyEvening, position: "83% 50%" },
@@ -157,8 +162,8 @@ export function ResidentialHero() {
         return (
           <div
             key={photo.src.src}
-            // One hero, described once. The frames after the first are the
-            // same subject in a different light, and a rotating description
+            // One hero, described once. The frames after the first are
+            // the same page in a different light, and a rotating description
             // — or one that churns every 1.8s as the cycle turns over —
             // would be worse for a screen reader than a single stable one.
             aria-hidden={index === 0 ? undefined : "true"}

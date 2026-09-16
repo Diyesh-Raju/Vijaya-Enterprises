@@ -256,6 +256,106 @@ function Security({ className }: { className?: string }) {
   );
 }
 
+/** A camera on its bracket, lens out, with the bracket's foot on the wall. */
+function Cctv({ className }: { className?: string }) {
+  return (
+    <Amenity className={className}>
+      <path d="M8 16.5 31 10a3 3 0 0 1 3.7 2.1l1.4 5a3 3 0 0 1-2.1 3.7L11 27.3a3 3 0 0 1-3.7-2.1L6 20.2A3 3 0 0 1 8 16.5Z" />
+      <path d="M35.5 15.5 42 14v6l-6 1.5" />
+      <path d="M17 27.5v6.5" />
+      <path d="M9 34h16" />
+      <path d="M17 34v7" />
+      <circle cx="38.5" cy="17" r="1.2" />
+    </Amenity>
+  );
+}
+
+/** Rain into a tank: three drops over a vessel with a level line in it. */
+function RainWaterHarvesting({ className }: { className?: string }) {
+  return (
+    <Amenity className={className}>
+      <path d="M14 4v6M24 4v6M34 4v6" />
+      <path d="M8 16h32" />
+      <path d="M11 16v19a7 7 0 0 0 7 7h12a7 7 0 0 0 7-7V16" />
+      <path d="M11 28c3 0 3 2 6.5 2s3.5-2 6.5-2 3 2 6.5 2 3.5-2 6.5-2" />
+      <path d="M24 16c-3.2 3.8-3.2 6.8 0 6.8s3.2-3 0-6.8Z" />
+    </Amenity>
+  );
+}
+
+/** Lift car, doors shut, the call button beside it lit. */
+function Lift({ className }: { className?: string }) {
+  return (
+    <Amenity className={className}>
+      <rect x="9" y="5" width="30" height="38" rx="3.5" />
+      <rect x="14" y="11" width="20" height="27" rx="1.2" />
+      <path d="M24 11v27" />
+      <path d="M18 8.5h12" />
+      <path d="M43 20v8" />
+      <path d="M21 20.5v-4m0 0-2.5 2.6M21 16.5l2.5 2.6" />
+      <path d="M27 28.5v4m0 0 2.5-2.6M27 32.5l-2.5-2.6" />
+    </Amenity>
+  );
+}
+
+/** A car in its bay, seen from the side. */
+function CarParking({ className }: { className?: string }) {
+  return (
+    <Amenity className={className}>
+      <path d="M8 28.5 11.5 18a3 3 0 0 1 2.8-2h19.4a3 3 0 0 1 2.8 2L40 28.5" />
+      <path d="M6 30a2 2 0 0 1 2-2h32a2 2 0 0 1 2 2v7H6z" />
+      <path d="M9 37v4M39 37v4" />
+      <circle cx="14" cy="32.5" r="1.8" />
+      <circle cx="34" cy="32.5" r="1.8" />
+      <path d="M20 32.5h8" />
+      <path d="M4 42h40" />
+    </Amenity>
+  );
+}
+
+/** A party hall: bunting strung between two posts, a table set beneath. */
+function PartyHall({ className }: { className?: string }) {
+  return (
+    <Amenity className={className}>
+      <path d="M6 9c6 6 12 6 18 0s12-6 18 0" />
+      <path d="m11 12.5 2 4 2-4M21 12.5l2 4 2-4M31 12.5l2 4 2-4" />
+      <path d="M12 26h24" />
+      <path d="M14 26v14M34 26v14" />
+      <path d="M22 26v-3a2 2 0 0 1 4 0v3" />
+      <path d="M10 40h28" />
+    </Amenity>
+  );
+}
+
+/** Composter: a bin with a lid and a leaf growing up out of it. */
+function OrganicWasteComposter({ className }: { className?: string }) {
+  return (
+    <Amenity className={className}>
+      <path d="M12 21h24l-2 20H14z" />
+      <path d="M10 21h28" />
+      <path d="M17 21v-3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3" />
+      <path d="M19 27v10M24 27v10M29 27v10" />
+      <path d="M24 16V8" />
+      <path d="M24 12c-4.5 0-7-2.6-7-6 3.8 0 7 2 7 6Z" />
+      <path d="M24 12c4.5 0 7-2.6 7-6-3.8 0-7 2-7 6Z" />
+    </Amenity>
+  );
+}
+
+/** Treatment plant: a tank with water flowing in one side and out the other. */
+function Stp({ className }: { className?: string }) {
+  return (
+    <Amenity className={className}>
+      <rect x="11" y="15" width="26" height="24" rx="3" />
+      <path d="M4 20h7M37 34h7" />
+      <path d="M4 17v6M44 31v6" />
+      <path d="M15 24c3 0 3 2 6 2s3-2 6-2 3 2 6 2" />
+      <path d="M15 31c3 0 3 2 6 2s3-2 6-2 3 2 6 2" />
+      <path d="M20 15v-4h8v4" />
+    </Amenity>
+  );
+}
+
 export const amenityIcons = {
   clubhouse: Clubhouse,
   "swimming-pool": SwimmingPool,
@@ -273,6 +373,13 @@ export const amenityIcons = {
   "goods-stretcher-lift": GoodsLift,
   "power-backup": PowerBackup,
   security: Security,
+  cctv: Cctv,
+  "rain-water-harvesting": RainWaterHarvesting,
+  lift: Lift,
+  "car-parking": CarParking,
+  "party-hall": PartyHall,
+  "organic-waste-composter": OrganicWasteComposter,
+  stp: Stp,
 } as const;
 
 export type AmenityIconName = keyof typeof amenityIcons;

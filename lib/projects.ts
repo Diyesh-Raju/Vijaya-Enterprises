@@ -9,7 +9,7 @@ import { img, alt } from "@/lib/images";
  * the card becomes a link to its own page at /residential/<slug>. Entries with
  * neither still list and still filter, they just show as a placeholder card.
  *
- * ⚠️ Entries 2-8 are placeholders. Replace them as each project's photography
+ * ⚠️ Entries 4-8 are placeholders. Replace them as each project's photography
  * and details come in — nothing else needs editing.
  */
 export type Project = {
@@ -45,6 +45,14 @@ export type Project = {
   imageAlt?: string;
   heroImage?: StaticImageData;
   heroAlt?: string;
+  /** The picture beside the concept figures on the About page. */
+  conceptImage?: StaticImageData;
+  conceptAlt?: string;
+  /**
+   * Who the project is promoted by, where that is not Vijaya Enterprises
+   * itself — the About page says so under the concept.
+   */
+  promoter?: string;
 };
 
 export const projects: readonly Project[] = [
@@ -76,9 +84,75 @@ export const projects: readonly Project[] = [
     imageAlt: alt.haraVijayaHeights,
     heroImage: img.haraVijayaHeightsHero,
     heroAlt: alt.haraVijayaHeightsHero,
+    conceptImage: img.haraVijayaConcept,
+    conceptAlt: alt.haraVijayaConcept,
   },
-  { name: "Project 2", bhk: ["3 BHK"], locality: "Bengaluru", status: "Completed", possession: "Ready to move" },
-  { name: "Project 3", bhk: ["2 BHK"], locality: "Bengaluru", status: "Ongoing", possession: "One to three years" },
+  {
+    // Everything here is off the printed brochure (`lib/brochures.ts`,
+    // Volume II): 1, 2 & 3 BHK at Rajarajeshwari Nagar, BBMP approved, CC
+    // and OC issued, RERA PRM/KA/RERA/1251/310/PR/041122/005393.
+    //
+    // ⚠️ The unit count is counted off the area statement — six units to a
+    // floor, floors one to three — rather than printed as a total, and
+    // "Single Block" reads the drawings the same way. Confirm both. `status`
+    // follows the CC & OC seal on the cover: the building is complete.
+    name: "Vijaya Luxo",
+    slug: "vijaya-luxo",
+    projectType: "Luxury Apartments",
+    layout: "1, 2 & 3 BHK",
+    devSize: "Single Block",
+    totalUnits: "18 Units",
+    conceptStats: [
+      { value: "1, 2 & 3", label: "BHK" },
+      { count: 18, label: "Flats" },
+      { value: "510–1,550", label: "Sq ft" },
+      { value: "CC & OC", label: "Approved" },
+    ],
+    bhk: ["1 BHK", "2 BHK", "3 BHK"],
+    locality: "Rajarajeshwari Nagar",
+    status: "Completed",
+    possession: "Ready to move",
+    image: img.vijayaLuxoDusk,
+    imageAlt: alt.vijayaLuxoDusk,
+    heroImage: img.vijayaLuxoDusk,
+    heroAlt: alt.vijayaLuxoDusk,
+    conceptImage: img.vijayaLuxoNight,
+    conceptAlt: alt.vijayaLuxoNight,
+  },
+  {
+    // Off the printed brochure (`lib/brochures.ts`, Volume III): two acres
+    // at Somshettyhalli in North Bengaluru, 196 one- and two-bedroom homes
+    // across six blocks, BDA approved and vastu compliant. Promoted by
+    // Digvijaya Shelters LLP, the sister concern of Vijaya Enterprises.
+    //
+    // ⚠️ `status` and `possession` are not on the brochure, which went to
+    // press before the build. They follow the site's own photograph of the
+    // finished blocks (`vijayAquaGreen`) and a resident's review — confirm
+    // before this goes public.
+    name: "Vijaya Aquagreen",
+    slug: "vijaya-aquagreen",
+    projectType: "Garden Apartments",
+    layout: "1 & 2 BHK",
+    devSize: "2 Acres",
+    totalUnits: "196 Units",
+    conceptStats: [
+      { count: 6, label: "Blocks" },
+      { count: 2, label: "Acres" },
+      { count: 196, label: "Flats" },
+      { value: "1 & 2", label: "BHK" },
+    ],
+    bhk: ["1 BHK", "2 BHK"],
+    locality: "Somshettyhalli",
+    status: "Completed",
+    possession: "Ready to move",
+    image: img.vijayAquaGreen,
+    imageAlt: alt.vijayAquaGreen,
+    heroImage: img.vijayAquaGreen,
+    heroAlt: alt.vijayAquaGreen,
+    conceptImage: img.vijayaAquagreenRender,
+    conceptAlt: alt.vijayaAquagreenRender,
+    promoter: "Digvijaya Shelters LLP",
+  },
   { name: "Project 4", bhk: ["4 BHK"], locality: "Bengaluru", status: "Upcoming", possession: "One to three years" },
   { name: "Project 5", bhk: ["3 BHK"], locality: "Bengaluru", status: "Completed", possession: "Ready to move" },
   { name: "Project 6", bhk: ["2 BHK"], locality: "Bengaluru", status: "Ongoing", possession: "Within a year" },

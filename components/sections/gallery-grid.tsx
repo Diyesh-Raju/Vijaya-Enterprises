@@ -36,6 +36,16 @@ const LAYOUTS: Record<GallerySection["layout"], readonly string[]> = {
   // Two across, sharing the row. These collages are 1,536px wide, so half a
   // container still resolves sharply on a high-density screen.
   renders: ["lg:col-span-6", "lg:col-span-6"],
+  // Six single rooms, three to a row — a brochure that shows its interiors
+  // one room at a time rather than as a collage.
+  interiors: [
+    "lg:col-span-4",
+    "lg:col-span-4",
+    "lg:col-span-4",
+    "lg:col-span-4",
+    "lg:col-span-4",
+    "lg:col-span-4",
+  ],
   // One under the other, held well in from the edges. A drawing has to stay
   // big enough to read, but at anything wider than this these were dominating
   // the page — the clean exports carry more contrast than the old scans did,
@@ -58,6 +68,7 @@ const SIZES: Record<GallerySection["layout"], string> = {
   exterior: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw",
   amenities: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw",
   renders: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw",
+  interiors: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
   plans: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 65vw",
 };
 
@@ -71,6 +82,7 @@ const RATIOS: Record<GallerySection["layout"], string> = {
   exterior: "aspect-[16/9]",
   amenities: "aspect-[16/9]",
   renders: "aspect-[16/10]",
+  interiors: "aspect-[4/3]",
   plans: "aspect-[4/3] sm:aspect-[16/9]",
 };
 

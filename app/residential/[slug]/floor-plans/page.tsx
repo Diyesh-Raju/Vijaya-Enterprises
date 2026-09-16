@@ -18,7 +18,7 @@ export async function generateMetadata({
 
   return {
     title: `Floor Plans — ${project.name}`,
-    description: `Unit plans for ${project.name}: ${project.layout} layouts and penthouses, with facing and built-up area for each type.`,
+    description: `Unit plans for ${project.name}: every ${project.layout} layout, with facing and built-up area for each type.`,
     alternates: { canonical: `/residential/${project.slug}/floor-plans` },
   };
 }

@@ -1,7 +1,7 @@
 /**
- * The two brochures Vijaya has printed, page by page.
+ * The brochures Vijaya has printed, page by page.
  *
- * Both are real: the PDFs the client supplied are served whole from
+ * All three are real: the PDFs the client supplied are served whole from
  * `public/brochures/`, and every leaf below was rendered off those same
  * files (see the note on `pages`). Nothing here is written copy standing in
  * for artwork — if a brochure is reprinted, re-render its leaves and swap
@@ -9,9 +9,16 @@
  *
  * Leaves, not PDF pages. The Hara Vijaya Heights file is imposed as printed
  * spreads — one landscape PDF page carries a left-hand and a right-hand page
- * — so it was cut down the gutter on the way out. Vijaya Luxo is one square
- * page per leaf and came across as it stood. The reader pairs them back up:
- * see `BrochureReader`.
+ * — so it was cut down the gutter on the way out, and Vijaya Aquagreen is
+ * bound the same way: a square front cover, nine spreads, a square back
+ * cover, so its eleven PDF pages make twenty leaves. Vijaya Luxo is one
+ * square page per leaf and came across as it stood. The reader pairs them
+ * back up: see `BrochureReader`.
+ *
+ * The Aquagreen leaves were cut with PyMuPDF and Pillow rather than PDFKit
+ * and sharp — the same 3600px render of each page, halved down the gutter
+ * where the page is a spread, then resized to 1200 and 840 and saved as WebP
+ * at quality 80 — so the set matches the two below in size and weight.
  *
  *   swiftc -O -o pdfleaves pdfleaves.swift   # PDFKit, ~40 lines
  *   ./pdfleaves E-Brochure.pdf leaves 1200 0.8
@@ -102,6 +109,27 @@ import luxo13 from "@/assets/brochures/vijaya-luxo/13.webp";
 import luxo14 from "@/assets/brochures/vijaya-luxo/14.webp";
 import luxo15 from "@/assets/brochures/vijaya-luxo/15.webp";
 
+import aqua01 from "@/assets/brochures/vijaya-aquagreen/01.webp";
+import aqua02 from "@/assets/brochures/vijaya-aquagreen/02.webp";
+import aqua03 from "@/assets/brochures/vijaya-aquagreen/03.webp";
+import aqua04 from "@/assets/brochures/vijaya-aquagreen/04.webp";
+import aqua05 from "@/assets/brochures/vijaya-aquagreen/05.webp";
+import aqua06 from "@/assets/brochures/vijaya-aquagreen/06.webp";
+import aqua07 from "@/assets/brochures/vijaya-aquagreen/07.webp";
+import aqua08 from "@/assets/brochures/vijaya-aquagreen/08.webp";
+import aqua09 from "@/assets/brochures/vijaya-aquagreen/09.webp";
+import aqua10 from "@/assets/brochures/vijaya-aquagreen/10.webp";
+import aqua11 from "@/assets/brochures/vijaya-aquagreen/11.webp";
+import aqua12 from "@/assets/brochures/vijaya-aquagreen/12.webp";
+import aqua13 from "@/assets/brochures/vijaya-aquagreen/13.webp";
+import aqua14 from "@/assets/brochures/vijaya-aquagreen/14.webp";
+import aqua15 from "@/assets/brochures/vijaya-aquagreen/15.webp";
+import aqua16 from "@/assets/brochures/vijaya-aquagreen/16.webp";
+import aqua17 from "@/assets/brochures/vijaya-aquagreen/17.webp";
+import aqua18 from "@/assets/brochures/vijaya-aquagreen/18.webp";
+import aqua19 from "@/assets/brochures/vijaya-aquagreen/19.webp";
+import aqua20 from "@/assets/brochures/vijaya-aquagreen/20.webp";
+
 import haraS01 from "@/assets/brochures/hara-vijaya-heights/small/01.webp";
 import haraS02 from "@/assets/brochures/hara-vijaya-heights/small/02.webp";
 import haraS03 from "@/assets/brochures/hara-vijaya-heights/small/03.webp";
@@ -142,6 +170,27 @@ import luxoS12 from "@/assets/brochures/vijaya-luxo/small/12.webp";
 import luxoS13 from "@/assets/brochures/vijaya-luxo/small/13.webp";
 import luxoS14 from "@/assets/brochures/vijaya-luxo/small/14.webp";
 import luxoS15 from "@/assets/brochures/vijaya-luxo/small/15.webp";
+
+import aquaS01 from "@/assets/brochures/vijaya-aquagreen/small/01.webp";
+import aquaS02 from "@/assets/brochures/vijaya-aquagreen/small/02.webp";
+import aquaS03 from "@/assets/brochures/vijaya-aquagreen/small/03.webp";
+import aquaS04 from "@/assets/brochures/vijaya-aquagreen/small/04.webp";
+import aquaS05 from "@/assets/brochures/vijaya-aquagreen/small/05.webp";
+import aquaS06 from "@/assets/brochures/vijaya-aquagreen/small/06.webp";
+import aquaS07 from "@/assets/brochures/vijaya-aquagreen/small/07.webp";
+import aquaS08 from "@/assets/brochures/vijaya-aquagreen/small/08.webp";
+import aquaS09 from "@/assets/brochures/vijaya-aquagreen/small/09.webp";
+import aquaS10 from "@/assets/brochures/vijaya-aquagreen/small/10.webp";
+import aquaS11 from "@/assets/brochures/vijaya-aquagreen/small/11.webp";
+import aquaS12 from "@/assets/brochures/vijaya-aquagreen/small/12.webp";
+import aquaS13 from "@/assets/brochures/vijaya-aquagreen/small/13.webp";
+import aquaS14 from "@/assets/brochures/vijaya-aquagreen/small/14.webp";
+import aquaS15 from "@/assets/brochures/vijaya-aquagreen/small/15.webp";
+import aquaS16 from "@/assets/brochures/vijaya-aquagreen/small/16.webp";
+import aquaS17 from "@/assets/brochures/vijaya-aquagreen/small/17.webp";
+import aquaS18 from "@/assets/brochures/vijaya-aquagreen/small/18.webp";
+import aquaS19 from "@/assets/brochures/vijaya-aquagreen/small/19.webp";
+import aquaS20 from "@/assets/brochures/vijaya-aquagreen/small/20.webp";
 
 export type Brochure = {
   slug: string;
@@ -222,6 +271,29 @@ export const brochures: readonly Brochure[] = [
       luxoS01, luxoS02, luxoS03, luxoS04, luxoS05,
       luxoS06, luxoS07, luxoS08, luxoS09, luxoS10,
       luxoS11, luxoS12, luxoS13, luxoS14, luxoS15,
+    ],
+  },
+  {
+    slug: "vijaya-aquagreen",
+    volume: "Volume III",
+    title: "Vijaya Aquagreen",
+    place: "Somshettyhalli, North Bengaluru",
+    quote: "Homes that will bring a change.",
+    blurb:
+      "Two acres and 196 one- and two-bedroom homes at Somshettyhalli, promoted by Digvijaya Shelters LLP: the master plan block by block, seven unit plans, the specifications, the amenities and the roads in from the city.",
+    pdf: "/brochures/vijaya-aquagreen.pdf",
+    pdfSize: "0.9 MB",
+    pages: [
+      aqua01, aqua02, aqua03, aqua04, aqua05,
+      aqua06, aqua07, aqua08, aqua09, aqua10,
+      aqua11, aqua12, aqua13, aqua14, aqua15,
+      aqua16, aqua17, aqua18, aqua19, aqua20,
+    ],
+    small: [
+      aquaS01, aquaS02, aquaS03, aquaS04, aquaS05,
+      aquaS06, aquaS07, aquaS08, aquaS09, aquaS10,
+      aquaS11, aquaS12, aquaS13, aquaS14, aquaS15,
+      aquaS16, aquaS17, aquaS18, aquaS19, aquaS20,
     ],
   },
 ];

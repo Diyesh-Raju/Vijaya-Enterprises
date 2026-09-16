@@ -175,7 +175,7 @@ export default function OurLegacyPage() {
             </Reveal>
             <Reveal delay={160}>
               <p className="mt-8 text-[1.0625rem] leading-[1.8] text-navy-100/85">
-                Two of our residential projects were printed as books — the
+                Three of our residential projects were printed as books — the
                 master plan, the specifications, the floor plans unit by unit
                 and the roads that reach them, set out page by page the way
                 they went to press.
@@ -183,7 +183,7 @@ export default function OurLegacyPage() {
             </Reveal>
             <Reveal delay={240}>
               <p className="mt-8 text-[1.0625rem] leading-[1.8] text-navy-100/85">
-                Both are here whole, with nothing left out. Open one and turn
+                All three are here whole, with nothing left out. Open one and turn
                 it a spread at a time, or take the PDF with you.
               </p>
             </Reveal>
