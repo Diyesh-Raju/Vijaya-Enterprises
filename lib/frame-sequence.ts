@@ -290,31 +290,67 @@ async function fetchBlob(url: string, signal: AbortSignal, priority: "high" | "l
 }
 
 /**
- * The positions a value easing towards `to` passes through, one per display
- * frame — the same integration `ScrollHero` runs, played forward.
+ * One step of a critically damped spring: `state` moved towards `to` over
+ * `dt` seconds, exactly — the closed form, so the step is the same whether it
+ * is one long frame or several short ones. `rate` is the spring's natural
+ * frequency, in radians a second.
  *
- * The target itself may be moving: `velocity` (units a second) carries it on
- * from `to`, up to `reach` away, which is what a steady scroll does — the
- * picture chases a target that keeps going. Stops once the value is within
- * half a unit of where the target ends up, or after `steps`.
+ * Critically damped is the fastest a spring can arrive without overshooting,
+ * and unlike a plain exponential ease it never changes speed abruptly: a
+ * new target changes where the value is *heading*, and its speed follows
+ * smoothly from what it was. That is the difference between a wheel notch
+ * that kicks the picture and one it glides into.
  */
-export function glidePath(
-  from: number,
+export function springStep(
+  state: { x: number; v: number },
   to: number,
   rate: number,
-  hz: number,
-  steps: number,
-  velocity = 0,
-  reach = 0,
+  dt: number,
 ) {
+  const offset = state.x - to;
+  const decay = Math.exp(-rate * dt);
+  const push = state.v + rate * offset;
+  state.x = to + (offset + push * dt) * decay;
+  state.v = (state.v - rate * push * dt) * decay;
+}
+
+/**
+ * The positions a value on that spring passes through, one per display
+ * frame — the same integration `ScrollHero` runs, played forward from where
+ * the value is and how fast it is going.
+ *
+ * The target itself may be moving: `drift` (units a second) carries it on
+ * from `to`, up to `reach` away, which is what a steady scroll does — the
+ * picture chases a target that keeps going. Stops once the value has all but
+ * arrived where the target ends up, or after `steps`.
+ */
+export function glidePath({
+  from,
+  speed = 0,
+  to,
+  rate,
+  hz,
+  steps,
+  drift = 0,
+  reach = 0,
+}: {
+  from: number;
+  speed?: number;
+  to: number;
+  rate: number;
+  hz: number;
+  steps: number;
+  drift?: number;
+  reach?: number;
+}) {
   const out: number[] = [];
-  const k = 1 - Math.exp(-rate / hz);
-  const end = to + Math.max(-reach, Math.min(reach, velocity * (steps / hz)));
-  let x = from;
-  for (let i = 1; i <= steps && Math.abs(end - x) >= 0.5; i++) {
-    const target = to + Math.max(-reach, Math.min(reach, velocity * (i / hz)));
-    x += (target - x) * k;
-    out.push(x);
+  const end = to + Math.max(-reach, Math.min(reach, drift * (steps / hz)));
+  const state = { x: from, v: speed };
+  for (let i = 1; i <= steps; i++) {
+    if (Math.abs(end - state.x) < 0.5 && Math.abs(state.v) < hz * 0.05) break;
+    const target = to + Math.max(-reach, Math.min(reach, drift * (i / hz)));
+    springStep(state, target, rate, 1 / hz);
+    out.push(state.x);
   }
   return out;
 }
@@ -535,10 +571,18 @@ export class FrameSequence {
    * the frames on screen, which must never be evicted from under the canvas,
    * but which a fast scrub has already moved past by the time a decode of
    * them could land.
+   *
+   * `hold` is pinned after them, if there is room, and never queued: frames
+   * worth keeping if they are already decoded, but not worth a decoder's
+   * time. A fast glide asks for every second frame or so along its path, and
+   * which ones shifts by a frame from one display frame to the next; without
+   * this, the frames it asked for a moment ago lose their pin, are evicted,
+   * and have to be decoded again just as they are needed.
    */
   want(
     pairs: readonly (readonly [number, number])[],
     keep: readonly (readonly [number, number])[] = [],
+    hold: readonly (readonly [number, number])[] = [],
   ) {
     const pinned = new Set<number>();
     const queue: number[] = [];
@@ -560,6 +604,7 @@ export class FrameSequence {
     };
     take(keep, later);
     take(pairs, queue);
+    take(hold, []);
     this.pinned = pinned;
     this.queue = queue.concat(later);
     this.pump();

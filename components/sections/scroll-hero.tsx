@@ -17,25 +17,29 @@ import { img, alt, frames } from "@/lib/images";
 import {
   FrameSequence,
   glidePath,
+  springStep,
   isDownloaded,
   type DrawableFrame,
   type FrameSetSpec,
 } from "@/lib/frame-sequence";
 
 /**
- * Screens of scroll the walkthrough plays over: 1.6, so the 7s film runs at
- * about four and a half seconds a screen. The client asked for it faster
- * (2026-09-16); it was 2.35 before that, three seconds a screen, which was
- * the long cut's pace — 10.47s over three and a half.
+ * Screens of scroll the walkthrough plays over: 1.3, so the 7s film runs at
+ * about five and a half seconds a screen. The client has asked for it faster
+ * twice: 2.35 (three seconds a screen, the long cut's pace) became 1.6 on
+ * 2026-09-16, and 1.6 became this on 2026-09-17.
  */
-const SCRUB_SCREENS = 1.6;
+const SCRUB_SCREENS = 1.3;
 
 /**
  * Screens of scroll the close takes once the film has stopped: the picture
  * softening, the lockup and the line arriving, then a hold on the finished
- * card. Counted separately so it keeps its length whatever the clip's.
+ * card. Counted separately so it keeps its length whatever the clip's. 1.25
+ * since 2026-09-17, when the whole hero was asked to move faster (1.5
+ * before); its stages below are fractions of it, so they kept their order
+ * and proportions.
  */
-const CLOSE_SCREENS = 1.5;
+const CLOSE_SCREENS = 1.25;
 
 /** Viewport heights the whole hero occupies, counting the one it starts on. */
 const TRACK_SCREENS = 1 + SCRUB_SCREENS + CLOSE_SCREENS;
@@ -51,33 +55,54 @@ const at = (screens: number) => screens / (SCRUB_SCREENS + CLOSE_SCREENS);
 const CLIP_END = at(SCRUB_SCREENS);
 
 /**
- * The close, in screens past `CLIP_END`. The picture goes soft and shade
- * pools under the middle of it, then the lockup rises into that, then the
- * line beneath. Each finishes before the track does, so the hero holds the
- * finished card for a quarter of a screen rather than completing on the last
- * pixel before it unpins.
+ * The close, as fractions of `CLOSE_SCREENS` past `CLIP_END`. The picture
+ * goes soft and shade pools under the middle of it, then the lockup rises
+ * into that, then the line beneath. Each finishes before the track does, so
+ * the hero holds the finished card for the last sixth of the close rather
+ * than completing on the last pixel before it unpins.
  */
+const close = (share: number) => at(SCRUB_SCREENS + share * CLOSE_SCREENS);
 const POOL_START = CLIP_END;
-const LOGO_START = at(SCRUB_SCREENS + 0.3);
-const FINALE_END = at(SCRUB_SCREENS + 1);
-const TAG_START = at(SCRUB_SCREENS + 0.65);
-const TAG_END = at(SCRUB_SCREENS + 1.25);
+const LOGO_START = close(0.2);
+const FINALE_END = close(2 / 3);
+const TAG_START = close(0.43);
+const TAG_END = close(5 / 6);
 
 /**
  * The cue at the foot of the film stays for most of the walkthrough and gives
  * way near its end — gone before the lockup starts to rise, so the two are
  * never on the screen together.
  */
-const CUE_FADE_START = at(SCRUB_SCREENS - 0.6);
+const CUE_FADE_START = at(SCRUB_SCREENS - 0.5);
 const CUE_FADE_END = at(SCRUB_SCREENS + 0.1);
 
 /**
- * How fast the drawn position converges on the scroll position, per second.
- * 6 is a time constant of about 170ms: quick enough to feel attached to the
- * wheel, slow enough to carry a flick, a notched wheel or a jittery trackpad
- * through as one glide instead of a series of jumps.
+ * How the drawn position follows the scroll: a critically damped spring at
+ * this natural frequency (radians a second) — `springStep` in
+ * `lib/frame-sequence.ts`. During a steady scroll the picture trails the
+ * scroll position by 2/rate seconds; a step (one notch of a wheel) is 95%
+ * arrived in about 4.7/rate.
+ *
+ * It was a plain exponential ease at 6 a second until 2026-09-17, and that
+ * was the one thing about the glide that was not smooth: an exponential
+ * starts moving at full speed the instant its target changes, so every notch
+ * of a mouse wheel landed as a small kick. The spring's speed changes
+ * continuously, so a notch is glided into, and a run of notches is one move.
+ *
+ * 40, since later the same day. It was 13 — a trail of 150ms, chosen to
+ * give the decoders a predictable path — and measured in a real browser
+ * window on the M5 this was built on, at a steady 900 pixels a second, the
+ * frame on screen was seventeen frames of film behind the one under the
+ * finger, and the picture went on moving for two thirds of a second after
+ * the scroll stopped. The client called it very laggy, and it was: a film
+ * scrubbed by hand has to sit on the hand. At 40 the trail is 50ms, under
+ * what anyone reads as lag, and a notch is arrived in 120ms — still a
+ * glide over the wheel's steps and a trackpad's jitter, since the browser
+ * animates a wheel notch over about 150ms of its own before this sees it.
+ * The decoders can follow a path this short because the scrub sets are
+ * JPEG now, decoded in a third of the time (see `lib/images.ts`).
  */
-const EASE_RATE = 6;
+const SPRING_RATE = 40;
 
 /** The walkthrough as frames: the render's own 169, in four sizes. See `lib/images.ts`. */
 const FILM = frames.homeScroll;
@@ -98,10 +123,21 @@ const REST_SET = SETS.length - 1;
  * memory, and a long reach fills the budget with frames the reader may never
  * scroll to. Past the path, the frames either side of where the glide will
  * settle — `SETTLE_RADIUS` of them — are what is worth having ready: the next
- * small scroll in either direction lands on them.
+ * scroll in either direction lands on them.
+ *
+ * Twelve, since 2026-09-17, because of the mouse wheel. A notch is a jump of
+ * about a hundred and twenty pixels that nothing can see coming, sixteen
+ * frames of film at 1.3 screens, and with the glide as quick as it now is
+ * the picture covers four frames a display frame right after one — too
+ * fast for frames first asked for on the notch to all land in time (a
+ * frame in eight was a stand-in, measured). With the radius at twelve the
+ * next notch's frames are decoded before it happens, while the picture is
+ * still or nearly so; only its last few are asked for on the day, and
+ * those are the ones needed last. Twenty-five frames of the 2560 set is
+ * 370 MB, which is why the radius also bows to the budget in `plan`.
  */
 const PATH_TICKS = 12;
-const SETTLE_RADIUS = 6;
+const SETTLE_RADIUS = 12;
 
 /**
  * How far the decoders are sent past where the scroll is now, while it is
@@ -370,12 +406,14 @@ const languageIsAsking = () => {
  * is, so scrolling down runs the walkthrough forward and scrolling back up
  * runs it in reverse, identically.
  *
- * The film is not a `<video>`. It is 169 still frames drawn onto a
- * `<canvas>`, because seeking a video on every animation frame is only fast
- * on a machine that decodes it in hardware, and a great many Windows laptops
- * do not — the walkthrough trailed the wheel there by two to five frames a
- * seek. `lib/frame-sequence.ts` has the long version. What that buys, and
- * how it is kept that way:
+ * The film is not a `<video>`. It is 169 still frames — WebP for the
+ * smallest and largest sets, baseline JPEG for the two the page scrubs on,
+ * which decode three times as fast — drawn onto a `<canvas>`, because
+ * seeking a video on every animation frame is only fast on a machine that
+ * decodes it in hardware, and a great many Windows laptops do not — the
+ * walkthrough trailed the wheel there by two to five frames a seek.
+ * `lib/frame-sequence.ts` has the long version. What that buys, and how it
+ * is kept that way:
  *
  *   • Every frame is downloaded before the page opens. The loader stands
  *     over the page and counts them in; nothing can be scrolled until the
@@ -873,17 +911,18 @@ export function ScrollHero() {
     if (!ctx) return;
 
     let frame = 0;
-    let current = 0;
+    /** The eased progress through the track, 0–1, and its speed — for the close. */
+    const progress = { x: 0, v: 0 };
     /**
-     * The film's own eased position, in frames — chasing the scroll like
-     * `current` does, but aimed at the nearest whole frame rather than the
+     * The film's own eased position, in frames, and its speed — chasing the
+     * scroll on the same spring as `progress`, but aimed at the nearest whole frame rather than the
      * exact point between two. While the page moves the aim moves on and the
      * glide carries through the frames, cross-fading as it goes; when the
      * page stops, the picture settles *on* a frame. Aimed at the exact point,
      * it would settle between two and hold the cross-fade there — a double
      * exposure of every window frame for as long as the reader looked.
      */
-    let filmAt = 0;
+    const film = { x: 0, v: 0 };
     let last = 0;
     let painted = -1;
     let lastTarget = -1;
@@ -1074,16 +1113,21 @@ export function ScrollHero() {
       if (rest !== null && slow) pairs.push([rest, Math.round(aim)]);
       if (pending !== null && slow) pairs.push([pending, low], [pending, low + 1]);
 
-      const lead = Math.min(10, Math.round(engine.latencyMs / 16.7));
-      const path = glidePath(
-        position,
-        aim,
-        EASE_RATE,
-        60,
-        lead + PATH_TICKS,
-        velocity,
-        LOOKAHEAD_FRAMES,
-      );
+      // A frame asked for now lands `latencyMs` from now: it is asked for
+      // the display frame it can still make, not the one it would just miss
+      // — and no further, since a guess at where the glide will be grows
+      // less exact with every frame it looks ahead.
+      const lead = Math.min(10, Math.ceil(engine.latencyMs / 16.7));
+      const path = glidePath({
+        from: position,
+        speed: film.v,
+        to: aim,
+        rate: SPRING_RATE,
+        hz: 60,
+        steps: lead + PATH_TICKS,
+        drift: velocity,
+        reach: LOOKAHEAD_FRAMES,
+      });
       let picked = Number.NaN;
       for (let s = lead; s < path.length; s++) {
         const x = path[s];
@@ -1102,17 +1146,30 @@ export function ScrollHero() {
         }
       }
 
+      // Everything between the picture and the end of that path, so a frame
+      // decoded for it stays decoded — see `hold` on `FrameSequence.want`.
+      const hold: [number, number][] = [];
+      if (!slow && path.length) {
+        const end = Math.round(path[path.length - 1]);
+        const way = end >= low ? 1 : -1;
+        for (let i = low; i !== end + way; i += way) hold.push([active, i]);
+      }
+
+      // Around where the glide will settle: the full spread once it is
+      // slowing — as much of `SETTLE_RADIUS` as leaves the cache two fifths
+      // of itself for the frames on screen, the 4K frame at rest and the
+      // next path — and just the frame itself while it is still at speed,
+      // when the memory is better spent on the path.
       const settle = Math.round(aim);
       const ahead = aim >= position ? 1 : -1;
-      const radius = Math.min(
-        SETTLE_RADIUS,
-        Math.floor(engine.budget / engine.frameBytes(active) / 4),
-      );
+      const radius = !slow
+        ? 1
+        : Math.min(SETTLE_RADIUS, Math.floor(engine.budget / engine.frameBytes(active) / 2.5));
       for (let d = 0; d <= radius; d++) {
         pairs.push([active, settle + ahead * d]);
         if (d) pairs.push([active, settle - ahead * d]);
       }
-      return { pairs, keep: onScreen };
+      return { pairs, keep: onScreen, hold };
     };
 
     const render = (now: number, target: number, elapsed: number, interval: number) => {
@@ -1120,7 +1177,7 @@ export function ScrollHero() {
       const sets = setsRef.current;
       if (!engine || sets.active === null) return;
 
-      const position = filmAt;
+      const position = film.x;
       const aim = clamp01(target / CLIP_END) * LAST_FRAME;
       // Frames of film per 60th of a second, whatever the display's rate.
       const speed =
@@ -1147,9 +1204,12 @@ export function ScrollHero() {
           interval > vsync * BLEND_LATE_FACTOR ? lateness + 1 : Math.max(0, lateness - 0.25);
         if (lateness > BLEND_GIVE_UP) blendAllowed = false;
       }
-      // Frames of film a second the picture is asking for, against what the
-      // decoders can make — see `plan`.
-      const stride = Math.max(1, Math.ceil((speed * 60) / engine.capacity()));
+      // New pictures a second the glide is asking for — one a display frame
+      // at most, however many film frames it passes — against what the
+      // decoders can make. Short of it, only every `skip`th display frame
+      // gets a new picture, and the path is sampled that many frames apart.
+      const skip = Math.max(1, Math.ceil((Math.min(speed, 1) * 60) / engine.capacity()));
+      const stride = skip === 1 ? 1 : Math.ceil(skip * Math.max(speed, 1));
       const blend = blendAllowed && speed < 1 && stride === 1;
 
       const low = Math.floor(position);
@@ -1190,7 +1250,7 @@ export function ScrollHero() {
       if (key !== plannedFor) {
         plannedFor = key;
         const next = plan(engine, position, aim, velocity, active, pending, rest, slow, blend, stride);
-        engine.want(next.pairs, next.keep);
+        engine.want(next.pairs, next.keep, next.hold);
       }
 
       // What to draw: the frame under the position and, between frames, the
@@ -1286,21 +1346,33 @@ export function ScrollHero() {
         lastTarget = target;
         lastMoveAt.current = now;
       }
-      const ease = 1 - Math.exp(-EASE_RATE * elapsed);
-      current += (target - current) * ease;
-      if (Math.abs(target - current) < 0.0004) current = target;
+      // Snapped to rest once within a hair of the target and all but stopped.
+      // A critically damped spring that close is moving at about `rate`
+      // times its offset, so the speed that counts as stopped scales with
+      // the rate.
+      springStep(progress, target, SPRING_RATE, elapsed);
+      if (Math.abs(target - progress.x) < 0.0004 && Math.abs(progress.v) < SPRING_RATE * 0.0004) {
+        progress.x = target;
+        progress.v = 0;
+      }
       const filmAim = Math.round(clamp01(target / CLIP_END) * LAST_FRAME);
-      filmAt += (filmAim - filmAt) * ease;
-      if (Math.abs(filmAim - filmAt) < 0.02) filmAt = filmAim;
+      springStep(film, filmAim, SPRING_RATE, elapsed);
+      if (Math.abs(filmAim - film.x) < 0.02 && Math.abs(film.v) < SPRING_RATE * 0.05) {
+        film.x = filmAim;
+        film.v = 0;
+      }
 
-      paint(current);
+      paint(progress.x);
       render(now, target, elapsed, interval);
     };
 
     const start = () => {
       if (frame) return;
-      // Never integrate the time the loop was not running.
+      // Never integrate the time the loop was not running, nor carry a speed
+      // from before it stopped.
       last = 0;
+      progress.v = 0;
+      film.v = 0;
       frame = requestAnimationFrame(tick);
     };
     const stop = () => {

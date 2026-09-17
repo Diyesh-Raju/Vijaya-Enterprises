@@ -36,8 +36,9 @@ and the four-file ladder further down is history — its files are still in
 `public/video/`, referenced by nothing, and can be deleted.
 
 The film pins below the header, which is frosted white over a white strip at
-the top of the page, and plays over 1.6 screens of scroll (2.35 until the
-client asked for it faster).
+the top of the page, and plays over 1.3 screens of scroll, with the close
+taking 1.25 after it. The client has asked for it faster twice: the film was
+2.35 screens and the close 1.5 until 2026-09-16, then 1.6 and 1.5 for a day.
 
 `build-hero-frames.mjs` cuts everything, from `walkthrough-towers.mp4`:
 
@@ -48,11 +49,14 @@ node assets/video-source/build-hero-frames.mjs          # ~1½ minutes
 It reads every frame of the render straight out of ffmpeg — **169 frames at
 24 a second, no interpolation** — converts to RGB as BT.709 limited range
 (what the ladder was tagged as, and what browsers assume for the untagged
-render), and writes four sets of lossy WebP (`quality 80`, `effort 6`,
-`smartSubsample`) plus the three stills. The poster, the soft end plate and
-the soft start plate (the loader's ground) come off the same conversion, so
-the poster the page paints first and frame 0 the canvas then draws are the
-same picture in the same colours.
+render), and writes four sets — the two the page scrubs on as baseline
+JPEG (`quality 82`, mozjpeg's trellis quantisation and deringing, 4:2:0),
+the other two as lossy WebP (`quality 80`, `effort 6`, `smartSubsample`) —
+plus the three stills. The poster, the soft end plate and the soft start
+plate (the loader's ground) come off the same conversion, so the poster the
+page paints first and frame 0 the canvas then draws are the same picture in
+the same colours. `--sets=1920,2560` rebuilds only those widths and leaves
+the rest, which is how the JPEG sets were cut into `-v2` beside the others.
 
 The first cut (`home-towers-v1`, the same day) was `minterpolate`d to 30 a
 second at 2560 and q72. Four frames in five were synthesised, and a page at
@@ -61,16 +65,46 @@ cross-fades between neighbouring frames while the page moves, which covers
 what the interpolation was for, and at rest every frame is one the render
 drew.
 
-| set | frames | quality | total | a frame | who gets it |
+| set | frames | format | total | a frame | who gets it |
 | --- | --- | --- | --- | --- | --- |
-| `1280/` | 169 | 80 | 15.2 MB | 88 KB | everyone first — the loader waits for all of it |
-| `1920/` | 169 | 80 | 25.2 MB | 145 KB | a panel 1400–2100 device pixels across, e.g. 1536×864 at 125% |
-| `2560/` | 169 | 80 | 35.4 MB | 205 KB | anything wider or denser, to scrub on |
-| `3840/` | 169 | 80 | 59.6 MB | 344 KB | the picture at rest on Retina and 4K screens |
+| `1280/` | 169 | WebP q80 | 15.2 MB | 88 KB | everyone first — the loader waits for all of it |
+| `1920/` | 169 | JPEG q82 | 37.9 MB | 219 KB | a panel 1400–2100 device pixels across, e.g. 1536×864 at 125% |
+| `2560/` | 169 | JPEG q82 | 57.8 MB | 334 KB | anything wider or denser, to scrub on |
+| `3840/` | 169 | WebP q80 | 59.6 MB | 344 KB | the picture at rest on Retina and 4K screens |
+
+**JPEG for the scrub sets, since 2026-09-17.** The 1920 and 2560 sets were
+WebP q80 (25.2 and 35.4 MB, 145 and 205 KB a frame) until then. A frame of
+whichever set the page scrubs on is decoded for nearly every display frame
+of a scroll, and a baseline JPEG decodes almost three times as fast as a
+WebP of the same picture. Measured in Chrome on the M5, one worker round
+trip through `createImageBitmap`, and the rate four workers turn out
+together:
+
+| 2560×1440 frame | a frame | decode | decodes a second |
+| --- | --- | --- | --- |
+| WebP q80 | 287 KB | 17.5 ms | 293 |
+| JPEG q82, baseline, trellis | 428 KB | 6.4 ms | 760 |
+| JPEG q85, progressive (mozjpeg default) | 475 KB | 12.2 ms | 383 |
+| H.264 keyframe, WebCodecs, VideoToolbox | 443 KB | 8.2 ms | 258 |
+| H.264 keyframe, WebCodecs, software | 443 KB | 25.7 ms | 38 |
+
+At 1920 it is 3.7 ms against 11 ms. At the WebP rate the decoders fell
+behind in a real browser window — scrolling back at a moderate 400 pixels a
+second, a frame in eight on the canvas was a stand-in for one not decoded
+yet — and the glide had to trail the scroll by 150 ms to give them a
+predictable path, which is what the client felt as lag. Progressive JPEG
+gives most of the gain back, so the sets are baseline. A hardware video
+decoder is no faster than the JPEG and falls off a cliff where there is
+none, so WebCodecs was measured and not taken. JPEG q82 matches WebP q80
+to within half a decibel of PSNR (38.5 against 38.1 dB) at half again the
+bytes, which is fine for sets that download behind a page already in use.
+The 1280 set stays WebP because the loader waits for all of it and it is
+quick to decode anyway; the 4K set stays WebP because it is decoded once
+per stop and is already 60 MB.
 
 **4K at rest, 2560 in motion.** A 4K frame takes about 40ms to decode in
-Chrome on the M5, and at 1.6 screens a steady scroll asks for ninety-odd
-frames a second: scrubbed on the 4K set, the canvas showed a new picture on
+Chrome on the M5, and at 1.6 screens (more so at 1.3) a steady scroll asks
+for ninety-odd frames a second: scrubbed on the 4K set, the canvas showed a new picture on
 only half the display frames (trail p95 3.5 frames). So the 2560 set carries
 the scrub, and when the glide settles on a frame, that frame is decoded in
 4K and faded in over 180ms — the same picture, sharper. Moving again hands
@@ -106,12 +140,24 @@ script and `homeScrollBase` in `lib/images.ts` together.
   the page opens, and swapped in on the first display frame it has the
   picture decoded — mid-scrub if need be. The smaller set stays 1.5s as a
   stand-in, then goes.
-- **Scheduling.** The drawn position eases towards the scroll (rate 6),
-  aimed at whole frames so it always comes to rest on one. The decoders are
-  told, every time the picture moves, what to work on: the glide's path from
-  as far ahead as a decode takes to land (measured), against a target
-  carried on at the scroll's own speed; then the frames around where it will
-  settle, and that frame in 4K. Where the decoders cannot keep up, the path
+- **Glide.** The drawn position follows the scroll on a critically damped
+  spring (`SPRING_RATE` 13, `springStep` in `lib/frame-sequence.ts`), aimed
+  at whole frames so it always comes to rest on one. Until 2026-09-17 it was
+  a plain exponential ease at rate 6, which starts at full speed the instant
+  its target moves — every wheel notch landed as a small kick. The spring's
+  speed changes continuously; it trails a steady scroll by 2/13s (the ease
+  trailed by 1/6s) and is 95% into a single notch in 0.36s (0.5s before).
+- **Scheduling.** The decoders are told, every time the picture moves, what
+  to work on: the glide's path from the first display frame a decode can
+  still make (measured round trip, rounded up), predicted on the same spring
+  against a target carried on at the scroll's own speed; then the frames
+  around where it will settle, and that frame in 4K. Every frame between the
+  picture and the end of that path is pinned in the cache whether it was
+  asked for this time or not: at speed the path's picks shift by a frame
+  from one display frame to the next, and until 2026-09-17 a frame decoded
+  for it lost its pin a moment later, was evicted in favour of frames the
+  picture had already passed, and was decoded again too late — a steady
+  scroll showed the right frame on only a third of display frames. Where the decoders cannot keep up, the path
   is sampled every second or third frame, so the picture keeps up with the
   wheel at a lower frame rate rather than trailing it. Decoded frames live
   in a cache of 160–384 MB (by `navigator.deviceMemory`; 320 MB where it is
@@ -124,23 +170,31 @@ script and `homeScrollBase` in `lib/images.ts` together.
   sharpest set's own pixels, so a frame smaller than the screen is drawn
   exactly 1:1.
 
-### Measured, 2026-09-16
+### Measured, 2026-09-17
 
 Headless Chrome 152 on the M5, dev server, the in-page harness in the
 session scratchpad (`run.mjs`): a steady scrub at 12px a display frame
 through the film and back, and an erratic notched wheel (bursts of
-100–240px, pauses of 1–10 frames, reversals, five-notch spins). "Trail" is
-how far the drawn frame is behind where the glide says it should be, in
-frames of film. All at the 1.6-screen pace.
+100–240px, pauses of 1–10 frames, reversals, five-notch spins). "On frame"
+is the share of moving display frames showing exactly the frame the glide
+is on; "trail" is how far the drawn frame is from it, in frames of film;
+"kick" is how much the glide's speed changes from one display frame to the
+next (frames of film per frame, per frame — the jolt of a wheel notch). All
+at the 1.3-screen pace, where a frame is about 6px of scroll on an 812px
+window.
 
-| machine | scrub set | scrub | display frame p95 / max | trail p50 / p95 / max |
-| --- | --- | --- | --- | --- |
-| 1600×812 @2, GPU | 2560 (+4K at rest) | steady | 16.7 / 16.8ms | 0.12 / 1.39 / 1.98 |
-| same | 2560 (+4K at rest) | wheel | 16.8 / 16.8ms | 0.30 / 2.33 / 4.33 |
-| same, 4K as the scrub set (not shipped) | 4K | wheel | 16.8 / 33.4ms | 0.41 / 3.46 / 18.4 |
-| 1536×864 @1.25 | 1920 | wheel | 16.8 / 16.8ms | 0.18 / 1.69 / 6.27 |
-| same, decodes +60ms, 4 cores, CPU ×4 | 1280 (1920 failed its probe) | wheel | 16.8 / 16.8ms | 0.34 / 3.26 / 28.5 |
-| 1366×768 @1 | 1280 (ceiling) | steady | 16.7 / 16.8ms | 0.09 / 0.48 / 1.39 |
+| machine | scrub set | scrub | display frame max | on frame | trail p95 / max | kick p95 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1600×812 @2, GPU | 2560 (+4K at rest) | steady | 16.8ms | 99% | 0.48 / 1.1 | 0.14 |
+| same | 2560 (+4K at rest) | wheel | 16.8ms | 88% | 1.13 / 2.18 | 1.64 |
+| 1536×864 @1.25 | 1920 | wheel | 16.8ms | 93% | 0.69 / 14.9 | 1.61 |
+| same, decodes +60ms, 4 cores, CPU ×4 | 1280 (1920 failed its probe) | wheel | 16.8ms | 63% | 3.37 / 20.4 | 1.61 |
+| 1366×768 @1 | 1280 (ceiling) | steady | 16.8ms | 100% | 0.48 / 0.5 | 0.15 |
+
+For comparison, the 1600×812 wheel run on the morning of 2026-09-17 (1.6
+screens, exponential ease, no pinning of the path) gave trail p95 2.34 / max
+4.35 and kick p95 2.37 — which, at the slower pace, is a jolt about 1.8
+times the spring's for the same scroll.
 
 No long animation frames in these runs. Traced (on the earlier 30p cut),
 the page's main thread spent about 1.3ms a display frame during a scrub,
@@ -153,8 +207,8 @@ server the 1600×812 page opened at 0.4s, took over the 2560 set at 0.8s and
 had 4K at rest by 2.6s.
 
 Headless frame timing does not show raster cost (see the note in the
-project memory), so the display-frame columns say the main thread never
-missed; they do not by themselves prove a weak GPU would not.
+project memory), so the display-frame column says the main thread never
+missed; it does not by itself prove a weak GPU would not.
 
 ## The towers cut — the render the frames are cut from
 

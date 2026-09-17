@@ -19,7 +19,9 @@
  *      range, which is what browsers assume for the untagged render, so the
  *      frames draw in the colours the video played in; swscale's default
  *      would read the render as BT.601 and shift every hue a little.
- *   2. Four sets from each frame, one per width in `SETS`, as lossy WebP.
+ *   2. Four sets from each frame, one per width in `SETS`: the two the page
+ *      scrubs on as baseline JPEG, the other two as lossy WebP. Why two
+ *      formats is explained at `SETS`.
  *   3. The poster, the soft end plate and the soft start plate, from the same
  *      conversion, so the poster the page paints first and the frame the
  *      canvas then draws over it are the same picture in the same colours.
@@ -28,14 +30,19 @@
  * with Next):
  *
  *     node assets/video-source/build-hero-frames.mjs
+ *     node assets/video-source/build-hero-frames.mjs --sets=1920,2560
  *
- * About a minute and a half on an M5. Nothing is written outside the repo but
- * one PNG in the system temp directory.
+ * About a minute and a half on an M5 for everything. `--sets` rebuilds only
+ * the named widths — their directories are emptied and written again, the
+ * other sets and the stills are left as they are. Nothing is written outside
+ * the repo but one PNG in the system temp directory.
  *
- * Bump `VERSION` whenever the bytes of any frame change, and `homeScrollBase`
- * in `lib/images.ts` with it. The frames are served as immutable
- * (`next.config.ts`), so a browser holding the old ones will never ask for
- * them again under the same path.
+ * Bump `VERSION` whenever the bytes of an existing frame change, and
+ * `homeScrollBase` in `lib/images.ts` with it. The frames are served as
+ * immutable (`next.config.ts`), so a browser holding the old ones will never
+ * ask for them again under the same path. A set that changes *format* gets
+ * a new extension, which is a new path, and needs no bump — that is how the
+ * 1920 and 2560 sets became JPEG inside `-v2` on 2026-09-17.
  */
 
 import { spawn, spawnSync } from "node:child_process";
@@ -57,16 +64,51 @@ const WIDTH = 3840;
 const HEIGHT = 2160;
 
 /**
- * The sets, smallest first, and the WebP quality each is written at. The
- * smallest is the one the loader waits for, so it is held to about 15 MB.
+ * The sets, smallest first, with the format and quality each is written in.
  * Sizes and the reasoning are in the README.
+ *
+ * Two formats, on purpose. The 1920 and 2560 sets are the ones the page
+ * *scrubs* on — a frame of them is decoded for nearly every display frame
+ * while the reader scrolls — and a baseline JPEG decodes almost three times
+ * as fast as a lossy WebP of the same picture: measured in Chrome on the M5
+ * this was built on, 6.4ms against 17.5ms for a 2560×1440 frame, 3.7ms
+ * against 11ms at 1920. At the old WebP rate the decoders fell behind a
+ * moderate scroll in a real browser window (a frame in eight was a stand-in
+ * for one not decoded yet), and the picture had to trail the wheel by a
+ * fifth of a second to give them a predictable path. The JPEG costs half
+ * again the bytes at the same quality (quality 82 here matches WebP 80 to
+ * within half a decibel of PSNR), which is fine for sets that download
+ * behind a page already in use.
+ *
+ * Baseline, not progressive: Chrome decodes a progressive JPEG about twice
+ * as slowly (12ms against 6ms), which would give back most of the gain.
+ * `trellisQuantisation`, `overshootDeringing` and `quantisationTable: 3`
+ * are the mozjpeg settings that improve the picture at a given size without
+ * touching decode speed; `optimiseScans` is left out because it implies
+ * progressive.
+ *
+ * The 1280 set stays WebP because the loader waits for the whole of it and
+ * it is small enough to decode fast anyway; the 3840 set stays WebP because
+ * it is only ever decoded once, at rest, and is already 60 MB.
  */
 const SETS = [
-  { width: 1280, height: 720, quality: 80 },
-  { width: 1920, height: 1080, quality: 80 },
-  { width: 2560, height: 1440, quality: 80 },
-  { width: 3840, height: 2160, quality: 80 },
+  { width: 1280, height: 720, format: "webp", quality: 80 },
+  { width: 1920, height: 1080, format: "jpeg", quality: 82 },
+  { width: 2560, height: 1440, format: "jpeg", quality: 82 },
+  { width: 3840, height: 2160, format: "webp", quality: 80 },
 ];
+
+const extensionOf = (set) => (set.format === "jpeg" ? "jpg" : "webp");
+
+/** `--sets=1920,2560` limits the build to those widths. */
+const onlyArg = process.argv.find((arg) => arg.startsWith("--sets="));
+const only = new Set(onlyArg ? onlyArg.slice("--sets=".length).split(",").map(Number) : []);
+const BUILDING = only.size ? SETS.filter((set) => only.has(set.width)) : SETS;
+if (only.size && BUILDING.length !== only.size) {
+  console.error(`--sets names a width that is not in SETS: ${[...only].join(", ")}`);
+  process.exit(1);
+}
+const partial = BUILDING.length !== SETS.length;
 
 const TO_RGB =
   "scale=in_color_matrix=bt709:in_range=tv:out_range=pc:flags=accurate_rnd+full_chroma_int,format=rgb24";
@@ -116,22 +158,37 @@ if (!fs.existsSync(SRC)) {
   process.exit(1);
 }
 
-fs.rmSync(OUT, { recursive: true, force: true });
-for (const set of SETS) fs.mkdirSync(path.join(OUT, String(set.width)), { recursive: true });
+if (partial) {
+  for (const set of BUILDING) fs.rmSync(path.join(OUT, String(set.width)), { recursive: true, force: true });
+} else {
+  fs.rmSync(OUT, { recursive: true, force: true });
+}
+for (const set of BUILDING) fs.mkdirSync(path.join(OUT, String(set.width)), { recursive: true });
 
-const bytes = SETS.map(() => 0);
+const bytes = BUILDING.map(() => 0);
 const running = new Set();
 let count = 0;
 let first = null;
 let last = null;
 
 const encode = async (index, frame) => {
-  for (const [i, set] of SETS.entries()) {
+  for (const [i, set] of BUILDING.entries()) {
     let image = sharp(frame, raw);
     if (set.width !== WIDTH) image = image.resize(set.width, set.height, { kernel: "lanczos3" });
-    const info = await image
-      .webp({ quality: set.quality, effort: 6, smartSubsample: true })
-      .toFile(path.join(OUT, String(set.width), `${pad(index)}.webp`));
+    image =
+      set.format === "jpeg"
+        ? image.jpeg({
+            quality: set.quality,
+            progressive: false,
+            trellisQuantisation: true,
+            overshootDeringing: true,
+            quantisationTable: 3,
+            chromaSubsampling: "4:2:0",
+          })
+        : image.webp({ quality: set.quality, effort: 6, smartSubsample: true });
+    const info = await image.toFile(
+      path.join(OUT, String(set.width), `${pad(index)}.${extensionOf(set)}`),
+    );
     bytes[i] += info.size;
   }
 };
@@ -149,11 +206,16 @@ for await (const frame of framesOf(SRC)) {
 await Promise.all(running);
 
 console.log(`${count} frames at ${WIDTH}×${HEIGHT}`);
-for (const [i, set] of SETS.entries()) {
+for (const [i, set] of BUILDING.entries()) {
   console.log(
-    `${set.width}×${set.height} q${set.quality}: ${(bytes[i] / 1e6).toFixed(1)} MB, ` +
+    `${set.width}×${set.height} ${set.format} q${set.quality}: ${(bytes[i] / 1e6).toFixed(1)} MB, ` +
       `${(bytes[i] / count / 1024).toFixed(0)} KB a frame`,
   );
+}
+
+if (partial) {
+  console.log(`\nOnly ${BUILDING.map((s) => s.width).join(", ")} rebuilt; the stills were left alone.`);
+  process.exit(0);
 }
 
 // The stills ------------------------------------------------------------------
@@ -187,4 +249,4 @@ await sharp(first, raw)
 
 console.log(`\nframes.homeScroll in lib/images.ts should read:
   base: "/frames/home-towers-${VERSION}", count: ${count},
-  sets: ${SETS.map((s) => `${s.width}×${s.height}`).join(", ")}`);
+  sets: ${SETS.map((s) => `${s.width}×${s.height} .${extensionOf(s)}`).join(", ")}`);

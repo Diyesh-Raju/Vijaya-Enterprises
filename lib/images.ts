@@ -641,6 +641,12 @@ export const video = {
  * use and this machine can decode fast enough. The README beside the script
  * has the sizes, and why these four.
  *
+ * The two sets the page scrubs on, 1920 and 2560, are baseline JPEG; the
+ * other two are WebP. A JPEG decodes nearly three times as fast, and those
+ * two are decoded on nearly every display frame of a scroll — the script
+ * has the numbers. The extension is part of the set, so the engine never
+ * has to know.
+ *
  * The directory carries a version because the frames are served immutable
  * (`next.config.ts`): new bytes need a new path, or a browser holding the old
  * frames would go on drawing them. Bump `VERSION` in the script and here
@@ -648,11 +654,11 @@ export const video = {
  * sizes, and is gone.)
  */
 const homeScrollBase = "/frames/home-towers-v2";
-const homeScrollSet = (width: number, height: number) => ({
+const homeScrollSet = (width: number, height: number, extension: "webp" | "jpg") => ({
   width,
   height,
   url: (index: number) =>
-    `${homeScrollBase}/${width}/${String(index).padStart(3, "0")}.webp`,
+    `${homeScrollBase}/${width}/${String(index).padStart(3, "0")}.${extension}`,
 });
 
 export const frames = {
@@ -660,10 +666,10 @@ export const frames = {
     count: 169,
     /** Smallest first. The first is the one the loader waits for. */
     sets: [
-      homeScrollSet(1280, 720),
-      homeScrollSet(1920, 1080),
-      homeScrollSet(2560, 1440),
-      homeScrollSet(3840, 2160),
+      homeScrollSet(1280, 720, "webp"),
+      homeScrollSet(1920, 1080, "jpg"),
+      homeScrollSet(2560, 1440, "jpg"),
+      homeScrollSet(3840, 2160, "webp"),
     ],
   },
 } as const;
