@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { flushSync } from "react-dom";
 import { Logo } from "@/components/layout/logo";
 import {
   prefetchDictionary,
@@ -26,8 +27,12 @@ import {
  * the two is not needed — usually both — is unmounted for good.
  */
 
-/** Long enough to read as a lift rather than a cut. Matches `globals.css`. */
-const FADE_MS = 620;
+/**
+ * How long the chooser takes to slide up off the page once it is answered.
+ * Slow enough to be watched as a panel rising, not read as a cut. Matches
+ * `.lang-gate[data-leaving]` in `globals.css`.
+ */
+const LIFT_MS = 1200;
 
 export function LanguageGate() {
   /** Set once the language question is answered, one way or another. */
@@ -54,7 +59,7 @@ export function LanguageGate() {
       setLanguageState("gate");
       gateRef.current?.focus();
       // Warm the Kannada while the reader is deciding, so choosing it is a
-      // fade rather than a fade and then a wait.
+      // lift rather than a wait and then a lift.
       prefetchDictionary();
     });
 
@@ -73,10 +78,16 @@ export function LanguageGate() {
     // the gate standing there is that the page behind it is never seen in
     // the language the reader just turned down.
     await setLanguage(language);
+
+    // `data-leaving` has to be on the element before the state flips, and in
+    // the same task. The chooser is only displayed while the state is `gate`
+    // or it is leaving; flip the state first and there is a frame where it is
+    // neither, the chooser drops to `display: none`, and a transition cannot
+    // start from there — the lift never ran, and the page just appeared.
+    flushSync(() => setLeaving(true));
     setLanguageState("ready");
 
-    setLeaving(true);
-    window.setTimeout(() => setSettled(true), FADE_MS);
+    window.setTimeout(() => setSettled(true), LIFT_MS);
   };
 
   /**

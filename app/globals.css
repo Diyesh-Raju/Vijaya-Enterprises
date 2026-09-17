@@ -8657,15 +8657,40 @@ html[data-lang-state="gate"] .lang-gate {
   transition-delay: 0s;
 }
 
-/* On the way out, and only on the way out: the page underneath is already
-   in the chosen language by the time this runs, so what lifts is a cover
-   over a finished page rather than a curtain on a change. It keeps its
-   `display` through the fade — see above — and the component unmounts it
-   once the fade has run. */
+/* On the way out, and only on the way out: the whole screen slides up off
+   the top and the page is uncovered from the bottom edge upwards. The page
+   underneath is already in the chosen language by the time this runs, so
+   what rises is a cover over a finished page rather than a curtain on a
+   change. It keeps its `display` through the lift — see above — and the
+   component unmounts it once the lift has run (`LIFT_MS`).
+
+   This was a 620ms fade until 2026-09-16, and the fade never actually
+   played: the state flipped before `data-leaving` landed, so the chooser
+   dropped to `display: none` for a frame and the page simply appeared. The
+   ordering is fixed in `language-gate.tsx`; the client asked for the page
+   to be seen going up.
+
+   An in-out curve rather than `--ease-reveal`: a panel this size that
+   leaves at full speed reads as a jump. The shadow is what draws its bottom
+   edge against the home hero, which is as dark as the panel. */
 .lang-gate[data-leaving] {
   visibility: visible;
-  opacity: 0;
+  opacity: 1;
   pointer-events: none;
+  transform: translate3d(0, -100%, 0);
+  box-shadow: 0 2.5rem 5rem -1.5rem rgba(3, 8, 20, 0.6);
+  will-change: transform;
+  transition: transform 1200ms var(--ease-in-out-soft);
+}
+
+/* The mark and the buttons ride up a touch ahead of the panel they sit on,
+   so the lift has some depth to it rather than moving as one flat card. */
+.lang-gate__inner {
+  transition: transform 1200ms var(--ease-in-out-soft);
+}
+
+.lang-gate[data-leaving] .lang-gate__inner {
+  transform: translate3d(0, -12vh, 0);
 }
 
 .lang-gate__inner {
