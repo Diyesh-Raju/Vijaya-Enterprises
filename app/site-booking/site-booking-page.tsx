@@ -79,9 +79,17 @@ export function SiteBookingPage({ project }: { project?: Project & { slug: strin
               because the face lifts on hover — a line drawn on the face
               would lift with it and come away from its neighbour, where the
               `<li>` never moves. The grid stretches the three to one height,
-              so half of each is the same line across all of them. Brass,
-              like the step numbers; and since the `<li>` is the reveal, the
-              line arrives with the card it leads to. */}
+              so half of each is the same line across all of them. Blue, like
+              the light on the cards; and since the `<li>` is the reveal, the
+              line arrives with the card it leads to.
+
+              The cards themselves are the home page's figure cards
+              (`GradientCard`) in another key, asked for by name on
+              2026-09-17: black where those are navy, and a wash of the
+              site's blue coming in over the top right corner where those
+              have brass, with every word in white. The wash is its own
+              layer, as it is there, so the ring stays a clean hairline where
+              the light is brightest. */}
           <ol className="grid gap-4 sm:grid-cols-3 sm:gap-5">
             {howItWorks.map((item, index) => (
               <Reveal
@@ -91,18 +99,25 @@ export function SiteBookingPage({ project }: { project?: Project & { slug: strin
                 className={cn(
                   "relative",
                   index > 0 &&
-                    "before:absolute before:left-1/2 before:top-0 before:h-4 before:w-px before:-translate-y-full before:bg-brass-500 before:content-[''] " +
+                    "before:absolute before:left-1/2 before:top-0 before:h-4 before:w-px before:-translate-y-full before:bg-navy-400 before:content-[''] " +
                       "sm:before:left-0 sm:before:top-1/2 sm:before:h-px sm:before:w-5 sm:before:-translate-x-full sm:before:translate-y-0",
                 )}
               >
-                <div className="h-full rounded-[1.5rem] border border-line bg-white p-8 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-navy-200 hover:shadow-lift sm:rounded-[1.75rem]">
-                  <span className="font-display text-[0.9375rem] tabular-nums text-brass-600">
+                {/* No lift on hover, as on `GradientCard`: a lift says a card
+                    leads somewhere, and these three do not. The hairline
+                    catches the card's own blue instead. */}
+                <div className="relative isolate h-full overflow-hidden rounded-[1.5rem] bg-black p-8 ring-1 ring-white/10 transition-[box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:ring-navy-300/40 sm:rounded-[1.75rem]">
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 bg-[radial-gradient(145%_165%_at_100%_0%,rgba(120,166,236,0.72),rgba(79,128,214,0.42)_32%,rgba(52,98,184,0.18)_56%,transparent_86%)]"
+                  />
+                  <span className="relative block font-display text-[0.9375rem] tabular-nums text-white">
                     {item.step}
                   </span>
-                  <span className="mt-5 block font-display text-[1.25rem] leading-snug text-navy-900">
+                  <span className="relative mt-5 block font-display text-[1.25rem] leading-snug text-white">
                     {item.title}
                   </span>
-                  <span className="mt-3 block text-[0.9375rem] leading-relaxed text-slate-body">
+                  <span className="relative mt-3 block text-[0.9375rem] leading-relaxed text-white">
                     {item.body}
                   </span>
                 </div>
